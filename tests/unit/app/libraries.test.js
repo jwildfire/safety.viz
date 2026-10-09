@@ -401,9 +401,9 @@ describe('a library the page cannot use as handed in (#193)', () => {
     return result;
   };
   const SAFETY_TABS = [
-    { group: 'bds', title: 'Labs and vitals', count: '9 of 9' },
-    { group: 'eg', title: 'ECG', count: '1 of 1' },
-    { group: 'ae', title: 'Adverse events', count: '3 of 3' }
+    { group: 'bds', title: 'Labs and vitals', count: '9' },
+    { group: 'eg', title: 'ECG', count: '1' },
+    { group: 'ae', title: 'Adverse events', count: '3' }
   ];
 
   it('APP-LIB-020: an entry with no domains, no settings, a setting with no domain, no title or no export, or one that is not an object, reads "not loaded" with the reason, and safety.viz’s thirteen charts still mount (#193)', () => {

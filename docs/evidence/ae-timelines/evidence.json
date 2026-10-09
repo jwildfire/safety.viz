@@ -1,6 +1,6 @@
 {
   "module": "ae-timelines",
-  "generatedAt": "2026-10-09T14:33:02.020Z",
+  "generatedAt": "2026-10-09T14:28:56.478Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37943413053",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37943413053"
+    "id": "37944381175",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37944381175"
   },
   "records": [
     {
@@ -298,6 +298,14 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-026"],
       "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-037: on the demo app as it opens no tab is grey: Biomarkers is pink and RBQM amber, the colours the rule gives them, the biomarker chart names and the chart’s card carry their tab’s colour, and the standard domains’ tabs keep theirs (#268)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-037"],
+      "issueRefs": [268],
       "screenshots": []
     },
     {
@@ -730,6 +738,86 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-031"],
       "issueRefs": [246],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-032: a tab reads one number when every chart of it draws, \"8 of 9\" when some cannot, and \"0\" beside a hollow hex when none can, on the pilot study, the liver cohort and the RBQM study (#269)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-032"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-033: the Data tab names the loaded study: each demo study by its name, a reader’s own files as \"Your 4 files\", and nothing as \"no files\" (#269)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-033"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-034: on first open one line above the chart says whose data this is, how much is here and where to load your own, and its link opens the Data tab (#269)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-034"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-034: on the built demo page at 1,280 pixels, in the app’s own typeface, the welcome is one line above the chart and the header is one row with every tab on it (#269)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-034"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-035: the welcome line closes with its cross and does not come back in that visit, and nothing is written to the browser’s storage (#269)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-035"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-036: the welcome line is for the study the app opens on: it goes when another study or a reader’s own files are loaded, and a page that opens with no study has none (#269)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-036"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-037: the wordmark is a link to the docs home, the mark and the words \"Demo app\" inside it, and nothing else in the header moves (#270)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-037"],
+      "issueRefs": [270],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-038: the browser tab’s title names the open view: a chart by the name on its chip, the RBQM tab, and the Data tab (#270)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-038"],
+      "issueRefs": [270],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-039: the docs pages and the demo app serve the same favicon, the hex mark, and the app’s wordmark leads to the docs home (#270)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-039"],
+      "issueRefs": [270],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-040: at phone width a direct link to a tab or a chart opens with it in view in its row, and every tab and chart name is at least 44 pixels tall; at 1,280 pixels they are as they were (#271)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-040"],
+      "issueRefs": [271],
       "screenshots": []
     },
     {
@@ -7029,6 +7117,38 @@
       "screenshots": []
     },
     {
+      "test": "the colours on the page APP-LIB-033: a library’s tab, its chart names and its chart’s card carry its colour, a library that brings a view carries its own, and the standard domains’ tabs are as they were (#268)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-033"],
+      "issueRefs": [268],
+      "screenshots": []
+    },
+    {
+      "test": "the colours on the page APP-LIB-034: a library handed in with a colour is painted with it, and the stylesheet has no graphite for a library’s tab (#268)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-034"],
+      "issueRefs": [268],
+      "screenshots": []
+    },
+    {
+      "test": "the colours on the page APP-LIB-035: the merge says which library declared each group, so a group is painted with its own library’s colour (#268)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-035"],
+      "issueRefs": [268],
+      "screenshots": []
+    },
+    {
+      "test": "the colours on the page APP-LIB-036: the build hands the page a library’s colour only when its entry names one (#268)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-036"],
+      "issueRefs": [268],
+      "screenshots": []
+    },
+    {
       "test": "the connection to R in the browser (#231) APP-R-033: answers that R did not start, with the cause, when webR cannot be fetched, a package cannot be installed or a file cannot be read; and the next run tries again",
       "suite": "unit",
       "status": "pass",
@@ -7186,6 +7306,54 @@
       "status": "pass",
       "requirementIds": ["APP-R-027"],
       "issueRefs": [212],
+      "screenshots": []
+    },
+    {
+      "test": "the favicon APP-PAGE-039: every docs page and the demo app’s page serve the same favicon, the hex mark, as a data address that asks nothing of another file (#270)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-039"],
+      "issueRefs": [270],
+      "screenshots": []
+    },
+    {
+      "test": "the first screen: the welcome line APP-PAGE-034: on first open one line says whose data this is, how much is here and where to load your own (#269)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-034"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "the first screen: the welcome line APP-PAGE-035: the welcome line closes with a cross, does not come back in that visit, and nothing is written to the browser’s storage (#269)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-035"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "the first screen: the welcome line APP-PAGE-036: the welcome line is for the study the app opens on: it goes when another study or a reader’s own files are loaded, and a page with no demo study has none (#269)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-036"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "the first screen: what a tab and the Data tab say APP-PAGE-032: a tab reads one number when every chart of it draws, \"5 of 9\" when some cannot, and \"0\" beside a hollow hex when none can (#269)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-032"],
+      "issueRefs": [269],
+      "screenshots": []
+    },
+    {
+      "test": "the first screen: what a tab and the Data tab say APP-PAGE-033: the Data tab names the loaded study: a demo study by its name, a reader’s own files as \"Your 3 files\", and nothing as \"no files\" (#269)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-033"],
+      "issueRefs": [269],
       "screenshots": []
     },
     {
@@ -7941,6 +8109,46 @@
       "screenshots": []
     },
     {
+      "test": "the rule that gives every tab a colour APP-LIB-028: with no library naming a colour, the first is given pink and the second amber, the demo app’s Biomarkers and RBQM (#268)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-028"],
+      "issueRefs": [268],
+      "screenshots": []
+    },
+    {
+      "test": "the rule that gives every tab a colour APP-LIB-029: a library that names a colour for its tab keeps it, and the next library is given the first colour still open (#268)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-029"],
+      "issueRefs": [268],
+      "screenshots": []
+    },
+    {
+      "test": "the rule that gives every tab a colour APP-LIB-030: the same libraries in the same order are given the same colours on every build, and a library added at the end moves nobody (#268)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-030"],
+      "issueRefs": [268],
+      "screenshots": []
+    },
+    {
+      "test": "the rule that gives every tab a colour APP-LIB-031: a colour a tab in the header already uses is not open, and red is never given out (#268)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-031"],
+      "issueRefs": [268],
+      "screenshots": []
+    },
+    {
+      "test": "the rule that gives every tab a colour APP-LIB-032: when the list runs out the rule goes round again with each colour mixed 40 percent toward ink, and no tab is grey (#268)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-032"],
+      "issueRefs": [268],
+      "screenshots": []
+    },
+    {
       "test": "the single file with the biomarker charts APP-BIO-009: each library’s bundle is inlined after the app’s, and the app is mounted with it; nothing points at another URL (#182)",
       "suite": "unit",
       "status": "pass",
@@ -8098,6 +8306,22 @@
       "status": "pass",
       "requirementIds": ["APP-R-010"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the wordmark and the browser tab’s title APP-PAGE-037: the wordmark is a link to the docs home, with the mark and the words \"Demo app\" inside it; a page given no docs address has no link (#270)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-037"],
+      "issueRefs": [270],
+      "screenshots": []
+    },
+    {
+      "test": "the wordmark and the browser tab’s title APP-PAGE-038: the browser tab’s title names the open view before the app’s name: the Data tab, a chart by the name on its chip, and a library’s tab by its own (#270)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-038"],
+      "issueRefs": [270],
       "screenshots": []
     },
     {

@@ -123,7 +123,7 @@ test.describe('demo app on the demo study', () => {
       '18 of 18 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-tag.sva-ready')).toHaveCount(18);
-    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('4 files');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('Pilot study');
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
@@ -246,6 +246,55 @@ test.describe('demo app on the demo study', () => {
     expect(await overflow()).toBeLessThanOrEqual(0);
   });
 
+  test('APP-PAGE-040: at phone width a direct link to a tab or a chart opens with it in view in its row, and every tab and chart name is at least 44 pixels tall; at 1,280 pixels they are as they were (#271)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const inView = async (locator) => {
+      const box = await locator.boundingBox();
+      return box.x >= 0 && box.x + box.width <= 390;
+    };
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    // The RBQM tab is the last of six: off the screen to the right until the row is scrolled to it.
+    await page.goto('/tests/e2e/fixtures/basic-app.html#rbqm');
+    await page.evaluate(`${APP}.ready`);
+    const rbqm = page.locator('.sva-tab[data-tab="rbqm"]');
+    await expect(rbqm).toHaveAttribute('aria-pressed', 'true');
+    expect(await inView(rbqm)).toBe(true);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    await captureEvidence(page.locator('.sva-header'), 'APP-PAGE-040', 'phone-header-rbqm');
+    // A chart late in its row: its tab and its own name are both in view.
+    await page.goto('/tests/e2e/fixtures/basic-app.html#participant-profile');
+    await page.reload();
+    await page.evaluate(`${APP}.ready`);
+    await expect(item(page, 'participant-profile')).toHaveAttribute('aria-current', 'page');
+    expect(await inView(item(page, 'participant-profile'))).toBe(true);
+    expect(await inView(tab(page, 'bds'))).toBe(true);
+    // Followed without a reload, the row moves to the tab that opens.
+    await page.evaluate(() => {
+      window.location.hash = '#cross-tab';
+    });
+    await expect(item(page, 'cross-tab')).toHaveAttribute('aria-current', 'page');
+    expect(await inView(tab(page, 'biomarkers'))).toBe(true);
+    expect(await inView(item(page, 'cross-tab'))).toBe(true);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    // Every tab and every chart name shown is tall enough for a thumb.
+    const heights = () =>
+      page
+        .locator('.sva-tabs > *, .sva-group:not([hidden]) .sva-item')
+        .evaluateAll((elements) =>
+          elements.map((element) => element.getBoundingClientRect().height)
+        );
+    const phone = await heights();
+    expect(phone).toHaveLength(6 + bioCharts.length);
+    expect(Math.min(...phone)).toBeGreaterThanOrEqual(44);
+    // At desktop width nothing changed: a tab is as tall as its words need.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const desktop = await heights();
+    expect(Math.max(...desktop)).toBeLessThan(36);
+  });
+
   test('APP-PAGE-021: the app’s own parts are a header and a footer, so the chart has the page’s width (#150)', async ({
     page
   }) => {
@@ -300,6 +349,9 @@ test.describe('demo app on the demo study', () => {
       expect(box.height).toBeLessThanOrEqual(1);
     }
     // The chart starts straight under the header.
+    // On first open the welcome line sits between them (#269); once it is closed
+    // the chart starts straight under the header.
+    await page.locator('.sva-welcome').getByRole('button', { name: 'Dismiss' }).click();
     const header = await page.locator('.sva-header').boundingBox();
     const chart = await page.locator('.sva-chart').boundingBox();
     expect(chart.y - (header.y + header.height)).toBeLessThan(30);
@@ -325,10 +377,10 @@ test.describe('demo app on the demo study', () => {
       'RBQM'
     ]);
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
-      '9 of 9',
-      '1 of 1',
-      '3 of 3',
-      '5 of 5',
+      '9',
+      '1',
+      '3',
+      '5',
       'not run'
     ]);
     // The demo opens on the first chart, so its domain is open.
@@ -343,6 +395,55 @@ test.describe('demo app on the demo study', () => {
     // On the data view no domain is open.
     await item(page, 'data').click();
     await expect(page.locator('.sva-charts')).toBeHidden();
+  });
+
+  test('APP-LIB-037: on the demo app as it opens no tab is grey: Biomarkers is pink and RBQM amber, the colours the rule gives them, the biomarker chart names and the chart’s card carry their tab’s colour, and the standard domains’ tabs keep theirs (#268)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    const colourOf = (locator) =>
+      locator.evaluate((element) => getComputedStyle(element).backgroundColor);
+    const hexOf = (locator) => colourOf(locator.locator('.sva-hex'));
+    // The standard domains' tabs: blue, violet, teal, as before.
+    expect(await hexOf(tab(page, 'bds'))).toBe('rgb(81, 159, 221)');
+    expect(await hexOf(tab(page, 'eg'))).toBe('rgb(152, 139, 221)');
+    expect(await hexOf(tab(page, 'ae'))).toBe('rgb(0, 175, 169)');
+    // Neither library names a colour, so the rule gives the first pink, #c67bb6,
+    // and the second amber, #c78a3b.
+    expect(await hexOf(tab(page, 'biomarkers'))).toBe('rgb(198, 123, 182)');
+    expect(await hexOf(page.locator('.sva-tab[data-tab="rbqm"]'))).toBe('rgb(199, 138, 59)');
+    // No hex in the header is the graphite a library's tab used to be, #4a525c.
+    const hexes = await page
+      .locator('.sva-header .sva-hex')
+      .evaluateAll((elements) =>
+        elements.map((element) => getComputedStyle(element).backgroundColor)
+      );
+    expect(hexes.length).toBeGreaterThan(20);
+    expect(hexes).not.toContain('rgb(74, 82, 92)');
+    // The biomarker chart names carry their tab's colour, and so does the open chart's card.
+    await tab(page, 'biomarkers').click();
+    const [first] = bioCharts;
+    await expect(item(page, first[0])).toHaveAttribute('aria-current', 'page');
+    for (const [module] of bioCharts) {
+      expect(await hexOf(item(page, module)), module).toBe('rgb(198, 123, 182)');
+    }
+    expect(
+      await item(page, first[0]).evaluate((element) => getComputedStyle(element).boxShadow)
+    ).toContain('rgb(198, 123, 182)');
+    expect(
+      await page
+        .locator('.sva-chart')
+        .evaluate((element) => getComputedStyle(element).getPropertyValue('--hue'))
+    ).toBe('#c67bb6');
+    // The header as a first-time visitor sees it, with the Biomarkers tab open.
+    await captureEvidence(page.locator('.sva-header'), 'APP-LIB-037', 'tab-colours');
+    // The RBQM tab's own page carries its colour too.
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    expect(
+      await page
+        .locator('.sva-view')
+        .evaluate((element) => getComputedStyle(element).getPropertyValue('--hue'))
+    ).toBe('#c78a3b');
   });
 
   test('APP-PAGE-025: changing the address opens that view without a reload (#163)', async ({
@@ -518,6 +619,182 @@ async function correct(page) {
 // own charts, on the pilot demo study. Its one drawing chart takes named
 // tables and refuses a null setting; its other entry names a factory the
 // library does not have.
+// The first screen says where the reader is (#269, obot.roadmap#402).
+test.describe('demo app: the first screen', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+  const WELCOME =
+    'You are looking at the CDISC pilot study, a public demo: 254 participants, 18 charts on five tabs. ' +
+    'To use your own files, open Data. They are read in this browser and never leave it.';
+  const dataTag = (page) => item(page, 'data').locator('.sva-tag');
+  const counts = (page) => page.locator('.sva-tab[data-domain] .sva-tab-count');
+  const hexClass = (page, domain) => tab(page, domain).locator('.sva-hex');
+
+  test('APP-PAGE-032: a tab reads one number when every chart of it draws, "8 of 9" when some cannot, and "0" beside a hollow hex when none can, on the pilot study, the liver cohort and the RBQM study (#269)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    // The pilot study: every chart of every tab draws.
+    await expect(counts(page)).toHaveText(['9', '1', '3', '5']);
+    await expect(tab(page, 'bds')).toHaveAttribute(
+      'title',
+      '9 of 9 charts supported by the loaded data'
+    );
+    // The liver cohort's one labs file: one labs chart cannot draw, and no ECG or adverse events chart can.
+    await item(page, 'data').click();
+    const menu = page.locator('.sva-side select.sva-study');
+    await menu.selectOption('liver');
+    await expect(counts(page)).toHaveText(['8 of 9', '0', '0', '5']);
+    await expect(hexClass(page, 'eg')).toHaveClass('sva-hex sva-hollow');
+    await expect(hexClass(page, 'ae')).toHaveClass('sva-hex sva-hollow');
+    await expect(tab(page, 'ae')).toHaveAttribute(
+      'title',
+      '0 of 3 charts supported by the loaded data'
+    );
+    // The RBQM study's raw files: no chart reads them.
+    await menu.selectOption('rbqm');
+    await expect(counts(page)).toHaveText(['0', '0', '0', '0']);
+    for (const domain of ['bds', 'eg', 'ae', 'biomarkers']) {
+      await expect(hexClass(page, domain)).toHaveClass('sva-hex sva-hollow');
+    }
+  });
+
+  test('APP-PAGE-033: the Data tab names the loaded study: each demo study by its name, a reader’s own files as "Your 4 files", and nothing as "no files" (#269)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    await expect(dataTag(page)).toHaveText('Pilot study');
+    await item(page, 'data').click();
+    const menu = page.locator('.sva-side select.sva-study');
+    await menu.selectOption('rbqm');
+    await expect(dataTag(page)).toHaveText('RBQM study');
+    await menu.selectOption('renamed');
+    await expect(dataTag(page)).toHaveText('Renamed columns');
+    // A reader's own files take the demo study's place, and are counted.
+    await chooseFiles(page, STUDY);
+    await expect(dataTag(page)).toHaveText('Your 4 files');
+    await page.locator('[data-action="reset"]').click();
+    await expect(dataTag(page)).toHaveText('no files');
+  });
+
+  test('APP-PAGE-034: on first open one line above the chart says whose data this is, how much is here and where to load your own, and its link opens the Data tab (#269)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    const welcome = page.locator('.sva-welcome');
+    await expect(welcome).toBeVisible();
+    await expect(welcome.locator('p')).toHaveText(WELCOME);
+    // Above the chart, and as wide as the chart's card. That it is one line at
+    // this width in the app's own typeface is held on the built page (site.spec.js).
+    const line = await welcome.boundingBox();
+    const chart = await page.locator('.sva-chart').boundingBox();
+    expect(line.y + line.height).toBeLessThanOrEqual(chart.y);
+    expect(Math.abs(line.width - chart.width)).toBeLessThan(1);
+    await captureEvidence(page, 'APP-PAGE-034', 'first-screen');
+    // It stays while charts are opened, and its link leads to the Data tab, where it is not shown.
+    await openChart(page, 'ae-explorer');
+    await expect(welcome).toBeVisible();
+    await welcome.getByRole('link', { name: 'Data' }).click();
+    await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
+    await expect(welcome).toBeHidden();
+    await openChart(page, 'histogram');
+    await expect(welcome).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-035: the welcome line closes with its cross and does not come back in that visit, and nothing is written to the browser’s storage (#269)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    const welcome = page.locator('.sva-welcome');
+    await expect(welcome).toBeVisible();
+    await welcome.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(welcome).toBeHidden();
+    await openChart(page, 'ae-explorer');
+    await expect(welcome).toBeHidden();
+    await item(page, 'data').click();
+    await openChart(page, 'histogram');
+    await expect(welcome).toBeHidden();
+    const stored = await page.evaluate(() => ({
+      local: window.localStorage.length,
+      session: window.sessionStorage.length,
+      cookie: document.cookie
+    }));
+    expect(stored).toEqual({ local: 0, session: 0, cookie: '' });
+    // A new visit is a first open again: nothing remembered the cross.
+    await page.reload();
+    await page.evaluate(`${APP}.ready`);
+    await expect(welcome).toBeVisible();
+  });
+
+  test('APP-PAGE-037: the wordmark is a link to the docs home, the mark and the words "Demo app" inside it, and nothing else in the header moves (#270)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    const brand = page.locator('.sva-header a.sva-brand');
+    // The harness page gives the app no addresses, so the app's own default stands: the published site.
+    await expect(brand).toHaveAttribute('href', 'https://jwildfire.github.io/safety.viz/');
+    await expect(brand).toHaveAttribute('title', 'safety.viz: docs and chart gallery');
+    await expect(brand.locator('.sva-wordmark')).toHaveText('safety.viz');
+    await expect(brand.locator('.sva-kicker')).toHaveText('Demo app');
+    // It reads as the wordmark it was: the header's ink, not a link's underline.
+    const look = await brand.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { line: style.textDecorationLine, colour: style.color };
+    });
+    expect(look).toEqual({ line: 'none', colour: 'rgb(31, 35, 40)' });
+    // The wordmark and every tab are on the header's first row, as before.
+    const tops = await page
+      .locator('.sva-bar > .sva-brand, .sva-tabs > *')
+      .evaluateAll((elements) =>
+        elements.map((element) => {
+          const box = element.getBoundingClientRect();
+          return Math.round(box.top + box.height / 2);
+        })
+      );
+    expect(tops).toHaveLength(7);
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(4);
+  });
+
+  test('APP-PAGE-038: the browser tab’s title names the open view: a chart by the name on its chip, the RBQM tab, and the Data tab (#270)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
+    await openChart(page, 'hep-explorer');
+    await expect(page).toHaveTitle('Hepatic Explorer · safety.viz demo');
+    await openChart(page, 'group-comparison');
+    await expect(page).toHaveTitle('Group comparison · safety.viz demo');
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await expect(page).toHaveTitle('RBQM · safety.viz demo');
+    await item(page, 'data').click();
+    await expect(page).toHaveTitle('Data · safety.viz demo');
+    // An address followed without a reload changes it too.
+    await page.evaluate(() => {
+      window.location.hash = '#qt-explorer';
+    });
+    await expect(page).toHaveTitle('QT Explorer · safety.viz demo');
+  });
+
+  test('APP-PAGE-036: the welcome line is for the study the app opens on: it goes when another study or a reader’s own files are loaded, and a page that opens with no study has none (#269)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    const welcome = page.locator('.sva-welcome');
+    await expect(welcome).toBeVisible();
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('liver');
+    await openChart(page, 'hep-explorer');
+    await expect(welcome).toBeHidden();
+    await openEmpty(page);
+    await chooseFiles(page, STUDY);
+    await openChart(page, 'ae-explorer');
+    await expect(welcome).toBeHidden();
+  });
+});
+
 test.describe('demo app with a second chart library', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
@@ -649,7 +926,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
       await expect(card(page, domain).locator('.sva-domain')).toHaveValue(domain);
       await expect(card(page, domain).locator('.sva-found')).toHaveText(found);
     }
-    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('4 files');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('Your 4 files');
   });
 
   test('APP-LOAD-002: the file that belongs to no domain is reported in one sentence that names it (#151)', async ({
@@ -663,7 +940,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await expect(page.locator('.sva-file.sva-unplaced .sva-file-name')).toHaveText(
       'site_notes.csv'
     );
-    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('4 files');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('Your 4 files');
   });
 
   test('APP-LOAD-003: before mapping, the chart list names what each unsupported chart is missing (#151)', async ({
@@ -922,7 +1199,7 @@ test.describe('demo app with the biomarker charts', () => {
       'cross-tab'
     ]);
     await expect(tab(page, 'biomarkers').locator('.sva-tab-title')).toHaveText('Biomarkers');
-    await expect(tab(page, 'biomarkers').locator('.sva-tab-count')).toHaveText('5 of 5');
+    await expect(tab(page, 'biomarkers').locator('.sva-tab-count')).toHaveText('5');
     await expect(tab(page, 'biomarkers')).toHaveClass(/sva-library-group/);
     // The last of the domains' tabs: the RBQM tab, a view of its own, follows it (#235).
     await expect(page.locator('.sva-tab[data-domain]').last()).toHaveAttribute(
@@ -2051,7 +2328,7 @@ test.describe('demo app data view sidebar', () => {
       'Nothing to map: gsm’s raw files are kept as they are'
     );
     await expect(stepStatus(page, 'open')).toHaveText('0 of 18 charts ready');
-    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('9 files');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('RBQM study');
     // On a phone the nine cards and the sidebar fit the screen's width.
     await page.setViewportSize({ width: 390, height: 844 });
     expect(
@@ -2104,9 +2381,9 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'open')).toHaveText('13 of 18 charts ready');
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
       '8 of 9',
-      '0 of 1',
-      '0 of 3',
-      '5 of 5',
+      '0',
+      '0',
+      '5',
       'not run'
     ]);
     // It draws: the hepatic explorer from the one labs file.
@@ -3536,7 +3813,8 @@ test.describe('demo app as one file, offline', () => {
     page.on('request', (request) => requests.push(request.url()));
     await context.setOffline(true);
     await page.goto(SINGLE_FILE.href);
-    await expect(page).toHaveTitle('safety.viz demo');
+    // It opens empty, on the Data tab, and the title says so (#270).
+    await expect(page).toHaveTitle('Data · safety.viz demo');
     await expect(page.locator('.sva-wordmark')).toHaveText('safety.viz');
     await expect(page.locator('.sva-kicker')).toHaveText('Demo app');
     await expect(page.locator('.sva-version')).toHaveText(/^safety\.viz \d+\.\d+\.\d+$/);

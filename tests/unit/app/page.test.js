@@ -114,7 +114,7 @@ describe('demo app: the page', () => {
     app.loadFiles(DEMO);
     const tab = root.querySelector('.sva-tab[data-domain="other"]');
     expect(tab.querySelector('.sva-tab-title').textContent).toBe('Other');
-    expect(tab.querySelector('.sva-tab-count').textContent).toBe('0 of 1');
+    expect(tab.querySelector('.sva-tab-count').textContent).toBe('0');
     expect(root.querySelector('.sva-count').textContent).toBe(
       '13 of 14 charts supported by the loaded data'
     );
@@ -145,7 +145,7 @@ describe('demo app: the page', () => {
     );
     const ready = [...root.querySelectorAll('.sva-tag.sva-ready')];
     expect(ready).toHaveLength(13);
-    expect(tag(root, 'data')).toBe('4 files');
+    expect(tag(root, 'data')).toBe('Your 4 files');
   });
 
   it('APP-PAGE-003: choosing a chart draws it from the mapped data (#150)', () => {
@@ -272,7 +272,7 @@ describe('demo app: the page', () => {
     expect(root.querySelector('.sva-file.sva-unplaced .sva-file-name').textContent).toBe(
       'adsl.csv'
     );
-    expect(tag(root, 'data')).toBe('1 file');
+    expect(tag(root, 'data')).toBe('Your 1 file');
     // Two files of one type in one drop: the last takes the domain, the other is set aside.
     app.reset();
     app.loadFiles([DEMO[0], { name: 'adsl-b.csv', text: DEMO[0].text }]);
@@ -493,15 +493,15 @@ describe('demo app: the page', () => {
         node.querySelector('.sva-tab-count').textContent
       ]);
     expect(tabs()).toEqual([
-      ['Labs and vitals', '0 of 9'],
-      ['ECG', '0 of 1'],
-      ['Adverse events', '0 of 3']
+      ['Labs and vitals', '0'],
+      ['ECG', '0'],
+      ['Adverse events', '0']
     ]);
     // On the data view no domain is open and no chart row is shown.
     expect(root.querySelector('.sva-charts').hidden).toBe(true);
 
     app.loadFiles(DEMO);
-    expect(tabs().map(([, count]) => count)).toEqual(['9 of 9', '1 of 1', '3 of 3']);
+    expect(tabs().map(([, count]) => count)).toEqual(['9', '1', '3']);
 
     // Opening a domain shows its charts only, and draws its first ready chart.
     tab('ae').click();
@@ -529,7 +529,7 @@ describe('demo app: the page', () => {
     app.state.mappings.eg.columns.ARM = { value: null, source: null };
     app.refresh();
     expect(tab('eg').querySelector('.sva-hex').className).toBe('sva-hex sva-alarm');
-    expect(tab('eg').querySelector('.sva-tab-count').textContent).toBe('0 of 1');
+    expect(tab('eg').querySelector('.sva-tab-count').textContent).toBe('0');
   });
 
   it('APP-PAGE-023: a chart’s chip drops the word "Safety", and keeps the full title as its tooltip and as the view’s heading (#150)', () => {

@@ -80,14 +80,13 @@ test.describe('docs site', () => {
     });
     await page.goto('/_site/demo/index.html');
     await page.evaluate('window.__safetyVizApp.ready');
-    await expect(page).toHaveTitle('safety.viz demo');
+    // The title names the chart the app opens on (#270).
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
     await expect(page.locator('.sva-count')).toHaveText(
       '18 of 18 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
-    await expect(page.locator('.sva-tab[data-domain="biomarkers"] .sva-tab-count')).toHaveText(
-      '5 of 5'
-    );
+    await expect(page.locator('.sva-tab[data-domain="biomarkers"] .sva-tab-count')).toHaveText('5');
     // Its description counts the charts it carries (#212).
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
@@ -115,6 +114,61 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  test('APP-PAGE-039: the docs pages and the demo app serve the same favicon, the hex mark, and the app’s wordmark leads to the docs home (#270)', async ({
+    page
+  }) => {
+    const icon = () => page.locator('link[rel="icon"]');
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(icon()).toHaveCount(1);
+    const app = await icon().getAttribute('href');
+    expect(app.startsWith('data:image/svg+xml,')).toBe(true);
+    expect(decodeURIComponent(app).match(/<polygon/g)).toHaveLength(7);
+    // The wordmark is the way back to the docs: one click, to the docs home.
+    await expect(page.locator('a.sva-brand')).toHaveAttribute('href', '../index.html');
+    await page.locator('a.sva-brand').click();
+    await expect(page).toHaveURL(/\/_site\/index\.html$/);
+    await expect(icon()).toHaveCount(1);
+    expect(await icon().getAttribute('href')).toBe(app);
+    // A chart's own pages and the Domains page carry it too.
+    for (const address of [
+      '/_site/histogram/index.html',
+      '/_site/histogram/evidence.html',
+      '/_site/domains/index.html'
+    ]) {
+      await page.goto(address);
+      expect(await icon().getAttribute('href'), address).toBe(app);
+    }
+  });
+
+  test('APP-PAGE-034: on the built demo page at 1,280 pixels, in the app’s own typeface, the welcome is one line above the chart and the header is one row with every tab on it (#269)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await page.evaluate(() => document.fonts.ready);
+    const welcome = page.locator('.sva-welcome');
+    await expect(welcome.locator('p')).toHaveText(
+      'You are looking at the CDISC pilot study, a public demo: 254 participants, 18 charts on five tabs. ' +
+        'To use your own files, open Data. They are read in this browser and never leave it.'
+    );
+    // One line of text: the paragraph is no taller than a line and a half of it.
+    const lines = await welcome.locator('p').evaluate((element) => {
+      const style = getComputedStyle(element);
+      return element.getBoundingClientRect().height / parseFloat(style.lineHeight);
+    });
+    expect(lines).toBeLessThan(1.5);
+    // The header's first row holds the wordmark and all six tabs on one line.
+    const tops = await page
+      .locator('.sva-tabs > *')
+      .evaluateAll((elements) =>
+        elements.map((element) => Math.round(element.getBoundingClientRect().top))
+      );
+    expect(tops).toHaveLength(6);
+    expect(new Set(tops).size).toBe(1);
+    await expect(page.locator('.sva-item[data-view="data"] .sva-tag')).toHaveText('Pilot study');
+  });
   test('APP-PAGE-031: on the built demo page every chart’s footnote leads where its pages are: each safety chart’s test evidence, and the clinical guide of the six that have one, are pages the site serves; a biomarker chart’s test evidence is on bio.viz’s site (#246)', async ({
     page
   }) => {
