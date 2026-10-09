@@ -295,14 +295,68 @@ describe('hep-waterfall flanking-panel hover and labelling', () => {
     expect(ticks(left).callback(0)).toBe('Baseline');
     expect(ticks(left).callback(1)).toBe('Max on-tx');
     expect(ticks(left).callback(0.5)).toBe('');
-    expect(chartOption(left, 'plugins.title.text')).toMatch(/n=3/);
-    expect(chartOption(right, 'plugins.title.text')).toMatch(/n=2/);
+    const [leftTitle, rightTitle] = instance.root.querySelectorAll('.hwf-panel-title');
+    expect(leftTitle.textContent).toBe('Placebo (n=3)');
+    expect(rightTitle.textContent).toBe('Drug (n=2)');
+    // Each title sits in its own panel, over the band its chart leaves clear.
+    expect(leftTitle.parentElement).toBe(instance.boxCanvasLeft.parentElement);
+    expect(rightTitle.parentElement).toBe(instance.boxCanvasRight.parentElement);
+    expect(chartOption(left, 'layout.padding.top')).toBeGreaterThan(0);
+    expect(chartOption(left, 'layout.padding.top')).toBe(chartOption(right, 'layout.padding.top'));
 
     // The single-box reading labels its one slot as the peak.
     const summary = labelled(instance, 'Arm summary').querySelector('select');
     summary.value = 'peak';
     summary.onchange();
     expect(instance.flankCharts[0].options.scales.x.ticks.callback(0)).toBe('Max on-tx');
+  });
+
+  it('HWF-TITLE-001: a title is its arm name and its count as two parts, with the whole of both as its text and on hover, however long the name (#283)', () => {
+    const pooled = 'CLD: Study Drug, CLD: Placebo, Xanomeline Low Dose, Xanomeline High Dose';
+    const rows = makeRows().map((row) => (row.ARM === 'Drug' ? { ...row, ARM: pooled } : row));
+    const instance = mount({ active_arms: [pooled] }, rows);
+    const [, rightTitle] = instance.root.querySelectorAll('.hwf-panel-title');
+    expect(rightTitle.querySelector('.hwf-title-name').textContent).toBe(pooled);
+    expect(rightTitle.querySelector('.hwf-title-n').textContent).toBe('(n=2)');
+    // What a screen reader reads and what hovering shows: all of it.
+    expect(rightTitle.textContent).toBe(`${pooled} (n=2)`);
+    expect(rightTitle.getAttribute('title')).toBe(`${pooled} (n=2)`);
+
+    // The captions over the plot are set from the halves the divider reports.
+    const captions = () => [...instance.root.querySelectorAll('.hwf-main-panel .hwf-arm-caption')];
+    expect(captions()).toHaveLength(2);
+    instance.placeArmCaptions(
+      [
+        { side: 'placebo', label: 'Placebo', count: 3, left: 60, right: 240 },
+        { side: 'active', label: pooled, count: 2, left: 240, right: 560 }
+      ],
+      10
+    );
+    const [placebo, active] = captions();
+    expect(placebo.textContent).toBe('Placebo (n=3)');
+    expect(active.textContent).toBe(`${pooled} (n=2)`);
+    expect(active.getAttribute('title')).toBe(`${pooled} (n=2)`);
+    // Each is as wide as its half less a margin either side, so the two cannot meet.
+    const edges = (caption) => {
+      const left = parseFloat(caption.style.left);
+      return { left, right: left + parseFloat(caption.style.width) };
+    };
+    expect(edges(placebo).left).toBeGreaterThan(60);
+    expect(edges(placebo).right).toBeLessThan(240);
+    expect(edges(active).left).toBeGreaterThan(240);
+    expect(edges(active).right).toBeLessThan(560);
+    expect(placebo.hidden).toBe(false);
+    expect(active.hidden).toBe(false);
+
+    // A one-sided cohort names the arm it drew and shows no second caption.
+    instance.placeArmCaptions(
+      [{ side: 'active', label: pooled, count: 2, left: 60, right: 560 }],
+      10
+    );
+    expect(placebo.hidden).toBe(true);
+    expect(active.hidden).toBe(false);
+    expect(edges(active).left).toBeGreaterThan(60);
+    expect(edges(active).right).toBeLessThan(560);
   });
 
   it('HWF-BOX-007: each flank canvas carries an accessible summary of its boxes (#83)', () => {
