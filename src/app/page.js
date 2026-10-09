@@ -668,7 +668,9 @@ export function mountApp(
   function cornerLabel(id, name, what) {
     const { tier, note } = rungOf(id);
     if (!isBelow(tier)) return;
-    const corner = el('div', 'sva-corner');
+    // A chart's label sits on its card's top edge. A tab's view has no card,
+    // so at phone width its label takes a line of its own (styles.js).
+    const corner = el('div', what === 'tab' ? 'sva-corner sva-corner-view' : 'sva-corner');
     corner.append(
       statusLabel({
         tier,

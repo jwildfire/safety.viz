@@ -235,6 +235,8 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-rbqm-table th:first-child,.sva-rbqm-table td:first-child{padding-left:.3rem;white-space:normal}
 }
 @media (max-width:760px){
+.sva-corner-view{height:auto;display:flex;justify-content:flex-end;margin:0 0 .45rem}
+.sva-corner-view>.sv-status{position:static}
 .sva-tabs{order:3;flex-basis:100%;min-width:0}
 .sva-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;max-width:100%}
 .sva-tabs .sva-item,.sva-tab,.sva-charts .sva-item{min-height:44px}

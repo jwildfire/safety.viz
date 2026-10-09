@@ -4256,7 +4256,7 @@ test.describe('demo app: the label on a chart or a tab below Exploratory', () =>
     await expect(page.locator('.sva-main .sv-status')).toHaveCount(0);
   });
 
-  test('APP-TIER-022: at 390 pixels the label on a chart’s card is on screen and its panel opens inside the window, with nothing running off the page (#274)', async ({
+  test('APP-TIER-022: at 390 pixels the label on a chart’s card is on screen and its panel opens inside the window, with nothing running off the page; the RBQM tab’s label has a line of its own above the tab’s first words (#274)', async ({
     page
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -4284,6 +4284,11 @@ test.describe('demo app: the label on a chart or a tab below Exploratory', () =>
       window.location.hash = '#rbqm';
     });
     await expect(corner(page).locator('.sv-status-word')).toHaveText('Experimental');
+    // A tab's view has no card to carry it: its label has a line of its own,
+    // above the tab's first words and not over them.
+    const own = await pill(corner(page)).boundingBox();
+    const lede = await page.locator('.sva-rbqm-lede').boundingBox();
+    expect(own.y + own.height).toBeLessThanOrEqual(lede.y);
     await pill(corner(page)).click();
     const tabBox = await panelOf(corner(page)).boundingBox();
     expect(tabBox.x).toBeGreaterThanOrEqual(0);
