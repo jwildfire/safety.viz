@@ -1,6 +1,6 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-10-09T15:17:48.437Z",
+  "generatedAt": "2026-10-09T15:40:27.446Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37949585208",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37949585208"
+    "id": "37952267155",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37952267155"
   },
   "records": [
     {
