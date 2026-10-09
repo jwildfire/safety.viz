@@ -12478,6 +12478,7 @@ var TIER_MEANINGS = {
   experimental: "Tested and documented, but what it shows or how it behaves may still change.",
   prototype: "An early look, on the docs site only. Not in this app."
 };
+var statusHeading = (name, tier) => `${name} is ${tier === "prototype" ? "a prototype" : (TIER_WORDS[tier] || TIER_WORDS.exploratory).toLowerCase()}`;
 var LADDER_URL = "https://github.com/jwildfire/obot.roadmap/blob/main/docs/developer-guidelines.md#status-ladder";
 var STYLE_ID = "sv-status-label-styles";
 var STATUS_LABEL_STYLES = `
@@ -12701,7 +12702,7 @@ function chartStatus(element, module) {
   row.append(
     statusLabel({
       tier: entry.tier,
-      heading: `${entry.title} is ${TIER_WORDS[entry.tier].toLowerCase()}`,
+      heading: statusHeading(entry.title, entry.tier),
       text: entry.note ? [entry.note] : [],
       marks: { [entry.tier]: ["This chart"] },
       meanings: STANDALONE_MEANINGS

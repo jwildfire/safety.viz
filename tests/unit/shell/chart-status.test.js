@@ -87,7 +87,9 @@ describe('shell: a chart’s own status label', () => {
         CHART_TIERS[module].tier
       );
       expect(label.querySelector('[role="heading"]').textContent, module).toBe(
-        `${CHART_TIERS[module].title} is ${CHART_TIERS[module].tier}`
+        module === 'patient-journey-explorer'
+          ? 'Patient Journey Explorer is a prototype'
+          : `${CHART_TIERS[module].title} is experimental`
       );
     }
     // The prototype has no reason sentence: its hover line says what the rung means.

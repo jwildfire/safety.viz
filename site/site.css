@@ -104,36 +104,16 @@ h1 {
   color: var(--muted);
 }
 
-.site-badge {
-  display: inline-block;
-  vertical-align: middle;
+/* The status label beside a page title or a gallery card's name (the label's
+   own rules follow this file in the built stylesheet). */
+h1 .sv-status {
   margin-left: 0.65rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #9a3412;
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  border-radius: 999px;
-  padding: 0.22rem 0.6rem;
-  position: relative;
   top: -0.28em;
-  white-space: nowrap;
 }
 
-.site-badge-prototype {
-  color: #6b4e12;
-  background: #fdf6e6;
-  border-color: #e6c98a;
-}
-
-/* On a gallery card the badge sits inline after the title, not raised. */
-.card-body h3 .site-badge {
+.card-body h3 .sv-status,
+.kit-status .sv-status {
   margin-left: 0.4rem;
-  top: 0;
-  font-size: 0.62rem;
-  padding: 0.14rem 0.45rem;
 }
 
 h2 {
@@ -683,14 +663,22 @@ a.chip-link {
 }
 
 .card {
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* An open status panel reaches past its card, over the cards after it, so
+   the card does not clip: its picture is rounded to the card's corners instead. */
+.card:has(.sv-status-open) {
+  position: relative;
+  z-index: 5;
 }
 
 .card-thumb {
   display: block;
   border-bottom: 1px solid var(--rule);
+  border-radius: var(--radius) var(--radius) 0 0;
+  overflow: hidden;
   background: var(--card);
 }
 

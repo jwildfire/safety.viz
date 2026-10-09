@@ -189,6 +189,7 @@ describe('kit: the shared chart parts as one export', () => {
             'TIER_WORDS',
             'applyStatusLabelStyles',
             'chartStatus',
+            'statusHeading',
             'statusLabel',
             'statusLabelHtml',
             'statusLabelTree',

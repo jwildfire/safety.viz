@@ -125,10 +125,6 @@ export const RBQM_DOWNLOADS = [
 /** What the tab is in the app: its place in site/config.json's `appTabs`. */
 export const RBQM_TAB_ID = 'rbqm';
 
-/** What the Experimental pill means, for whoever hovers it; the docs site says the same. */
-export const EXPERIMENTAL_MEANING =
-  'Still being worked on, and fine to use: its behaviour and settings may change.';
-
 /** What the RBQM tab says in the single file, which cannot start R. */
 export const FILE_NO_RBQM =
   'The RBQM tab needs R, and this file loads nothing, so it cannot start R. ' +

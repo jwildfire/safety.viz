@@ -13,13 +13,14 @@ export {
   TIER_MEANINGS,
   TIER_WORDS,
   applyStatusLabelStyles,
+  statusHeading,
   statusLabel,
   statusLabelHtml,
   statusLabelTree,
   wireStatusLabel,
   wireStatusLabels
 } from './status-label.js';
-import { TIER_MEANINGS, TIER_WORDS, statusLabel } from './status-label.js';
+import { TIER_MEANINGS, statusHeading, statusLabel } from './status-label.js';
 import CHART_TIERS from './data/chart-tiers.js';
 
 /**
@@ -64,7 +65,7 @@ export function chartStatus(element, module) {
   row.append(
     statusLabel({
       tier: entry.tier,
-      heading: `${entry.title} is ${TIER_WORDS[entry.tier].toLowerCase()}`,
+      heading: statusHeading(entry.title, entry.tier),
       text: entry.note ? [entry.note] : [],
       marks: { [entry.tier]: ['This chart'] },
       meanings: STANDALONE_MEANINGS

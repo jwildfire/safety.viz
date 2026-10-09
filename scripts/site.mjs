@@ -38,7 +38,8 @@ import {
 } from './site-lib.mjs';
 import { APP_LIBRARIES, libraryManifest } from './app-libraries.mjs';
 import { tierProblems } from './tiers.mjs';
-import { tierOf } from '../src/tiers.js';
+import esbuild from 'esbuild';
+import { STATUS_LABEL_STYLES } from '../src/status-label.js';
 import { buildDemoAppDir } from './demo-app.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -70,7 +71,25 @@ const page = (file, title, content, root, description = '') =>
 
 rmSync(siteDir, { recursive: true, force: true });
 mkdirSync(siteDir, { recursive: true });
-copyFileSync(path.join(rootDir, 'site/site.css'), path.join(siteDir, 'site.css'));
+// The site's stylesheet, with the status label's own rules after it (#275), and
+// the script that wires the labels written into the pages.
+writeFileSync(
+  path.join(siteDir, 'site.css'),
+  `${readFileSync(path.join(rootDir, 'site/site.css'), 'utf8')}\n/* The status label (src/status-label.js). */${STATUS_LABEL_STYLES}`
+);
+await esbuild.build({
+  stdin: {
+    contents:
+      "import { wireStatusLabels } from './src/status-label.js';\n" +
+      "if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => wireStatusLabels());\n" +
+      'else wireStatusLabels();\n',
+    resolveDir: rootDir
+  },
+  bundle: true,
+  minify: true,
+  format: 'iife',
+  outfile: path.join(siteDir, 'status-label.js')
+});
 
 // Dedicated site assets (gallery hero images etc.), when present.
 const assetsDir = path.join(rootDir, 'site/assets');
@@ -143,7 +162,8 @@ if (!existsSync(kitApiFile)) {
     'Kit API reference · safety.viz',
     renderKitPage(JSON.parse(readFileSync(kitApiFile, 'utf8')), {
       repoUrl: config.repoUrl,
-      version
+      version,
+      renderers: config.renderers
     }),
     '../',
     'The safety.viz kit: the shared sidebar, filters, record listing, participant rail and ' +
@@ -223,7 +243,7 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     `${renderer.title} API reference · safety.viz`,
     renderApiPage(JSON.parse(readFileSync(apiFile, 'utf8')), {
       hasGuide: !!renderer.guide,
-      tier: tierOf(renderer)
+      renderer
     }),
     '../',
     `Generated API reference for the safety.viz ${module} module: factory, lifecycle ` +

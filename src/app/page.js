@@ -56,7 +56,7 @@ import {
 } from './header.js';
 import { el, plural } from './dom.js';
 import { isBelow, tierNoteOf, tierOf } from '../tiers.js';
-import { TIER_WORDS, statusLabel } from '../status-label.js';
+import { statusHeading, statusLabel } from '../status-label.js';
 import { LOGO_SVG, STYLES } from './styles.js';
 
 const STYLE_ID = 'safety-viz-app-styles';
@@ -672,7 +672,7 @@ export function mountApp(
     corner.append(
       statusLabel({
         tier,
-        heading: `${name} is ${TIER_WORDS[tier].toLowerCase()}`,
+        heading: statusHeading(name, tier),
         text: note ? [note] : [],
         marks: { exploratory: ['This app'], [tier]: [`This ${what}`] }
       })

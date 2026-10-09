@@ -29,6 +29,16 @@ export const TIER_MEANINGS = {
   prototype: 'An early look, on the docs site only. Not in this app.'
 };
 
+/**
+ * The heading of a label's panel: "Time-to-Event Explorer is experimental",
+ * "The RBQM tab is experimental", "Patient Journey Explorer is a prototype".
+ * @param {string} name What the label is on, as the heading names it.
+ * @param {string} tier Its rung.
+ * @returns {string} The heading.
+ */
+export const statusHeading = (name, tier) =>
+  `${name} is ${tier === 'prototype' ? 'a prototype' : (TIER_WORDS[tier] || TIER_WORDS.exploratory).toLowerCase()}`;
+
 /** Where the rungs are written out in full: the developer guidelines' status ladder. */
 export const LADDER_URL =
   'https://github.com/jwildfire/obot.roadmap/blob/main/docs/developer-guidelines.md#status-ladder';
