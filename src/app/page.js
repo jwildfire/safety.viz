@@ -46,6 +46,7 @@ import {
 } from './libraries.js';
 import { renderDataPanel } from './data-panel.js';
 import { DEMO_STUDIES, studyUrls } from './studies.js';
+import { dataTag, tabCount, welcomeSentence } from './header.js';
 import { el, plural } from './dom.js';
 import { LOGO_SVG, STYLES } from './styles.js';
 
@@ -260,6 +261,7 @@ export function mountApp(
     notes: [], // sentences about the last load: unplaced, unreadable, replaced
     failed: {}, // module → the message of a chart that was ready and threw
     focus: null, // the mapping row to return the keyboard focus to after a re-render
+    welcome: false, // whether the welcome line is still to be read: set as the app opens on a study, never stored
     selected: 'data',
     busy: ''
   };
@@ -316,7 +318,22 @@ export function mountApp(
   const title = el('h1', 'sva-title');
   head.append(title, count);
   const content = el('div', 'sva-content');
-  main.append(head);
+  // The welcome line (#269): whose data, how much, and where to load your own.
+  // On first open only, above whatever is drawn; closed with its cross, and
+  // held nowhere but in this page's memory.
+  const welcome = el('div', 'sva-welcome');
+  welcome.setAttribute('role', 'note');
+  welcome.hidden = true;
+  const welcomeText = el('p');
+  const dismiss = el('button', 'sva-close', '×');
+  dismiss.type = 'button';
+  dismiss.setAttribute('aria-label', 'Dismiss');
+  dismiss.onclick = () => {
+    state.welcome = false;
+    welcome.hidden = true;
+  };
+  welcome.append(welcomeText, dismiss);
+  main.append(head, welcome);
   // A library the page asked for whose charts are not listed says so in every
   // view, with why: it is not left out without a word (#193).
   if (unloaded.length) {
@@ -366,6 +383,35 @@ export function mountApp(
     const { ready, total } = supportedCount(current);
     // Spoken, not shown: each domain's tab already carries its own count.
     count.textContent = state.busy || `${ready} of ${total} charts supported by the loaded data`;
+    renderWelcome(ready);
+  }
+
+  /**
+   * The welcome line, while it is still to be read: for the study the app
+   * opened on, on any view but the data view, where the files are loaded.
+   */
+  function renderWelcome(ready) {
+    const [first] = studies;
+    const due =
+      state.welcome &&
+      !state.busy &&
+      state.selected !== 'data' &&
+      Boolean(first) &&
+      state.study === first.id &&
+      typeof first.whose === 'string';
+    welcome.hidden = !due;
+    if (!due) return;
+    const subject = state.files.subject;
+    const id = subject && state.mappings.subject && state.mappings.subject.columns.USUBJID;
+    const [before, after] = welcomeSentence({
+      whose: first.whose,
+      participants: id && id.value ? distinctValues(subject.rows, id.value).length : null,
+      charts: ready,
+      tabs: chartGroups().size + views.size
+    });
+    const link = el('a', null, 'Data');
+    link.href = '#data';
+    welcomeText.replaceChildren(before, link, after);
   }
 
   function navItem(id, label, tag, hexClass, fullTitle = label) {
@@ -394,7 +440,7 @@ export function mountApp(
       navItem(
         'data',
         'Data',
-        { className: 'sva-tag', text: loaded ? plural(loaded, 'file') : 'no files' },
+        { className: 'sva-tag', text: dataTag({ study: state.study, loaded, studies }) },
         'sva-hex sva-spectrum'
       )
     );
@@ -413,8 +459,10 @@ export function mountApp(
       tab.append(
         el('span', alarm ? 'sva-hex sva-alarm' : readyHere ? 'sva-hex' : 'sva-hex sva-hollow'),
         el('span', 'sva-tab-title', tabTitle(group)),
-        el('span', 'sva-tab-count', `${readyHere} of ${members.length}`)
+        el('span', 'sva-tab-count', tabCount(readyHere, members.length))
       );
+      // The one number is short for this, which the tab says on hover.
+      tab.title = `${readyHere} of ${members.length} charts supported by the loaded data`;
       tab.onclick = () => handle.openDomain(group);
       tabs.append(tab);
 
@@ -731,6 +779,8 @@ export function mountApp(
     clear();
     const list = study.files.map((name, index) => ({ name, text: texts[index] }));
     // A study of gsm's raw domains (#233) is kept as it is; any other is placed and mapped.
+    // The welcome line is for the study the app opened on, and for no other.
+    if (!studies[0] || study.id !== studies[0].id) state.welcome = false;
     if (study.raw) handle.loadRaw(list, { study: study.id });
     else handle.loadFiles(list, { study: study.id });
     if (!open) return;
@@ -767,6 +817,7 @@ export function mountApp(
       if (!study) {
         demoRun += 1;
         state.busy = '';
+        state.welcome = false;
       }
       state.notes = [...notes];
       const mappingFiles = [];
@@ -833,6 +884,7 @@ export function mountApp(
       if (!study) {
         demoRun += 1;
         state.busy = '';
+        state.welcome = false;
       }
       state.notes = [...notes];
       // Files of the user's own replace a demo study whole, as loadFiles does.
@@ -1029,6 +1081,7 @@ export function mountApp(
     reset() {
       demoRun += 1;
       state.busy = '';
+      state.welcome = false;
       clear();
       handle.select('data');
     },
@@ -1107,6 +1160,9 @@ export function mountApp(
   window.addEventListener('hashchange', followAddress);
 
   render();
-  if (studies.length) handle.loadDemo(studies[0].id, { open: true });
+  if (studies.length) {
+    state.welcome = true;
+    handle.loadDemo(studies[0].id, { open: true });
+  }
   return handle;
 }

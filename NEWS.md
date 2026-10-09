@@ -15,6 +15,7 @@ The demo app made ready to show: clearer on first open, and the defects found in
 ## What's new
 
 - **Every tab in the demo app has a colour.** Biomarkers is pink and RBQM amber, where both were grey and read as switched off. A chart library may name its tab's colour; one that names none is given the first colour no other tab uses. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#268](https://github.com/jwildfire/safety.viz/issues/268)
+- **The first screen says where you are.** The Data tab names the loaded study, and a tab shows one number when every chart draws. A line on first open says whose data this is and where to load your own; it closes with a cross and nothing is stored. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#269](https://github.com/jwildfire/safety.viz/issues/269)
 
 # safety.viz v1.10.0
 

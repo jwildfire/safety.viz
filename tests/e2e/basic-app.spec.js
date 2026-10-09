@@ -123,7 +123,7 @@ test.describe('demo app on the demo study', () => {
       '18 of 18 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-tag.sva-ready')).toHaveCount(18);
-    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('4 files');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('Pilot study');
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-chart .sv-root')).toBeVisible();
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
@@ -325,10 +325,10 @@ test.describe('demo app on the demo study', () => {
       'RBQM'
     ]);
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
-      '9 of 9',
-      '1 of 1',
-      '3 of 3',
-      '5 of 5',
+      '9',
+      '1',
+      '3',
+      '5',
       'not run'
     ]);
     // The demo opens on the first chart, so its domain is open.
@@ -565,6 +565,133 @@ async function correct(page) {
 // own charts, on the pilot demo study. Its one drawing chart takes named
 // tables and refuses a null setting; its other entry names a factory the
 // library does not have.
+// The first screen says where the reader is (#269, obot.roadmap#402).
+test.describe('demo app: the first screen', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+  const WELCOME =
+    'You are looking at the CDISC pilot study, a public demo: 254 participants, 18 charts on five tabs. ' +
+    'To use your own files, open Data. They are read in this browser and never leave it.';
+  const dataTag = (page) => item(page, 'data').locator('.sva-tag');
+  const counts = (page) => page.locator('.sva-tab[data-domain] .sva-tab-count');
+  const hexClass = (page, domain) => tab(page, domain).locator('.sva-hex');
+
+  test('APP-PAGE-032: a tab reads one number when every chart of it draws, "8 of 9" when some cannot, and "0" beside a hollow hex when none can, on the pilot study, the liver cohort and the RBQM study (#269)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    // The pilot study: every chart of every tab draws.
+    await expect(counts(page)).toHaveText(['9', '1', '3', '5']);
+    await expect(tab(page, 'bds')).toHaveAttribute(
+      'title',
+      '9 of 9 charts supported by the loaded data'
+    );
+    // The liver cohort's one labs file: one labs chart cannot draw, and no ECG or adverse events chart can.
+    await item(page, 'data').click();
+    const menu = page.locator('.sva-side select.sva-study');
+    await menu.selectOption('liver');
+    await expect(counts(page)).toHaveText(['8 of 9', '0', '0', '5']);
+    await expect(hexClass(page, 'eg')).toHaveClass('sva-hex sva-hollow');
+    await expect(hexClass(page, 'ae')).toHaveClass('sva-hex sva-hollow');
+    await expect(tab(page, 'ae')).toHaveAttribute(
+      'title',
+      '0 of 3 charts supported by the loaded data'
+    );
+    // The RBQM study's raw files: no chart reads them.
+    await menu.selectOption('rbqm');
+    await expect(counts(page)).toHaveText(['0', '0', '0', '0']);
+    for (const domain of ['bds', 'eg', 'ae', 'biomarkers']) {
+      await expect(hexClass(page, domain)).toHaveClass('sva-hex sva-hollow');
+    }
+  });
+
+  test('APP-PAGE-033: the Data tab names the loaded study: each demo study by its name, a reader’s own files as "Your 4 files", and nothing as "no files" (#269)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    await expect(dataTag(page)).toHaveText('Pilot study');
+    await item(page, 'data').click();
+    const menu = page.locator('.sva-side select.sva-study');
+    await menu.selectOption('rbqm');
+    await expect(dataTag(page)).toHaveText('RBQM study');
+    await menu.selectOption('renamed');
+    await expect(dataTag(page)).toHaveText('Renamed columns');
+    // A reader's own files take the demo study's place, and are counted.
+    await chooseFiles(page, STUDY);
+    await expect(dataTag(page)).toHaveText('Your 4 files');
+    await page.locator('[data-action="reset"]').click();
+    await expect(dataTag(page)).toHaveText('no files');
+  });
+
+  test('APP-PAGE-034: on first open one line above the chart says whose data this is, how much is here and where to load your own, and its link opens the Data tab (#269)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    const welcome = page.locator('.sva-welcome');
+    await expect(welcome).toBeVisible();
+    await expect(welcome.locator('p')).toHaveText(WELCOME);
+    // Above the chart, and as wide as the chart's card. That it is one line at
+    // this width in the app's own typeface is held on the built page (site.spec.js).
+    const line = await welcome.boundingBox();
+    const chart = await page.locator('.sva-chart').boundingBox();
+    expect(line.y + line.height).toBeLessThanOrEqual(chart.y);
+    expect(Math.abs(line.width - chart.width)).toBeLessThan(1);
+    await captureEvidence(page, 'APP-PAGE-034', 'first-screen');
+    // It stays while charts are opened, and its link leads to the Data tab, where it is not shown.
+    await openChart(page, 'ae-explorer');
+    await expect(welcome).toBeVisible();
+    await welcome.getByRole('link', { name: 'Data' }).click();
+    await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
+    await expect(welcome).toBeHidden();
+    await openChart(page, 'histogram');
+    await expect(welcome).toBeVisible();
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-035: the welcome line closes with its cross and does not come back in that visit, and nothing is written to the browser’s storage (#269)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    const welcome = page.locator('.sva-welcome');
+    await expect(welcome).toBeVisible();
+    await welcome.getByRole('button', { name: 'Dismiss' }).click();
+    await expect(welcome).toBeHidden();
+    await openChart(page, 'ae-explorer');
+    await expect(welcome).toBeHidden();
+    await item(page, 'data').click();
+    await openChart(page, 'histogram');
+    await expect(welcome).toBeHidden();
+    const stored = await page.evaluate(() => ({
+      local: window.localStorage.length,
+      session: window.sessionStorage.length,
+      cookie: document.cookie
+    }));
+    expect(stored).toEqual({ local: 0, session: 0, cookie: '' });
+    // A new visit is a first open again: nothing remembered the cross.
+    await page.reload();
+    await page.evaluate(`${APP}.ready`);
+    await expect(welcome).toBeVisible();
+  });
+
+  test('APP-PAGE-036: the welcome line is for the study the app opens on: it goes when another study or a reader’s own files are loaded, and a page that opens with no study has none (#269)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    const welcome = page.locator('.sva-welcome');
+    await expect(welcome).toBeVisible();
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('liver');
+    await openChart(page, 'hep-explorer');
+    await expect(welcome).toBeHidden();
+    await openEmpty(page);
+    await chooseFiles(page, STUDY);
+    await openChart(page, 'ae-explorer');
+    await expect(welcome).toBeHidden();
+  });
+});
+
 test.describe('demo app with a second chart library', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
@@ -696,7 +823,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
       await expect(card(page, domain).locator('.sva-domain')).toHaveValue(domain);
       await expect(card(page, domain).locator('.sva-found')).toHaveText(found);
     }
-    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('4 files');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('Your 4 files');
   });
 
   test('APP-LOAD-002: the file that belongs to no domain is reported in one sentence that names it (#151)', async ({
@@ -710,7 +837,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
     await expect(page.locator('.sva-file.sva-unplaced .sva-file-name')).toHaveText(
       'site_notes.csv'
     );
-    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('4 files');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('Your 4 files');
   });
 
   test('APP-LOAD-003: before mapping, the chart list names what each unsupported chart is missing (#151)', async ({
@@ -969,7 +1096,7 @@ test.describe('demo app with the biomarker charts', () => {
       'cross-tab'
     ]);
     await expect(tab(page, 'biomarkers').locator('.sva-tab-title')).toHaveText('Biomarkers');
-    await expect(tab(page, 'biomarkers').locator('.sva-tab-count')).toHaveText('5 of 5');
+    await expect(tab(page, 'biomarkers').locator('.sva-tab-count')).toHaveText('5');
     await expect(tab(page, 'biomarkers')).toHaveClass(/sva-library-group/);
     // The last of the domains' tabs: the RBQM tab, a view of its own, follows it (#235).
     await expect(page.locator('.sva-tab[data-domain]').last()).toHaveAttribute(
@@ -2098,7 +2225,7 @@ test.describe('demo app data view sidebar', () => {
       'Nothing to map: gsm’s raw files are kept as they are'
     );
     await expect(stepStatus(page, 'open')).toHaveText('0 of 18 charts ready');
-    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('9 files');
+    await expect(item(page, 'data').locator('.sva-tag')).toHaveText('RBQM study');
     // On a phone the nine cards and the sidebar fit the screen's width.
     await page.setViewportSize({ width: 390, height: 844 });
     expect(
@@ -2151,9 +2278,9 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'open')).toHaveText('13 of 18 charts ready');
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
       '8 of 9',
-      '0 of 1',
-      '0 of 3',
-      '5 of 5',
+      '0',
+      '0',
+      '5',
       'not run'
     ]);
     // It draws: the hepatic explorer from the one labs file.

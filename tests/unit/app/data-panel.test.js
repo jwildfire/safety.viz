@@ -111,7 +111,7 @@ describe('demo app: the data panel', () => {
       bds: ['labs_final.csv', 'bds', '7 of 13 columns found', '2,223 rows'],
       eg: ['ecg.json', 'eg', '9 of 10 columns found', '516 rows']
     });
-    expect(tag('data')).toBe('4 files');
+    expect(tag('data')).toBe('Your 4 files');
   });
 
   it('APP-LOAD-002: a file that belongs to no domain is reported in one sentence, and can be placed by hand (#151)', () => {
@@ -121,7 +121,7 @@ describe('demo app: the data panel', () => {
     ]);
     const unplaced = root.querySelector('.sva-file.sva-unplaced');
     expect(unplaced.querySelector('.sva-file-name').textContent).toBe('site_notes.csv');
-    expect(tag('data')).toBe('4 files');
+    expect(tag('data')).toBe('Your 4 files');
     // By hand it goes where the user says, replacing what was there, and says so.
     choose(unplaced.querySelector('.sva-domain'), 'subject');
     expect(card('subject').querySelector('.sva-file-name').textContent).toBe('site_notes.csv');
@@ -826,7 +826,7 @@ describe('demo app: the data panel', () => {
     expect(cards[3].querySelector('.sva-tag').textContent).toBe('gsm raw file, kept as it is');
     expect(root.querySelectorAll('.sva-file[data-domain]')).toHaveLength(0);
     expect(root.querySelector('.sva-map')).toBeNull();
-    expect(tag('data')).toBe('9 files');
+    expect(tag('data')).toBe('RBQM study');
     expect(steps()).toEqual([
       ['Load your files', 'done', '9 files loaded'],
       ['Check the mapping', 'todo', 'Nothing to map: gsm’s raw files are kept as they are'],
@@ -866,7 +866,7 @@ describe('demo app: the data panel', () => {
     expect(app.state.study).toBeNull();
     app.loadFiles(STUDY);
     expect(app.state.raw).toHaveLength(1);
-    expect(tag('data')).toBe('5 files');
+    expect(tag('data')).toBe('Your 5 files');
   });
 
   it('APP-LOAD-021: the sidebar belongs to the data view: a chart view has none (#159)', () => {
