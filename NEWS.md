@@ -17,6 +17,7 @@ The demo app made ready to show: clearer on first open, and the defects found in
 ## Also in this release
 
 - **The docs home page's description counts the charts on the site.** It said nine; it now says thirteen, and is built from the site's list of charts, so it follows the list. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#286](https://github.com/jwildfire/safety.viz/issues/286)
+- **The Hepatic ALT Waterfall's titles fit when an arm's name is long.** On the pilot study two titles printed across each other and a third was squeezed until it could not be read. A long name is now cut short with its count kept whole, and hovering shows all of it. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#283](https://github.com/jwildfire/safety.viz/issues/283)
 
 # safety.viz v1.10.0
 
