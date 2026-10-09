@@ -1,15 +1,20 @@
 name: Spike - CI speed (temporary)
 
-# TEMPORARY, on the scratch branch spike/ci-speed only. Measures five ways of
-# running what ci.yml runs, on the same runner, so the design note can quote
-# wall-clock times instead of estimates. Never merge this file.
+# TEMPORARY, on the scratch branch spike/ci-speed only. Measures ways of running
+# what ci.yml runs, on the same runner, so the design note can quote wall-clock
+# times instead of estimates. Never merge this file.
+#
+# Round 2: each layout runs twice in the same run (rep a and b), for spread.
 #
 #   v1  one job, the suites run once, the evidence guard reads their results
-#   v2  v1 with four browser workers instead of two
-#   v3  the eight real-R tests in their own job, the rest in another, a gate
-#       job merges the two reports and runs the evidence guard
-#   v4  v1 with four workers and tests inside a file run side by side
-#   v5  four shards with tests inside a file run side by side, and a gate job
+#   v3  the eight real-R tests in their own job, the rest in another, static
+#       checks and unit tests in a third, and a gate job that merges the two
+#       browser reports and runs the evidence guard
+#   v6  v3's larger browser job with the browser installed without its system
+#       packages, to see whether the screenshots still match
+#
+# Round 1 (commit 1fa7f0df, run 37941542874) also ran four workers (v2), tests
+# inside a file side by side (v4) and four shards (v5).
 
 on:
   push:
@@ -23,23 +28,13 @@ env:
   REAL_R: 'APP-RBQM-(012|021|030|031|039|047)|APP-R-(032|037)'
 
 jobs:
-  # ---------------------------------------------------------------- v1, v2, v4
-  single:
-    name: ${{ matrix.name }}
+  v1:
+    name: v1 single pass (${{ matrix.rep }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: v1 single pass, 2 workers
-            id: v1
-            args: ''
-          - name: v2 single pass, 4 workers
-            id: v2
-            args: '--workers=4'
-          - name: v4 single pass, 4 workers, fully parallel
-            id: v4
-            args: '--workers=4 --fully-parallel'
+        rep: [a, b]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -72,17 +67,20 @@ jobs:
       - name: Run browser tests
         env:
           PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/playwright.json
-        run: npx playwright test --project=chromium --reporter=list,json ${{ matrix.args }}
+        run: npx playwright test --project=chromium --reporter=list,json
       - name: Evidence freshness guard (from the results above)
         if: always()
         run: node scripts/evidence.mjs --check --vitest-json="$RUNNER_TEMP/vitest.json" --playwright-json="$RUNNER_TEMP/playwright.json"
       - name: Requirement-text sync guard
         run: npm run requirements:check
 
-  # ------------------------------------------------- shared by v3 and v5 gates
-  static:
-    name: static checks and unit tests
+  v3-static:
+    name: v3 static checks and unit tests (${{ matrix.rep }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rep: [a, b]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -114,23 +112,24 @@ jobs:
         run: npm run requirements:check
       - uses: actions/upload-artifact@v4
         with:
-          name: spike-vitest
+          name: spike-vitest-${{ matrix.rep }}
           path: spike-results/vitest.json
           retention-days: 3
 
-  # ------------------------------------------------------------------------ v3
   v3-browser:
-    name: v3 browser, ${{ matrix.part }}
+    name: v3 browser, ${{ matrix.part }} (${{ matrix.rep }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
+        rep: [a, b]
+        id: [rest, real-r]
         include:
-          - part: all but real R
-            id: rest
+          - id: rest
+            part: all but real R
             flag: --grep-invert
-          - part: real R
-            id: real-r
+          - id: real-r
+            part: real R
             flag: --grep
     steps:
       - uses: actions/checkout@v4
@@ -150,15 +149,19 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: spike-v3-blob-${{ matrix.id }}
+          name: spike-v3-blob-${{ matrix.rep }}-${{ matrix.id }}
           path: blob-report/
           retention-days: 3
 
   v3-gate:
-    name: v3 gate (merge and evidence guard)
+    name: v3 gate (${{ matrix.rep }})
     runs-on: ubuntu-latest
-    needs: [static, v3-browser]
+    needs: [v3-static, v3-browser]
     if: always()
+    strategy:
+      fail-fast: false
+      matrix:
+        rep: [a, b]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -168,11 +171,11 @@ jobs:
       - run: npm ci
       - uses: actions/download-artifact@v4
         with:
-          name: spike-vitest
+          name: spike-vitest-${{ matrix.rep }}
           path: spike-results
       - uses: actions/download-artifact@v4
         with:
-          pattern: spike-v3-blob-*
+          pattern: spike-v3-blob-${{ matrix.rep }}-*
           path: spike-blobs
           merge-multiple: true
       - name: Merge the browser reports
@@ -182,14 +185,9 @@ jobs:
       - name: Evidence freshness guard (from the merged results)
         run: node scripts/evidence.mjs --check --vitest-json=spike-results/vitest.json --playwright-json=spike-results/playwright.json
 
-  # ------------------------------------------------------------------------ v5
-  v5-browser:
-    name: v5 shard ${{ matrix.shard }} of 4
+  v6:
+    name: v6 browser without system packages
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -198,41 +196,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
+      - name: Install Playwright browsers (no system packages)
+        run: npx playwright install chromium
       - name: Run browser tests
-        run: npx playwright test --project=chromium --reporter=list,blob --fully-parallel --shard=${{ matrix.shard }}/4
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: spike-v5-blob-${{ matrix.shard }}
-          path: blob-report/
-          retention-days: 3
-
-  v5-gate:
-    name: v5 gate (merge and evidence guard)
-    runs-on: ubuntu-latest
-    needs: [static, v5-browser]
-    if: always()
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm ci
-      - uses: actions/download-artifact@v4
-        with:
-          name: spike-vitest
-          path: spike-results
-      - uses: actions/download-artifact@v4
-        with:
-          pattern: spike-v5-blob-*
-          path: spike-blobs
-          merge-multiple: true
-      - name: Merge the browser reports
-        env:
-          PLAYWRIGHT_JSON_OUTPUT_NAME: spike-results/playwright.json
-        run: npx playwright merge-reports --reporter=json spike-blobs
-      - name: Evidence freshness guard (from the merged results)
-        run: node scripts/evidence.mjs --check --vitest-json=spike-results/vitest.json --playwright-json=spike-results/playwright.json
+        run: npx playwright test --project=chromium --reporter=list --grep-invert "$REAL_R"
