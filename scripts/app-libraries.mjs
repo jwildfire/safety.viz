@@ -135,19 +135,6 @@ export const FILE_NO_RBQM =
   'The hosted demo app can start R in your browser.';
 
 /**
- * The tab's status badge, from site/config.json: the tab ships Experimental
- * while its entry there names that rung (`tier`, #272).
- * @returns {?{text: string, title: string}} The badge, or null for a stable tab.
- */
-export function rbqmBadge() {
-  const config = JSON.parse(readFileSync(path.join(rootDir, 'site/config.json'), 'utf8'));
-  const entry = (config.appTabs || []).find((tab) => tab.id === RBQM_TAB_ID);
-  return entry && tierOf(entry) === 'experimental'
-    ? { text: 'Experimental', title: EXPERIMENTAL_MEANING }
-    : null;
-}
-
-/**
  * Where the demo app's directory serves a file R is given: under the path R
  * keeps it at, beside the app (`./rbqm/pipeline.R`).
  * @param {{path: string}} entry An entry of pipelineFiles().
@@ -157,7 +144,7 @@ export const servedBesideTheApp = (entry) => `.${entry.path}`;
 
 /**
  * The options the RBQM tab is mounted with, as plain values: what R is given
- * and from where, gsm.viz's bundle, what starting R downloads, and the badge.
+ * and from where, gsm.viz's bundle, and what starting R downloads.
  * The connection factory is the app's own and is added by the page.
  * @param {Object} [where] Where the page serves each thing; the demo app's directory by default.
  * @param {(entry: {file: string, path: string}) => string} [where.fileUrl] The address of one file R is given.
@@ -196,8 +183,7 @@ export function rbqmTabOptions({
     },
     // What each workflow needs, as desktop R read it from gsm's specs: the tab
     // places a reader's own files and says what they support with it (#236).
-    needs: JSON.parse(readFileSync(path.join(rootDir, RBQM_NEEDS.file), 'utf8')).needs,
-    badge: rbqmBadge()
+    needs: JSON.parse(readFileSync(path.join(rootDir, RBQM_NEEDS.file), 'utf8')).needs
   };
 }
 
@@ -218,7 +204,7 @@ export function rbqmTabExpression({ r = 'request', where, colour = RBQM_CHARTS.c
   const options =
     r === 'request'
       ? `{ createConnection: SafetyVizApp.createRConnection, ...${JSON.stringify(rbqmTabOptions(where))} }`
-      : JSON.stringify({ unavailable: FILE_NO_RBQM, badge: rbqmBadge() });
+      : JSON.stringify({ unavailable: FILE_NO_RBQM });
   return (
     `{ name: ${JSON.stringify(RBQM_CHARTS.name)}, ` +
     (colour ? `colour: ${JSON.stringify(colour)}, ` : '') +

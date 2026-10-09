@@ -1382,16 +1382,16 @@ function applyScaleDefaults(defaults2) {
 }
 var overrides = /* @__PURE__ */ Object.create(null);
 var descriptors = /* @__PURE__ */ Object.create(null);
-function getScope$1(node, key) {
+function getScope$1(node2, key) {
   if (!key) {
-    return node;
+    return node2;
   }
   const keys = key.split(".");
   for (let i = 0, n = keys.length; i < n; ++i) {
     const k = keys[i];
-    node = node[k] || (node[k] = /* @__PURE__ */ Object.create(null));
+    node2 = node2[k] || (node2[k] = /* @__PURE__ */ Object.create(null));
   }
-  return node;
+  return node2;
 }
 function set(root, scope, values) {
   if (typeof scope === "string") {
@@ -2371,12 +2371,12 @@ function _getParentNode(domNode) {
   }
   return parent;
 }
-function parseMaxStyle(styleValue, node, parentProperty) {
+function parseMaxStyle(styleValue, node2, parentProperty) {
   let valueInPixels;
   if (typeof styleValue === "string") {
     valueInPixels = parseInt(styleValue, 10);
     if (styleValue.indexOf("%") !== -1) {
-      valueInPixels = valueInPixels / 100 * node.parentNode[parentProperty];
+      valueInPixels = valueInPixels / 100 * node2.parentNode[parentProperty];
     }
   } else {
     valueInPixels = styleValue;
@@ -5529,9 +5529,9 @@ function initCanvas(canvas, aspectRatio) {
 var eventListenerOptions = supportsEventListenerOptions ? {
   passive: true
 } : false;
-function addListener(node, type, listener) {
-  if (node) {
-    node.addEventListener(type, listener, eventListenerOptions);
+function addListener(node2, type, listener) {
+  if (node2) {
+    node2.addEventListener(type, listener, eventListenerOptions);
   }
 }
 function removeListener(chart, type, listener) {
@@ -5551,8 +5551,8 @@ function fromNativeEvent(event, chart) {
   };
 }
 function nodeListContains(nodeList, canvas) {
-  for (const node of nodeList) {
-    if (node === canvas || node.contains(canvas)) {
+  for (const node2 of nodeList) {
+    if (node2 === canvas || node2.contains(canvas)) {
       return true;
     }
   }
@@ -12462,6 +12462,227 @@ var TimeSeriesScale = class extends TimeScale {
   }
 };
 
+// src/tiers.js
+var TIERS = ["qualified", "exploratory", "experimental", "prototype"];
+
+// src/status-label.js
+var TIER_WORDS = {
+  qualified: "Qualified",
+  exploratory: "Exploratory",
+  experimental: "Experimental",
+  prototype: "Prototype"
+};
+var TIER_MEANINGS = {
+  qualified: "Validated for regulated use. Nothing in safety.viz is, yet.",
+  exploratory: "Tested and documented. Confirm every result.",
+  experimental: "Tested and documented, but what it shows or how it behaves may still change.",
+  prototype: "An early look, on the docs site only. Not in this app."
+};
+var LADDER_URL = "https://github.com/jwildfire/obot.roadmap/blob/main/docs/developer-guidelines.md#status-ladder";
+var STYLE_ID = "sv-status-label-styles";
+var STATUS_LABEL_STYLES = `
+.sv-status{--svs-ink:#1f2328;--svs-soft:#5b6470;--svs-card:#fff;--svs-rule:#e4e6e3;--svs-line:#cfd3cf;--svs-accent:#6c3270;--svs-accent-deep:#522456;--svs-accent-soft:rgba(108,50,112,.1);--svs-mono:var(--mono,ui-monospace,"SF Mono",Menlo,Consolas,monospace);--svs-sans:var(--sans,system-ui,-apple-system,"Segoe UI",sans-serif);--svs-serif:var(--serif,Georgia,"Times New Roman",serif);position:relative;display:inline-flex;align-items:center;vertical-align:middle}
+.sv-status *,.sv-status *::before,.sv-status *::after{box-sizing:border-box}
+.sv-status [hidden],.sv-status .sv-status-panel[hidden]{display:none}
+.sv-status .sv-status-label{position:relative;display:inline-flex;align-items:center;margin:0;font-family:var(--svs-mono);font-size:.6rem;font-weight:500;line-height:1;letter-spacing:.09em;text-transform:uppercase;color:var(--svs-ink);background:var(--svs-card);border:1.5px solid var(--svs-ink);border-radius:999px;padding:.34rem .64rem;cursor:pointer;white-space:nowrap}
+.sv-status .sv-status-label[data-tier=qualified]{background:var(--svs-ink);color:#fff}
+.sv-status .sv-status-label[data-tier=experimental]{border-style:dashed}
+.sv-status .sv-status-label[data-tier=prototype]{border-style:dotted;border-color:var(--svs-soft);color:var(--svs-soft)}
+.sv-status .sv-status-label:hover,.sv-status.sv-status-open .sv-status-label{border-color:var(--svs-accent);color:var(--svs-accent)}
+.sv-status .sv-status-label[data-tier=qualified]:hover,.sv-status.sv-status-open .sv-status-label[data-tier=qualified]{background:var(--svs-accent);color:#fff}
+.sv-status .sv-status-label:focus-visible,.sv-status .sv-status-close:focus-visible,.sv-status .sv-status-panel a:focus-visible{outline:2px solid var(--svs-accent);outline-offset:2px}
+.sv-status .sv-status-tip{position:absolute;top:calc(100% + 7px);right:0;z-index:30;display:none;width:max-content;max-width:min(19rem,calc(100vw - 1rem));padding:.42rem .62rem;border-radius:6px;background:var(--svs-ink);color:#fff;font-family:var(--svs-sans);font-size:.74rem;font-weight:400;line-height:1.35;letter-spacing:0;text-transform:none;white-space:normal;text-align:left}
+.sv-status .sv-status-label:hover .sv-status-tip,.sv-status .sv-status-label:focus-visible .sv-status-tip{display:block}
+.sv-status.sv-status-open .sv-status-label .sv-status-tip{display:none}
+.sv-status .sv-status-panel{display:block;position:absolute;top:calc(100% + 8px);right:0;z-index:25;width:23.5rem;max-width:calc(100vw - 1rem);padding:1rem 1.1rem .8rem;background:var(--svs-card);border:1px solid var(--svs-line);border-radius:12px;box-shadow:0 12px 32px rgba(31,35,40,.16);font-family:var(--svs-sans);font-size:.84rem;font-weight:400;line-height:1.45;letter-spacing:0;text-transform:none;white-space:normal;color:var(--svs-ink);text-align:left}
+.sv-status.sv-status-left .sv-status-panel,.sv-status.sv-status-left .sv-status-tip{right:auto;left:0}
+.sv-status .sv-status-heading{display:block;margin:0 1.6rem .45rem 0;font-family:var(--svs-serif);font-weight:400;font-size:1.25rem;line-height:1.2;letter-spacing:0;text-transform:none;color:var(--svs-ink)}
+.sv-status .sv-status-text{display:block;margin:0 0 .6rem}
+.sv-status .sv-status-text.sv-status-count{color:var(--svs-soft);font-size:.8rem}
+.sv-status .sv-status-text.sv-status-foot{margin:0;font-size:.76rem}
+.sv-status .sv-status-panel a{color:var(--svs-accent-deep);text-underline-offset:.2em}
+.sv-status .sv-status-close{position:absolute;top:.5rem;right:.55rem;width:1.7rem;height:1.7rem;margin:0;padding:0;border:0;border-radius:50%;background:none;color:var(--svs-soft);font-family:var(--svs-sans);font-size:1.15rem;font-weight:400;line-height:1;cursor:pointer}
+.sv-status .sv-status-close:hover{background:var(--svs-accent-soft);color:var(--svs-accent)}
+.sv-status .sv-status-ladder{display:block;margin:.7rem 0 .6rem;border-top:1px solid var(--svs-rule)}
+.sv-status .sv-status-step{display:block;padding:.5rem;border-bottom:1px solid var(--svs-rule);color:var(--svs-soft)}
+.sv-status .sv-status-step.sv-status-here{background:var(--svs-accent-soft);color:var(--svs-ink)}
+.sv-status .sv-status-rung{display:inline-block;margin:0 .5rem .12rem 0;font-family:var(--svs-mono);font-size:.62rem;font-weight:500;line-height:1;letter-spacing:.09em;text-transform:uppercase;color:var(--svs-ink);background:var(--svs-card);border:1.5px solid var(--svs-ink);border-radius:999px;padding:.24rem .5rem}
+.sv-status .sv-status-rung[data-tier=qualified]{background:var(--svs-ink);color:#fff}
+.sv-status .sv-status-rung[data-tier=experimental]{border-style:dashed}
+.sv-status .sv-status-rung[data-tier=prototype]{border-style:dotted;border-color:var(--svs-soft);color:var(--svs-soft)}
+.sv-status .sv-status-mark{display:inline-block;margin-right:.35rem;font-family:var(--svs-mono);font-size:.54rem;font-weight:500;line-height:1;letter-spacing:.08em;text-transform:uppercase;color:#fff;background:var(--svs-accent);border:1px solid var(--svs-accent);border-radius:999px;padding:.14rem .4rem}
+.sv-status .sv-status-mark.sv-status-also{background:none;color:var(--svs-accent)}
+.sv-status .sv-status-meaning{display:block;margin-top:.22rem;font-size:.8rem}
+`;
+function applyStatusLabelStyles(doc = document) {
+  if (doc.getElementById(STYLE_ID)) return;
+  const style = doc.createElement("style");
+  style.id = STYLE_ID;
+  style.textContent = STATUS_LABEL_STYLES;
+  doc.head.append(style);
+}
+var node = (tag, attrs, children = []) => ({ tag, attrs, children: [].concat(children) });
+var block = (className, children) => node("span", { class: className, role: "paragraph" }, children);
+var drawn = 0;
+function statusLabelTree({
+  tier,
+  heading,
+  line,
+  text: text3 = [],
+  count: count2 = "",
+  marks = {},
+  meanings = TIER_MEANINGS,
+  link = LADDER_URL,
+  align = "right",
+  id = "sv-status-panel"
+}) {
+  const rung = TIERS.includes(tier) ? tier : "exploratory";
+  const word = TIER_WORDS[rung];
+  const paragraphs = text3.filter(Boolean);
+  const said = line || paragraphs[0] || meanings[rung];
+  const ladder = TIERS.map((step) => {
+    const here = step === rung;
+    const step_ = `sv-status-step${here ? " sv-status-here" : ""}`;
+    return node("span", { class: step_, role: "listitem", "data-tier": step }, [
+      node("span", { class: "sv-status-rung", "data-tier": step }, TIER_WORDS[step]),
+      ...(marks[step] || []).map(
+        (mark) => node("span", { class: `sv-status-mark${here ? "" : " sv-status-also"}` }, mark)
+      ),
+      node("span", { class: "sv-status-meaning" }, meanings[step])
+    ]);
+  });
+  return node("span", { class: `sv-status${align === "left" ? " sv-status-left" : ""}` }, [
+    node(
+      "button",
+      {
+        type: "button",
+        class: "sv-status-label",
+        "data-tier": rung,
+        "aria-label": `Status: ${word}. ${said}`,
+        "aria-haspopup": "dialog",
+        "aria-expanded": "false",
+        "aria-controls": id
+      },
+      [
+        node("span", { class: "sv-status-word" }, word),
+        node("span", { class: "sv-status-tip", role: "tooltip" }, said)
+      ]
+    ),
+    node(
+      "span",
+      { class: "sv-status-panel", role: "dialog", "aria-label": heading, id, hidden: "" },
+      [
+        node("button", { type: "button", class: "sv-status-close", "aria-label": "Close" }, "\xD7"),
+        node("span", { class: "sv-status-heading", role: "heading", "aria-level": "3" }, heading),
+        ...paragraphs.map((paragraph) => block("sv-status-text", paragraph)),
+        ...count2 ? [block("sv-status-text sv-status-count", count2)] : [],
+        node("span", { class: "sv-status-ladder", role: "list" }, ladder),
+        ...link ? [
+          block("sv-status-text sv-status-foot", [
+            node("a", { href: link, target: "_blank", rel: "noopener" }, "What each rung means")
+          ])
+        ] : []
+      ]
+    )
+  ]);
+}
+function toDom(tree, doc) {
+  const element = doc.createElement(tree.tag);
+  for (const [name, value] of Object.entries(tree.attrs)) {
+    element.setAttribute(name, value);
+  }
+  for (const child of tree.children) {
+    element.append(typeof child === "string" ? doc.createTextNode(child) : toDom(child, doc));
+  }
+  return element;
+}
+function wireStatusLabel(root) {
+  const doc = root.ownerDocument;
+  const button = root.querySelector(".sv-status-label");
+  const panel = root.querySelector(".sv-status-panel");
+  const cross = root.querySelector(".sv-status-close");
+  const place = () => {
+    panel.style.removeProperty("transform");
+    const view = doc.defaultView;
+    const width = view && view.innerWidth || 0;
+    const box = panel.getBoundingClientRect();
+    if (!width || !box.width) return;
+    const edge = 8;
+    let shift = 0;
+    if (box.left < edge) shift = edge - box.left;
+    else if (box.right > width - edge) shift = width - edge - box.right;
+    if (shift) panel.style.transform = `translateX(${Math.round(shift)}px)`;
+  };
+  const isOpen = () => !panel.hidden;
+  const onKey = (event) => {
+    if (event.key !== "Escape") return;
+    set2(false, { focus: root.contains(doc.activeElement) });
+  };
+  const onOther = (event) => {
+    if (event.detail !== root) set2(false);
+  };
+  function set2(open, { focus = false } = {}) {
+    if (open === isOpen()) return;
+    panel.hidden = !open;
+    button.setAttribute("aria-expanded", String(open));
+    root.classList.toggle("sv-status-open", open);
+    if (open) {
+      place();
+      doc.addEventListener("keydown", onKey);
+      doc.addEventListener("sv-status-open", onOther);
+      doc.dispatchEvent(new CustomEvent("sv-status-open", { detail: root }));
+    } else {
+      doc.removeEventListener("keydown", onKey);
+      doc.removeEventListener("sv-status-open", onOther);
+      if (focus) button.focus();
+    }
+  }
+  button.addEventListener("click", () => set2(!isOpen()));
+  cross.addEventListener("click", () => set2(false, { focus: true }));
+  return { open: () => set2(true), close: () => set2(false), isOpen };
+}
+function statusLabel(options) {
+  drawn += 1;
+  applyStatusLabelStyles(document);
+  const root = toDom(statusLabelTree({ id: `sv-status-panel-${drawn}`, ...options }), document);
+  root.dataset.svStatusWired = "true";
+  root.statusLabel = wireStatusLabel(root);
+  return root;
+}
+
+// src/data/chart-tiers.js
+var chart_tiers_default = {
+  "hep-waterfall": {
+    tier: "experimental",
+    title: "Hepatic ALT Waterfall",
+    note: "Experimental: a new chart, drawn from a 2025 paper; its layout and settings may still change."
+  },
+  "participant-profile": {
+    tier: "experimental",
+    title: "Participant Profile",
+    note: "Experimental: what it lists for a participant, and how, may still change."
+  },
+  "nep-explorer": {
+    tier: "experimental",
+    title: "Nephrotoxicity Explorer",
+    note: "Experimental until its kidney-injury staging has had a clinical review."
+  },
+  "time-to-event": {
+    tier: "experimental",
+    title: "Time-to-Event Explorer",
+    note: "Experimental until an external clinical review confirms its Kaplan\u2013Meier estimates."
+  },
+  "qt-explorer": {
+    tier: "experimental",
+    title: "QT Safety Explorer",
+    note: "Experimental: its settings and its table may still change."
+  },
+  "patient-journey-explorer": {
+    tier: "prototype",
+    title: "Patient Journey Explorer"
+  }
+};
+
 // src/shell.js
 function createElement(tag, className, text3) {
   const element = document.createElement(tag);
@@ -12469,21 +12690,24 @@ function createElement(tag, className, text3) {
   if (text3 !== void 0) element.textContent = text3;
   return element;
 }
-function statusBanner(className, label, text3) {
-  const banner = createElement("div", className);
-  banner.setAttribute("role", "note");
-  banner.append(
-    createElement("span", "sv-prototype-tag", label),
-    createElement("span", "sv-prototype-text", text3)
+var STANDALONE_MEANINGS = {
+  ...TIER_MEANINGS,
+  prototype: "An early look, on the docs site only. Not in the demo app."
+};
+function chartStatus(element, module) {
+  const entry = Object.prototype.hasOwnProperty.call(chart_tiers_default, module) ? chart_tiers_default[module] : null;
+  if (!entry || element && element.closest("[data-sv-status-host]")) return null;
+  const row = createElement("div", "sv-status-row");
+  row.append(
+    statusLabel({
+      tier: entry.tier,
+      heading: `${entry.title} is ${TIER_WORDS[entry.tier].toLowerCase()}`,
+      text: entry.note ? [entry.note] : [],
+      marks: { [entry.tier]: ["This chart"] },
+      meanings: STANDALONE_MEANINGS
+    })
   );
-  return banner;
-}
-function experimentalBanner(note) {
-  return statusBanner(
-    "sv-experimental",
-    "Experimental",
-    note || "This chart is experimental: it is tested and documented, but its behaviour and settings may change."
-  );
+  return row;
 }
 function option(select, value, label, selected) {
   const opt = document.createElement("option");
@@ -12620,9 +12844,7 @@ var SHELL_STYLES = `
 .sv-ms-option{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:400;margin:.15rem 0;cursor:pointer}
 .sv-ms-option input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4;flex:0 0 auto}
 .sv-ms-option.sv-ms-all{font-weight:600;border-bottom:1px solid #e3e8ee;padding-bottom:.25rem;margin-bottom:.25rem}
-.sv-prototype,.sv-experimental{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
-.sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
-.sv-prototype-text{flex:1 1 auto}
+.sv-status-row{display:flex;justify-content:flex-end;margin:0 0 .5rem}
 @media (max-width:900px){
 .sv-root{flex-direction:column;align-items:stretch}
 .sv-sidebar{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
@@ -12639,7 +12861,7 @@ function applyShellStyles() {
   style.textContent = SHELL_STYLES;
   document.head.append(style);
 }
-function renderShell(element, { moduleClass = "", onToggle } = {}) {
+function renderShell(element, { moduleClass = "", module = "", onToggle } = {}) {
   element.innerHTML = "";
   const root = createElement("div", `sv-root ${moduleClass}`.trim());
   const sidebar = createElement("aside", "sv-sidebar");
@@ -12671,6 +12893,8 @@ function renderShell(element, { moduleClass = "", onToggle } = {}) {
   const listingWrap = createElement("div", "sv-listing");
   chartWrap.append(canvas, mainAnnotation);
   main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
+  const status = chartStatus(element, module);
+  if (status) main.prepend(status);
   const railWrap = createElement("aside", "sv-rail");
   root.append(sidebar, main, railWrap);
   element.append(root);
@@ -12867,9 +13091,9 @@ function initFilterState(specs) {
   return state;
 }
 function reconcileFilters(state, specs, valuesOf) {
-  const drawn = new Set(specs.map((spec) => spec.value_col));
+  const drawn2 = new Set(specs.map((spec) => spec.value_col));
   Object.keys(state).forEach((column) => {
-    if (!drawn.has(column)) delete state[column];
+    if (!drawn2.has(column)) delete state[column];
   });
   return specs.map((spec) => {
     const values = valuesOf(spec);
@@ -14689,7 +14913,7 @@ function renderTiles(summary) {
     { label: "No end date", value: String(summary.openEnded) }
   ];
   tiles.forEach((tile) => {
-    const node = createElement("div", "sv-profile-ae-tile");
+    const node2 = createElement("div", "sv-profile-ae-tile");
     const value = createElement("div", "sv-profile-ae-tile-value");
     if (tile.color) {
       const dot = createElement("span", "sv-profile-ae-dot");
@@ -14697,8 +14921,8 @@ function renderTiles(summary) {
       value.append(dot);
     }
     value.append(createElement("span", null, tile.value));
-    node.append(value, createElement("div", "sv-profile-ae-tile-label", tile.label));
-    wrap.append(node);
+    node2.append(value, createElement("div", "sv-profile-ae-tile-label", tile.label));
+    wrap.append(node2);
   });
   return wrap;
 }
@@ -14955,8 +15179,8 @@ function measureAnnotationPlugin() {
       const entries2 = [];
       chart.data.datasets.forEach((dataset, index) => {
         const meta = chart.getDatasetMeta ? chart.getDatasetMeta(index) : null;
-        const drawn = meta && meta.data || [];
-        const last = drawn[drawn.length - 1];
+        const drawn2 = meta && meta.data || [];
+        const last = drawn2[drawn2.length - 1];
         if (!last || !Number.isFinite(last.x) || !Number.isFinite(last.y)) return;
         entries2.push({
           key: dataset.svKey || dataset.label,
@@ -15527,7 +15751,7 @@ function renderStepper(ids, index, { onStep, onToggleList, listOpen = false, ran
 }
 
 // src/participant-profile/styles.js
-var STYLE_ID = "safety-viz-participant-profile-styles";
+var STYLE_ID2 = "safety-viz-participant-profile-styles";
 var MODULE_CSS = `
 .sv-profile-root{margin-top:.5rem}
 
@@ -15642,9 +15866,9 @@ var MODULE_CSS = `
 .sv-profile-step-count{font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:no-preference){.sv-profile-root{scroll-behavior:smooth}}`;
 function applyProfileStyles() {
-  if (typeof document === "undefined" || document.getElementById(STYLE_ID)) return;
+  if (typeof document === "undefined" || document.getElementById(STYLE_ID2)) return;
   const style = document.createElement("style");
-  style.id = STYLE_ID;
+  style.id = STYLE_ID2;
   style.textContent = MODULE_CSS;
   document.head.append(style);
 }
@@ -15822,6 +16046,7 @@ var SafetyParticipantProfile = class {
       this,
       renderShell(this.element, {
         moduleClass: "safety-participant-profile",
+        module: "participant-profile",
         onToggle: () => this.resize()
       })
     );
@@ -23376,7 +23601,7 @@ function createSelection(host) {
 }
 
 // src/hep-explorer/styles.js
-var STYLE_ID2 = "safety-viz-hep-explorer-styles";
+var STYLE_ID3 = "safety-viz-hep-explorer-styles";
 var MODULE_CSS2 = `
 .safety-hep-explorer .hep-quadrant-summary{margin-top:1rem}
 .safety-hep-explorer .hep-quadrant-summary table{width:100%;max-width:420px;border-collapse:collapse;font-size:.85rem;background:#fff}
@@ -23404,7 +23629,7 @@ var MODULE_CSS2 = `
 .safety-hep-explorer .hep-composite-card h4{font-size:.82rem;margin:0 0 .4rem;color:#52616f;font-weight:600}
 .safety-hep-explorer .hep-composite-canvas{height:280px;position:relative}
 .safety-hep-explorer .hep-composite-panel-canvas{height:210px;position:relative}
-.safety-hep-explorer .hep-migration{margin-top:1.25rem;max-width:100%;overflow-x:auto}
+.safety-hep-explorer .hep-migration{margin-top:1.25rem}
 .safety-hep-explorer .hep-migration table{border-collapse:collapse;font-size:.82rem;background:#fff}
 .safety-hep-explorer .hep-migration th,.safety-hep-explorer .hep-migration td{border:1px solid #d8dee4;padding:.35rem .55rem;text-align:center}
 .safety-hep-explorer .hep-migration th{font-size:.72rem;text-transform:uppercase;letter-spacing:.02em;color:#52616f;font-weight:700}
@@ -23460,9 +23685,9 @@ var MODULE_CSS2 = `
 .safety-hep-explorer .hep-animation-note{font-size:.78rem;color:#7b8794;font-style:italic}
 .safety-hep-explorer .hep-quadrant-summary{transition:opacity .15s ease}`;
 function applyModuleStyles() {
-  if (typeof document === "undefined" || document.getElementById(STYLE_ID2)) return;
+  if (typeof document === "undefined" || document.getElementById(STYLE_ID3)) return;
   const style = document.createElement("style");
-  style.id = STYLE_ID2;
+  style.id = STYLE_ID3;
   style.textContent = MODULE_CSS2;
   document.head.append(style);
 }
@@ -24875,7 +25100,7 @@ function layoutSankey({
   const denominator = Math.max(centreTotal, sideTotal);
   const unit = denominator > 0 ? usable2 / denominator : 0;
   const { nodes, tops } = buildNodes(tally, columns, unit);
-  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  const nodeById = new Map(nodes.map((node2) => [node2.id, node2]));
   const cursors = new Map(tops);
   const ribbons = [];
   SIDES2.forEach((side) => {
@@ -25068,9 +25293,9 @@ function renderFootnote(host) {
     return;
   }
   const count2 = cell2.ids.length;
-  const block = createElement("div", "hep-step");
+  const block2 = createElement("div", "hep-step");
   const move = cell2.pre === cell2.post ? `remained in ${cell2.pre}` : `shifted ${cell2.pre} \u2192 ${cell2.post}`;
-  block.append(
+  block2.append(
     createElement(
       "strong",
       "hep-step-text",
@@ -25084,8 +25309,8 @@ function renderFootnote(host) {
   );
   button.type = "button";
   button.onclick = () => host.switchView("composite");
-  block.append(button);
-  footnote.append(block);
+  block2.append(button);
+  footnote.append(block2);
 }
 function selectCell(host, key) {
   const cell2 = host.migrationCellIndex.get(key);
@@ -25120,11 +25345,11 @@ function clearSelection(host) {
 }
 function paintTiers(group, nodes) {
   const bands = /* @__PURE__ */ new Map();
-  nodes.forEach((node) => {
-    const band = bands.get(node.tier) || { y0: Infinity, y1: -Infinity };
-    band.y0 = Math.min(band.y0, node.y0);
-    band.y1 = Math.max(band.y1, node.y1);
-    bands.set(node.tier, band);
+  nodes.forEach((node2) => {
+    const band = bands.get(node2.tier) || { y0: Infinity, y1: -Infinity };
+    band.y0 = Math.min(band.y0, node2.y0);
+    band.y1 = Math.max(band.y1, node2.y1);
+    bands.set(node2.tier, band);
   });
   [...bands.keys()].sort((a, b) => a - b).forEach((tier) => {
     const band = bands.get(tier);
@@ -25153,36 +25378,36 @@ function paintTiers(group, nodes) {
 }
 function paintNodes(group, nodes) {
   const columns = sankeyColumns();
-  nodes.forEach((node) => {
-    const style = QUADRANT_STYLE[node.quadrant];
+  nodes.forEach((node2) => {
+    const style = QUADRANT_STYLE[node2.quadrant];
     group.append(
       svgEl("rect", {
-        class: `hep-sankey-node${node.stub ? " is-stub" : ""}`,
-        "data-node": node.id,
-        "data-column": node.column,
-        "data-quadrant": node.quadrant,
-        "data-count": node.count,
-        "data-placebo": node.counts.placebo,
-        "data-active": node.counts.active,
-        x: node.x0,
-        y: node.y0,
-        width: node.x1 - node.x0,
-        height: node.height,
+        class: `hep-sankey-node${node2.stub ? " is-stub" : ""}`,
+        "data-node": node2.id,
+        "data-column": node2.column,
+        "data-quadrant": node2.quadrant,
+        "data-count": node2.count,
+        "data-placebo": node2.counts.placebo,
+        "data-active": node2.counts.active,
+        x: node2.x0,
+        y: node2.y0,
+        width: node2.x1 - node2.x0,
+        height: node2.height,
         fill: style.color,
         rx: 2
       })
     );
-    const centred = node.column === "centre";
-    const counts = centred ? `${node.counts.placebo} / ${node.counts.active}` : String(node.count);
+    const centred = node2.column === "centre";
+    const counts = centred ? `${node2.counts.placebo} / ${node2.counts.active}` : String(node2.count);
     const text3 = svgEl("text", {
-      class: `hep-sankey-node-label${node.stub ? " is-stub" : ""}${centred ? " is-centre" : ""}`,
-      "data-node": node.id,
-      x: centred ? (columns.centre[0] + columns.centre[1]) / 2 : node.column === "left" ? node.x1 + 8 : node.x0 - 8,
-      y: (node.y0 + node.y1) / 2,
-      "text-anchor": centred ? "middle" : node.column === "left" ? "start" : "end",
+      class: `hep-sankey-node-label${node2.stub ? " is-stub" : ""}${centred ? " is-centre" : ""}`,
+      "data-node": node2.id,
+      x: centred ? (columns.centre[0] + columns.centre[1]) / 2 : node2.column === "left" ? node2.x1 + 8 : node2.x0 - 8,
+      y: (node2.y0 + node2.y1) / 2,
+      "text-anchor": centred ? "middle" : node2.column === "left" ? "start" : "end",
       "dominant-baseline": "middle"
     });
-    text3.textContent = `${node.quadrant} ${counts}`;
+    text3.textContent = `${node2.quadrant} ${counts}`;
     group.append(text3);
   });
 }
@@ -25470,11 +25695,6 @@ var migrationView = {
    * selection is cleared and listeners are notified.
    */
   render(host, { carriedIds = [] } = {}) {
-    host.migrationWrap.append(
-      experimentalBanner(
-        "The Migration (Sankey) view is experimental: it is tested and documented, but its behaviour and settings may change."
-      )
-    );
     const cohort = buildCohort(host);
     host.migrationCellIndex = cohort.cells;
     host.migrationShown = cohort.plotted;
@@ -29005,8 +29225,7 @@ var QT_STYLES = `
 .safety-qt-explorer .qt-table th.qt-num,.safety-qt-explorer .qt-table td.qt-num,.safety-qt-explorer .qt-ich td.qt-num{text-align:right;font-variant-numeric:tabular-nums}
 .safety-qt-explorer .qt-table th{border-bottom:2px solid #d8dee4;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
-.safety-qt-explorer .qt-table{margin:.7rem 0 0;max-width:100%;overflow-x:auto}
-.safety-qt-explorer .qt-table:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.safety-qt-explorer .qt-table{margin:.7rem 0 0}
 .safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
 .safety-qt-explorer .qt-empty{display:none}
 .safety-qt-explorer .qt-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
@@ -29154,6 +29373,7 @@ var SafetyQtExplorer = class {
       this,
       renderShell(this.element, {
         moduleClass: "safety-qt-explorer",
+        module: "qt-explorer",
         onToggle: () => this.resize()
       })
     );
@@ -29163,8 +29383,6 @@ var SafetyQtExplorer = class {
     this.main.insertBefore(this.noteEl, this.chartWrap);
     this.main.insertBefore(this.legendEl, this.chartWrap);
     this.tableWrap = createElement("div", "qt-table qt-empty");
-    this.tableWrap.setAttribute("role", "region");
-    this.tableWrap.setAttribute("tabindex", "0");
     this.ichWrap = createElement("div", "qt-ich qt-empty");
     this.chartWrap.after(this.ichWrap);
     this.ichWrap.after(this.tableWrap);
@@ -29614,18 +29832,6 @@ var SafetyQtExplorer = class {
     this.ichWrap.append(table);
   }
   /**
-   * Name the table's box after the table in it (QT-CT-009): a box that scrolls
-   * is a region a screen reader lists, and its name is the table's caption. A
-   * different table starts at its first column; the same table drawn again,
-   * after a filter say, stays where the reader had scrolled it.
-   * @private
-   */
-  labelTableBox(table) {
-    const label = table.querySelector("caption").textContent;
-    if (this.tableWrap.getAttribute("aria-label") !== label) this.tableWrap.scrollLeft = 0;
-    this.tableWrap.setAttribute("aria-label", label);
-  }
-  /**
    * Print the plotted central-tendency values beneath the chart (QT-CT-008):
    * one row per visit and arm carrying the number of participants (replicate
    * readings count once per participant and visit, #166), the plotted statistic,
@@ -29690,7 +29896,6 @@ var SafetyQtExplorer = class {
     });
     table.append(tbody);
     this.tableWrap.append(table);
-    this.labelTableBox(table);
   }
   /** Central-tendency footnote: method + mode caveats. @private */
   setCentralFootnote(measure, isQtc) {
@@ -29876,7 +30081,6 @@ var SafetyQtExplorer = class {
     });
     table.append(tbody);
     this.tableWrap.append(table);
-    this.labelTableBox(table);
     this.drawLegend(classification.arms);
     this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits).";
   }
@@ -30385,44 +30589,21 @@ function halfSlot(chart, count2) {
   }
   return (right - left) / 2;
 }
-function armHalves(chart, waterfall) {
-  const { placebo, active, placeboLabel, activeLabel } = waterfall;
-  const { left, right } = chart.chartArea;
-  const half = (side, label, subjects, from2, to2) => ({
-    side,
-    label,
-    count: subjects.length,
-    left: from2,
-    right: to2
-  });
-  if (placebo.length && active.length) {
-    const seam = (chart.scales.x.getPixelForValue(placebo.length - 1) + chart.scales.x.getPixelForValue(placebo.length)) / 2;
-    return {
-      seam,
-      halves: [
-        half("placebo", placeboLabel, placebo, left, seam),
-        half("active", activeLabel, active, seam, right)
-      ]
-    };
-  }
-  return {
-    seam: null,
-    halves: [
-      placebo.length ? half("placebo", placeboLabel, placebo, left, right) : half("active", activeLabel, active, left, right)
-    ]
-  };
-}
 function armDividerPlugin(instance) {
   return {
     id: "hwf-arm-divider",
     afterDatasetsDraw(chart) {
       const waterfall = instance.waterfall;
       if (!waterfall || !waterfall.ordered.length) return;
-      const { top, bottom } = chart.chartArea;
-      const { seam, halves } = armHalves(chart, waterfall);
-      if (seam !== null) {
-        const ctx = chart.ctx;
-        ctx.save();
+      const { placebo, active, placeboLabel, activeLabel } = waterfall;
+      const { top, bottom, left, right } = chart.chartArea;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.font = "600 11px system-ui, -apple-system, sans-serif";
+      ctx.textBaseline = "top";
+      ctx.textAlign = "center";
+      if (placebo.length && active.length) {
+        const seam = (chart.scales.x.getPixelForValue(placebo.length - 1) + chart.scales.x.getPixelForValue(placebo.length)) / 2;
         ctx.strokeStyle = DIVIDER_COLOR;
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 3]);
@@ -30431,9 +30612,15 @@ function armDividerPlugin(instance) {
         ctx.lineTo(seam, bottom);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.restore();
+        ctx.fillStyle = DIVIDER_COLOR;
+        ctx.fillText(`${placeboLabel} (n=${placebo.length})`, (left + seam) / 2, top + 4);
+        ctx.fillText(`${activeLabel} (n=${active.length})`, (seam + right) / 2, top + 4);
+      } else {
+        const only = placebo.length ? `${placeboLabel} (n=${placebo.length})` : `${activeLabel} (n=${active.length})`;
+        ctx.fillStyle = DIVIDER_COLOR;
+        ctx.fillText(only, (left + right) / 2, top + 4);
       }
-      if (instance.placeArmCaptions) instance.placeArmCaptions(halves, top);
+      ctx.restore();
     }
   };
 }
@@ -30800,9 +30987,7 @@ Chart.register(
   plugin_tooltip,
   plugin_legend
 );
-var PANEL_TITLE_HEIGHT = 33.2;
-var CAPTION_INSET = 4;
-var STYLE_ID3 = "safety-viz-hep-waterfall-styles";
+var STYLE_ID4 = "safety-viz-hep-waterfall-styles";
 var STYLES = `
 .safety-hep-waterfall .hwf-layout{display:grid;grid-template-columns:110px 1fr 110px;gap:.5rem;height:100%;align-items:stretch}
 .safety-hep-waterfall .hwf-panel{position:relative;min-width:0}
@@ -30813,12 +30998,6 @@ var STYLES = `
 .safety-hep-waterfall .hwf-legend-box{display:inline-flex;align-items:center;gap:.3rem}
 .safety-hep-waterfall .hwf-legend-glyph{display:inline-block;width:1.6rem;height:.9rem;vertical-align:middle}
 .safety-hep-waterfall .hwf-box-canvas{outline-offset:2px}
-.safety-hep-waterfall .hwf-title{position:absolute;box-sizing:border-box;display:flex;justify-content:center;align-items:center;align-content:center;column-gap:.3em;margin:0;overflow:hidden;pointer-events:none;font:700 11px/1.2 'Helvetica Neue','Helvetica','Arial',sans-serif;color:#666;letter-spacing:normal;text-transform:none}
-.safety-hep-waterfall .hwf-title[hidden]{display:none}
-.safety-hep-waterfall .hwf-title-name{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:auto}
-.safety-hep-waterfall .hwf-title-n{flex:none;white-space:nowrap;pointer-events:auto}
-.safety-hep-waterfall .hwf-panel-title{top:0;left:0;right:0;height:${PANEL_TITLE_HEIGHT}px;flex-wrap:wrap}
-.safety-hep-waterfall .hwf-arm-caption{font:600 11px/1.2 system-ui,-apple-system,sans-serif;color:${DIVIDER_COLOR}}
 .safety-hep-waterfall .hwf-tip{position:absolute;left:0;top:0;display:none;width:max-content;max-width:220px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.72rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
 .safety-hep-waterfall .hwf-tip.is-visible{display:block}
 .safety-hep-waterfall .hwf-tip.is-right{transform:translateX(-100%)}
@@ -30827,25 +31006,11 @@ var STYLES = `
 @media (max-width:700px){.safety-hep-waterfall .hwf-layout{grid-template-columns:70px 1fr 70px}}
 `;
 function applyWaterfallStyles() {
-  if (typeof document === "undefined" || document.getElementById(STYLE_ID3)) return;
+  if (typeof document === "undefined" || document.getElementById(STYLE_ID4)) return;
   const style = document.createElement("style");
-  style.id = STYLE_ID3;
+  style.id = STYLE_ID4;
   style.textContent = STYLES;
   document.head.append(style);
-}
-function createTitle2(className) {
-  const title = createElement("div", `hwf-title ${className}`);
-  title.append(
-    createElement("span", "hwf-title-name"),
-    document.createTextNode(" "),
-    createElement("span", "hwf-title-n")
-  );
-  return title;
-}
-function setTitle(title, label, count2) {
-  title.querySelector(".hwf-title-name").textContent = label;
-  title.querySelector(".hwf-title-n").textContent = `(n=${count2})`;
-  title.setAttribute("title", `${label} (n=${count2})`);
 }
 var SafetyHepWaterfall = class {
   constructor(element = "body", settings = {}) {
@@ -30867,9 +31032,6 @@ var SafetyHepWaterfall = class {
     this.flankChartsBySide = { left: null, right: null };
     this.boxTips = { left: null, right: null };
     this.boxHover = { side: null, index: -1 };
-    this.panelTitles = { left: null, right: null };
-    this.armCaptions = { placebo: null, active: null };
-    this.captionsPlaced = "";
     this.state = this.seedState();
     this.renderShellDom();
   }
@@ -30921,31 +31083,23 @@ var SafetyHepWaterfall = class {
       this,
       renderShell(this.element, {
         moduleClass: "safety-hep-waterfall",
+        module: "hep-waterfall",
         onToggle: () => this.resize()
       })
     );
     applyWaterfallStyles();
-    this.main.insertBefore(experimentalBanner(), this.main.firstChild);
     this.legendEl = createElement("div", "hwf-legend");
     this.main.insertBefore(this.legendEl, this.chartWrap);
     const layout = createElement("div", "hwf-layout");
-    this.panelTitles = {
-      left: createTitle2("hwf-panel-title"),
-      right: createTitle2("hwf-panel-title")
-    };
-    this.armCaptions = {
-      placebo: createTitle2("hwf-arm-caption"),
-      active: createTitle2("hwf-arm-caption")
-    };
     const leftPanel = createElement("div", "hwf-panel");
     this.boxCanvasLeft = createElement("canvas", "hwf-box-canvas hwf-box-left");
-    leftPanel.append(this.boxCanvasLeft, this.panelTitles.left);
+    leftPanel.append(this.boxCanvasLeft);
     const mainPanel = createElement("div", "hwf-panel hwf-main-panel");
     this.canvas.remove();
-    mainPanel.append(this.canvas, this.armCaptions.placebo, this.armCaptions.active);
+    mainPanel.append(this.canvas);
     const rightPanel = createElement("div", "hwf-panel");
     this.boxCanvasRight = createElement("canvas", "hwf-box-canvas hwf-box-right");
-    rightPanel.append(this.boxCanvasRight, this.panelTitles.right);
+    rightPanel.append(this.boxCanvasRight);
     layout.append(leftPanel, mainPanel, rightPanel);
     this.chartWrap.insertBefore(layout, this.mainAnnotation);
     this.bindBoxHover("left", this.boxCanvasLeft, leftPanel);
@@ -31317,9 +31471,9 @@ var SafetyHepWaterfall = class {
     svg.setAttribute("viewBox", "0 0 32 18");
     svg.setAttribute("aria-hidden", "true");
     const mark = (name, attrs) => {
-      const node = document.createElementNS(svgNs, name);
-      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
-      svg.append(node);
+      const node2 = document.createElementNS(svgNs, name);
+      Object.entries(attrs).forEach(([key, value]) => node2.setAttribute(key, String(value)));
+      svg.append(node2);
     };
     const ink = "#52616f";
     mark("line", { x1: 16, y1: 2, x2: 16, y2: 16, stroke: ink, "stroke-width": 1 });
@@ -31470,7 +31624,6 @@ var SafetyHepWaterfall = class {
       ["left", this.boxCanvasLeft, waterfall.placeboLabel, waterfall.placebo],
       ["right", this.boxCanvasRight, waterfall.activeLabel, waterfall.active]
     ].map(([side, canvas, label, subjects]) => {
-      setTitle(this.panelTitles[side], label, (subjects || []).length);
       canvas.setAttribute(
         "aria-label",
         boxPanelDescription(this.boxSpecs[side], {
@@ -31486,10 +31639,14 @@ var SafetyHepWaterfall = class {
           maintainAspectRatio: false,
           responsive: true,
           animation: false,
-          layout: { padding: { top: PANEL_TITLE_HEIGHT } },
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: false }
+            tooltip: { enabled: false },
+            title: {
+              display: true,
+              text: `${label} (n=${(subjects || []).length})`,
+              font: { size: 11 }
+            }
           },
           scales: flankScales(domain, this.boxSpecs[side].length, { labels })
         },
@@ -31504,29 +31661,6 @@ var SafetyHepWaterfall = class {
       this.charts.push(chart);
       this.flankChartsBySide[side] = chart;
       return chart;
-    });
-  }
-  /**
-   * Set the caption over each half of the plot (HWF-COLOR-003, HWF-TITLE-001):
-   * the arm divider calls this on every draw with where the halves are. Each
-   * caption is held inside its own half, so two cannot meet; a half too narrow
-   * for its count shows no caption, and the panel beside it still names the arm.
-   * @private
-   */
-  placeArmCaptions(halves, top) {
-    const placed = JSON.stringify([halves, top]);
-    if (placed === this.captionsPlaced) return;
-    this.captionsPlaced = placed;
-    Object.entries(this.armCaptions).forEach(([side, caption]) => {
-      const half = halves.find((entry) => entry.side === side);
-      caption.hidden = !half;
-      if (!half) return;
-      setTitle(caption, half.label, half.count);
-      const width = Math.max(half.right - half.left - 2 * CAPTION_INSET, 0);
-      caption.style.left = `${this.canvas.offsetLeft + half.left + CAPTION_INSET}px`;
-      caption.style.top = `${this.canvas.offsetTop + top + CAPTION_INSET}px`;
-      caption.style.width = `${width}px`;
-      caption.hidden = caption.querySelector(".hwf-title-n").offsetWidth > width;
     });
   }
   /**
@@ -31598,7 +31732,6 @@ var SafetyHepWaterfall = class {
     this.flankChartsBySide = { left: null, right: null };
     this.chart = null;
     this.boxHover = { side: null, index: -1 };
-    this.captionsPlaced = "";
     Object.values(this.boxTips).forEach((tip) => {
       if (tip) tip.classList.remove("is-visible");
     });
@@ -32336,7 +32469,7 @@ function stageZonesPlugin(instance) {
 // src/nep-explorer.js
 Chart.register(ScatterController, PointElement, LinearScale, plugin_tooltip);
 var DROPPED_PARTICIPANT_COLUMNS2 = ["id", "reason"];
-var STYLE_ID4 = "safety-viz-nep-explorer-styles";
+var STYLE_ID5 = "safety-viz-nep-explorer-styles";
 var MODULE_CSS3 = `
 .safety-nep-explorer .nep-summary-title{font-size:.95rem;margin:0 0 .5rem}
 .safety-nep-explorer .nep-table-scroll{overflow-x:auto}
@@ -32349,9 +32482,9 @@ var MODULE_CSS3 = `
 .safety-nep-explorer .hep-csv-link{color:#1f5fa8;text-decoration:underline;cursor:pointer}
 `;
 function applyStyles() {
-  if (typeof document === "undefined" || document.getElementById(STYLE_ID4)) return;
+  if (typeof document === "undefined" || document.getElementById(STYLE_ID5)) return;
   const style = document.createElement("style");
-  style.id = STYLE_ID4;
+  style.id = STYLE_ID5;
   style.textContent = MODULE_CSS3;
   document.head.append(style);
 }
@@ -32401,6 +32534,7 @@ var SafetyNepExplorer = class {
       this,
       renderShell(this.element, {
         moduleClass: "safety-nep-explorer",
+        module: "nep-explorer",
         onToggle: () => this.resize()
       })
     );
@@ -33386,7 +33520,7 @@ function ciBandPlugin() {
     beforeDatasetsDraw(chart) {
       const groups = chart.$tteGroups || [];
       const { ctx, chartArea } = chart;
-      const drawn = [];
+      const drawn2 = [];
       ctx.save();
       ctx.beginPath();
       ctx.rect(
@@ -33405,11 +33539,11 @@ function ciBandPlugin() {
           const yLo = chart.scales.y.getPixelForValue(rect.lo);
           const yHi = chart.scales.y.getPixelForValue(rect.hi);
           ctx.fillRect(x0, yHi, x1 - x0, yLo - yHi);
-          drawn.push({ group: group.name, ...rect });
+          drawn2.push({ group: group.name, ...rect });
         }
       }
       ctx.restore();
-      chart.$tteBand = drawn;
+      chart.$tteBand = drawn2;
     }
   };
 }
@@ -33432,7 +33566,7 @@ function riskTablePlugin(context) {
       const xScale = chart.scales.x;
       const stripHeight = RISK_HEADER_PX + strips[0].groups.length * RISK_ROW_PX;
       let y = chart.height - (2 * stripHeight + RISK_STRIP_GAP_PX) - 4;
-      const drawn = [];
+      const drawn2 = [];
       ctx.save();
       ctx.font = '11px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif';
       ctx.textBaseline = "top";
@@ -33451,7 +33585,7 @@ function riskTablePlugin(context) {
             const x = xScale.getPixelForValue(ticks[tickIndex]);
             if (x >= chartArea.left - 1 && x <= chartArea.right + 1) {
               ctx.fillText(String(count2), x, y);
-              drawn.push({ strip: strip.label, group: row.name, time: ticks[tickIndex], count: count2 });
+              drawn2.push({ strip: strip.label, group: row.name, time: ticks[tickIndex], count: count2 });
             }
           });
           y += RISK_ROW_PX;
@@ -33459,7 +33593,7 @@ function riskTablePlugin(context) {
         y += RISK_STRIP_GAP_PX;
       }
       ctx.restore();
-      chart.$tteRiskTable = drawn;
+      chart.$tteRiskTable = drawn2;
     }
   };
 }
@@ -33487,6 +33621,7 @@ var SafetyTimeToEvent = class {
       this,
       renderShell(this.element, {
         moduleClass: "safety-time-to-event",
+        module: "time-to-event",
         onToggle: () => this.resize()
       })
     );
@@ -36757,7 +36892,7 @@ function buildLaneDatasets(lane, events, { domain, settings, theme, bounds } = {
 }
 
 // src/patient-journey-explorer/styles.js
-var STYLE_ID5 = "safety-viz-patient-journey-styles";
+var STYLE_ID6 = "safety-viz-patient-journey-styles";
 var propertyName2 = (key) => `--pje-${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`;
 function tokenBlock(mode) {
   return Object.entries(PJE_PALETTE[mode]).filter(([, value]) => typeof value === "string").map(([key, value]) => `${propertyName2(key)}:${value}`).join(";");
@@ -36877,9 +37012,9 @@ function moduleCss() {
 `;
 }
 function applyPjeStyles() {
-  if (typeof document === "undefined" || document.getElementById(STYLE_ID5)) return;
+  if (typeof document === "undefined" || document.getElementById(STYLE_ID6)) return;
   const style = document.createElement("style");
-  style.id = STYLE_ID5;
+  style.id = STYLE_ID6;
   style.textContent = moduleCss();
   document.head.append(style);
 }
@@ -37180,7 +37315,7 @@ function lanePlugin(context) {
       }
       if (laneKey === "labs" && Array.isArray(band) && band.length && scales.y) {
         const runs = bandRuns(band);
-        const drawn = [];
+        const drawn2 = [];
         runs.forEach((run, index) => {
           const from2 = index === 0 ? area.left : x.getPixelForValue(toElapsed(run.day));
           const to2 = index === runs.length - 1 ? area.right : x.getPixelForValue(toElapsed(runs[index + 1].day));
@@ -37190,7 +37325,7 @@ function lanePlugin(context) {
           const h = Math.abs(yBottom - yTop);
           ctx.fillStyle = theme.labBand;
           ctx.fillRect(from2, top, to2 - from2, h);
-          drawn.push({
+          drawn2.push({
             test,
             x: from2,
             y: top,
@@ -37200,8 +37335,8 @@ function lanePlugin(context) {
             uln: run.uln
           });
         });
-        const last = drawn[drawn.length - 1];
-        const first = drawn[0];
+        const last = drawn2[drawn2.length - 1];
+        const first = drawn2[0];
         if (last && first && last.height >= 14) {
           ctx.font = FONT;
           ctx.fillStyle = theme.inkSecondary;
@@ -37228,7 +37363,7 @@ function lanePlugin(context) {
         } else {
           chart.$pjeLimitLabels = [];
         }
-        chart.$pjeBand = drawn;
+        chart.$pjeBand = drawn2;
       }
       const rule = (elapsed, glyph, color2, width, dash) => {
         if (!finite5(elapsed) || elapsed < x.min || elapsed > x.max) return;
@@ -38702,6 +38837,7 @@ var SafetyPatientJourneyExplorer = class {
       this,
       renderShell(this.element, {
         moduleClass: "safety-patient-journey",
+        module: "patient-journey-explorer",
         onToggle: () => this.resize()
       })
     );

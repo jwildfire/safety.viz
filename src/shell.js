@@ -19,6 +19,8 @@ export {
   wireStatusLabel,
   wireStatusLabels
 } from './status-label.js';
+import { TIER_MEANINGS, TIER_WORDS, statusLabel } from './status-label.js';
+import CHART_TIERS from './data/chart-tiers.js';
 
 /**
  * Create an element with an optional class and text content.
@@ -34,56 +36,41 @@ export function createElement(tag, className, text) {
   return element;
 }
 
-// The status banners. A chart that is not stable says so in its own output, so
-// the status travels with the chart everywhere it renders — the demo, the
-// deployed site, and any downstream embed (e.g. a gsm.safety htmlwidget) — not
-// just the gallery pages. The two tiers mean different things (#165):
-//
-//   Experimental  still being worked on, and fine to ship: tested and
-//                 documented, but its behaviour and settings may change.
-//   Prototype     not ready for production: shown on the docs site only, kept
-//                 out of the demo app and the standard domain set, and not
-//                 counted a finished chart.
-function statusBanner(className, label, text) {
-  const banner = createElement('div', className);
-  banner.setAttribute('role', 'note');
-  banner.append(
-    createElement('span', 'sv-prototype-tag', label),
-    createElement('span', 'sv-prototype-text', text)
-  );
-  return banner;
-}
+// A chart's own status label (#274, obot.roadmap#403). A chart that stands below
+// Exploratory on the status ladder says so wherever it is drawn: on a docs
+// page, in a downstream embed such as a gsm.safety htmlwidget, or in the demo
+// app. Its rung and its reason are read from src/data/chart-tiers.js, which
+// scripts/tiers.mjs writes from site/config.json, so a rung is set in one
+// place. A host that shows the label itself, as the demo app does on the
+// corner of the chart's card, says so with a `data-sv-status-host` attribute
+// on the chart's element or on anything around it, and the chart draws none.
+const STANDALONE_MEANINGS = {
+  ...TIER_MEANINGS,
+  prototype: 'An early look, on the docs site only. Not in the demo app.'
+};
 
 /**
- * Build the "Experimental" banner (HEP-MIG / HWF marking): the notice a chart
- * that ships while still being worked on prepends to its own output.
- * @param {string} [note] The sentence shown after the label; defaults to the standard wording.
- * @returns {HTMLElement} A `.sv-experimental` banner element.
+ * The status label a chart draws for itself, in a row of its own.
+ * @param {HTMLElement} element The chart's element.
+ * @param {string} module The chart's module name, as `hep-waterfall`.
+ * @returns {?HTMLElement} The row, `.sv-status-row`, or null for a chart that is Exploratory or whose host shows the label.
  */
-export function experimentalBanner(note) {
-  return statusBanner(
-    'sv-experimental',
-    'Experimental',
-    note ||
-      'This chart is experimental: it is tested and documented, but its behaviour and ' +
-        'settings may change.'
+export function chartStatus(element, module) {
+  const entry = Object.prototype.hasOwnProperty.call(CHART_TIERS, module)
+    ? CHART_TIERS[module]
+    : null;
+  if (!entry || (element && element.closest('[data-sv-status-host]'))) return null;
+  const row = createElement('div', 'sv-status-row');
+  row.append(
+    statusLabel({
+      tier: entry.tier,
+      heading: `${entry.title} is ${TIER_WORDS[entry.tier].toLowerCase()}`,
+      text: entry.note ? [entry.note] : [],
+      marks: { [entry.tier]: ['This chart'] },
+      meanings: STANDALONE_MEANINGS
+    })
   );
-}
-
-/**
- * Build the "Prototype" banner: the notice for a chart that is not ready for
- * production use.
- * @param {string} [note] The sentence shown after the label; defaults to the standard wording.
- * @returns {HTMLElement} A `.sv-prototype` banner element.
- */
-export function prototypeBanner(note) {
-  return statusBanner(
-    'sv-prototype',
-    'Prototype',
-    note ||
-      'This chart is a prototype: it is not ready for production use, and its behaviour ' +
-        'and settings will change.'
-  );
+  return row;
 }
 
 /**
@@ -254,9 +241,7 @@ const SHELL_STYLES = `
 .sv-ms-option{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:400;margin:.15rem 0;cursor:pointer}
 .sv-ms-option input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4;flex:0 0 auto}
 .sv-ms-option.sv-ms-all{font-weight:600;border-bottom:1px solid #e3e8ee;padding-bottom:.25rem;margin-bottom:.25rem}
-.sv-prototype,.sv-experimental{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
-.sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
-.sv-prototype-text{flex:1 1 auto}
+.sv-status-row{display:flex;justify-content:flex-end;margin:0 0 .5rem}
 @media (max-width:900px){
 .sv-root{flex-direction:column;align-items:stretch}
 .sv-sidebar{position:static;flex:1 1 auto;width:100%;box-sizing:border-box;max-height:none}
@@ -304,10 +289,11 @@ export function applyShellStyles() {
  * @param {HTMLElement} element Container the shell replaces the contents of.
  * @param {Object} [options] Shell options.
  * @param {string} [options.moduleClass] Module identity class added to the root.
+ * @param {string} [options.module] The chart's module name, as `hep-waterfall`: a chart that stands below Exploratory on the status ladder draws its status label at the top of the main column, unless its host shows one (#274).
  * @param {Function} [options.onToggle] Called after the sidebar collapses or expands (e.g. to resize charts).
  * @returns {ShellSlots} The slots the module renders into.
  */
-export function renderShell(element, { moduleClass = '', onToggle } = {}) {
+export function renderShell(element, { moduleClass = '', module = '', onToggle } = {}) {
   element.innerHTML = '';
   const root = createElement('div', `sv-root ${moduleClass}`.trim());
 
@@ -341,6 +327,8 @@ export function renderShell(element, { moduleClass = '', onToggle } = {}) {
   const listingWrap = createElement('div', 'sv-listing');
   chartWrap.append(canvas, mainAnnotation);
   main.append(notes, chartWrap, footnote, multiplesWrap, listingWrap);
+  const status = chartStatus(element, module);
+  if (status) main.prepend(status);
 
   // The participant profile lives in a rail on the RIGHT, opposite the control
   // sidebar on the left (decisions D1/D2) — the dock slot that used to sit

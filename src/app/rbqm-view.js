@@ -71,9 +71,8 @@ const messageOf = (error) =>
  * @param {?Object} [options.needs] What gsm's workflows need, as desktop R reads it from their specs (site/rbqm/needs.json): the columns of each raw domain's file, and the tables each mapping and metric needs. With it the tab takes a reader's own files; without it the loaded raw files are handed to R as they are named.
  * @param {?{workflows: {name: string, version: string}, charts: {name: string, version: string}}} [options.copies] What is copied in and not installed in R, each with its version: gsm.kri's metric workflows and gsm.viz's charts. The tab names them beside the versions R reports.
  * @param {?string} [options.unavailable] On a page that cannot start R, the sentence that says so; the tab then offers no control.
- * @param {?{text: string, title: string}} [options.badge] The tab's status badge, with what it means.
  * @param {() => Date} [options.now] The clock; used by the tests.
- * @returns {{id: string, title: string, badge: ?Object, tag: Function, render: Function, state: Function}} The view, as page.js takes one.
+ * @returns {{id: string, title: string, tag: Function, render: Function, state: Function}} The view, as page.js takes one.
  */
 export function rbqmTab({
   createConnection,
@@ -83,7 +82,6 @@ export function rbqmTab({
   needs = null,
   copies = null,
   unavailable = null,
-  badge = null,
   now = () => new Date()
 } = {}) {
   // idle → starting → attaching → running → done, or → failed (R is not up)
@@ -600,7 +598,6 @@ export function rbqmTab({
   const view = {
     id: 'rbqm',
     title: 'RBQM',
-    badge,
 
     /**
      * What the tab's own count says, in a word or two: the header keeps to one
@@ -648,11 +645,6 @@ export function rbqmTab({
       lede.append(
         'Risk-based quality monitoring: gsm’s site metrics, worked out by R in this browser on the loaded study and drawn with gsm.viz.'
       );
-      if (badge) {
-        const pill = el('span', 'sva-badge', badge.text);
-        pill.title = badge.title;
-        lede.append(' ', pill);
-      }
       const runBox = el('div', 'sva-rbqm-run');
       const status = el('p', 'sva-rbqm-status');
       status.setAttribute('role', 'status');

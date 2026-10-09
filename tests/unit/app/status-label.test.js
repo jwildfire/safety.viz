@@ -321,4 +321,76 @@ describe('the demo app’s own label', () => {
     expect(panel.hidden).toBe(true);
     app.destroy();
   });
+
+  it('APP-TIER-020: a chart or a tab below Exploratory carries the label on the corner of its card, before the card, with its own reason and both rungs marked; an Exploratory chart carries none, and the page tells a chart it is showing the label (#274)', () => {
+    document.body.innerHTML = '<div id="app"></div>';
+    const reason =
+      'Experimental until an external clinical review confirms its Kaplan–Meier estimates.';
+    const app = mountApp('#app', {
+      charts,
+      manifest,
+      libraries: [{ name: 'gsm.viz', view }],
+      tiers: {
+        'time-to-event': experimental(reason),
+        'qt-explorer': { tier: 'experimental' },
+        rbqm: experimental('Experimental: new in 1.10.')
+      }
+    });
+    const content = document.querySelector('.sva-content');
+    const corner = () => content.querySelector('.sva-corner');
+    // The page is a host that shows the label, so a chart drawn in it draws none of its own.
+    expect(content.hasAttribute('data-sv-status-host')).toBe(true);
+    // The chart is on show whether or not the loaded data lets it draw.
+    app.select('time-to-event');
+    expect(content.querySelectorAll('.sv-status')).toHaveLength(1);
+    const { pill, panel } = parts(corner());
+    expect(pill.dataset.tier).toBe('experimental');
+    expect(pill.querySelector('.sv-status-tip').textContent).toBe(reason);
+    expect(panel.querySelector('[role="heading"]').textContent).toBe(
+      'Time-to-Event Explorer is experimental'
+    );
+    expect(panel.querySelector('[role="paragraph"]').textContent).toBe(reason);
+    expect(panel.querySelector('.sv-status-here').dataset.tier).toBe('experimental');
+    const marks = [...panel.querySelectorAll('.sv-status-mark')].map((mark) => [
+      mark.textContent,
+      mark.closest('[data-tier]').dataset.tier
+    ]);
+    expect(marks).toEqual([
+      ['This app', 'exploratory'],
+      ['This chart', 'experimental']
+    ]);
+    // It comes before the card or the sentence it labels.
+    expect(corner().nextElementSibling).not.toBeNull();
+    expect(
+      corner().compareDocumentPosition(content.lastElementChild) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+    // A chart with no reason on record still says its rung.
+    app.select('qt-explorer');
+    expect(parts(corner()).pill.querySelector('.sv-status-tip').textContent).toBe(
+      'Tested and documented, but what it shows or how it behaves may still change.'
+    );
+    expect(corner().querySelector('.sv-status-text:not(.sv-status-foot)')).toBeNull();
+    // An Exploratory chart shows no second label, and neither does the data view.
+    for (const id of ['histogram', 'ae-explorer', 'data']) {
+      app.select(id);
+      expect(corner(), id).toBeNull();
+      expect(document.querySelectorAll('.sva-main .sv-status'), id).toHaveLength(0);
+    }
+    // A tab is named as a tab.
+    app.select('rbqm');
+    expect(content.querySelectorAll('.sv-status')).toHaveLength(1);
+    expect(corner().querySelector('[role="heading"]').textContent).toBe(
+      'The RBQM tab is experimental'
+    );
+    expect(
+      [...corner().querySelectorAll('.sv-status-mark')].map((mark) => mark.textContent)
+    ).toEqual(['This app', 'This tab']);
+    expect(corner().nextElementSibling.className).toContain('sva-view');
+    // The tab itself carries no pill, and no hover-only word.
+    expect(document.querySelector('.sva-tab[data-tab="rbqm"] .sva-badge')).toBeNull();
+    expect(document.querySelector('.sva-tab[data-tab="rbqm"]').title).toBe('');
+    // The header's label is still the only one there.
+    expect(document.querySelectorAll('.sva-header .sv-status')).toHaveLength(1);
+    app.destroy();
+  });
 });

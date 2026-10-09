@@ -363,7 +363,7 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-031: the built demo page carries the RBQM tab with its Experimental badge and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)', async ({
+  test('APP-RBQM-031: the built demo page carries the RBQM tab, which says it is Experimental on the corner of its view, and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)', async ({
     page
   }) => {
     // It downloads R and some forty packages, then runs every workflow.
@@ -391,11 +391,16 @@ test.describe('docs site', () => {
     await page.evaluate('window.__safetyVizApp.ready');
     const tab = page.locator('.sva-tab[data-tab="rbqm"]');
     await expect(tab.locator('.sva-tab-title')).toHaveText('RBQM');
-    await expect(tab.locator('.sva-badge')).toHaveText('Experimental');
+    await expect(tab.locator('.sva-badge')).toHaveCount(0);
     await page.locator('.sva-item[data-view="data"]').click();
     await page.locator('.sva-side select.sva-study').selectOption('rbqm');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
     await tab.click();
+    await expect(page.locator('.sva-corner .sv-status-word')).toHaveText('Experimental');
+    await expect(page.locator('.sva-corner .sv-status-tip')).toHaveText(
+      'Experimental: new in 1.10. R runs in the browser, and what the tab shows may still change.',
+      { useInnerText: false }
+    );
     await expect(page.locator('.sva-rbqm-status')).toContainText(
       'It downloads about 55 MB, once: R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) and gsm’s packages from this page (about 2 MB).'
     );

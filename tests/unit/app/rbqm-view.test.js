@@ -122,7 +122,7 @@ afterEach(() => {
 });
 
 describe('the page: a library that brings a view', () => {
-  it('APP-RBQM-017: a library may bring a view in place of charts: a tab of its own after the domains’ tabs, with its name, its status badge and what it says of itself; opening it draws the view in the main area, hides the chart row and writes its address (#235)', () => {
+  it('APP-RBQM-017: a library may bring a view in place of charts: a tab of its own after the domains’ tabs, with its name and what it says of itself; opening it draws the view in the main area, hides the chart row and writes its address (#235)', () => {
     const { app, $, $$ } = mount();
     const tabs = $$('.sva-tab');
     const tab = tabs.at(-1);
@@ -201,24 +201,25 @@ describe('the page: a library that brings a view', () => {
 });
 
 describe('the RBQM tab on the page', () => {
-  it('APP-RBQM-026: the tab carries the Experimental badge site/config.json gives it, on its tab and in its view, with what the word means (#235)', () => {
+  it('APP-RBQM-026: the tab is Experimental by its entry in site/config.json, which says why; the tab and its view carry no pill of their own, and the page shows the status label on the tab’s corner (#235, #274)', () => {
     const config = JSON.parse(readFileSync(path.join(root, 'site/config.json'), 'utf8'));
     expect(config.appTabs).toEqual([
-      expect.objectContaining({ id: 'rbqm', title: 'RBQM', tier: 'experimental' })
+      expect.objectContaining({
+        id: 'rbqm',
+        title: 'RBQM',
+        tier: 'experimental',
+        tierNote:
+          'Experimental: new in 1.10. R runs in the browser, and what the tab shows may still change.'
+      })
     ]);
-    expect(OPTIONS.badge).toEqual({
-      text: 'Experimental',
-      title: 'Still being worked on, and fine to use: its behaviour and settings may change.'
-    });
+    // The build hands the tab no badge, and the view takes none.
+    expect(OPTIONS).not.toHaveProperty('badge');
     const { app, $ } = mount();
-    const onTab = $('.sva-tab[data-tab="rbqm"] .sva-badge');
-    expect(onTab.textContent).toBe('Experimental');
-    expect(onTab.title).toBe(OPTIONS.badge.title);
-    // The tab says it on hover too, at widths where the word itself has no room.
-    expect($('.sva-tab[data-tab="rbqm"]').title).toBe(`Experimental: ${OPTIONS.badge.title}`);
+    expect($('.sva-tab[data-tab="rbqm"] .sva-badge')).toBeNull();
+    expect($('.sva-tab[data-tab="rbqm"]').title).toBe('');
     app.select('rbqm');
-    expect($('.sva-rbqm-lede .sva-badge').textContent).toBe('Experimental');
-    expect($('.sva-rbqm-lede .sva-badge').title).toBe(OPTIONS.badge.title);
+    expect($('.sva-rbqm-lede .sva-badge')).toBeNull();
+    expect($('.sva-rbqm-lede').textContent).not.toContain('Experimental');
   });
 
   it('APP-RBQM-018: before the press the tab says what starting R downloads and from where, makes no connection and loads no chart library; with no raw file loaded it says so and its control cannot be pressed (#235)', () => {

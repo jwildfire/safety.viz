@@ -58,7 +58,7 @@ describe('kit API data', () => {
     const byName = Object.fromEntries(members.map((member) => [member.name, member]));
     expect(byName.renderShell).toMatchObject({
       kind: 'function',
-      signature: "renderShell(element, { moduleClass = '', onToggle } = {})"
+      signature: "renderShell(element, { moduleClass = '', module = '', onToggle } = {})"
     });
     expect(byName.mountProfileRail.signature).toBe(
       'mountProfileRail(host, settingsFn, { target = null } = {})'
@@ -176,8 +176,8 @@ describe('site generator: kit page', () => {
     expect(html).toContain(`from v${model.since}`);
     expect(html).toMatch(/a change to any member[^<]*is a breaking change/);
     // What is deliberately left out is named, so its absence reads as a decision.
-    expect(html).toContain('<code>prototypeBanner</code>');
-    expect(html).toContain('<code>experimentalBanner</code>');
+    expect(html).toContain('<code>statusLabel</code>');
+    expect(html).toContain('<code>chartStatus</code>');
     expect(html).toContain('<code>hexToRgba</code>');
   });
 

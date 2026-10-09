@@ -1568,25 +1568,20 @@ test.describe('safety.viz hep-explorer migration Sankey', () => {
     );
     // The scatter canvas and the composite panels are both put away.
     await expect(page.locator('.hep-composite-panels canvas')).toHaveCount(0);
-    // Experimental marking (#97, #165): the migration view carries an Experimental
-    // banner, scoped to this view — the scatter and composite views do not.
-    await expect(page.locator('.hep-migration-view .sv-experimental')).toHaveCount(1);
-    await expect(page.locator('.hep-migration-view .sv-experimental')).toContainText(
-      'experimental'
-    );
+    // The view draws no status banner inside itself (#274): the status label
+    // is the one place a chart says where it stands, and this chart is Exploratory.
+    await expect(page.locator('.hep-migration-view .sv-experimental')).toHaveCount(0);
     await captureEvidence(page, 'HEP-MIG-001', 'migration-sankey');
   });
 
-  test('HEP-MIG-001: the Experimental banner is scoped to the migration view, not the stable scatter/composite views (#97)', async ({
+  test('HEP-MIG-001: no view of the Hepatic Explorer draws a status banner or a status label: the chart is Exploratory, and says nothing more (#97, #274)', async ({
     page
   }) => {
-    await expect(page.locator('.sv-main .sv-experimental')).toHaveCount(1);
-    await page.locator('.sv-view-option', { hasText: 'eDISH' }).click();
-    await expect(page.locator('.sv-main .sv-experimental')).toHaveCount(0);
-    await page.locator('.sv-view-option', { hasText: 'Composite' }).click();
-    await expect(page.locator('.sv-main .sv-experimental')).toHaveCount(0);
-    await page.locator('.sv-view-option', { hasText: 'Migration' }).click();
-    await expect(page.locator('.sv-main .sv-experimental')).toHaveCount(1);
+    for (const view of ['Migration', 'eDISH', 'Composite', 'Migration']) {
+      await page.locator('.sv-view-option', { hasText: view }).click();
+      await expect(page.locator('.sv-main .sv-experimental')).toHaveCount(0);
+      await expect(page.locator('.sv-main .sv-status')).toHaveCount(0);
+    }
   });
 
   test("HEP-MIG-002/HEP-MIG-003/HEP-MIG-010/HEP-MIG-015: geometry is stashed on the root, placebo runs left, active runs right, Hy's Law on top (#92)", async ({

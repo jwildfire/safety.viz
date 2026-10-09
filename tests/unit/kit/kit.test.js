@@ -165,28 +165,30 @@ describe('kit: the shared chart parts as one export', () => {
     expect(typeof kit.Chart.register).toBe('function');
   });
 
-  it('KIT-API-012: nothing else the shared modules export is on the kit: the two status banners and the colour helper stay internal (#154)', () => {
-    expect(typeof shell.prototypeBanner).toBe('function');
-    expect(typeof shell.experimentalBanner).toBe('function');
+  it('KIT-API-012: nothing else the shared modules export is on the kit: the status label and the colour helper stay internal (#154, #274)', () => {
+    expect(typeof shell.statusLabel).toBe('function');
+    expect(typeof shell.chartStatus).toBe('function');
+    // The two banners the label replaced are gone (#274).
+    expect(shell).not.toHaveProperty('prototypeBanner');
+    expect(shell).not.toHaveProperty('experimentalBanner');
     expect(typeof boxWhisker.hexToRgba).toBe('function');
-    expect(kit).not.toHaveProperty('prototypeBanner');
-    expect(kit).not.toHaveProperty('experimentalBanner');
+    expect(kit).not.toHaveProperty('statusLabel');
+    expect(kit).not.toHaveProperty('chartStatus');
     expect(kit).not.toHaveProperty('hexToRgba');
     // Every other export of the eight modules is a kit member.
     for (const [file, module, names] of MEMBERS) {
       const unlisted = Object.keys(module).filter((name) => !names.includes(name));
       const allowed =
         {
-          // The status banners and the status label (#273) say safety.viz's own
-          // release status, so they are not kit members.
+          // The status label (#273) says safety.viz's own release status, so
+          // it is not a kit member.
           'src/shell.js': [
             'LADDER_URL',
             'STATUS_LABEL_STYLES',
             'TIER_MEANINGS',
             'TIER_WORDS',
             'applyStatusLabelStyles',
-            'experimentalBanner',
-            'prototypeBanner',
+            'chartStatus',
             'statusLabel',
             'statusLabelHtml',
             'statusLabelTree',

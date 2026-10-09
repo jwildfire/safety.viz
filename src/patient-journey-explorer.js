@@ -206,6 +206,7 @@ class SafetyPatientJourneyExplorer {
       this,
       renderShell(this.element, {
         moduleClass: 'safety-patient-journey',
+        module: 'patient-journey-explorer',
         onToggle: () => this.resize()
       })
     );
