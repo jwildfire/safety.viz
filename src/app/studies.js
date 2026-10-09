@@ -14,6 +14,8 @@
  *   dir          the study's directory under the demo base, '' for the base itself
  *   source       where the repository keeps the files, for the site build
  *                and the test harness
+ *   raw          true when the files are gsm's raw domains (#233): the app
+ *                keeps them as they are and places none in a standard domain
  */
 export const DEMO_STUDIES = [
   {
@@ -45,6 +47,27 @@ export const DEMO_STUDIES = [
     files: ['adbds-abnbl.csv'],
     dir: '',
     source: 'site/data'
+  },
+  {
+    id: 'rbqm',
+    label: 'RBQM study',
+    description:
+      '765 enrolled participants at 150 sites, of 1,005 screened, as gsm’s raw domains. The ' +
+      'nine files are kept as they are: none is placed in a standard domain or mapped.',
+    files: [
+      'Raw_SUBJ.csv',
+      'Raw_AE.csv',
+      'Raw_PD.csv',
+      'Raw_LB.csv',
+      'Raw_STUDCOMP.csv',
+      'Raw_SDRGCOMP.csv',
+      'Raw_SITE.csv',
+      'Raw_STUDY.csv',
+      'Raw_ENROLL.csv'
+    ],
+    dir: 'rbqm/',
+    source: 'site/data/rbqm',
+    raw: true
   }
 ];
 

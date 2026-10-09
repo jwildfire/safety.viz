@@ -2,19 +2,22 @@
 // (dev @ a3ff9f7) under #2.
 
 /**
- * What the console says, once per chart, when `compare_distributions` is on
- * (#188; @jwildfire, 2026-10-03): like `test_normality`, it is deprecated,
- * and both are removed together, with the p-values they compute, in a later
- * release.
+ * Settings the histogram no longer has (#188; @jwildfire, 2026-10-03). Each
+ * put a p-value on the chart that was worked out in JavaScript with a
+ * shortcut; the histogram now draws no p-value, and leaves the test to R.
+ * v1.9.1 deprecated them and v1.10.0 removed them. A caller that still passes
+ * one gets a chart without the annotation and one line in the console.
  */
-export const COMPARISON_DEPRECATED =
-  'safety.viz histogram: `compare_distributions` is deprecated and will be removed in a later release. ' +
-  'Its group comparison is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.';
+export const REMOVED_SETTINGS = ['test_normality', 'compare_distributions'];
 
-/** What the console says, once per chart, when `test_normality` is on (#188). */
-export const NORMALITY_DEPRECATED =
-  'safety.viz histogram: `test_normality` is deprecated and will be removed in a later release. ' +
-  'Its normality screen is an approximation computed in JavaScript, and safety.viz is to compute no statistical test there.';
+/**
+ * What the console says, once per chart, when a removed setting is passed.
+ * @param {string} name The setting.
+ * @returns {string} The sentence.
+ */
+export const removedSetting = (name) =>
+  `safety.viz histogram: \`${name}\` was removed in v1.10.0 and is ignored. ` +
+  'The histogram draws no p-value: run the test in R.';
 
 /**
  * Rendering and data-mapping settings for the histogram module. Every key
@@ -38,9 +41,7 @@ export const NORMALITY_DEPRECATED =
  * @property {boolean} [normal_range=true] Offer the Show Normal Range control (visible only for measures with normal-range data).
  * @property {boolean} [display_normal_range=false] Draw the normal-range overlay on first render. The pilot's camelCase alias displayNormalRange is still honored.
  * @property {boolean} [annotate_bin_boundaries=false] Label the x-axis with bin boundaries instead of linear ticks on first render.
- * @property {boolean} [test_normality=false] Deprecated, and to be removed in a later release (#188). Annotate the main chart with an approximate Jarque-Bera normality screen, computed in JavaScript; while it is on, the chart and the console say it is deprecated.
  * @property {string} [group_by='sh_none'] Column the small multiples are grouped by on first render; 'sh_none' disables grouping. Unknown columns are added to the group options as-is.
- * @property {boolean} [compare_distributions=false] Deprecated, and to be removed in a later release (#188). When grouped, annotate each panel with an approximate one-way ANOVA screen comparing the groups, computed in JavaScript; while it is on, the chart and the console say it is deprecated.
  * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-SH-001).
  * @property {?string} [visit_col=null] Visit-name column passed to the docked profile for point tooltips (#99, PPRF-SH-001).
  * @property {?string} [visitn_col=null] Numeric visit column passed to the docked profile for point ordering context (#99, PPRF-SH-001).
@@ -76,9 +77,7 @@ export const DEFAULT_SETTINGS = {
   normal_range: true,
   display_normal_range: false,
   annotate_bin_boundaries: false,
-  test_normality: false,
   group_by: 'sh_none',
-  compare_distributions: false,
   studyday_col: null,
   visit_col: null,
   visitn_col: null,
@@ -134,6 +133,8 @@ export function fieldSpec(value, fallbackLabel) {
  */
 export function syncSettings(settings) {
   const synced = { ...DEFAULT_SETTINGS, ...settings };
+  // A removed setting is not carried: nothing downstream reads one (#188).
+  for (const name of REMOVED_SETTINGS) delete synced[name];
 
   synced.measures = arrayify(synced.measures);
   synced.filters = arrayify(synced.filters)

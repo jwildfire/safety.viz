@@ -93,8 +93,48 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-chart{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:1rem;min-width:0}
 .sva-message{margin:0 0 1rem;max-width:62rem;padding:.9rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px}
 .sva-message.sva-problem{border-left-color:var(--s0)}
+.sva-chart-links{margin:.75rem 0 0;font-family:var(--mono);font-size:.72rem;line-height:1.6;color:var(--soft)}
+.sva-chart-links a{white-space:nowrap;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:.2em}
+.sva-chart-links a:hover{color:var(--accent);text-decoration-color:var(--accent)}
 .sva-notes{margin:0 0 1rem;padding:0;list-style:none;max-width:62rem}
 .sva-note{margin:0 0 .45rem;padding:.6rem 1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--s1);border-radius:10px;font-size:.92rem}
+
+.sva-badge{display:inline-block;font:500 .56rem/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);border-radius:999px;padding:.2rem .4rem;white-space:nowrap;vertical-align:middle}
+.sva-rbqm{min-width:0;max-width:100%}
+.sva-app .sva-rbqm-lede{margin:0 0 .8rem;max-width:62rem;color:var(--soft);font-size:.95rem}
+.sva-rbqm-run{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem .9rem;margin:0 0 1rem;max-width:62rem;padding:.8rem 1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px}
+.sva-rbqm-start{flex:none;color:var(--accent);border-color:var(--accent)}
+.sva-rbqm-start:disabled{color:var(--soft);border-color:var(--line);cursor:default}
+.sva-app .sva-rbqm-status{flex:1 1 16rem;min-width:0;margin:0;font-size:.92rem}
+.sva-app .sva-rbqm-status.sva-rbqm-problem{color:var(--alarm)}
+.sva-rbqm-files{margin:0 0 1.1rem;max-width:62rem;padding:.7rem 1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px;min-width:0}
+.sva-rbqm-files-summary{cursor:pointer;font-size:.92rem}
+.sva-rbqm-files[open] .sva-rbqm-files-summary{margin:0 0 .7rem}
+.sva-rbqm-files .sva-rbqm-drop{margin:0 0 .8rem;padding:.9rem .8rem}
+.sva-rbqm-files .sva-rbqm-drop p{font-size:1.05rem}
+.sva-rbqm-choose{margin:0 0 .5rem}
+.sva-app .sva-rbqm-subheading{margin:.7rem 0 .3rem;font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.sva-app .sva-rbqm-aside{margin:0 0 .4rem;font-size:.8rem;color:var(--soft)}
+.sva-rbqm-loaded,.sva-rbqm-support{margin:0;padding:0;list-style:none;font-size:.88rem}
+.sva-rbqm-loaded li,.sva-rbqm-support li{padding:.22rem 0;border-bottom:1px solid var(--rule);overflow-wrap:anywhere}
+.sva-rbqm-loaded li:last-child,.sva-rbqm-support li:last-child{border-bottom:0}
+.sva-rbqm-unused{color:var(--alarm)}
+.sva-rbqm-cannot{color:var(--soft)}
+.sva-rbqm-section{margin:0 0 1.1rem;padding:1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px;min-width:0}
+.sva-app .sva-rbqm-heading{margin:0 0 .6rem;font-family:var(--serif);font-weight:normal;font-size:1.35rem;line-height:1.2}
+.sva-rbqm-table{max-height:26rem;overflow:auto;border:1px solid var(--rule);border-radius:8px}
+.sva-rbqm-table table{width:100%;border-collapse:collapse;font-size:.84rem}
+.sva-rbqm-table th{position:sticky;top:0;z-index:1;background:var(--bg);font-family:var(--mono);font-size:.62rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--soft);text-align:center;padding:.4rem .35rem;border-bottom:1px solid var(--rule);cursor:pointer;white-space:nowrap}
+.sva-rbqm-table td{padding:.22rem .35rem;border-bottom:1px solid var(--rule);text-align:center;white-space:nowrap}
+.sva-rbqm-table th:first-child,.sva-rbqm-table td:first-child{text-align:left;padding-left:.7rem}
+.sva-rbqm-table td.group-overview--metric{cursor:pointer}
+.sva-rbqm-metrics{display:flex;flex-wrap:wrap;gap:.25rem;margin:0 0 .8rem}
+.sva-rbqm-choice[aria-pressed=true]{font-weight:600;background:color-mix(in srgb,var(--accent) 12%,var(--card));box-shadow:inset 0 0 0 1px var(--accent)}
+.sva-rbqm-figures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.sva-rbqm-figure{margin:0;min-width:0}
+.sva-rbqm-chart{position:relative;height:24rem;min-width:0}
+.sva-app .sva-rbqm-caption{margin:.3rem 0 0;font-size:.72rem;color:var(--soft)}
+.sva-app .sva-rbqm-why{margin:0}
 
 .sva-footer{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:.4rem 1.5rem;padding:1.15rem var(--gutter) .9rem;border-top:1px solid var(--rule);background:var(--rail);font-family:var(--mono);font-size:.72rem;color:var(--soft)}
 .sva-pitch{margin:0}
@@ -139,6 +179,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-file{scroll-margin-top:1rem;margin:0 0 1.1rem;border:1px solid var(--rule);border-radius:10px;background:var(--card);overflow:hidden}
 .sva-file-head{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .8rem;padding:.7rem 1rem;border-bottom:1px solid var(--rule)}
 .sva-file.sva-unplaced .sva-file-head{border-bottom:0}
+.sva-file.sva-raw .sva-file-head{border-bottom:0}
 .sva-file-name{font-family:var(--mono);font-weight:600;font-size:.86rem;overflow-wrap:anywhere}
 .sva-file-rows{font-family:var(--mono);font-size:.72rem;color:var(--soft)}
 .sva-file-head .sva-tag{font-size:.7rem}
@@ -161,10 +202,25 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-map .sva-tag.sva-missing::before{background:var(--s0)}
 
 @media (max-width:900px){
+.sva-rbqm-figures{grid-template-columns:minmax(0,1fr)}
+.sva-rbqm-chart{height:20rem}
+.sva-rbqm-section{padding:.6rem}
+.sva-rbqm-table table{font-size:.74rem}
+.sva-rbqm-table th,.sva-rbqm-table td{padding:.2rem .16rem}
+.sva-rbqm-table th:first-child,.sva-rbqm-table td:first-child{padding-left:.35rem}
 .sva-data{grid-template-columns:minmax(0,1fr);gap:1.1rem}
 .sva-side{position:static;max-height:none}
 .sva-loaded-file{display:flex;flex-wrap:wrap;gap:.1rem .55rem}
 .sva-loaded-file .sva-flags{flex-basis:100%;padding-left:1.25rem}
+}
+@media (min-width:761px) and (max-width:1339px){
+.sva-view-tab .sva-badge{display:none}
+}
+@media (max-width:520px){
+.sva-rbqm-table table{font-size:.7rem}
+.sva-rbqm-table th{font-size:.5rem;letter-spacing:0;white-space:normal;vertical-align:bottom;padding:.25rem .08rem}
+.sva-rbqm-table td{padding:.2rem .08rem}
+.sva-rbqm-table th:first-child,.sva-rbqm-table td:first-child{padding-left:.3rem;white-space:normal}
 }
 @media (max-width:760px){
 .sva-tabs{order:3;flex-basis:100%;min-width:0}

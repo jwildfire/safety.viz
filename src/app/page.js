@@ -14,7 +14,10 @@
 // the page's own logic is testable without the charts and the same page serves
 // the site and the single-file build. Further chart libraries can be passed in
 // beside safety.viz's own (#181): their charts are listed, counted, mapped,
-// drawn and destroyed exactly as its own are (libraries.js).
+// drawn and destroyed exactly as its own are (libraries.js). A library whose
+// charts take something other than a study's standard domains brings one view
+// instead, a tab of its own (#235): the page gives it the main area and the
+// app handle, and the view draws itself.
 
 import { parseFile } from './parse.js';
 import { placeFile } from './detect.js';
@@ -114,6 +117,12 @@ const chipLabel = (entry, module) =>
     ? entry.title.replace(/\bSafety\s+/, '')
     : titleOf(entry, module);
 
+/** A chart's own pages a footnote can link (#246), in the order shown: the key the page is given under, and the link's words. */
+const CHART_PAGES = [
+  ['guide', 'Clinical guide'],
+  ['evidence', 'Test evidence']
+];
+
 /** A chart's title, or its module name when its entry gives none it can use (#193). */
 const titleOf = (entry, module) =>
   typeof entry.title === 'string' && entry.title ? entry.title : module;
@@ -142,14 +151,15 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options Mount options.
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
- * @param {Array<{name: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name; a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183).
+ * @param {Array<{name: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}, view?: {id: string, title: string, badge?: ?{text: string, title: string}, tag: function(): string, render: function(Element, Object): ?{destroy: Function}}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name; a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183). A library that brings a `view` (#235) brings a tab of its own in place of charts: its `id` is the tab's address, `title` its name, `badge` a status shown beside the name, `tag()` what the tab's count says, and `render(container, app)` draws it and returns what tears it down. A view whose id is the data view's, a chart's or another view's is left out with a console warning.
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
+ * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages, keyed by module name: its clinical guide and its test evidence. A chart's view carries a footnote linking those it was given an address for (#246).
  * @param {string} [options.version] The safety.viz version, shown in the footer.
  * @param {string} [options.pitch] What the footer says the app does with a study; the page that mounts it says what is true there (#183).
  * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`, refusing an answer that is not a success.
  * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to the data panel.
- * @returns {{ready: Promise<void>, loadFiles: Function, loadDemo: Function, reset: Function, select: Function, state: Object, destroy: Function}} The app handle.
+ * @returns {{ready: Promise<void>, loadFiles: Function, loadRaw: Function, loadDemo: Function, reset: Function, select: Function, state: Object, destroy: Function}} The app handle.
  */
 export function mountApp(
   target,
@@ -159,6 +169,7 @@ export function mountApp(
     libraries = [],
     demo = null,
     links = {},
+    chartLinks = {},
     version = '',
     pitch = 'Everything runs in this browser. Nothing is sent anywhere.',
     // An error page is not the file: a 404's body would otherwise be read as data.
@@ -171,6 +182,10 @@ export function mountApp(
   } = {}
 ) {
   const root = typeof target === 'string' ? document.querySelector(target) : target;
+  // A library that brings a view brings a tab of its own, not charts (#235).
+  const handed = Array.isArray(libraries) ? libraries : [];
+  const bringsView = (library) =>
+    isRecord(library) && isRecord(library.view) && typeof library.view.render === 'function';
   // Every chart the page lists, safety.viz's and any other library's, in one
   // manifest; and for those that cannot be drawn, why.
   const {
@@ -179,7 +194,22 @@ export function mountApp(
     unloaded,
     libraries: extras,
     factoryOf
-  } = mergeLibraries(ownManifest, charts, Array.isArray(libraries) ? libraries : []);
+  } = mergeLibraries(
+    ownManifest,
+    charts,
+    handed.filter((library) => !bringsView(library))
+  );
+  const views = new Map();
+  for (const { view } of handed.filter(bringsView)) {
+    const id = typeof view.id === 'string' ? view.id : '';
+    if (!id || id === 'data' || has(manifest.modules, id) || views.has(id)) {
+      console.warn(
+        `safety.viz app: a view was handed in with no id or an id already used (${id}); it was left out.`
+      );
+      continue;
+    }
+    views.set(id, view);
+  }
   // What a library brings besides its charts (#183): settings for each of its
   // charts, and one control. Looked up by the library a chart's entry names,
   // among the libraries the merge used, so a second library of the same name
@@ -201,6 +231,7 @@ export function mountApp(
     mappings: {}, // domain → mapping
     placements: {}, // domain → the placeFile result for its file
     unplaced: [], // files that matched no domain, kept so they can be placed by hand
+    raw: [], // gsm's raw files, kept as they are: { name, text, columns, rows }, rows a count
     saved: null, // a mapping file's content, applied to each domain as its file loads
     study: null, // the id of the demo study that is loaded, when what is loaded is one
     notes: [], // sentences about the last load: unplaced, unreadable, replaced
@@ -224,6 +255,7 @@ export function mountApp(
   };
 
   const isChart = (id) => has(manifest.modules, id);
+  const isView = (id) => views.has(id);
   const tabTitle = (group) => groupLabel(group, manifest);
   const groupTitle = (group) =>
     group === OTHER_GROUP ? 'Outside the standard domains' : groupLabel(group, manifest);
@@ -332,8 +364,8 @@ export function mountApp(
   const chartGroups = () => new Map(groupCharts(manifest));
 
   function renderNav(current) {
-    const open = state.selected === 'data' ? null : groupOf(manifest.modules[state.selected]);
-    const loaded = Object.keys(state.files).length;
+    const open = isChart(state.selected) ? groupOf(manifest.modules[state.selected]) : null;
+    const loaded = Object.keys(state.files).length + state.raw.length;
     tabs.innerHTML = '';
     tabs.append(
       navItem(
@@ -389,6 +421,26 @@ export function mountApp(
       }
       chartRow.append(section);
     }
+    // A library's view (#235): a tab after the domains', with what the view
+    // says of itself where a domain's tab counts its charts.
+    for (const [id, view] of views) {
+      const tab = el('button', 'sva-tab sva-view-tab sva-library-group');
+      tab.type = 'button';
+      tab.dataset.tab = id;
+      tab.setAttribute('aria-pressed', String(state.selected === id));
+      tab.append(el('span', 'sva-hex'), el('span', 'sva-tab-title', view.title));
+      if (view.badge) {
+        // Shown where the header has room for it on one line (styles.js); the
+        // tab says it on hover at any width, and the view carries it too.
+        const pill = el('span', 'sva-badge', view.badge.text);
+        pill.title = view.badge.title;
+        tab.title = `${view.badge.text}: ${view.badge.title}`;
+        tab.append(pill);
+      }
+      tab.append(el('span', 'sva-tab-count', String(view.tag(handle))));
+      tab.onclick = () => handle.select(id);
+      tabs.append(tab);
+    }
   }
 
   /**
@@ -403,7 +455,7 @@ export function mountApp(
     const current = status();
     renderHead(current);
     renderNav(current);
-    if (state.selected === 'data') return;
+    if (!isChart(state.selected)) return;
     const entry = manifest.modules[state.selected];
     if (!entry || libraryOf(entry) !== name || !instance) return;
     if (typeof instance.setSettings !== 'function') {
@@ -444,6 +496,31 @@ export function mountApp(
     return hint ? [button, el('span', 'sva-action-hint', hint)] : [button];
   }
 
+  /**
+   * The footnote of a chart's view (#246): the chart's name and a link to each
+   * of its own pages the app was given an address for. A link opens in a new
+   * tab, so a study the reader loaded stays loaded. Null when the chart was
+   * given no address.
+   */
+  function chartFootnote(module, entry) {
+    const given = has(chartLinks, module) && isRecord(chartLinks[module]) ? chartLinks[module] : {};
+    const anchors = CHART_PAGES.filter(([key]) => given[key] && typeof given[key] === 'string').map(
+      ([key, label]) => {
+        const anchor = el('a', null, label);
+        anchor.href = given[key];
+        anchor.dataset.link = key;
+        anchor.target = '_blank';
+        anchor.rel = 'noopener';
+        return anchor;
+      }
+    );
+    if (!anchors.length) return null;
+    const footnote = el('p', 'sva-chart-links');
+    footnote.append(el('span', 'sva-chart-links-title', `${titleOf(entry, module)}:`));
+    anchors.forEach((anchor, index) => footnote.append(index ? ' · ' : ' ', anchor));
+    return footnote;
+  }
+
   function renderNotes(container) {
     if (!state.notes.length) return;
     const list = el('ul', 'sva-notes');
@@ -463,11 +540,44 @@ export function mountApp(
       dataView(container, handle);
       return;
     }
+    if (isView(state.selected)) {
+      const view = views.get(state.selected);
+      title.textContent = view.title;
+      renderNotes(content);
+      const container = el('div', 'sva-view');
+      content.append(container);
+      try {
+        instance = view.render(container, handle) || null;
+      } catch (error) {
+        instance = null;
+        container.append(
+          el(
+            'p',
+            'sva-message sva-problem',
+            `Did not draw. ${error && error.message ? error.message : String(error)}`
+          )
+        );
+      }
+      return;
+    }
 
     const module = state.selected;
     const entry = manifest.modules[module];
     title.textContent = titleOf(entry, module);
+    // A chart that threw is drawn again as one that did not draw, footnote and all.
+    if (!renderChart(current, module, entry)) {
+      render();
+      return;
+    }
+    const footnote = chartFootnote(module, entry);
+    if (footnote) content.append(footnote);
+  }
 
+  /**
+   * Draw the open chart, or the sentence that says why it is not drawn.
+   * @returns {boolean} False when the chart was ready and threw: its message is kept, and the view is to be rendered again.
+   */
+  function renderChart(current, module, entry) {
     if (module === 'participant-profile' && libraryOf(entry) === OWN_LIBRARY) {
       const hosts = Object.entries(manifest.modules)
         .filter(([id, host]) => libraryOf(host) === OWN_LIBRARY && id !== module)
@@ -480,7 +590,7 @@ export function mountApp(
             `Choose one of these charts and select a point or a row: ${hosts.join(', ')}.`
           : sentenceFor(module, current[module], manifest);
       content.append(el('p', 'sva-message', sentence));
-      return;
+      return true;
     }
 
     if (current[module].state !== 'ready') {
@@ -489,7 +599,7 @@ export function mountApp(
         message.classList.add('sva-problem');
       }
       content.append(message);
-      return;
+      return true;
     }
 
     const mount = el('div', `sva-chart ${hueClass(groupOf(entry), manifest)}`);
@@ -503,8 +613,9 @@ export function mountApp(
     } catch (error) {
       destroyChart();
       state.failed[module] = error && error.message ? error.message : String(error);
-      render();
+      return false;
     }
+    return true;
   }
 
   function render() {
@@ -549,6 +660,7 @@ export function mountApp(
     state.mappings = {};
     state.placements = {};
     state.unplaced = [];
+    state.raw = [];
   }
 
   /** Forget everything that was loaded: files, mappings, a held mapping file, notes. */
@@ -591,13 +703,15 @@ export function mountApp(
     if (run !== demoRun) return;
     state.busy = '';
     clear();
-    handle.loadFiles(
-      study.files.map((name, index) => ({ name, text: texts[index] })),
-      { study: study.id }
-    );
+    const list = study.files.map((name, index) => ({ name, text: texts[index] }));
+    // A study of gsm's raw domains (#233) is kept as it is; any other is placed and mapped.
+    if (study.raw) handle.loadRaw(list, { study: study.id });
+    else handle.loadFiles(list, { study: study.id });
     if (!open) return;
     const wanted = window.location.hash.slice(1);
-    handle.select(isChart(wanted) || wanted === 'data' ? wanted : firstReady() || 'data');
+    handle.select(
+      isChart(wanted) || isView(wanted) || wanted === 'data' ? wanted : firstReady() || 'data'
+    );
   }
 
   const handle = {
@@ -672,6 +786,48 @@ export function mountApp(
           continue;
         }
         handle.setFile(domain, file, placement);
+      }
+      state.failed = {};
+      render();
+    },
+
+    /**
+     * Keep gsm's raw files as they are (#233, obot.roadmap#374): each
+     * `{ name, text }` is read for its column names and its count of rows, and
+     * kept with its text. None is placed in a standard domain or given a
+     * mapping: gsm's raw domains are not the standard domains, and nothing in
+     * the mapping table applies to them. A file of a name already kept replaces
+     * it; a file that cannot be read is reported in a sentence and changes
+     * nothing.
+     * @param {{name: string, text: string}[]} list The files' names and text.
+     * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
+     * @returns {void}
+     */
+    loadRaw(list, { notes = [], study = null } = {}) {
+      if (!study) {
+        demoRun += 1;
+        state.busy = '';
+      }
+      state.notes = [...notes];
+      // Files of the user's own replace a demo study whole, as loadFiles does.
+      const demoLoaded = studies.find((item) => item.id === state.study);
+      if (!study && demoLoaded && list.length) {
+        clearFiles();
+        state.notes.push(`The demo study (${demoLoaded.label}) was cleared to load your files.`);
+      }
+      if (study || list.length) state.study = study;
+      for (const { name, text } of list) {
+        let file;
+        try {
+          file = parseFile(name, text);
+        } catch (error) {
+          state.notes.push(error.message);
+          continue;
+        }
+        const kept = { name, text, columns: file.columns, rows: file.rows.length };
+        const at = state.raw.findIndex((item) => item.name === name);
+        if (at === -1) state.raw.push(kept);
+        else state.raw[at] = kept;
       }
       state.failed = {};
       render();
@@ -869,11 +1025,11 @@ export function mountApp(
 
     /**
      * Show the data view or one chart.
-     * @param {string} id `'data'` or a module name from the manifest.
+     * @param {string} id `'data'`, a module name from the manifest, or the id of a library's view.
      * @returns {void}
      */
     select(id) {
-      state.selected = id === 'data' || isChart(id) ? id : 'data';
+      state.selected = id === 'data' || isChart(id) || isView(id) ? id : 'data';
       if (window.history && window.history.replaceState) {
         window.history.replaceState(null, '', `#${state.selected}`);
       }
@@ -884,6 +1040,25 @@ export function mountApp(
     refresh() {
       state.failed = {};
       render();
+    },
+
+    /** Say again what each tab says of itself, and leave the open view as it is. */
+    retag() {
+      const current = status();
+      renderHead(current);
+      renderNav(current);
+    },
+
+    /**
+     * A library's view changed (#235): its tab says what it now says, and the
+     * view is drawn again if it is the one open. Any other open view is left
+     * as it is.
+     * @param {string} id The view's id.
+     * @returns {void}
+     */
+    redrawView(id) {
+      if (state.selected === id && isView(id)) render();
+      else handle.retag();
     },
 
     /** Tear the page down: destroy the mounted chart, stop following the address and empty the target. */
@@ -901,7 +1076,7 @@ export function mountApp(
   function followAddress() {
     const wanted = window.location.hash.slice(1);
     if (wanted === state.selected) return;
-    if (wanted === 'data' || isChart(wanted)) handle.select(wanted);
+    if (wanted === 'data' || isChart(wanted) || isView(wanted)) handle.select(wanted);
   }
   window.addEventListener('hashchange', followAddress);
 

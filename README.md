@@ -32,7 +32,7 @@ linked from its page on the site.
 Vendor the committed bundle — no build step, no npm install:
 
 ```html
-<script src="dist/safety.viz-1.9.2/safety.viz.js"></script>
+<script src="dist/safety.viz-1.10.0/safety.viz.js"></script>
 <script>
   SafetyViz.histogram('#container', {
     value_col: 'STRESN',
@@ -45,7 +45,7 @@ Vendor the committed bundle — no build step, no npm install:
 An ESM build is committed alongside:
 
 ```js
-import { histogram } from './dist/safety.viz-1.9.2/safety.viz.esm.js';
+import { histogram } from './dist/safety.viz-1.10.0/safety.viz.esm.js';
 histogram('#container', settings).init(rows);
 ```
 
@@ -102,8 +102,9 @@ install takes about 285 MB of disk, most of it the tools that build the demo.
 - **Your data stays with you.** The page is served to your own computer, at
   its own address, and to nothing else, and files you load are read in your
   browser. The one thing it
-  asks the network for is R, from webr.r-wasm.org, and only when you press
-  Start R for the biomarker charts.
+  asks the network for is R, and only when you press Start R: from
+  webr.r-wasm.org for the biomarker charts, and from there and
+  repo.r-wasm.org for the RBQM tab.
 - **Windows.** The script is plain Node and is written to run there, but it has
   not been tried there yet: it has been run end to end on macOS, and its tests
   run on Linux. In Windows PowerShell write `curl.exe` in place of `curl`.

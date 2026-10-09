@@ -6,7 +6,7 @@ matching behavior), built under
 [#25](https://github.com/jwildfire/safety.viz/issues/25) per the convention in
 [CONTRIBUTING.md](../CONTRIBUTING.md). Requirement IDs come from the reviewed
 48-row matrix at
-[safety.agent `docs/requirements/safety-delta-delta.md`](https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-delta-delta.md),
+[`requirements/safety-delta-delta.md`](https://github.com/jwildfire/safety.viz/blob/HEAD/requirements/safety-delta-delta.md),
 whose `Evidence Type` column routes rows (`unit` → Vitest, `browser` →
 Playwright). The renderer flattens long-format results (one row per
 measurement at a visit) to one point per participant: **change in measure X**

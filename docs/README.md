@@ -1,7 +1,7 @@
 # docs/
 
 Per-module requirement-coverage tables live here: one `<module>-coverage.md`
-file per renderer, mapping [safety.agent requirement-matrix](https://github.com/jwildfire/safety.agent/tree/main/docs/requirements)
+file per renderer, mapping [requirement-matrix](https://github.com/jwildfire/safety.viz/tree/HEAD/requirements)
 rows to the safety.viz issue that implements them and the test file that
 evidences them. This is the qcthat-style traceability artifact on the JS side
 (see [CONTRIBUTING.md](../CONTRIBUTING.md) for the full convention).

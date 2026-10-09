@@ -13,8 +13,6 @@ async function setHarnessSettings(page, settings = {}) {
     window.__safetyHistogramInstance.setSettings({
       page_size: 5,
       group_by: 'sh_none',
-      compare_distributions: false,
-      test_normality: true,
       display_normal_range: true,
       annotate_bin_boundaries: true,
       ...overrides
@@ -345,23 +343,34 @@ test.describe('safety.viz histogram module', () => {
     await captureEvidence(page, 'SH-CTRL-007', 'boundary-ticks');
   });
 
-  test('SH-CHART-005: p-value annotations display the approximation and validation disclaimer (#2)', async ({
+  test('SH-CHART-008: the histogram draws no p-value: given the two removed settings, the main chart and each grouped panel carry no annotation, and the console says once for each that it was removed and is ignored (#188)', async ({
     page
   }) => {
-    await setHarnessSettings(page, { group_by: 'ARM', compare_distributions: true });
-    await expect(page.locator('.sv-main-annotation')).toContainText(/Normality: p=/);
-    await expect(page.locator('.sv-main-annotation .sv-info')).toHaveAttribute(
-      'title',
-      /not validated/
+    const warnings = [];
+    page.on('console', (message) => {
+      if (message.type() === 'warning') warnings.push(message.text());
+    });
+    await setHarnessSettings(page, {
+      group_by: 'ARM',
+      test_normality: true,
+      compare_distributions: true
+    });
+    await expect(page.locator('.sv-multiple')).toHaveCount(2);
+    await expect(page.locator('.sv-main-annotation')).toBeHidden();
+    await expect(page.locator('.sv-annotation')).toHaveCount(0);
+    await expect(page.locator('.sv-deprecation')).toHaveCount(0);
+    expect(await page.locator('#container, body').first().innerText()).not.toMatch(
+      /p\s*=|Normality|Group comparison/
     );
-    await expect(page.locator('.sv-multiple .sv-annotation').first()).toContainText(
-      /Group comparison: p=/
+    // Passed again, neither is said again.
+    await setHarnessSettings(page, { group_by: 'ARM', test_normality: true });
+    expect(warnings.filter((text) => /was removed in v1\.10\.0 and is ignored/.test(text))).toEqual(
+      [
+        'safety.viz histogram: `test_normality` was removed in v1.10.0 and is ignored. The histogram draws no p-value: run the test in R.',
+        'safety.viz histogram: `compare_distributions` was removed in v1.10.0 and is ignored. The histogram draws no p-value: run the test in R.'
+      ]
     );
-    await expect(page.locator('.sv-multiple .sv-info').first()).toHaveAttribute(
-      'title',
-      /not validated/
-    );
-    await captureEvidence(page, 'SH-CHART-005', 'pvalue-disclaimer');
+    await captureEvidence(page, 'SH-CHART-008', 'no-pvalue');
   });
 
   test("SH-CHART-004/SH-CTRL-006: grouped small multiples share the main chart's bin boundaries (#19)", async ({
@@ -369,7 +378,7 @@ test.describe('safety.viz histogram module', () => {
   }) => {
     // The original renderer clones x.bin and x.domain from the main chart
     // into the small multiples, so every group panel bins on the same edges.
-    await setHarnessSettings(page, { group_by: 'ARM', compare_distributions: true });
+    await setHarnessSettings(page, { group_by: 'ARM' });
     await expect(page.locator('.sv-multiple')).toHaveCount(2);
     const result = await page.evaluate(() => {
       const instance = window.__safetyHistogramInstance;

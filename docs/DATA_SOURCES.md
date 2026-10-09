@@ -187,6 +187,12 @@ STRESU, STRESN, BASE, CHG, ABLFL`). Three parameters are kept for the QT Safety
   `tests/unit/demo-data/adsl.test.js`, and the committed file is guarded there
   against silent upstream drift (participant count, arms, follow-up-day range).
   Rebuild just this file with `node scripts/build-demo-data.mjs --only adsl`.
+  Since #253 it also carries the source's own `SITEID` (17 sites), so the demo
+  app's RBQM tab can score sites on the study the other charts use: R makes
+  gsm's raw tables from this file and `adae.csv` with the workflows in
+  `site/rbqm/standard/`, taking days on study from `EOSDY` and study completion
+  from `EOSSTT`. No safety chart reads the column, and the file is otherwise
+  byte for byte what it was (`tests/unit/app/studies.test.js`, APP-RBQM-040).
   (An earlier increment vendored a pre-derived `adtte.csv` with three fixed
   endpoints; the sv#131 review replaced it with this live composition. The
   frozen copy at `tests/unit/time-to-event/fixtures/adtte.csv` remains the
@@ -463,6 +469,41 @@ churn their evidence baselines for a figure none of them draws.
   everything else as shared scaffold, so a `demo-data/` directory would have
   copied these eleven cohort records into **every** renderer's evidence page.
 
+## RBQM demo study raw files (#231, #233)
+
+`site/data/rbqm/` holds nine raw files in gsm's standard raw domains
+(`Raw_SUBJ.csv`, `Raw_AE.csv`, `Raw_PD.csv`, `Raw_LB.csv`, `Raw_STUDCOMP.csv`,
+`Raw_SDRGCOMP.csv`, `Raw_SITE.csv`, `Raw_STUDY.csv`, `Raw_ENROLL.csv`): one
+synthetic study of 1,005 screened and 765 enrolled participants at 150 sites.
+They are not generated here. They are copied from
+[jwildfire/demo-301](https://github.com/jwildfire/demo-301)'s `input/` folder,
+where that repository's own script makes them, and
+`site/data/rbqm/SOURCE.json` records the commit and each file's checksum:
+
+```bash
+node scripts/vendor-rbqm-study.mjs --ref <commit> --unmerged "<why>"   # copy again
+npm run rbqm-study:check                                               # files against the record
+npm run rbqm-study:check-source                                        # files against the commit
+```
+
+Eight are copied byte for byte. The labs file is 7.3 MB and fourteen columns in
+demo-301; the copy keeps the four columns gsm.mapping's labs workflow names in
+its spec (`studyid`, `subjid`, `lb_dt`, `toxgrg_nsv`) and every one of its
+57,200 rows, at 2.5 MB. The record names the columns kept, why, and the whole
+file's checksum, and the comparison with the commit cuts demo-301's file the
+same way and holds the copy to it. The lab metric reads no other column, so its
+Results rows are the same from either file: `Rscript scripts/rbqm-labs-check.R
+<the whole Raw_LB.csv>` runs it on both in desktop R and stops if they differ.
+The nine files together are 3,507,259 bytes.
+
+The demo app offers them as its fourth demo study, the RBQM study, and keeps
+them as they are: gsm's raw domains are not the app's standard domains, so none
+is placed in one or mapped. The RBQM pipeline's browser test runs the gsm
+workflows on five of them in R in the browser, and
+`tests/fixtures/rbqm/expected.json` holds desktop R's rows for the same files
+(`node scripts/rbqm-reference.mjs`). They are not among the eleven datasets
+above.
+
 ## License and attribution
 
 - **pharmaverseadam** is licensed **Apache-2.0**
@@ -477,6 +518,42 @@ churn their evidence baselines for a figure none of them draws.
 - The underlying study data is the **CDISC SDTM/ADaM Pilot 01** reference study,
   redistributed by pharmaverse; the same study is also mirrored under a permissive
   license by [PHUSE](https://github.com/phuse-org/phuse-scripts).
+- The **RBQM demo study** under `site/data/rbqm/` is synthetic. It is copied
+  from [jwildfire/demo-301](https://github.com/jwildfire/demo-301), whose script
+  builds it from the sample study that ships with
+  [gsm.core](https://github.com/Gilead-Public/gsm.core), which is licensed
+  **Apache-2.0**. demo-301 itself states no licence.
+
+## Copied code and its licences
+
+The demo app's RBQM tab runs and draws with other projects' code, each copied
+or built from a release tag. safety.viz changes one line of it: gsm.reporting's
+`Results.yaml` names `FilterByLatestSnapshotDate` without `gsm.kri::`, because
+gsm.kri is not installed in browser R. The `SOURCE.json` beside the copy records
+the line as it was and as it is, and the checks hold the file to its tag with
+that one line changed.
+
+| What                                                            | Version | Licence, as the project states it                               | How it is here                                                              |
+| --------------------------------------------------------------- | ------- | --------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [gsm.core](https://github.com/Gilead-Public/gsm.core)           | 1.3.1   | Apache License (>= 2)                                           | Built for R in the browser, served under `r-wasm/`                          |
+| [gsm.mapping](https://github.com/Gilead-Public/gsm.mapping)     | 1.1.6   | Apache License (>= 2)                                           | Built for R in the browser; its mapping workflows are also copied           |
+| [gsm.reporting](https://github.com/Gilead-Public/gsm.reporting) | 1.1.7   | Apache License (>= 2)                                           | Built for R in the browser; its reporting workflows are also copied         |
+| [workr](https://github.com/Gilead-Public/workr)                 | 1.1.0   | MIT + file LICENSE                                              | Built for R in the browser                                                  |
+| [gsm.kri](https://github.com/Gilead-Public/gsm.kri)             | 1.7.0   | Apache License (>= 2)                                           | Eight metric workflows and one R file, copied; the package is not installed |
+| [gsm.viz](https://github.com/Gilead-Public/gsm.viz)             | 2.4.1   | Apache-2.0, by its `LICENSE` file; its `package.json` names ISC | Its built bundle, copied                                                    |
+
+- The versions and tags are in `site/vendor/r-wasm/pins.json` and in the
+  `SOURCE.json` beside each copy. Each licence above was read from the
+  project's `DESCRIPTION` or `LICENSE` at that tag.
+- The Apache-2.0 text is served beside the app as `gsm.viz.LICENSE.txt`. Each
+  built package carries its own `DESCRIPTION`, and workr its `LICENSE` file.
+- R itself ([webR](https://github.com/r-wasm/webr)) and R's other packages are
+  not copied here: the reader's browser fetches them from webr.r-wasm.org and
+  repo.r-wasm.org when R is started.
+- Not yet done, and tracked: the record of the four built packages does not
+  name their licences, no notice file is served beside the copied workflows,
+  and safety.viz states no licence of its own
+  ([#263](https://github.com/jwildfire/safety.viz/issues/263)).
 
 ## History
 

@@ -2,7 +2,15 @@ import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { test, expect } from '@playwright/test';
 import { CANONICAL } from './evidence.js';
-import { APP_LIBRARIES, HOSTED_PITCH, libraryManifest } from '../../scripts/app-libraries.mjs';
+import {
+  APP_LIBRARIES,
+  HOSTED_PITCH,
+  RBQM_CHARTS,
+  chartLinks,
+  libraryManifest,
+  rbqmTabOptions
+} from '../../scripts/app-libraries.mjs';
+import { pipelineFiles } from '../../scripts/rbqm-lib.mjs';
 
 // Docs-site smoke (#7): every available renderer's built demo page must mount
 // from the committed dist/ bundle with no console errors, served straight out
@@ -21,6 +29,7 @@ const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
 // bio.viz's chart list, from its vendored bundle: the demo app carries its
 // charts and the Domains page lists them (#182).
 const bioManifest = libraryManifest(APP_LIBRARIES[0]);
+const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 
 test.describe('docs site', () => {
   test.beforeAll(() => {
@@ -70,6 +79,111 @@ test.describe('docs site', () => {
     await page.goto('/_site/index.html');
     await expect(page.locator('.site-nav a[href="demo/index.html"]')).toHaveText('Demo app');
     expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-031: on the built demo page every chart’s footnote leads where its pages are: each safety chart’s test evidence, and the clinical guide of the six that have one, are pages the site serves; a biomarker chart’s test evidence is on bio.viz’s site (#246)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const expected = chartLinks({ site: '../' });
+    const guided = [];
+    for (const [module, entry] of Object.entries({ ...manifest.modules, ...bioManifest.modules })) {
+      await page.evaluate((id) => window.__safetyVizApp.select(id), module);
+      const footnote = page.locator('.sva-chart-links');
+      await expect(footnote, module).toHaveCount(1);
+      await expect(footnote.locator('.sva-chart-links-title')).toHaveText(`${entry.title}:`);
+      const links = await footnote
+        .locator('a')
+        .evaluateAll((anchors) =>
+          anchors.map((a) => [a.dataset.link, a.getAttribute('href'), a.href, a.textContent])
+        );
+      expect(Object.fromEntries(links.map(([key, href]) => [key, href])), module).toEqual(
+        expected[module]
+      );
+      if (has(bioManifest.modules, module)) {
+        // Another site: the address is held to bio.viz's, and not asked for here.
+        expect(links).toEqual([
+          [
+            'evidence',
+            `${APP_LIBRARIES[0].site}${module}/evidence.html`,
+            `${APP_LIBRARIES[0].site}${module}/evidence.html`,
+            'Test evidence'
+          ]
+        ]);
+        continue;
+      }
+      // The address as the browser resolves it from the app's page is a page the site serves.
+      const titles = { guide: 'clinical guide', evidence: 'test evidence' };
+      for (const [key, , resolved, words] of links) {
+        expect(new URL(resolved).pathname, module).toBe(`/_site/${module}/${key}.html`);
+        const response = await page.request.get(resolved);
+        expect(response.ok(), resolved).toBe(true);
+        expect(await response.text(), resolved).toContain(
+          `<title>${entry.title} ${titles[key]} · safety.viz</title>`
+        );
+        expect(words).toBe(key === 'guide' ? 'Clinical guide' : 'Test evidence');
+      }
+      if (links.some(([key]) => key === 'guide')) guided.push(module);
+    }
+    expect(guided).toEqual(
+      available
+        .filter((renderer) => renderer.guide && has(manifest.modules, renderer.module))
+        .map((renderer) => renderer.module)
+        .sort(
+          (a, b) =>
+            Object.keys(manifest.modules).indexOf(a) - Object.keys(manifest.modules).indexOf(b)
+        )
+    );
+    expect(guided).toHaveLength(6);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-030: on the built demo page a chart’s footnote sits under the chart, its link opens in a new tab and the app keeps its study and its chart; at a 390px viewport the footnote wraps and the page does not scroll sideways (#246)', async ({
+    page,
+    context
+  }) => {
+    await page.goto('/_site/demo/index.html#hep-explorer');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const chart = page.locator('.sva-chart');
+    const footnote = page.locator('.sva-chart-links');
+    await expect(chart.locator('canvas:visible').first()).toBeVisible();
+    await expect(footnote).toHaveText('Hepatic Safety Explorer: Clinical guide · Test evidence');
+    const box = async (locator) => locator.boundingBox();
+    expect((await box(footnote)).y).toBeGreaterThanOrEqual(
+      (await box(chart)).y + (await box(chart)).height
+    );
+    const [guide] = await Promise.all([
+      context.waitForEvent('page'),
+      footnote.locator('a[data-link="guide"]').click()
+    ]);
+    await guide.waitForLoadState();
+    await expect(guide).toHaveURL(/\/_site\/hep-explorer\/guide\.html$/);
+    await expect(guide).toHaveTitle('Hepatic Safety Explorer clinical guide · safety.viz');
+    // The new tab was handed nothing of the app's page.
+    expect(await guide.evaluate(() => window.opener)).toBeNull();
+    await guide.close();
+    // The app's page did not move: the same address, study and chart.
+    await expect(page).toHaveURL(/\/_site\/demo\/index\.html#hep-explorer$/);
+    await expect(page.locator('.sva-count')).toHaveText(
+      '18 of 18 charts supported by the loaded data'
+    );
+    await expect(chart.locator('canvas:visible').first()).toBeVisible();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(footnote).toBeVisible();
+    await footnote.scrollIntoViewIfNeeded();
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)
+    ).toBeLessThanOrEqual(0);
+    const narrow = await box(footnote);
+    expect(narrow.x).toBeGreaterThanOrEqual(0);
+    expect(narrow.x + narrow.width).toBeLessThanOrEqual(390);
   });
 
   test('APP-BIO-012: the built demo page serves bio.viz’s vendored bundle beside the app, whole but for its source-map comment, lists the biomarker charts in their own tab and holds at a 390px viewport (#182)', async ({
@@ -161,6 +275,63 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  test('APP-RBQM-031: the built demo page carries the RBQM tab with its Experimental badge and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)', async ({
+    page
+  }) => {
+    // It downloads R and some forty packages, then runs every workflow.
+    test.setTimeout(420000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    const requests = [];
+    page.on('request', (request) => requests.push(request.url()));
+    // What the page hands the tab, each answered from beside the app.
+    const options = rbqmTabOptions();
+    const given = pipelineFiles();
+    expect(options.r.files).toHaveLength(given.length);
+    for (const [index, { url }] of options.r.files.entries()) {
+      const response = await page.request.get(new URL(url, 'http://x/_site/demo/').pathname);
+      expect(response.ok(), url).toBe(true);
+      expect(
+        (await response.body()).equals(
+          readFileSync(new URL(`../../${given[index].file}`, import.meta.url))
+        ),
+        url
+      ).toBe(true);
+    }
+    expect((await page.request.get(`/_site/demo/${RBQM_CHARTS.file}`)).ok()).toBe(true);
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const tab = page.locator('.sva-tab[data-tab="rbqm"]');
+    await expect(tab.locator('.sva-tab-title')).toHaveText('RBQM');
+    await expect(tab.locator('.sva-badge')).toHaveText('Experimental');
+    await page.locator('.sva-item[data-view="data"]').click();
+    await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+    await tab.click();
+    await expect(page.locator('.sva-rbqm-status')).toContainText(
+      'It downloads about 55 MB, once: R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) and gsm’s packages from this page (about 2 MB).'
+    );
+    // Shown, not pressed: nothing is asked of R's hosts, nor of the page for R's files or the charts.
+    expect(requests.filter((url) => /r-wasm|pipeline\.R|\.yaml$|gsm\.viz\.js/.test(url))).toEqual(
+      []
+    );
+    await page.locator('.sva-rbqm-start').click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
+      timeout: 360000
+    });
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    await expect(tab.locator('.sva-tab-count')).toHaveText('8 of 8');
+    // Each came from where the page as built serves it.
+    const own = (path) => new URL(`/_site/demo/${path}`, page.url()).href;
+    expect(requests).toContain(own('rbqm/pipeline.R'));
+    expect(requests).toContain(own(RBQM_CHARTS.file));
+    expect(requests.some((url) => url.startsWith(own('r-wasm/bin/emscripten/contrib/')))).toBe(
+      true
+    );
+    expect(errors).toEqual([]);
+  });
+
   test('APP-LIB-026: on the built demo page, when bio.viz’s script does not load, the safety charts mount as before and the page says the biomarker charts are not shown and why, in every view (#193)', async ({
     page
   }) => {
@@ -174,7 +345,9 @@ test.describe('docs site', () => {
     const said =
       'The bio.viz charts are not shown: bio.viz.js did not load on this page, or failed as it loaded.';
     await expect(page.locator('.sva-library-notes')).toHaveText(said);
-    await expect(page.locator('.sva-tab')).toHaveCount(3);
+    // The three domains' tabs and the RBQM tab, which is no chart of bio.viz's (#235).
+    await expect(page.locator('.sva-tab')).toHaveCount(4);
+    await expect(page.locator('.sva-tab[data-domain]')).toHaveCount(3);
     await expect(page.locator('.sva-count')).toHaveText(
       `${Object.keys(manifest.modules).length} of ${Object.keys(manifest.modules).length} charts supported by the loaded data`
     );
@@ -323,12 +496,19 @@ test.describe('docs site', () => {
     for (const [study, files] of [
       ['renamed', ['dm.csv', 'ae.csv', 'labs_final.csv', 'ecg.json']],
       ['liver', ['adbds-abnbl.csv']],
+      [
+        'rbqm',
+        'SUBJ AE PD LB STUDCOMP SDRGCOMP SITE STUDY ENROLL'
+          .split(' ')
+          .map((domain) => `Raw_${domain}.csv`)
+      ],
       ['pilot', ['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv']]
     ]) {
       await menu.selectOption(study);
       await expect(page.locator('.sva-loaded-name')).toHaveText(files);
     }
     expect((await page.request.get('/_site/demo/renamed/dm.csv')).ok()).toBe(true);
+    expect((await page.request.get('/_site/demo/rbqm/Raw_LB.csv')).ok()).toBe(true);
     expect(errors).toEqual([]);
   });
 

@@ -623,7 +623,8 @@ describe('demo app: the data panel', () => {
       ['', 'Choose a demo study'],
       ['pilot', 'Pilot study'],
       ['renamed', 'Renamed columns'],
-      ['liver', 'Liver cohort, labs only']
+      ['liver', 'Liver cohort, labs only'],
+      ['rbqm', 'RBQM study']
     ]);
     // The page opens on the first study, and says what is in it.
     expect(menu().value).toBe('pilot');
@@ -774,6 +775,98 @@ describe('demo app: the data panel', () => {
     // A study chosen afterwards still loads.
     await app.loadDemo('liver');
     expect(Object.values(app.state.files).map((file) => file.name)).toEqual(['adbds-abnbl.csv']);
+  });
+
+  it('APP-RBQM-007: the RBQM study’s nine files are kept as they are: none is placed in a standard domain or mapped, each is listed with its rows and columns, and no safety chart reads them (#233)', async () => {
+    const fetchText = demoFetch();
+    document.body.innerHTML = '<div id="demo"></div>';
+    root = document.querySelector('#demo');
+    app = mountApp(root, { charts: fakeCharts(), manifest, demo: { base: './data/' }, fetchText });
+    await app.ready;
+    app.select('data');
+    const menu = root.querySelector('.sva-side select.sva-study');
+    choose(menu, 'rbqm');
+    await app.ready;
+    const rbqm = DEMO_STUDIES.find((study) => study.id === 'rbqm');
+    expect(fetchText.mock.calls.slice(-9).map(([url]) => url)).toEqual(
+      rbqm.files.map((file) => `./data/rbqm/${file}`)
+    );
+    // Kept, with their text, and nothing placed, mapped or set aside.
+    expect(app.state.study).toBe('rbqm');
+    expect(app.state.raw.map((file) => file.name)).toEqual(rbqm.files);
+    expect(app.state.files).toEqual({});
+    expect(app.state.mappings).toEqual({});
+    expect(app.state.unplaced).toEqual([]);
+    expect(notes()).toEqual([]);
+    const subjects = app.state.raw[0];
+    expect(subjects.rows).toBe(1005);
+    expect(subjects.columns.slice(0, 2)).toEqual(['studyid', 'invid']);
+    expect(subjects.text).toBe(
+      readFileSync(path.join(repoDir, 'site/data/rbqm/Raw_SUBJ.csv'), 'utf8')
+    );
+    // The data view lists each, and says there is nothing to map.
+    expect(root.querySelector('.sva-side select.sva-study').value).toBe('rbqm');
+    expect(root.querySelector('.sva-study-note').textContent).toContain(
+      '765 enrolled participants at 150 sites'
+    );
+    expect(loaded().map(([name, detail]) => [name, detail])).toEqual([
+      ['Raw_SUBJ.csv', 'gsm raw file, 1,005 rows'],
+      ['Raw_AE.csv', 'gsm raw file, 2,583 rows'],
+      ['Raw_PD.csv', 'gsm raw file, 3,000 rows'],
+      ['Raw_LB.csv', 'gsm raw file, 57,200 rows'],
+      ['Raw_STUDCOMP.csv', 'gsm raw file, 765 rows'],
+      ['Raw_SDRGCOMP.csv', 'gsm raw file, 765 rows'],
+      ['Raw_SITE.csv', 'gsm raw file, 150 rows'],
+      ['Raw_STUDY.csv', 'gsm raw file, 1 row'],
+      ['Raw_ENROLL.csv', 'gsm raw file, 1,005 rows']
+    ]);
+    const cards = [...root.querySelectorAll('.sva-file.sva-raw')];
+    expect(cards.map((node) => node.dataset.raw)).toEqual(rbqm.files);
+    expect(cards[3].querySelector('.sva-file-rows').textContent).toBe('57,200 rows, 4 columns');
+    expect(cards[3].querySelector('.sva-tag').textContent).toBe('gsm raw file, kept as it is');
+    expect(root.querySelectorAll('.sva-file[data-domain]')).toHaveLength(0);
+    expect(root.querySelector('.sva-map')).toBeNull();
+    expect(tag('data')).toBe('9 files');
+    expect(steps()).toEqual([
+      ['Load your files', 'done', '9 files loaded'],
+      ['Check the mapping', 'todo', 'Nothing to map: gsm’s raw files are kept as they are'],
+      ['Open a chart', 'todo', '0 of 13 charts ready']
+    ]);
+    expect(tag('histogram')).toBe('no file');
+    expect(action('download-mapping')).toBeNull();
+
+    // Another study replaces it whole, and so do files of the reader's own.
+    choose(root.querySelector('.sva-side select.sva-study'), 'liver');
+    await app.ready;
+    expect(app.state.raw).toEqual([]);
+    expect(Object.keys(app.state.files)).toEqual(['bds']);
+    await app.loadDemo('rbqm');
+    expect(app.state.raw).toHaveLength(9);
+    app.loadFiles(STUDY);
+    expect(app.state.raw).toEqual([]);
+    expect(notes()).toEqual(['The demo study (RBQM study) was cleared to load your files.']);
+    await app.loadDemo('rbqm');
+    action('reset').click();
+    expect(app.state.raw).toEqual([]);
+    expect(steps()[0]).toEqual(['Load your files', 'current', 'No files loaded']);
+  });
+
+  it('APP-RBQM-007: a raw file that cannot be read is refused in a sentence, and one loaded again replaces itself (#233)', () => {
+    app.loadRaw([
+      { name: 'Raw_SITE.csv', text: 'studyid,invid\nA,S1\nA,S2\n' },
+      { name: 'Raw_AE.csv', text: '' }
+    ]);
+    expect(app.state.raw.map((file) => [file.name, file.rows])).toEqual([['Raw_SITE.csv', 2]]);
+    expect(notes()).toHaveLength(1);
+    expect(notes()[0]).toMatch(/^Raw_AE\.csv /);
+    app.loadRaw([{ name: 'Raw_SITE.csv', text: 'studyid,invid\nA,S1\n' }]);
+    expect(app.state.raw.map((file) => [file.name, file.rows])).toEqual([['Raw_SITE.csv', 1]]);
+    expect(notes()).toEqual([]);
+    // They are no demo study, and files of the standard domains sit beside them.
+    expect(app.state.study).toBeNull();
+    app.loadFiles(STUDY);
+    expect(app.state.raw).toHaveLength(1);
+    expect(tag('data')).toBe('5 files');
   });
 
   it('APP-LOAD-021: the sidebar belongs to the data view: a chart view has none (#159)', () => {

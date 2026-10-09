@@ -3,7 +3,14 @@
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
 import { LOGO_SVG } from '../src/app/styles.js';
-import { HOSTED_PITCH, librariesExpression } from './app-libraries.mjs';
+import {
+  EXPERIMENTAL_MEANING,
+  HOSTED_DESCRIPTION,
+  HOSTED_PITCH,
+  inlineJson,
+  librariesExpression,
+  rbqmTabExpression
+} from './app-libraries.mjs';
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -40,18 +47,49 @@ const bareDestination = (destination) =>
     ? destination.slice(4, -4)
     : destination;
 
+// A destination the site may publish: http(s), or one with no scheme (a path, a
+// fragment). Read as a browser reads it, through the spaces and control
+// characters an author can put before and inside a scheme. Anything else, such
+// as `javascript:` or `data:`, is not published: the link is reduced to its
+// label and the image to its alt text, whoever wrote the row (#258).
+const SCHEME = /^[A-Za-z][A-Za-z0-9+.-]*:/;
+export function publishable(destination) {
+  const bare = destination.replace(/[\s\u0000-\u001f]+/g, '');
+  return !SCHEME.test(bare) || /^https?:\/\//i.test(bare);
+}
+
+// A tag this renderer has written is set aside until the end, and a mark stands
+// in its place: a later rule reads the mark, never the tag, so it cannot write
+// inside an attribute an earlier rule closed. Without that, an image whose
+// destination held a link came out as an `<img>` with attributes of the
+// author's choosing (#258). The mark is a character no text reaches here with.
+const MARK = '\u0000';
+
 export function mdInline(text) {
-  return escapeHtml(text)
+  const tags = [];
+  const aside = (tag) => `${MARK}${tags.push(tag) - 1}${MARK}`;
+  // A destination that holds a mark holds a tag: it is no destination.
+  const plain = (destination) => !destination.includes(MARK);
+  return escapeHtml(String(text).replaceAll(MARK, ''))
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(
       new RegExp(`!\\[([^\\]]*)\\]\\((${DESTINATION})\\)`, 'g'),
-      (match, alt, destination) => `<img src="${bareDestination(destination)}" alt="${alt}">`
+      (match, alt, destination) =>
+        publishable(bareDestination(destination))
+          ? aside(`<img src="${bareDestination(destination)}" alt="${alt}">`)
+          : alt
     )
     .replace(
       new RegExp(`\\[([^\\]]+)\\]\\((${DESTINATION})\\)`, 'g'),
-      (match, label, destination) => `<a href="${bareDestination(destination)}">${label}</a>`
+      (match, label, destination) => {
+        if (!plain(destination)) return match;
+        return publishable(bareDestination(destination))
+          ? `${aside(`<a href="${bareDestination(destination)}">`)}${label}</a>`
+          : label;
+      }
     )
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(new RegExp(`${MARK}(\\d+)${MARK}`, 'g'), (match, index) => tags[Number(index)]);
 }
 
 // GitHub-style heading slug: lowercase, non-alphanumerics collapsed to a single
@@ -1480,7 +1518,7 @@ export function renderKitPage(model, { repoUrl, version }) {
 // tier means, for whoever hovers it.
 export const STATUS_MEANING = {
   prototype: 'Not ready for production: on the docs site only, and not in the demo app.',
-  experimental: 'Still being worked on, and fine to use: its behaviour and settings may change.'
+  experimental: EXPERIMENTAL_MEANING
 };
 export function experimentalBadge(renderer) {
   if (renderer && renderer.prototype) {
@@ -1595,6 +1633,7 @@ export function publishDemoAppFonts(rootDir, demoDir) {
  * @param {string} options.repoUrl The repository URL, for the app's source link.
  * @param {Array<{name: string, global: string, file: string}>} [options.libraries] Further chart libraries (#182): each bundle is loaded from beside the page after the app's and handed to the app when it mounts.
  * @param {string} [options.charts] What the app reviews a study in, for the page's description: its charts, counted.
+ * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages (#246), as scripts/app-libraries.mjs::chartLinks gives them: handed to the app for the footnote under each chart. Given none, the app is told of none.
  * @param {{docs?: ?string, domains?: ?string}} [options.links] Where the app's links to the docs site and the Domains page lead: by default into the site the page is part of. One given no address is left out, and the app's own default, the published site, stands (#214): the page `npm run demo` serves has no site beside it.
  * @returns {string} The complete HTML document.
  */
@@ -1604,7 +1643,8 @@ export function renderDemoAppPage({
   repoUrl,
   libraries = [],
   charts = 'thirteen clinical safety charts',
-  links = {}
+  links = {},
+  chartLinks = {}
 }) {
   const siteLinks = { ...DEMO_APP_SITE_LINKS, ...links };
   const icon = encodeURIComponent(LOGO_SVG).replace(/'/g, '%27');
@@ -1623,7 +1663,7 @@ export function renderDemoAppPage({
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? 'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org, and your data stays in your browser.' : 'It runs in your browser; nothing is uploaded.'}">
+<meta name="description" content="The safety.viz demo app: load a study, check how its columns map, and review it in ${escapeHtml(charts)}. ${libraries.length ? HOSTED_DESCRIPTION : 'It runs in your browser; nothing is uploaded.'}">
 <title>safety.viz demo</title>
 <link rel="icon" href="data:image/svg+xml,${icon}">
 ${preloads}
@@ -1639,7 +1679,7 @@ body{margin:0;background:#fafaf8}
 <script src="./${escapeHtml(bundle)}"></script>
 ${libraries.map((library) => `<script src="./${escapeHtml(library.file)}"></script>\n`).join('')}<script>
 window.__safetyVizApp = SafetyVizApp.mount('#app', {
-  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request' })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}
+  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}${Object.keys(chartLinks).length ? `\n  chartLinks: ${inlineJson(chartLinks)},` : ''}
   links: {${Object.keys(DEMO_APP_SITE_LINKS)
     .filter((name) => siteLinks[name])
     .map((name) => `\n    ${name}: ${js(siteLinks[name])},`)

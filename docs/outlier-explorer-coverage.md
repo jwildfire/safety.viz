@@ -11,7 +11,7 @@ matching its behavior, under
   browser/unit tests below.
 - **Source-matrix rows** (`SOE-FUNC-*`, `SOE-REG-*`, `SOE-CFG-*`, `SOE-DATA-*`,
   `SOE-API-*`) — the reviewed matrix at
-  [safety.agent `docs/requirements/safety-outlier-explorer.md`](https://github.com/jwildfire/safety.agent/blob/main/docs/requirements/safety-outlier-explorer.md),
+  [`requirements/safety-outlier-explorer.md`](https://github.com/jwildfire/safety.viz/blob/HEAD/requirements/safety-outlier-explorer.md),
   whose `Evidence Type` column routes rows (`unit` → Vitest, `browser` →
   Playwright).
 

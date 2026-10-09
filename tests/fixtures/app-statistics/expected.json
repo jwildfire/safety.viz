@@ -28,7 +28,7 @@
   },
   {
    "file": "site/data/adsl.csv",
-   "sha256": "d2d198906aa06ace5e0fda08442ad234c5835ec7cf19378737db7274ffd54f04"
+   "sha256": "898d324b198ce76f01f28b2be2b890ea4f0d77f357a3d5f0a49440625b176aac"
   },
   {
    "file": "src/app/parse.js",
@@ -52,7 +52,7 @@
   },
   {
    "file": "src/app/page.js",
-   "sha256": "b9df5d8ddf192aca17ef1586c9385b6dddc15d07aa75fc4d248139040ac7e5f3"
+   "sha256": "a42bec6eb8459fbef057ffefb34fa8f52000884db202bc8436549e38033ead5f"
   },
   {
    "file": "site/vendor/bio.viz/bio.viz.js",

@@ -9,7 +9,9 @@ import {
   renderDemoAppPage,
   renderShell
 } from '../../../scripts/site-lib.mjs';
-import { APP_LIBRARIES } from '../../../scripts/app-libraries.mjs';
+import { APP_LIBRARIES, chartLinks, libraryManifest } from '../../../scripts/app-libraries.mjs';
+import { BIO_VIZ, readRecord } from '../../../scripts/vendor-lib.mjs';
+import { SITE } from '../../../src/app/site.js';
 import { STYLES } from '../../../src/app/styles.js';
 
 const rootDir = fileURLToPath(new URL('../../../', import.meta.url));
@@ -87,13 +89,14 @@ describe('renderDemoAppPage', () => {
     expect(html).toMatch(/<link rel="icon" href="data:image\/svg\+xml,[^"]+">/);
   });
 
-  it('APP-PAGE-017: the page as the site builds it, with bio.viz’s charts and R on request, names exactly two other hosts: the repository’s and R’s (#165, #183)', () => {
+  it('APP-PAGE-017: the page as the site builds it, with bio.viz’s charts, the RBQM tab, R on request and each chart’s pages, names exactly four other hosts: the repository’s, the two R is downloaded from and, in links alone, the one bio.viz’s site is on (#165, #183, #235, #246)', () => {
     const built = renderDemoAppPage({
       bundle: 'safety.viz-app.js',
       download: 'safety.viz-app.html',
       repoUrl: 'https://github.com/jwildfire/safety.viz',
       libraries: APP_LIBRARIES,
-      charts: 'thirteen clinical safety charts and five biomarker charts'
+      charts: 'thirteen clinical safety charts and five biomarker charts',
+      chartLinks: chartLinks({ site: '../' })
     });
     // Every host the page names, with or without a scheme; the icon's data URI
     // (whose SVG namespace is not a request) is left out.
@@ -107,7 +110,21 @@ describe('renderDemoAppPage', () => {
           ].map(([host]) => host)
         )
       ].sort();
-    expect(hosts(built)).toEqual(['github.com', 'webr.r-wasm.org']);
+    expect(hosts(built)).toEqual([
+      'github.com',
+      'jwildfire.github.io',
+      'repo.r-wasm.org',
+      'webr.r-wasm.org'
+    ]);
+    // The second is named only in the addresses of the biomarker charts' test
+    // evidence, on bio.viz's site (#246): links a reader may follow, which the
+    // page asks nothing of. The safety charts' own pages are beside the app.
+    const addresses = [...built.matchAll(/https?:\/\/[^\s"')]+/g)].map(([url]) => url);
+    const elsewhere = addresses.filter((url) => url.includes('jwildfire.github.io'));
+    expect(elsewhere).toHaveLength(5);
+    for (const url of elsewhere) {
+      expect(url).toMatch(/^https:\/\/jwildfire\.github\.io\/bio\.viz\/[a-z-]+\/evidence\.html$/);
+    }
     // R's host is named only as where R comes from, fetched by bio.viz's own
     // connection when the reader presses Start R; the page links nothing there.
     expect(built).not.toMatch(/https?:\/\/webr\.r-wasm\.org/);
@@ -186,7 +203,7 @@ describe('renderDemoAppPage', () => {
     expect(app).toBeGreaterThan(-1);
     expect(library).toBeGreaterThan(app);
     expect(page).toContain(
-      'libraries: [{ name: "bio.viz", file: "bio.viz.js", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }]'
+      'libraries: [{ name: "bio.viz", file: "bio.viz.js", charts: window.BioViz, manifest: window.BioViz && window.BioViz.portfolio }, { name: "gsm.viz", view: SafetyVizApp.rbqmTab('
     );
     expect(page).toMatch(
       /<meta name="description" content="[^"]*thirteen clinical safety charts and five biomarker charts[^"]*">/
@@ -231,5 +248,115 @@ describe('site shell: the Demo app nav entry', () => {
     const arrow = css.match(/\.site-nav a\.nav-app::after \{([^}]*)\}/);
     expect(arrow, 'no ::after arrow').not.toBeNull();
     expect(arrow[1]).toMatch(/mask:/);
+  });
+});
+
+// Each chart's own pages (#246): the footnote under a chart in the app links
+// its clinical guide and its test evidence, and the page that mounts the app
+// says where those are.
+describe('chartLinks', () => {
+  const read = (file) => JSON.parse(readFileSync(path.join(rootDir, file), 'utf8'));
+  const config = read('site/config.json');
+  const manifest = read('src/data/portfolio.json');
+  const own = Object.keys(manifest.modules);
+  const renderer = (module) => config.renderers.find((entry) => entry.module === module);
+
+  it('APP-PAGE-031: every chart the app lists has a test evidence address, and a clinical guide address exactly where site/config.json gives the chart a guide (#246)', () => {
+    const links = chartLinks({ site: '../' });
+    const fromLibraries = APP_LIBRARIES.flatMap((library) =>
+      Object.keys(libraryManifest(library).modules)
+    );
+    expect(Object.keys(links)).toEqual([...own, ...fromLibraries]);
+    expect(own).toHaveLength(13);
+    expect(fromLibraries).toHaveLength(5);
+    for (const module of own) {
+      expect(links[module], module).toEqual({
+        ...(renderer(module).guide ? { guide: `../${module}/guide.html` } : {}),
+        evidence: `../${module}/evidence.html`
+      });
+    }
+    expect(own.filter((module) => links[module].guide)).toEqual([
+      'hep-explorer',
+      'hep-waterfall',
+      'nep-explorer',
+      'participant-profile',
+      'qt-explorer',
+      'time-to-event'
+    ]);
+  });
+
+  it('APP-PAGE-031: every address of a safety chart is a page the site build writes: its renderer is available, and its guide is a file in docs/guides/ (#246)', () => {
+    const links = chartLinks({ site: '../' });
+    for (const module of own) {
+      expect(renderer(module).status, module).toBe('available');
+      if (links[module].guide) {
+        expect(existsSync(path.join(rootDir, 'docs/guides', renderer(module).guide)), module).toBe(
+          true
+        );
+      }
+    }
+    // A chart the site has no pages for is given no address, and so has no footnote.
+    const planned = {
+      ...config,
+      renderers: config.renderers.map((entry) =>
+        entry.module === 'histogram' ? { ...entry, status: 'planned' } : entry
+      )
+    };
+    const unlisted = {
+      ...config,
+      renderers: config.renderers.filter((entry) => entry.module !== 'histogram')
+    };
+    for (const changed of [planned, unlisted]) {
+      const without = chartLinks({ site: '../', config: changed });
+      expect(Object.keys(without)).not.toContain('histogram');
+      expect(Object.keys(without)).toHaveLength(Object.keys(links).length - 1);
+    }
+  });
+
+  it('APP-PAGE-031: a second library’s charts have test evidence on that library’s own site, wherever the page is, and no guide (#246)', () => {
+    const [library] = APP_LIBRARIES;
+    for (const links of [chartLinks({ site: '../' }), chartLinks()]) {
+      for (const module of Object.keys(libraryManifest(library).modules)) {
+        expect(links[module]).toEqual({ evidence: `${library.site}${module}/evidence.html` });
+      }
+    }
+    // The released site, not the development one: the copy is a release's.
+    expect(library.site).toBe('https://jwildfire.github.io/bio.viz/');
+    expect(readRecord(path.join(rootDir, BIO_VIZ.directory)).tag).toMatch(/^v\d+\.\d+\.\d+$/);
+    // With no further library, safety.viz's charts alone.
+    expect(Object.keys(chartLinks({ libraries: [] }))).toEqual(own);
+  });
+
+  it('APP-PAGE-031: with no site beside the page, a safety chart’s addresses are on the published site (#246)', () => {
+    const links = chartLinks();
+    expect(SITE).toBe('https://jwildfire.github.io/safety.viz/');
+    expect(links['hep-explorer']).toEqual({
+      guide: `${SITE}hep-explorer/guide.html`,
+      evidence: `${SITE}hep-explorer/evidence.html`
+    });
+    expect(links.histogram).toEqual({ evidence: `${SITE}histogram/evidence.html` });
+  });
+
+  it('APP-PAGE-031: the site page hands the app the addresses it was given, in one line of its mount, and none when it was given none (#246)', () => {
+    const options = {
+      bundle: 'safety.viz-app.js',
+      download: 'safety.viz-app.html',
+      repoUrl: 'https://github.com/jwildfire/safety.viz'
+    };
+    const links = chartLinks({ site: '../' });
+    const page = renderDemoAppPage({ ...options, chartLinks: links });
+    const [, written] = page.match(/^ {2}chartLinks: (.*),$/m);
+    expect(JSON.parse(written)).toEqual(links);
+    expect(page).toContain('"hep-explorer":{"guide":"../hep-explorer/guide.html"');
+    // A less-than sign in an address cannot end the inline script.
+    const tricky = renderDemoAppPage({
+      ...options,
+      chartLinks: { histogram: { evidence: '</script><p>oops' } }
+    });
+    expect(tricky).not.toContain('</script><p>oops');
+    expect(tricky).toContain('\\u003c/script>\\u003cp>oops');
+    // Given none, the page is as it was.
+    expect(renderDemoAppPage(options)).not.toContain('chartLinks');
+    expect(renderDemoAppPage({ ...options, chartLinks: {} })).toBe(renderDemoAppPage(options));
   });
 });

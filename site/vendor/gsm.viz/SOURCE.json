@@ -1,0 +1,25 @@
+{
+  "bundle": "gsm.viz script-tag bundle",
+  "repository": "https://github.com/Gilead-Public/gsm.viz",
+  "ref": "v2.4.1",
+  "commit": "e4c9d9f7fbfb0da8efd4e27cf8985ee14dd2e233",
+  "version": "2.4.1",
+  "license": "Apache-2.0",
+  "license_in_package_json": "ISC",
+  "tag": "v2.4.1",
+  "merged_to_dev": false,
+  "files": [
+    {
+      "file": "index.js",
+      "source": "index.js",
+      "sha256": "c2965dce71941dac902e581f72543b789dc8b2a234fc9ba68ae19e371232d4d0",
+      "bytes": 1016184
+    },
+    {
+      "file": "LICENSE",
+      "source": "LICENSE",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "bytes": 11357
+    }
+  ]
+}

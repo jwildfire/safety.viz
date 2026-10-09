@@ -3,6 +3,14 @@
   "repoUrl": "https://github.com/jwildfire/safety.viz",
   "hubUrl": "https://jwildfire.github.io/obot.roadmap/",
   "matrixBaseUrl": "https://github.com/jwildfire/safety.viz/blob/HEAD/requirements",
+  "appTabs": [
+    {
+      "id": "rbqm",
+      "title": "RBQM",
+      "experimental": true,
+      "blurb": "Risk-based quality monitoring in the demo app: gsm's site metrics, run by R in the browser on the loaded study and drawn with gsm.viz."
+    }
+  ],
   "renderers": [
     {
       "module": "histogram",

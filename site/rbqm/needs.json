@@ -1,0 +1,767 @@
+{
+ "derived_from": [
+  {
+   "file": "site/rbqm/pipeline.R",
+   "sha256": "0df400e2981e1313f9c270cdaa256e65a27df6f294ebc7f761ac33193e5b21d8"
+  },
+  {
+   "file": "site/rbqm/standard/AE.yaml",
+   "sha256": "973efdebe2a0cd2d480d9ed9657518009455ba2595a4576169a4cd6797bfa27e"
+  },
+  {
+   "file": "site/rbqm/standard/SITE.yaml",
+   "sha256": "606ffa556fb49f369f08299ced1392e3c1a996a5c3814a4402a71600f85f7519"
+  },
+  {
+   "file": "site/rbqm/standard/STUDCOMP.yaml",
+   "sha256": "17ea4aab94af3c79c74e708504b1abfefa36aca56eab635d318e72cabc1aa39d"
+  },
+  {
+   "file": "site/rbqm/standard/STUDY.yaml",
+   "sha256": "9cc2a7d6b25925f1912914771b13b4733285f0506d8e0b26dffd9ed154dced20"
+  },
+  {
+   "file": "site/rbqm/standard/SUBJ.yaml",
+   "sha256": "5b4037f2b66498b0b0fc344bdc32e9bbc785633831f2ee61de8137841046433c"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/SUBJ.yaml",
+   "sha256": "a3e6556057545aea37ad8ccd4d8d7b8eac3932b3ed86b8918d209660bd1753ae"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/AE.yaml",
+   "sha256": "83f40131a96dcc3b0bcf2a4e04cfb358e4ac278d9b03a705239b4c0e80069e4e"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/PD.yaml",
+   "sha256": "d2a64ab188db8749db3d724a84bfb2916f023d3daff869dd11c40ff41f5f9358"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/LB.yaml",
+   "sha256": "9699babd87d616cbeff928d7392e720eb9ec1d69cb77c5f7f5d0187c1d98fd41"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/STUDCOMP.yaml",
+   "sha256": "2aa856b4e59583564937dc451a3fb198eb8e38bcf9ffc21e5f4863c5feecb8a7"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/SDRGCOMP.yaml",
+   "sha256": "c27d8d9ac88b432a0c6e37048131fe09c5432c473c95d5b3a5b0ffdd2658f9b5"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/SITE.yaml",
+   "sha256": "83087c2bb5b7afd9abb354b636afe48eeb5ead1e83f72eed85dced4cb760e2e7"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/STUDY.yaml",
+   "sha256": "3902723c7c9ac69af76510081420b2044306e48ab352301de238d433ebd99be8"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/ENROLL.yaml",
+   "sha256": "d3e0302605ff3c87a5bca73021c55a56df8a983504496ada90e7d2d8a394d6ba"
+  },
+  {
+   "file": "site/vendor/gsm.mapping/workflow/1_mappings/COUNTRY.yaml",
+   "sha256": "70e4d86db8b9821d36059f5cb4d0035d389645e3a9821b7c323dd8138deacee6"
+  },
+  {
+   "file": "site/vendor/gsm.kri/workflow/2_metrics/kri0001.yaml",
+   "sha256": "a25e831f1c81283e8c0d54922dcdb2beb4a019e1bdb469dbc730f71368a1a33d"
+  },
+  {
+   "file": "site/vendor/gsm.kri/workflow/2_metrics/kri0002.yaml",
+   "sha256": "944d934d5810ce37b2d43ae7e56b8abe5f270d630dd824ab0e44de2be11ed9d3"
+  },
+  {
+   "file": "site/vendor/gsm.kri/workflow/2_metrics/kri0003.yaml",
+   "sha256": "644ae43348ac8160a60958a742b26c2402145c43c3f19a8d958a3090c3e5a857"
+  },
+  {
+   "file": "site/vendor/gsm.kri/workflow/2_metrics/kri0004.yaml",
+   "sha256": "d9a55c5bbe06b5aa2511dba5b5258bb4ccfcbb7ac9bb9a689c60c03250eda3c3"
+  },
+  {
+   "file": "site/vendor/gsm.kri/workflow/2_metrics/kri0005.yaml",
+   "sha256": "d8660e662c6074c10a800228cb5f18608f89d5f40cbb762ece30591b9c7a5212"
+  },
+  {
+   "file": "site/vendor/gsm.kri/workflow/2_metrics/kri0006.yaml",
+   "sha256": "273c28b8333d24d9db241bb12e44b3ca34882e296f1dba89c8126c2749d1b9b0"
+  },
+  {
+   "file": "site/vendor/gsm.kri/workflow/2_metrics/kri0007.yaml",
+   "sha256": "db9c3218b41556941d77bfb6023654bfbf50ddb81f5c52446cdc37b8ac2eedca"
+  },
+  {
+   "file": "site/vendor/gsm.kri/workflow/2_metrics/kri0012.yaml",
+   "sha256": "cbd774c1c967daffd3fadc352d83bd3d1372351e42a524f56a342f32279d0bc6"
+  },
+  {
+   "file": "site/vendor/gsm.kri/R/util-Report.R",
+   "sha256": "e361f682d3738e76c0f99f140306a0390b34bcd4a22b8f44b561f1b7c7331815"
+  },
+  {
+   "file": "site/vendor/gsm.reporting/workflow/3_reporting/Results.yaml",
+   "sha256": "9af4f317bef0acd16a4098417aa5c1a7cb4bd945bd00d560b2ef4c8a7f7b1d36"
+  },
+  {
+   "file": "site/vendor/gsm.reporting/workflow/3_reporting/Bounds.yaml",
+   "sha256": "e135ba9a945ff844878560101605d448edfd992c07a127697d2baa358cd2f2ce"
+  },
+  {
+   "file": "site/vendor/gsm.reporting/workflow/3_reporting/Groups.yaml",
+   "sha256": "aa6b4440c67a6b94d7f89c638b9fe42d87bc3949dd3f1b812ffc4705ce0d31ca"
+  },
+  {
+   "file": "site/vendor/gsm.reporting/workflow/3_reporting/Metrics.yaml",
+   "sha256": "e96d36a9aa8656e8d3ed4a0e7ffb02161b4384cc5c6cd6d9050b0f4cfe2df41f"
+  }
+ ],
+ "needs": {
+  "standard": [
+   {
+    "output": "Raw_AE",
+    "needs": [
+     {
+      "table": "Standard_ae",
+      "columns": [
+       "USUBJID",
+       "AEDECOD",
+       "AESER"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "subjid",
+     "aeser",
+     "aest_dt",
+     "aeen_dt",
+     "mdrpt_nsv",
+     "mdrsoc_nsv",
+     "aetoxgr",
+     "aeongo",
+     "aerel",
+     "mincreated_dts"
+    ]
+   },
+   {
+    "output": "Raw_SITE",
+    "needs": [
+     {
+      "table": "Standard_subject",
+      "columns": [
+       "SITEID"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "invid",
+     "InvestigatorFirstName",
+     "InvestigatorLastName",
+     "site_status",
+     "City",
+     "State",
+     "Country",
+     "site_active_dt"
+    ]
+   },
+   {
+    "output": "Raw_STUDCOMP",
+    "needs": [
+     {
+      "table": "Standard_subject",
+      "columns": [
+       "USUBJID",
+       "SITEID",
+       "EOSSTT"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "invid",
+     "subjid",
+     "compyn",
+     "compreas",
+     "mincreated_dts"
+    ]
+   },
+   {
+    "output": "Raw_STUDY",
+    "needs": [
+     {
+      "table": "Standard_subject",
+      "columns": [
+       "USUBJID"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "nickname",
+     "protocol_title",
+     "status",
+     "num_plan_site",
+     "num_plan_subj",
+     "act_fpfv",
+     "est_fpfv",
+     "est_lplv",
+     "est_lpfv",
+     "db_lock_dt",
+     "therapeutic_area",
+     "protocol_indication",
+     "phase",
+     "product"
+    ]
+   },
+   {
+    "output": "Raw_SUBJ",
+    "needs": [
+     {
+      "table": "Standard_subject",
+      "columns": [
+       "USUBJID",
+       "SITEID",
+       "EOSDY"
+      ]
+     }
+    ],
+    "provides": [
+     "studyid",
+     "invid",
+     "country",
+     "subjid",
+     "subject_nsv",
+     "enrollyn",
+     "timeonstudy",
+     "firstparticipantdate",
+     "firstdosedate",
+     "timeontreatment",
+     "agerep",
+     "sex",
+     "race",
+     "mincreated_dts"
+    ]
+   }
+  ],
+  "raw": [
+   {
+    "table": "Raw_AE",
+    "file": "Raw_AE.csv",
+    "columns": [
+     "studyid",
+     "subjid",
+     "aeser",
+     "aest_dt",
+     "aeen_dt",
+     "mdrpt_nsv",
+     "mdrsoc_nsv",
+     "aetoxgr",
+     "aeongo",
+     "aerel",
+     "mincreated_dts"
+    ]
+   },
+   {
+    "table": "Raw_ENROLL",
+    "file": "Raw_ENROLL.csv",
+    "columns": [
+     "studyid",
+     "invid",
+     "country",
+     "subjid",
+     "subjectid",
+     "enrollyn",
+     "enroll_dt"
+    ]
+   },
+   {
+    "table": "Raw_LB",
+    "file": "Raw_LB.csv",
+    "columns": [
+     "studyid",
+     "subjid",
+     "toxgrg_nsv",
+     "lb_dt"
+    ]
+   },
+   {
+    "table": "Raw_PD",
+    "file": "Raw_PD.csv",
+    "columns": [
+     "studyid",
+     "subjid",
+     "deemedimportant",
+     "dvdecod",
+     "dvterm",
+     "dvdtm"
+    ]
+   },
+   {
+    "table": "Raw_SDRGCOMP",
+    "file": "Raw_SDRGCOMP.csv",
+    "columns": [
+     "studyid",
+     "subjid",
+     "sdrgyn",
+     "phase",
+     "mincreated_dts"
+    ]
+   },
+   {
+    "table": "Raw_STUDCOMP",
+    "file": "Raw_STUDCOMP.csv",
+    "columns": [
+     "studyid",
+     "invid",
+     "subjid",
+     "compyn",
+     "compreas",
+     "mincreated_dts"
+    ]
+   },
+   {
+    "table": "Raw_SUBJ",
+    "file": "Raw_SUBJ.csv",
+    "columns": [
+     "studyid",
+     "invid",
+     "country",
+     "subjid",
+     "subject_nsv",
+     "enrollyn",
+     "timeonstudy",
+     "firstparticipantdate",
+     "firstdosedate",
+     "timeontreatment",
+     "agerep",
+     "sex",
+     "race",
+     "mincreated_dts"
+    ]
+   },
+   {
+    "table": "Raw_SITE",
+    "file": "Raw_SITE.csv",
+    "columns": [
+     "studyid",
+     "invid",
+     "InvestigatorFirstName",
+     "InvestigatorLastName",
+     "site_status",
+     "City",
+     "State",
+     "Country",
+     "site_active_dt"
+    ]
+   },
+   {
+    "table": "Raw_STUDY",
+    "file": "Raw_STUDY.csv",
+    "columns": [
+     "studyid",
+     "nickname",
+     "protocol_title",
+     "status",
+     "num_plan_site",
+     "num_plan_subj",
+     "act_fpfv",
+     "est_fpfv",
+     "est_lplv",
+     "est_lpfv",
+     "db_lock_dt",
+     "therapeutic_area",
+     "protocol_indication",
+     "phase",
+     "product"
+    ]
+   }
+  ],
+  "mappings": [
+   {
+    "output": "Mapped_AE",
+    "needs": [
+     {
+      "table": "Raw_AE",
+      "columns": [
+       "studyid",
+       "subjid",
+       "aeser",
+       "aest_dt",
+       "aeen_dt",
+       "mdrpt_nsv",
+       "mdrsoc_nsv",
+       "aetoxgr",
+       "aeongo",
+       "aerel",
+       "mincreated_dts"
+      ]
+     }
+    ]
+   },
+   {
+    "output": "Mapped_ENROLL",
+    "needs": [
+     {
+      "table": "Raw_ENROLL",
+      "columns": [
+       "studyid",
+       "invid",
+       "country",
+       "subjid",
+       "subjectid",
+       "enrollyn",
+       "enroll_dt"
+      ]
+     }
+    ]
+   },
+   {
+    "output": "Mapped_LB",
+    "needs": [
+     {
+      "table": "Raw_LB",
+      "columns": [
+       "studyid",
+       "subjid",
+       "toxgrg_nsv",
+       "lb_dt"
+      ]
+     }
+    ]
+   },
+   {
+    "output": "Mapped_PD",
+    "needs": [
+     {
+      "table": "Raw_PD",
+      "columns": [
+       "studyid",
+       "subjid",
+       "deemedimportant",
+       "dvdecod",
+       "dvterm",
+       "dvdtm"
+      ]
+     }
+    ]
+   },
+   {
+    "output": "Mapped_SDRGCOMP",
+    "needs": [
+     {
+      "table": "Raw_SDRGCOMP",
+      "columns": [
+       "studyid",
+       "subjid",
+       "sdrgyn",
+       "phase",
+       "mincreated_dts"
+      ]
+     }
+    ]
+   },
+   {
+    "output": "Mapped_STUDCOMP",
+    "needs": [
+     {
+      "table": "Raw_STUDCOMP",
+      "columns": [
+       "studyid",
+       "invid",
+       "subjid",
+       "compyn",
+       "compreas",
+       "mincreated_dts"
+      ]
+     }
+    ]
+   },
+   {
+    "output": "Mapped_SUBJ",
+    "needs": [
+     {
+      "table": "Raw_SUBJ",
+      "columns": [
+       "studyid",
+       "invid",
+       "country",
+       "subjid",
+       "subject_nsv",
+       "enrollyn",
+       "timeonstudy",
+       "firstparticipantdate",
+       "firstdosedate",
+       "timeontreatment",
+       "agerep",
+       "sex",
+       "race",
+       "mincreated_dts"
+      ]
+     }
+    ]
+   },
+   {
+    "output": "Mapped_COUNTRY",
+    "needs": [
+     {
+      "table": "Mapped_SUBJ",
+      "columns": [
+       "studyid",
+       "country",
+       "invid",
+       "subjid"
+      ]
+     }
+    ]
+   },
+   {
+    "output": "Mapped_SITE",
+    "needs": [
+     {
+      "table": "Raw_SITE",
+      "columns": [
+       "studyid",
+       "invid",
+       "InvestigatorFirstName",
+       "InvestigatorLastName",
+       "site_status",
+       "City",
+       "State",
+       "Country",
+       "site_active_dt"
+      ]
+     },
+     {
+      "table": "Mapped_SUBJ",
+      "columns": [
+       "studyid",
+       "invid",
+       "subjid"
+      ]
+     }
+    ]
+   },
+   {
+    "output": "Mapped_STUDY",
+    "needs": [
+     {
+      "table": "Raw_STUDY",
+      "columns": [
+       "studyid",
+       "nickname",
+       "protocol_title",
+       "status",
+       "num_plan_site",
+       "num_plan_subj",
+       "act_fpfv",
+       "est_fpfv",
+       "est_lplv",
+       "est_lpfv",
+       "db_lock_dt",
+       "therapeutic_area",
+       "protocol_indication",
+       "phase",
+       "product"
+      ]
+     },
+     {
+      "table": "Raw_SUBJ",
+      "columns": [
+       "studyid",
+       "invid",
+       "subjid",
+       "enrollyn"
+      ]
+     }
+    ]
+   }
+  ],
+  "metrics": [
+   {
+    "id": "kri0001",
+    "metric": "Adverse Event Rate",
+    "abbreviation": "AE",
+    "needs": [
+     {
+      "table": "Mapped_AE",
+      "columns": [
+       "subjid"
+      ]
+     },
+     {
+      "table": "Mapped_SUBJ",
+      "columns": [
+       "subjid",
+       "invid",
+       "timeonstudy"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "kri0002",
+    "metric": "Serious Adverse Event Rate",
+    "abbreviation": "SAE",
+    "needs": [
+     {
+      "table": "Mapped_AE",
+      "columns": [
+       "subjid",
+       "aeser"
+      ]
+     },
+     {
+      "table": "Mapped_SUBJ",
+      "columns": [
+       "subjid",
+       "invid",
+       "timeonstudy"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "kri0003",
+    "metric": "Non-Important Protocol Deviation Rate",
+    "abbreviation": "PD",
+    "needs": [
+     {
+      "table": "Mapped_PD",
+      "columns": [
+       "subjid",
+       "deemedimportant"
+      ]
+     },
+     {
+      "table": "Mapped_SUBJ",
+      "columns": [
+       "subjid",
+       "invid",
+       "timeonstudy"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "kri0004",
+    "metric": "Important Protocol Deviation Rate",
+    "abbreviation": "IPD",
+    "needs": [
+     {
+      "table": "Mapped_PD",
+      "columns": [
+       "subjid",
+       "deemedimportant"
+      ]
+     },
+     {
+      "table": "Mapped_SUBJ",
+      "columns": [
+       "subjid",
+       "invid",
+       "timeonstudy"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "kri0005",
+    "metric": "Grade 3+ Lab Abnormality Rate",
+    "abbreviation": "LB",
+    "needs": [
+     {
+      "table": "Mapped_SUBJ",
+      "columns": [
+       "subjid",
+       "invid"
+      ]
+     },
+     {
+      "table": "Mapped_LB",
+      "columns": [
+       "subjid",
+       "toxgrg_nsv"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "kri0006",
+    "metric": "Study Discontinuation Rate",
+    "abbreviation": "SDSC",
+    "needs": [
+     {
+      "table": "Mapped_SUBJ",
+      "columns": [
+       "subjid",
+       "invid"
+      ]
+     },
+     {
+      "table": "Mapped_STUDCOMP",
+      "columns": [
+       "subjid",
+       "compyn"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "kri0007",
+    "metric": "Treatment Discontinuation Rate",
+    "abbreviation": "TDSC",
+    "needs": [
+     {
+      "table": "Mapped_SUBJ",
+      "columns": [
+       "subjid",
+       "invid"
+      ]
+     },
+     {
+      "table": "Mapped_SDRGCOMP",
+      "columns": [
+       "subjid",
+       "sdrgyn",
+       "phase"
+      ]
+     }
+    ]
+   },
+   {
+    "id": "kri0012",
+    "metric": "Screen Failure Rate",
+    "abbreviation": "SF",
+    "needs": [
+     {
+      "table": "Mapped_ENROLL",
+      "columns": [
+       "subjectid",
+       "invid",
+       "enrollyn"
+      ]
+     }
+    ]
+   }
+  ],
+  "groups": {
+   "needs": [
+    {
+     "table": "Mapped_STUDY",
+     "columns": []
+    },
+    {
+     "table": "Mapped_SITE",
+     "columns": []
+    },
+    {
+     "table": "Mapped_COUNTRY",
+     "columns": []
+    }
+   ]
+  }
+ }
+}
