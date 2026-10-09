@@ -20,6 +20,7 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  homeDescription,
   parseCoverage,
   publishManifest,
   renderAboutPage,
@@ -75,8 +76,7 @@ page(
   'safety.viz — clinical safety graphics',
   renderGallery(config),
   '',
-  'Nine classic clinical-safety graphics from the safetyGraphics ecosystem, rebuilt on ' +
-    'Chart.js with live demos, requirement-traced test evidence, and generated API references.'
+  homeDescription(config)
 );
 
 // About + architecture (#21): the project story and the technical overview.
