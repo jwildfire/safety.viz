@@ -60,8 +60,9 @@ DEST = r"(?:[^()\s]|\([^()]*\))*"
 IMAGE = re.compile(r"!\[([^\]]*)\]\(" + DEST + r"(?:\s[^)]*)?\)")
 LINK = re.compile(r"\[([^\]]+)\]\((" + DEST + r")(?:\s[^)]*)?\)")
 # Markdown also takes a destination in angle brackets, which may hold spaces and
-# parentheses: `[label](<javascript:alert(1)>)`. The site build drops the brackets.
-ANGLED = re.compile(r"\[([^\]]+)\]\(\s*<([^<>\n]*)>(?:\s[^)]*)?\)")
+# parentheses: `[label](<javascript:alert(1)>)`. The site build drops the brackets,
+# and reads up to the last `>` before the closing parenthesis, so this does too.
+ANGLED = re.compile(r"\[([^\]]+)\]\(\s*<([^\n]*?)>(?:\s[^)]*)?\)")
 SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 
 def safe_links(text: str) -> str:
@@ -77,8 +78,8 @@ def safe_links(text: str) -> str:
     def keep(m: re.Match) -> str:
         label, dest = m.group(1), m.group(2)
         # A browser reads a scheme through the spaces, tabs and line breaks an
-        # author can put before and inside it.
-        bare = re.sub(r"[\s\x00-\x1f]+", "", dest)
+        # author can put before and inside it. A stray `<` is not part of one.
+        bare = re.sub(r"[\s\x00-\x1f<]+", "", dest)
         if SCHEME.match(bare) and not re.match(r"^https?://", bare, re.I):
             return label
         return m.group(0)
