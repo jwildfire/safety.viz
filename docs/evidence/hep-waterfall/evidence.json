@@ -1,6 +1,6 @@
 {
   "module": "hep-waterfall",
-  "generatedAt": "2026-10-09T13:45:43.747Z",
+  "generatedAt": "2026-10-09T14:33:02.020Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37939085705",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37939085705"
+    "id": "37943413053",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37943413053"
   },
   "records": [
     {
@@ -1155,6 +1155,14 @@
       "requirementIds": ["HWF-SELECT-002", "HWF-SELECT-003"],
       "issueRefs": [93],
       "screenshots": ["HWF-SELECT-002-participant-selection.png"]
+    },
+    {
+      "test": "HWF-TITLE-001: on the pilot study at 1,280 pixels the two panel titles and the two captions over the plot stay apart and inside their panels, the count stays whole, and the full arm names are given on hover; at 390 pixels they still hold (#283)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HWF-TITLE-001"],
+      "issueRefs": [283],
+      "screenshots": ["HWF-TITLE-001-pilot-study-titles.png"]
     },
     {
       "test": "is keyboard operable: ArrowDown opens and focuses, Escape closes (#71)",
@@ -4693,6 +4701,14 @@
       "screenshots": []
     },
     {
+      "test": "hep-waterfall flanking-panel hover and labelling HWF-TITLE-001: a title is its arm name and its count as two parts, with the whole of both as its text and on hover, however long the name (#283)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-TITLE-001"],
+      "issueRefs": [283],
+      "screenshots": ["HWF-TITLE-001-pilot-study-titles.png"]
+    },
+    {
       "test": "hep-waterfall flanking-panel labelling (HWF-BOX-006, HWF-BOX-007) HWF-BOX-006: the anatomy key names every mark the panels draw (#83)",
       "suite": "unit",
       "status": "pass",
@@ -4755,6 +4771,14 @@
       "requirementIds": ["HWF-COLOR-003"],
       "issueRefs": [93],
       "screenshots": []
+    },
+    {
+      "test": "hep-waterfall getPlugins.armDividerPlugin HWF-TITLE-001: the captions are never drawn on the canvas, where a long arm name cannot be held to its half (#283)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-TITLE-001"],
+      "issueRefs": [283],
+      "screenshots": ["HWF-TITLE-001-pilot-study-titles.png"]
     },
     {
       "test": "hep-waterfall getPlugins.ulnBandPlugin HWF-AXIS-004: a varying reference range renders as a band labelled with its range (#93)",
