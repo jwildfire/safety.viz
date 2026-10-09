@@ -137,6 +137,29 @@ rbqm_needs <- function(mappings, metrics, reporting, standard = NULL) {
   )
 }
 
+#' Remove the folder the run before this one left its files in.
+#'
+#' The page gives each run a folder of its own, beside the last run's, and names
+#' the last one so that R can let go of it. It is removed only when it is one
+#' folder that is there, beside the folder this run reads and not that folder:
+#' a path of any other kind is left alone, and nothing is matched by pattern.
+#'
+#' @param forget The earlier run's folder, or NULL.
+#' @param data The folder this run reads.
+#' @return TRUE when a folder was removed, FALSE when nothing was.
+rbqm_forget <- function(forget, data) {
+  if (!is.character(forget) || length(forget) != 1L || is.na(forget) || !nzchar(forget)) {
+    return(FALSE)
+  }
+  if (!is.character(data) || length(data) != 1L || is.na(data) || !dir.exists(forget)) {
+    return(FALSE)
+  }
+  old <- normalizePath(forget, mustWork = FALSE)
+  here <- normalizePath(data, mustWork = FALSE)
+  if (identical(old, here) || !identical(dirname(old), dirname(here))) return(FALSE)
+  unlink(old, recursive = TRUE, expand = FALSE) == 0L && !dir.exists(old)
+}
+
 #' Run the mapping, metric and reporting workflows on a folder of raw files.
 #'
 #' @param data Folder holding the raw files, each named `Raw_<DOMAIN>.csv`,
@@ -175,10 +198,7 @@ rbqm_needs <- function(mappings, metrics, reporting, standard = NULL) {
 rbqm_run <- function(data, mappings, metrics, reporting, helpers,
                      metric_ids = NULL, snapshot_date = Sys.Date(),
                      standard = NULL, labels = NULL, forget = NULL) {
-  if (!is.null(forget) && !identical(normalizePath(forget, mustWork = FALSE),
-                                     normalizePath(data, mustWork = FALSE))) {
-    unlink(forget, recursive = TRUE)
-  }
+  rbqm_forget(forget, data)
   warned <- character()
   notes <- character()
   seconds <- list()
@@ -223,11 +243,11 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
   # raw table from it casts what it needs, so a site numbered 701 and a site
   # named 701 are the same site, and a column of Y and N is not read as a logical.
   # A cell that reads NA is a missing value, as R writes one and as a raw file's
-  # is read. A domain none of whose columns is mapped arrives with no header: it
-  # is a table of no columns, so what needs one names the column, and R reads on.
+  # is read. A domain none of whose columns is mapped arrives with every line
+  # blank: it is a table of no columns, so what needs one names the column, and
+  # R reads on. A file with a blank line above its header is read as R reads it.
   read_standard <- function(path) {
-    first <- readLines(path, n = 1L, warn = FALSE)
-    if (!length(first) || !nzchar(trimws(first))) return(data.frame())
+    if (!any(nzchar(trimws(readLines(path, warn = FALSE))))) return(data.frame())
     utils::read.csv(
       path, stringsAsFactors = FALSE, colClasses = "character", check.names = FALSE
     )
@@ -529,10 +549,15 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
     Metrics = as_table(lReporting$Reporting_Metrics),
     status = status,
     groups = if (!groups_made && !has_reason(groups_why)) {
-      # Its inputs are there, and nothing was reported: no metric ran.
+      # Its inputs are there, and nothing was reported: no metric ran, or the
+      # reporting workflows stopped.
       list(
         state = "not run", files = list(), columns = list(), unmapped = list(),
-        message = "The Groups table was not made: no metric ran."
+        message = if (is.null(reporting_stopped)) {
+          "The Groups table was not made: no metric ran."
+        } else {
+          "The Groups table was not made: gsm's reporting workflows stopped."
+        }
       )
     } else {
       status_line("Groups", "The Groups table", "Groups", groups_why)[
