@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { test, expect } from '@playwright/test';
 import { captureEvidence } from './evidence.js';
 
@@ -308,5 +309,137 @@ test.describe('safety.viz qt-explorer module', () => {
     expect(state.selectedId).toBeNull();
     expect(state.centralHasOnClick).toBe(false);
     expect(state.dockMounted).toBe(true);
+  });
+});
+
+// The table under the chart is wider than a phone: six columns that do not
+// wrap, 529 pixels of them in a 340-pixel space (#284). It has a box of its own
+// to scroll in, so the page stays as wide as the viewport.
+const PHONE = { width: 390, height: 844 };
+
+// The box the table is in, the table, and the page, as laid out now.
+const tableBox = (page) =>
+  page.evaluate(() => {
+    const wrap = document.querySelector('.safety-qt-explorer .qt-table');
+    const table = wrap.querySelector('table');
+    const edges = (element) => {
+      const { left, right } = element.getBoundingClientRect();
+      return { left, right };
+    };
+    const cells = [...table.querySelectorAll('thead th')];
+    return {
+      viewport: window.innerWidth,
+      page: document.documentElement.scrollWidth,
+      wrap: edges(wrap),
+      overflow: getComputedStyle(wrap).overflowX,
+      scrollWidth: wrap.scrollWidth,
+      clientWidth: wrap.clientWidth,
+      scrollLeft: wrap.scrollLeft,
+      table: edges(table),
+      first: edges(cells[0]),
+      last: edges(cells[cells.length - 1]),
+      role: wrap.getAttribute('role'),
+      label: wrap.getAttribute('aria-label'),
+      tabindex: wrap.getAttribute('tabindex'),
+      caption: table.querySelector('caption').textContent
+    };
+  });
+
+// The page is no wider than the viewport, the box is inside it, the table is
+// wider than its box, and scrolling the box brings the last column into it.
+async function expectTableScrollsInItsBox(page) {
+  const before = await tableBox(page);
+  expect(before.viewport).toBe(PHONE.width);
+  expect(before.page).toBe(PHONE.width);
+  expect(before.wrap.left).toBeGreaterThanOrEqual(0);
+  expect(before.wrap.right).toBeLessThanOrEqual(PHONE.width);
+  expect(['auto', 'scroll']).toContain(before.overflow);
+  expect(before.scrollWidth).toBeGreaterThan(before.clientWidth);
+  // At rest the first column is in the box and the last is past its right edge.
+  expect(before.first.left).toBeGreaterThanOrEqual(before.wrap.left - 0.5);
+  expect(before.last.right).toBeGreaterThan(before.wrap.right);
+  // The box says what it holds and takes the keyboard's focus, so the arrow
+  // keys scroll it.
+  expect(before.role).toBe('region');
+  expect(before.label).toBe(before.caption);
+  expect(before.tabindex).toBe('0');
+
+  const wrap = page.locator('.safety-qt-explorer .qt-table');
+  await wrap.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth;
+  });
+  const after = await tableBox(page);
+  expect(after.scrollLeft).toBeGreaterThan(0);
+  expect(after.scrollLeft).toBeCloseTo(after.scrollWidth - after.clientWidth, 0);
+  // The last column is whole inside the box, and the page has not moved.
+  expect(after.last.left).toBeGreaterThanOrEqual(after.wrap.left - 0.5);
+  expect(after.last.right).toBeLessThanOrEqual(after.wrap.right + 0.5);
+  expect(after.page).toBe(PHONE.width);
+  expect(await page.evaluate(() => window.scrollX)).toBe(0);
+  return before;
+}
+
+test.describe('safety.viz qt-explorer module at a 390-pixel viewport', () => {
+  test.use({ viewport: PHONE });
+
+  test('QT-CT-009: at a 390-pixel viewport the table under the chart, and the categorical table that takes its place, scroll sideways inside their own box, which is named and takes focus (#284)', async ({
+    page
+  }) => {
+    await page.goto('/tests/e2e/fixtures/qt-explorer.html');
+    await page.waitForFunction(
+      () => window.__safetyQtExplorerInstance && window.__safetyQtExplorerInstance.chart
+    );
+    await expect(page.locator('table.qt-ct-table')).toBeVisible();
+    const central = await expectTableScrollsInItsBox(page);
+    expect(central.caption).toContain('change by visit and arm');
+    // The keyboard reaches the columns too: focus the box and press an arrow key.
+    const wrap = page.locator('.safety-qt-explorer .qt-table');
+    await wrap.evaluate((element) => {
+      element.scrollLeft = 0;
+    });
+    await wrap.focus();
+    await expect(wrap).toBeFocused();
+    // A key press scrolls smoothly: wait for the scroll to end before reading it.
+    await wrap.evaluate((element) => {
+      window.__qtScrollEnded = new Promise((resolve) => {
+        element.addEventListener('scrollend', resolve, { once: true });
+      });
+    });
+    await page.keyboard.press('ArrowRight');
+    await page.evaluate(() => window.__qtScrollEnded);
+    expect((await tableBox(page)).scrollLeft).toBeGreaterThan(0);
+
+    // The categorical view's table is in the same box, renamed for it, and
+    // starts at its first column though the box had been scrolled.
+    await selectView(page, 'Categorical');
+    await expect(page.locator('.qt-table thead th').first()).toHaveText('Threshold');
+    const categorical = await expectTableScrollsInItsBox(page);
+    expect(categorical.caption).toContain('participants exceeding thresholds by arm');
+    await captureEvidence(page, 'QT-CT-009', 'table-scrolls-in-its-box');
+  });
+
+  // The two pages the defect was seen on are build products, so the site is
+  // built here: the docs demo page, and the demo app on the pilot study.
+  test.describe('on the built pages', () => {
+    test.beforeAll(() => {
+      execSync('npm run site', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+    });
+
+    for (const [name, url, ready] of [
+      ['on the docs demo page', '/_site/qt-explorer/index.html', null],
+      ['in the demo app', '/_site/demo/index.html#qt-explorer', 'window.__safetyVizApp.ready']
+    ]) {
+      test(`QT-CT-009: ${name} at a 390-pixel viewport the page is as wide as the viewport and the table scrolls inside its own box to its last column (#284)`, async ({
+        page
+      }) => {
+        await page.goto(url);
+        if (ready) await page.evaluate(ready);
+        await expect(page.locator('.safety-qt-explorer table.qt-ct-table')).toBeVisible();
+        const table = await expectTableScrollsInItsBox(page);
+        // Six columns, the last being the upper bound of the interval.
+        await expect(page.locator('.safety-qt-explorer table.qt-ct-table thead th')).toHaveCount(6);
+        expect(table.table.right - table.table.left).toBeGreaterThan(500);
+      });
+    }
   });
 });

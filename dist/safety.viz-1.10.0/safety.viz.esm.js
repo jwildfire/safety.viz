@@ -29005,7 +29005,8 @@ var QT_STYLES = `
 .safety-qt-explorer .qt-table th.qt-num,.safety-qt-explorer .qt-table td.qt-num,.safety-qt-explorer .qt-ich td.qt-num{text-align:right;font-variant-numeric:tabular-nums}
 .safety-qt-explorer .qt-table th{border-bottom:2px solid #d8dee4;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
-.safety-qt-explorer .qt-table{margin:.7rem 0 0}
+.safety-qt-explorer .qt-table{margin:.7rem 0 0;max-width:100%;overflow-x:auto}
+.safety-qt-explorer .qt-table:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
 .safety-qt-explorer .qt-empty{display:none}
 .safety-qt-explorer .qt-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
@@ -29162,6 +29163,8 @@ var SafetyQtExplorer = class {
     this.main.insertBefore(this.noteEl, this.chartWrap);
     this.main.insertBefore(this.legendEl, this.chartWrap);
     this.tableWrap = createElement("div", "qt-table qt-empty");
+    this.tableWrap.setAttribute("role", "region");
+    this.tableWrap.setAttribute("tabindex", "0");
     this.ichWrap = createElement("div", "qt-ich qt-empty");
     this.chartWrap.after(this.ichWrap);
     this.ichWrap.after(this.tableWrap);
@@ -29611,6 +29614,18 @@ var SafetyQtExplorer = class {
     this.ichWrap.append(table);
   }
   /**
+   * Name the table's box after the table in it (QT-CT-009): a box that scrolls
+   * is a region a screen reader lists, and its name is the table's caption. A
+   * different table starts at its first column; the same table drawn again,
+   * after a filter say, stays where the reader had scrolled it.
+   * @private
+   */
+  labelTableBox(table) {
+    const label = table.querySelector("caption").textContent;
+    if (this.tableWrap.getAttribute("aria-label") !== label) this.tableWrap.scrollLeft = 0;
+    this.tableWrap.setAttribute("aria-label", label);
+  }
+  /**
    * Print the plotted central-tendency values beneath the chart (QT-CT-008):
    * one row per visit and arm carrying the number of participants (replicate
    * readings count once per participant and visit, #166), the plotted statistic,
@@ -29675,6 +29690,7 @@ var SafetyQtExplorer = class {
     });
     table.append(tbody);
     this.tableWrap.append(table);
+    this.labelTableBox(table);
   }
   /** Central-tendency footnote: method + mode caveats. @private */
   setCentralFootnote(measure, isQtc) {
@@ -29860,6 +29876,7 @@ var SafetyQtExplorer = class {
     });
     table.append(tbody);
     this.tableWrap.append(table);
+    this.labelTableBox(table);
     this.drawLegend(classification.arms);
     this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits).";
   }
