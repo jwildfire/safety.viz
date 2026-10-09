@@ -39,25 +39,24 @@ describe('site generator: gallery', () => {
 
   it('gallery marks a prototype renderer with a Prototype badge on its card (#97)', () => {
     const withPrototype = JSON.parse(JSON.stringify(config));
-    withPrototype.renderers[0].prototype = true;
+    withPrototype.renderers[0].tier = 'prototype';
     const protoHtml = renderGallery(withPrototype);
     expect(protoHtml).toContain('site-badge-prototype');
     expect(protoHtml).toContain('>Prototype<');
   });
 
   it('experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)', () => {
-    expect(experimentalBadge({ prototype: true })).toContain('>Prototype<');
-    expect(experimentalBadge({ prototype: true })).toContain('site-badge-prototype');
-    expect(experimentalBadge({ experimental: true })).toContain('>Experimental<');
+    expect(experimentalBadge({ tier: 'prototype' })).toContain('>Prototype<');
+    expect(experimentalBadge({ tier: 'prototype' })).toContain('site-badge-prototype');
+    expect(experimentalBadge({ tier: 'experimental' })).toContain('>Experimental<');
     // Each pill says what its tier means (#165).
-    expect(experimentalBadge({ prototype: true })).toContain(
+    expect(experimentalBadge({ tier: 'prototype' })).toContain(
       'title="Not ready for production: on the docs site only, and not in the demo app."'
     );
-    expect(experimentalBadge({ experimental: true })).toContain(
+    expect(experimentalBadge({ tier: 'experimental' })).toContain(
       'title="Still being worked on, and fine to use: its behaviour and settings may change."'
     );
-    // Prototype wins when both are set; a plain renderer gets no badge.
-    expect(experimentalBadge({ prototype: true, experimental: true })).toContain('>Prototype<');
+    // A renderer that names no rung gets no badge.
     expect(experimentalBadge({})).toBe('');
     expect(experimentalBadge(null)).toBe('');
   });

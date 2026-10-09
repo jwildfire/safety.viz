@@ -3,6 +3,7 @@
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
 import { LOGO_HREF } from '../src/app/styles.js';
+import { tierOf } from '../src/tiers.js';
 import {
   EXPERIMENTAL_MEANING,
   HOSTED_DESCRIPTION,
@@ -1188,10 +1189,7 @@ function methodSection(method) {
 // _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
 // module-anatomy overview, then factory, methods, settings, and the
 // schema-derived data contract, with a sticky sidebar table of contents.
-export function renderApiPage(
-  model,
-  { hasGuide = false, experimental = false, prototype = false } = {}
-) {
+export function renderApiPage(model, { hasGuide = false, tier } = {}) {
   const toc =
     `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
     `<li><a href="#overview">Overview</a></li>` +
@@ -1263,7 +1261,7 @@ export function renderApiPage(
 
   const html = [];
   html.push(
-    `<h1><code>${escapeHtml(model.module)}</code> API reference${experimentalBadge({ experimental, prototype })}</h1>`
+    `<h1><code>${escapeHtml(model.module)}</code> API reference${experimentalBadge({ tier })}</h1>`
   );
   html.push(
     `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
@@ -1549,8 +1547,9 @@ export function renderKitPage(model, { repoUrl, version }) {
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
-// A small status pill for a page title / gallery card. A chart has one of three
-// tiers, set in site/config.json (#165):
+// A small status pill for a page title / gallery card. A chart stands on one
+// rung of the status ladder, named by `tier` in site/config.json (#272,
+// src/tiers.js); one that names none is Exploratory and gets no pill:
 //
 //   prototype     "Prototype": not ready for production. Shown on the docs site
 //                 only; kept out of the portfolio manifest, and so out of the
@@ -1558,19 +1557,18 @@ export function renderKitPage(model, { repoUrl, version }) {
 //   experimental  "Experimental": still being worked on, and fine to ship. In
 //                 the manifest and the demo app; its behaviour and settings may
 //                 change.
-//   neither       stable: no pill.
 //
-// Prototype takes precedence when both are set. The pill's title says what the
-// tier means, for whoever hovers it.
+// The pill's title says what the rung means, for whoever hovers it.
 export const STATUS_MEANING = {
   prototype: 'Not ready for production: on the docs site only, and not in the demo app.',
   experimental: EXPERIMENTAL_MEANING
 };
 export function experimentalBadge(renderer) {
-  if (renderer && renderer.prototype) {
+  const tier = tierOf(renderer);
+  if (tier === 'prototype') {
     return ` <span class="site-badge site-badge-prototype" title="${STATUS_MEANING.prototype}">Prototype</span>`;
   }
-  return renderer && renderer.experimental
+  return tier === 'experimental'
     ? ` <span class="site-badge" title="${STATUS_MEANING.experimental}">Experimental</span>`
     : '';
 }
@@ -1680,6 +1678,7 @@ export function publishDemoAppFonts(rootDir, demoDir) {
  * @param {Array<{name: string, global: string, file: string}>} [options.libraries] Further chart libraries (#182): each bundle is loaded from beside the page after the app's and handed to the app when it mounts.
  * @param {string} [options.charts] What the app reviews a study in, for the page's description: its charts, counted.
  * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages (#246), as scripts/app-libraries.mjs::chartLinks gives them: handed to the app for the footnote under each chart. Given none, the app is told of none.
+ * @param {Object<string, {tier: string, note?: string}>} [options.tiers] Each chart's and each tab's rung of the status ladder (#272), as scripts/app-libraries.mjs::chartTiers gives them: handed to the app. Given none, the app is told of none.
  * @param {{docs?: ?string, domains?: ?string}} [options.links] Where the app's links to the docs site and the Domains page lead: by default into the site the page is part of. One given no address is left out, and the app's own default, the published site, stands (#214): the page `npm run demo` serves has no site beside it.
  * @returns {string} The complete HTML document.
  */
@@ -1690,7 +1689,8 @@ export function renderDemoAppPage({
   libraries = [],
   charts = 'thirteen clinical safety charts',
   links = {},
-  chartLinks = {}
+  chartLinks = {},
+  tiers = {}
 }) {
   const siteLinks = { ...DEMO_APP_SITE_LINKS, ...links };
   const js = (value) => `'${String(value).replace(/[\\']/g, '\\$&')}'`;
@@ -1724,7 +1724,7 @@ body{margin:0;background:#fafaf8}
 <script src="./${escapeHtml(bundle)}"></script>
 ${libraries.map((library) => `<script src="./${escapeHtml(library.file)}"></script>\n`).join('')}<script>
 window.__safetyVizApp = SafetyVizApp.mount('#app', {
-  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}${Object.keys(chartLinks).length ? `\n  chartLinks: ${inlineJson(chartLinks)},` : ''}
+  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}${Object.keys(chartLinks).length ? `\n  chartLinks: ${inlineJson(chartLinks)},` : ''}${Object.keys(tiers).length ? `\n  tiers: ${inlineJson(tiers)},` : ''}
   links: {${Object.keys(DEMO_APP_SITE_LINKS)
     .filter((name) => siteLinks[name])
     .map((name) => `\n    ${name}: ${js(siteLinks[name])},`)

@@ -204,7 +204,7 @@ describe('the RBQM tab on the page', () => {
   it('APP-RBQM-026: the tab carries the Experimental badge site/config.json gives it, on its tab and in its view, with what the word means (#235)', () => {
     const config = JSON.parse(readFileSync(path.join(root, 'site/config.json'), 'utf8'));
     expect(config.appTabs).toEqual([
-      expect.objectContaining({ id: 'rbqm', title: 'RBQM', experimental: true })
+      expect.objectContaining({ id: 'rbqm', title: 'RBQM', tier: 'experimental' })
     ]);
     expect(OPTIONS.badge).toEqual({
       text: 'Experimental',

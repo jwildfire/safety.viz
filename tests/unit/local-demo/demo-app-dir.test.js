@@ -141,7 +141,7 @@ describe('buildDemoAppDir', () => {
     // The single file is the same file in both, and its addresses are the published site's.
     for (const dir of [hosted, local]) {
       const single = readFileSync(path.join(dir, 'safety.viz-app.html'), 'utf8');
-      const [, inFile] = single.match(/chartLinks: (\{.*\}) \}\);<\/script>/);
+      const [, inFile] = single.match(/chartLinks: (\{.*\}), tiers: \{.*\} \}\);<\/script>/);
       expect(JSON.parse(inFile)).toEqual(chartLinks());
     }
   });

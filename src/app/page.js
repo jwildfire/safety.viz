@@ -48,6 +48,7 @@ import { renderDataPanel } from './data-panel.js';
 import { DEMO_STUDIES, studyUrls } from './studies.js';
 import { dataTag, tabCount, welcomeSentence } from './header.js';
 import { el, plural } from './dom.js';
+import { tierNoteOf, tierOf } from '../tiers.js';
 import { LOGO_SVG, STYLES } from './styles.js';
 
 const STYLE_ID = 'safety-viz-app-styles';
@@ -158,6 +159,7 @@ function sentenceFor(module, status, manifest) {
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out. The wordmark is a link to `docs` too (#270).
  * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages, keyed by module name: its clinical guide and its test evidence. A chart's view carries a footnote linking those it was given an address for (#246).
+ * @param {Object<string, {tier: string, note?: string}>} [options.tiers] The rung of the status ladder each chart and each view stands on, keyed by module name or view id, with the sentence that says why where there is one (#272). A chart the page is told nothing of stands where its own entry says, by `tier` and `tierNote`, and on Exploratory when that names none.
  * @param {string} [options.version] The safety.viz version, shown in the footer.
  * @param {string} [options.title] The app's name in the browser tab's title, which names the open view before it: "RBQM · safety.viz demo" (#270).
  * @param {string} [options.pitch] What the footer says the app does with a study; the page that mounts it says what is true there (#183).
@@ -174,6 +176,7 @@ export function mountApp(
     demo = null,
     links = {},
     chartLinks = {},
+    tiers = {},
     version = '',
     title: appName = 'safety.viz demo',
     pitch = 'Everything runs in this browser. Nothing is sent anywhere.',
@@ -236,6 +239,14 @@ export function mountApp(
     views.set(id, view);
     viewLibrary.set(id, name);
   }
+  // The rung of the status ladder a chart or a view stands on (#272): what the
+  // page was told, or what the chart's own entry says, or Exploratory.
+  const rungOf = (id) => {
+    const told = has(tiers, id) && isRecord(tiers[id]) ? tiers[id] : null;
+    const entry = told ? { tier: told.tier, tierNote: told.note } : manifest.modules[id];
+    const note = tierNoteOf(entry);
+    return { tier: tierOf(entry), ...(note ? { note } : {}) };
+  };
   // What a library brings besides its charts (#183): settings for each of its
   // charts, and one control. Looked up by the library a chart's entry names,
   // among the libraries the merge used, so a second library of the same name
@@ -840,6 +851,12 @@ export function mountApp(
 
     /** The current status of every chart, including any that did not draw. */
     status,
+
+    /** The rung of the status ladder every chart and every view stands on, with its reason where it has one (#272). */
+    tiers: () =>
+      Object.fromEntries(
+        [...Object.keys(manifest.modules), ...views.keys()].map((id) => [id, rungOf(id)])
+      ),
 
     /**
      * Load parsed-or-not files: each `{ name, text }` is read, placed in a

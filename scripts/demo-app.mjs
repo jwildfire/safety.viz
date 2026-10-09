@@ -30,6 +30,7 @@ import {
   APP_LIBRARIES,
   RBQM_CHARTS,
   chartLinks,
+  chartTiers,
   libraryManifest,
   libraryScript,
   servedBesideTheApp,
@@ -140,7 +141,8 @@ export async function buildDemoAppDir(outDir, { links, site = '../' } = {}) {
       libraries: APP_LIBRARIES,
       charts: chartsCarried(),
       links,
-      chartLinks: chartLinks({ site })
+      chartLinks: chartLinks({ site }),
+      tiers: chartTiers()
     })
   );
   return { dir: outDir, page };

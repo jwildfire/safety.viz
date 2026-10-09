@@ -37,6 +37,8 @@ import {
   validateSiteLinks
 } from './site-lib.mjs';
 import { APP_LIBRARIES, libraryManifest } from './app-libraries.mjs';
+import { tierProblems } from './tiers.mjs';
+import { tierOf } from '../src/tiers.js';
 import { buildDemoAppDir } from './demo-app.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -49,6 +51,15 @@ const siteDir = path.join(rootDir, `_site.build-${process.pid}`);
 const { version } = JSON.parse(readFileSync(path.join(rootDir, 'package.json'), 'utf8'));
 const config = JSON.parse(readFileSync(path.join(rootDir, 'site/config.json'), 'utf8'));
 const shell = readFileSync(path.join(rootDir, 'site/shell.html'), 'utf8');
+
+// The rungs the configuration names (#272): one that is refused, as
+// "qualified", stops the build with its sentence before a page is written.
+const refused = tierProblems(config);
+if (refused.length) {
+  console.error('✗ Site build failed:');
+  refused.forEach((problem) => console.error(`  - ${problem}`));
+  process.exit(1);
+}
 
 const errors = [];
 const page = (file, title, content, root, description = '') =>
@@ -212,8 +223,7 @@ for (const renderer of config.renderers.filter((entry) => entry.status === 'avai
     `${renderer.title} API reference · safety.viz`,
     renderApiPage(JSON.parse(readFileSync(apiFile, 'utf8')), {
       hasGuide: !!renderer.guide,
-      experimental: !!renderer.experimental,
-      prototype: !!renderer.prototype
+      tier: tierOf(renderer)
     }),
     '../',
     `Generated API reference for the safety.viz ${module} module: factory, lifecycle ` +
