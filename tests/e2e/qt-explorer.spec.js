@@ -415,6 +415,9 @@ test.describe('safety.viz qt-explorer module at a 390-pixel viewport', () => {
     await expect(page.locator('.qt-table thead th').first()).toHaveText('Threshold');
     const categorical = await expectTableScrollsInItsBox(page);
     expect(categorical.caption).toContain('participants exceeding thresholds by arm');
+    // The capture is of the box, scrolled to its last column, with the page
+    // around it: brought into view first, since it starts below the fold.
+    await wrap.evaluate((element) => element.scrollIntoView({ block: 'center' }));
     await captureEvidence(page, 'QT-CT-009', 'table-scrolls-in-its-box');
   });
 
