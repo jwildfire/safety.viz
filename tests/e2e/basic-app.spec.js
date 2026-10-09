@@ -246,6 +246,55 @@ test.describe('demo app on the demo study', () => {
     expect(await overflow()).toBeLessThanOrEqual(0);
   });
 
+  test('APP-PAGE-040: at phone width a direct link to a tab or a chart opens with it in view in its row, and every tab and chart name is at least 44 pixels tall; at 1,280 pixels they are as they were (#271)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const inView = async (locator) => {
+      const box = await locator.boundingBox();
+      return box.x >= 0 && box.x + box.width <= 390;
+    };
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    // The RBQM tab is the last of six: off the screen to the right until the row is scrolled to it.
+    await page.goto('/tests/e2e/fixtures/basic-app.html#rbqm');
+    await page.evaluate(`${APP}.ready`);
+    const rbqm = page.locator('.sva-tab[data-tab="rbqm"]');
+    await expect(rbqm).toHaveAttribute('aria-pressed', 'true');
+    expect(await inView(rbqm)).toBe(true);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    await captureEvidence(page.locator('.sva-header'), 'APP-PAGE-040', 'phone-header-rbqm');
+    // A chart late in its row: its tab and its own name are both in view.
+    await page.goto('/tests/e2e/fixtures/basic-app.html#participant-profile');
+    await page.reload();
+    await page.evaluate(`${APP}.ready`);
+    await expect(item(page, 'participant-profile')).toHaveAttribute('aria-current', 'page');
+    expect(await inView(item(page, 'participant-profile'))).toBe(true);
+    expect(await inView(tab(page, 'bds'))).toBe(true);
+    // Followed without a reload, the row moves to the tab that opens.
+    await page.evaluate(() => {
+      window.location.hash = '#cross-tab';
+    });
+    await expect(item(page, 'cross-tab')).toHaveAttribute('aria-current', 'page');
+    expect(await inView(tab(page, 'biomarkers'))).toBe(true);
+    expect(await inView(item(page, 'cross-tab'))).toBe(true);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    // Every tab and every chart name shown is tall enough for a thumb.
+    const heights = () =>
+      page
+        .locator('.sva-tabs > *, .sva-group:not([hidden]) .sva-item')
+        .evaluateAll((elements) =>
+          elements.map((element) => element.getBoundingClientRect().height)
+        );
+    const phone = await heights();
+    expect(phone).toHaveLength(6 + bioCharts.length);
+    expect(Math.min(...phone)).toBeGreaterThanOrEqual(44);
+    // At desktop width nothing changed: a tab is as tall as its words need.
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const desktop = await heights();
+    expect(Math.max(...desktop)).toBeLessThan(36);
+  });
+
   test('APP-PAGE-021: the app’s own parts are a header and a footer, so the chart has the page’s width (#150)', async ({
     page
   }) => {

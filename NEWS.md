@@ -18,6 +18,10 @@ The demo app made ready to show: clearer on first open, and the defects found in
 - **The first screen says where you are.** The Data tab names the loaded study, and a tab shows one number when every chart draws. A line on first open says whose data this is and where to load your own; it closes with a cross and nothing is stored. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#269](https://github.com/jwildfire/safety.viz/issues/269)
 - **The wordmark leads back to the docs, and the browser tab says where you are.** The tab's title names the open view, as "RBQM · safety.viz demo". The docs site and the app share one favicon, the hex mark. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#270](https://github.com/jwildfire/safety.viz/issues/270)
 
+## Also in this release
+
+- **On a phone, a link to a tab opens with that tab in view.** Tabs and chart names are 44 pixels tall there, up from 30. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#271](https://github.com/jwildfire/safety.viz/issues/271)
+
 # safety.viz v1.10.0
 
 **See it move:** the [annotated v1.10.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.10-demo/) has captures, try-it steps and the detail behind everything below.

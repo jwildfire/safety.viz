@@ -525,6 +525,26 @@ export function mountApp(
   }
 
   /**
+   * Bring an element into view within the row that scrolls it, and move
+   * nothing else: at phone width the tabs and the chart names each scroll
+   * sideways in a row of their own (#271).
+   */
+  function reveal(row, element) {
+    if (!row || !element || row.scrollWidth <= row.clientWidth) return;
+    const rowBox = row.getBoundingClientRect();
+    const box = element.getBoundingClientRect();
+    if (box.left < rowBox.left) row.scrollLeft -= rowBox.left - box.left + 8;
+    else if (box.right > rowBox.right) row.scrollLeft += box.right - rowBox.right + 8;
+  }
+
+  /** The open tab and the open chart's name, each brought into view in its row. */
+  function revealOpen() {
+    reveal(tabs, tabs.querySelector('[aria-pressed=true], [aria-current=page]'));
+    const group = chartRow.querySelector('.sva-group:not([hidden])');
+    if (group) reveal(group, group.querySelector('[aria-current=page]'));
+  }
+
+  /**
    * After a library's control was pressed, and again when what it started has
    * settled: the header says what the control now says, and the open chart, if
    * it is one of that library's, is handed the library's settings as they now
@@ -536,6 +556,7 @@ export function mountApp(
     const current = status();
     renderHead(current);
     renderNav(current);
+    revealOpen();
     if (!isChart(state.selected)) return;
     const entry = manifest.modules[state.selected];
     if (!entry || libraryOf(entry) !== name || !instance) return;
@@ -711,6 +732,7 @@ export function mountApp(
     renderHead(current);
     renderNav(current);
     renderMain(current);
+    revealOpen();
     // The browser tab's title follows the open view (#270).
     document.title = `${viewName()} · ${appName}`;
   }
@@ -1142,6 +1164,7 @@ export function mountApp(
       const current = status();
       renderHead(current);
       renderNav(current);
+      revealOpen();
     },
 
     /**

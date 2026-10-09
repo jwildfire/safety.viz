@@ -238,6 +238,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 @media (max-width:760px){
 .sva-tabs{order:3;flex-basis:100%;min-width:0}
 .sva-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;max-width:100%}
+.sva-tabs .sva-item,.sva-tab,.sva-charts .sva-item{min-height:44px}
 .sva-bar,.sva-charts{min-width:0;max-width:100vw}
 .sva-chart{padding:.6rem}
 .sva-links{margin-left:0}
