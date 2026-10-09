@@ -142,7 +142,8 @@ rbqm_needs <- function(mappings, metrics, reporting, standard = NULL) {
 #' The page gives each run a folder of its own, beside the last run's, and names
 #' the last one so that R can let go of it. It is removed only when it is one
 #' folder that is there, beside the folder this run reads and not that folder:
-#' a path of any other kind is left alone, and nothing is matched by pattern.
+#' a path of any other kind is left alone, a root or a top-level folder among
+#' them, and nothing is matched by pattern.
 #'
 #' @param forget The earlier run's folder, or NULL.
 #' @param data The folder this run reads.
@@ -156,6 +157,10 @@ rbqm_forget <- function(forget, data) {
   }
   old <- normalizePath(forget, mustWork = FALSE)
   here <- normalizePath(data, mustWork = FALSE)
+  # A root is its own parent, so it would read as beside every top-level
+  # folder. Neither a root nor a folder at the top of a file system is removed.
+  up <- dirname(old)
+  if (identical(old, up) || identical(up, dirname(up))) return(FALSE)
   if (identical(old, here) || !identical(dirname(old), dirname(here))) return(FALSE)
   unlink(old, recursive = TRUE, expand = FALSE) == 0L && !dir.exists(old)
 }
@@ -245,11 +250,14 @@ rbqm_run <- function(data, mappings, metrics, reporting, helpers,
   # A cell that reads NA is a missing value, as R writes one and as a raw file's
   # is read. A domain none of whose columns is mapped arrives with every line
   # blank: it is a table of no columns, so what needs one names the column, and
-  # R reads on. A file with a blank line above its header is read as R reads it.
+  # R reads on. Lines above the header that are empty or only spaces are passed
+  # over, so the header is the first line with anything on it.
   read_standard <- function(path) {
-    if (!any(nzchar(trimws(readLines(path, warn = FALSE))))) return(data.frame())
+    filled <- which(nzchar(trimws(readLines(path, warn = FALSE))))
+    if (!length(filled)) return(data.frame())
     utils::read.csv(
-      path, stringsAsFactors = FALSE, colClasses = "character", check.names = FALSE
+      path, skip = filled[[1]] - 1L,
+      stringsAsFactors = FALSE, colClasses = "character", check.names = FALSE
     )
   }
   lStandard <- stage("read standard", {

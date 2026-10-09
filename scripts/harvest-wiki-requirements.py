@@ -92,7 +92,10 @@ def safe_links(text: str) -> str:
         text = reduced
 
     # Whatever is left that still reads `](` and then a scheme that is not
-    # http(s) is pulled apart, so that no renderer takes it for a link.
+    # http(s) is pulled apart, so that the site build does not take it for a
+    # link. A scheme written with an entity or a backslash, or an autolink in
+    # angle brackets, is not looked for: the site build escapes those and
+    # publishes none, and it holds this rule itself on every row.
     def apart(m: re.Match) -> str:
         bare = re.sub(r"[\s\x00-\x1f<]+", "", m.group(1))
         if SCHEME.match(bare) and not re.match(r"^https?://", bare, re.I):

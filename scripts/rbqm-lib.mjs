@@ -353,17 +353,26 @@ export const RBQM_PILOT = {
    */
   seriousnessAsTyped: { id: 'seriousness-as-typed', typed: true },
   /**
-   * What R is asked to forget while it reads `runs/2`, among the folders
-   * `runs/1`, `runs/2`, `runs/else-a` and `elsewhere/9`: only the one folder
-   * beside its own is removed (#258).
+   * With lines above the subject-level file's header that are empty or only
+   * spaces or a tab: the header is the first line with anything on it, and R
+   * returns the rows it returns without them (#258).
    */
+  linesAboveHeader: { id: 'lines-above-header', above: '\n   \n\t\n' },
+  /**
+   * What R is asked to forget while it reads `runs/2`, among the folders
+   * `runs/1`, `runs/2`, `runs/else-a`, `runs/else*` (a folder whose name ends
+   * in a star) and `elsewhere/9`: only the one folder beside its own is
+   * removed, and a name is never read as a pattern (#258).
+   */
+  forgetFolders: ['runs/1', 'runs/2', 'runs/else-a', 'runs/else*', 'elsewhere/9'],
   forgets: [
     { id: 'beside', forget: 'runs/1' },
     { id: 'its-own', forget: 'runs/2' },
     { id: 'its-own-respelt', forget: 'runs/1/../2/' },
     { id: 'its-parent', forget: 'runs' },
     { id: 'elsewhere', forget: 'elsewhere/9' },
-    { id: 'a-pattern', forget: 'runs/else*' },
+    { id: 'named-like-a-pattern', forget: 'runs/else*' },
+    { id: 'a-pattern', forget: 'runs/el*' },
     { id: 'not-there', forget: 'runs/7' },
     { id: 'two-at-once', forget: ['runs/1', 'runs/else-a'] },
     { id: 'none', forget: null }

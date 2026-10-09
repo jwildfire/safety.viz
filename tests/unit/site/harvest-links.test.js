@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { JSDOM } from 'jsdom';
 import { mdInline } from '../../../scripts/site-lib.mjs';
 
 // The harvest script turns wiki text, which is not ours, into matrix rows, and the
@@ -130,5 +131,83 @@ describe('the site build publishes only safe link destinations, whoever wrote th
       ['#filters']
     ]);
     expect(mdInline('![x](<guide/fig(1).png>)')).toBe('<img src="guide/fig(1).png" alt="x">');
+  });
+});
+
+// What a browser makes of the site build's HTML: every element, with the names
+// of its attributes. The renderer writes four tags and three attributes, and an
+// author's text must not add to them.
+const ALLOWED = { A: ['href'], IMG: ['alt', 'src'], CODE: [], STRONG: [] };
+function strays(html) {
+  const found = [];
+  for (const element of JSDOM.fragment(html).querySelectorAll('*')) {
+    const allowed = ALLOWED[element.tagName];
+    const names = [...element.attributes].map((attribute) => attribute.name);
+    if (!allowed) found.push(element.tagName);
+    else found.push(...names.filter((name) => !allowed.includes(name)));
+    for (const name of ['href', 'src']) {
+      const value = element.getAttribute(name);
+      if (value !== null && otherScheme(squeezed(value))) found.push(`${name}=${value}`);
+    }
+  }
+  return found;
+}
+
+// A repeatable run of numbers, so a failure can be found again.
+function numbers(seed) {
+  let state = seed;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 2 ** 32;
+  };
+}
+
+describe('the site build writes no tag or attribute of an author’s choosing (#258)', () => {
+  // An image whose destination holds a link, and a link that begins inside an
+  // image's alt text: each once closed an attribute early and left `onerror` on the tag.
+  const INSIDE = [
+    '![a](<[x](<y onerror=alert(document.domain) >)>)',
+    '![a[b](s.png)](onerror=alert(1)//)',
+    '[x](![a](b.png" onerror="alert(1))',
+    '[x](![a](b.png))',
+    '`[x](y" onmouseover="alert(1))`',
+    '**[x](y)** ![a](**b**.png "onerror=alert(1)")'
+  ];
+
+  it('a link inside an image, or an image inside a link’s destination, adds no attribute', () => {
+    expect(INSIDE.map((text) => [text, strays(mdInline(text))])).toEqual(
+      INSIDE.map((text) => [text, []])
+    );
+  });
+
+  it('five thousand texts put together from the pieces of links, images and attributes add no tag, no attribute and no other scheme', () => {
+    const PIECES = [
+      ...['[', ']', '(', ')', '<', '>', '!', '`', '**', '"', "'", ' ', '\t', '\\', '\u0000', '0'],
+      ...['x', 'onerror=alert(1)', 'javascript:', 'data:', 'https://e.org/', 's.png', '&#106;'],
+      ...['![a](', '[x](', '](<', '>)', '](', ')']
+    ];
+    const next = numbers(258);
+    const broke = [];
+    for (let run = 0; run < 5000; run += 1) {
+      const length = 2 + Math.floor(next() * 14);
+      let text = '';
+      for (let piece = 0; piece < length; piece += 1) {
+        text += PIECES[Math.floor(next() * PIECES.length)];
+      }
+      const found = strays(mdInline(text));
+      if (found.length) broke.push([text, found]);
+    }
+    expect(broke.slice(0, 5)).toEqual([]);
+  });
+
+  it('what the renderer wrote before is written still: a linked image, bold inside a link, code, and a destination with parentheses', () => {
+    expect(
+      mdInline(
+        '[![alt](img.png)](https://e.org) and [**b**](u) and `c` **d** ![i](guide/fig(1).png)'
+      )
+    ).toBe(
+      '<a href="https://e.org"><img src="img.png" alt="alt"></a> and <a href="u"><strong>b</strong></a>' +
+        ' and <code>c</code> <strong>d</strong> <img src="guide/fig(1).png" alt="i">'
+    );
   });
 });

@@ -1130,20 +1130,20 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
     ]);
   });
 
-  it('APP-RBQM-052: desktop R, asked to forget while it reads one folder, removes only the one folder beside its own: not its own however spelt, its parent, a folder elsewhere, what a pattern matches, two at once, or one that is not there; and a whole run told of the folder before removes it and returns its rows', () => {
+  it('APP-RBQM-052: desktop R, asked to forget while it reads one folder, removes only the one folder beside its own, and reads a name as a name: not its own however spelt, its parent, a folder elsewhere, what a pattern matches, two at once, or one that is not there; and a whole run told of the folder before removes it and returns its rows', () => {
     const { cases, in_a_run: inARun } = pilotExpected.forgets;
-    const all = ['runs/1', 'runs/2', 'runs/else-a', 'elsewhere/9'];
+    const all = RBQM_PILOT.forgetFolders;
+    expect(all).toEqual(['runs/1', 'runs/2', 'runs/else-a', 'runs/else*', 'elsewhere/9']);
     expect(cases.map(({ id }) => id)).toEqual(RBQM_PILOT.forgets.map(({ id }) => id));
-    const [beside, ...others] = cases;
-    expect(beside).toEqual({
-      id: 'beside',
-      forget: 'runs/1',
-      removed: true,
-      left: ['runs/2', 'runs/else-a', 'elsewhere/9']
-    });
-    expect(others.length).toBe(8);
-    for (const other of others) {
-      expect([other.id, other.removed, other.left]).toEqual([other.id, false, all]);
+    const without = (folder) => all.filter((each) => each !== folder);
+    const removes = { beside: 'runs/1', 'named-like-a-pattern': 'runs/else*' };
+    expect(cases.length).toBe(10);
+    for (const { id, forget, removed, left } of cases) {
+      // The one folder asked for, where R may remove it; nothing anywhere else.
+      expect([id, removed, left]).toEqual(
+        removes[id] ? [id, true, without(removes[id])] : [id, false, all]
+      );
+      if (removes[id]) expect(forget).toBe(removes[id]);
     }
     expect(inARun).toEqual({
       earlier_left: false,
@@ -1151,6 +1151,17 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
       rows: pilotExpected.answer.Results.length
     });
     expect(inARun.rows).toBe(51);
+  });
+
+  it('APP-RBQM-050: with lines above the subject-level file’s header that are empty or only spaces or a tab, desktop R reads the header from the first line with anything on it and returns the rows it returns without them', () => {
+    expect(RBQM_PILOT.linesAboveHeader.above).toBe('\n   \n\t\n');
+    const above = pilotExpected.lines_above_header;
+    expect(above.rows).toBe(51);
+    expect(above.same_rows_as_held).toBe(true);
+    expect(above.warnings).toEqual([]);
+    expect(above.status.map(({ id, state }) => [id, state])).toEqual(
+      pilotExpected.answer.status.map(({ id, state }) => [id, state])
+    );
   });
 
   it('APP-RBQM-024: when R comes up and its packages cannot be attached R is not taken as up: the tab says so and offers to try again, and trying again closes that R and makes one fresh connection, started from the beginning (#258)', async () => {

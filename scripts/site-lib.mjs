@@ -58,24 +58,38 @@ export function publishable(destination) {
   return !SCHEME.test(bare) || /^https?:\/\//i.test(bare);
 }
 
+// A tag this renderer has written is set aside until the end, and a mark stands
+// in its place: a later rule reads the mark, never the tag, so it cannot write
+// inside an attribute an earlier rule closed. Without that, an image whose
+// destination held a link came out as an `<img>` with attributes of the
+// author's choosing (#258). The mark is a character no text reaches here with.
+const MARK = '\u0000';
+
 export function mdInline(text) {
-  return escapeHtml(text)
+  const tags = [];
+  const aside = (tag) => `${MARK}${tags.push(tag) - 1}${MARK}`;
+  // A destination that holds a mark holds a tag: it is no destination.
+  const plain = (destination) => !destination.includes(MARK);
+  return escapeHtml(String(text).replaceAll(MARK, ''))
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(
       new RegExp(`!\\[([^\\]]*)\\]\\((${DESTINATION})\\)`, 'g'),
       (match, alt, destination) =>
         publishable(bareDestination(destination))
-          ? `<img src="${bareDestination(destination)}" alt="${alt}">`
+          ? aside(`<img src="${bareDestination(destination)}" alt="${alt}">`)
           : alt
     )
     .replace(
       new RegExp(`\\[([^\\]]+)\\]\\((${DESTINATION})\\)`, 'g'),
-      (match, label, destination) =>
-        publishable(bareDestination(destination))
-          ? `<a href="${bareDestination(destination)}">${label}</a>`
-          : label
+      (match, label, destination) => {
+        if (!plain(destination)) return match;
+        return publishable(bareDestination(destination))
+          ? `${aside(`<a href="${bareDestination(destination)}">`)}${label}</a>`
+          : label;
+      }
     )
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(new RegExp(`${MARK}(\\d+)${MARK}`, 'g'), (match, index) => tags[Number(index)]);
 }
 
 // GitHub-style heading slug: lowercase, non-alphanumerics collapsed to a single

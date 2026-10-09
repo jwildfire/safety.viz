@@ -46,6 +46,7 @@ import {
   blankColumn,
   seriousnessTyped,
   standardFiles,
+  standardTable,
   studyFiles,
   tabArgs,
   tabDerivedFrom
@@ -223,7 +224,7 @@ console.log(
 
 const manifest = JSON.parse(readFileSync(path.join(rootDir, 'src/data/portfolio.json'), 'utf8'));
 // One run of the pilot study as the app hands it, with or without a mapping cleared.
-function runPilot(id, unmap, blank, typed) {
+function runPilot(id, unmap, blank, typed, above) {
   const folder = path.join(work, id);
   mkdirSync(folder);
   // A scenario may empty one column of the subject-level file on some rows.
@@ -238,7 +239,9 @@ function runPilot(id, unmap, blank, typed) {
   };
   const handed = standardFiles(RBQM_PILOT.files, needs, manifest, reading, unmap);
   for (const [name, text] of Object.entries(handed.files)) {
-    writeFileSync(path.join(folder, name), text);
+    // A scenario may put lines above the header of the subject-level file.
+    const first = above && name === `${standardTable('subject')}.csv` ? above : '';
+    writeFileSync(path.join(folder, name), first + text);
   }
   const request = path.join(work, `${id}-arguments.json`);
   const reply = path.join(work, `${id}-answer.json`);
@@ -288,6 +291,14 @@ const seriousEvents = ({ Results }) =>
     0
   );
 const asTyped = runPilot(RBQM_PILOT.seriousnessAsTyped.id, undefined, undefined, true).answer;
+// With blank lines above the subject-level file's header: the same rows.
+const linesAbove = runPilot(
+  RBQM_PILOT.linesAboveHeader.id,
+  undefined,
+  undefined,
+  false,
+  RBQM_PILOT.linesAboveHeader.above
+).answer;
 
 // What R removes when it is told of the run before, and what it leaves (#258).
 // The folders are made here and R's own function is asked, case by case; then
@@ -305,9 +316,9 @@ const askR = (id, call, args) => {
 function forgetting() {
   const cases = RBQM_PILOT.forgets.map(({ id, forget }) => {
     // Fresh folders for every case: the run's own, the one before it beside it,
-    // one elsewhere, and one a pattern would match.
+    // one a pattern would match, one named like a pattern, and one elsewhere.
     const base = path.join(work, `forget-${id}`);
-    const folders = ['runs/1', 'runs/2', 'runs/else-a', 'elsewhere/9'];
+    const folders = RBQM_PILOT.forgetFolders;
     for (const folder of folders) {
       mkdirSync(path.join(base, folder), { recursive: true });
       writeFileSync(path.join(base, folder, 'kept.csv'), 'A\n1\n');
@@ -368,6 +379,7 @@ const forgets = forgetting();
       ` "some_sites_blank": ${JSON.stringify(said(someSitesBlank))},\n` +
       ` "all_sites_blank": ${JSON.stringify(said(allSitesBlank))},\n` +
       ` "seriousness_as_typed": ${JSON.stringify({ ...said(asTyped), serious_events: seriousEvents(asTyped), serious_events_as_held: seriousEvents(pilotAnswer) })},\n` +
+      ` "lines_above_header": ${JSON.stringify({ ...said(linesAbove), same_rows_as_held: JSON.stringify(linesAbove.Results) === JSON.stringify(pilotAnswer.Results) })},\n` +
       ` "forgets": ${JSON.stringify(forgets)}\n}\n`
   );
   console.log(
