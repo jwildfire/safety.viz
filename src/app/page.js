@@ -587,8 +587,8 @@ export function mountApp(
     reveal(tabs, tabs.querySelector('[aria-pressed=true], [aria-current=page]'));
     const group = chartRow.querySelector('.sva-group:not([hidden])');
     if (!group) return;
-    // The names scroll in their group; at phone width the whole row scrolls
-    // under the R control, which stays first in it (#276).
+    // The names scroll in their group. On a tab with the R control, at phone
+    // width the whole row scrolls under the control, which stays first in it (#276).
     const open = group.querySelector('[aria-current=page]');
     reveal(group, open);
     const pinned = chartRow.querySelector('.sva-r');

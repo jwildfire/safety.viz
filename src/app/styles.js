@@ -271,8 +271,8 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;max-width:100%}
 .sva-tabs .sva-item,.sva-tab,.sva-charts .sva-item{min-height:44px}
 .sva-bar,.sva-charts{min-width:0;max-width:100vw}
-.sva-charts{overflow-x:auto;scrollbar-width:none}
-.sva-group{flex:none;max-width:none;overflow:visible}
+.sva-charts:has(>.sva-r){overflow-x:auto;scrollbar-width:none}
+.sva-charts:has(>.sva-r) .sva-group{flex:none;max-width:none;overflow:visible}
 .sva-r{order:-1;position:sticky;left:calc(-1 * var(--gutter));z-index:2;align-self:stretch;margin:0 .6rem 0 calc(-1 * var(--gutter));padding:0 .6rem 0 var(--gutter);background:var(--bg);border-left:0;border-right:1px solid var(--rule)}
 .sva-r[data-phase="off"] .sva-r-say{display:none}
 .sva-r-panel{left:.5rem;right:.5rem;width:auto}
