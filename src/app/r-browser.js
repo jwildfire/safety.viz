@@ -137,6 +137,11 @@ export function createConnection(options = {}) {
   } = options;
 
   let started = null;
+  // The R that is starting or up, held from the moment it is made, and a count
+  // of the times the connection was closed: closing lets go of R at once and
+  // never waits on an R that has stopped answering (#261).
+  let live = null;
+  let closes = 0;
   const encoder = new TextEncoder();
   // What the page does with a step's name is the page's: it cannot stop R starting.
   const stage = (name) => {
@@ -157,17 +162,24 @@ export function createConnection(options = {}) {
   }
 
   async function start() {
+    const mine = closes;
     stage('runtime');
     const { WebR, ChannelType } = await importWebR(`${baseUrl}webr.mjs`);
+    // Closed while R was being fetched: no R is made for a connection let go of.
+    if (mine !== closes) throw new Error('R was closed while it was starting');
     // The channel that needs no cross-origin isolation headers: a static host
     // such as GitHub Pages sends none.
     const webR = new WebR({ baseUrl, channelType: ChannelType.PostMessage });
+    live = webR;
     try {
       await webR.init();
       await prepare(webR);
     } catch (error) {
       // An R that could not be made ready is closed: the next run starts another.
-      shut(webR);
+      if (live === webR) {
+        live = null;
+        shut(webR);
+      }
       throw error;
     }
     return webR;
@@ -225,12 +237,13 @@ export function createConnection(options = {}) {
         return { status: 'error', message: 'r-browser: files and args must each be an object.' };
       }
       let webR;
+      if (!started) started = start();
+      const mine = started;
       try {
-        if (!started) started = start();
-        webR = await started;
+        webR = await mine;
       } catch (error) {
         // The next run tries again from the start.
-        started = null;
+        if (started === mine) started = null;
         return { status: 'unavailable', reason: 'load-failed', message: messageOf(error) };
       }
       let shelter;
@@ -253,14 +266,17 @@ export function createConnection(options = {}) {
 
     /**
      * Let go of R: its worker is closed, and the next run starts R again.
-     * A connection that never started R has nothing to close.
+     * A connection that never started R has nothing to close. R is closed at
+     * once, whether or not it has finished starting and whether or not it
+     * still answers.
      * @returns {Promise<void>} Settled when R is closed; it never rejects.
      */
     async close() {
-      const starting = started;
+      closes += 1;
       started = null;
-      if (!starting) return;
-      shut(await starting.catch(() => null));
+      const webR = live;
+      live = null;
+      if (webR) shut(webR);
     }
   });
 }

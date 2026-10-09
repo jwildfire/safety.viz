@@ -33,6 +33,7 @@ import {
 import { chartStatus, supportedCount } from './status.js';
 import { chartData, chartSettings, isDestination } from './charts.js';
 import {
+  controlState,
   OTHER_GROUP,
   DOMAIN_COLOURS,
   OWN_LIBRARY,
@@ -57,6 +58,7 @@ import {
 import { el, plural } from './dom.js';
 import { isBelow, tierNoteOf, tierOf } from '../tiers.js';
 import { statusHeading, statusLabel } from '../status-label.js';
+import { rControl } from './r-control.js';
 import { LOGO_SVG, STYLES } from './styles.js';
 
 const STYLE_ID = 'safety-viz-app-styles';
@@ -353,7 +355,10 @@ export function mountApp(
   bar.append(brand, tabs, appStatus);
   const chartRow = el('nav', 'sva-charts');
   chartRow.setAttribute('aria-label', 'Charts');
-  header.append(bar, chartRow);
+  // The R control's details open under the row, at its right end (#276).
+  const controlPanel = el('div', 'sva-r-under');
+  controlPanel.hidden = true;
+  header.append(bar, chartRow, controlPanel);
 
   // The main area: the view's heading and count for screen readers, and the
   // view beneath them.
@@ -494,6 +499,7 @@ export function mountApp(
     chartRow.innerHTML = '';
     chartRow.hidden = open === null;
     const placed = new Set();
+    let wanted = null;
     for (const [group, members] of chartGroups()) {
       // The tab: the domain, and how many of its charts the data supports.
       const states = members.map(([module]) => current[module].state);
@@ -529,16 +535,20 @@ export function mountApp(
           )
         );
       }
-      // A library's control, once, at the head of the first group its charts
-      // are in, so a phone shows it without scrolling the row.
-      for (const name of new Set(members.map(([, entry]) => libraryOf(entry)))) {
-        const library = extras.get(name);
-        if (!library || !library.action || placed.has(name)) continue;
-        placed.add(name);
-        section.querySelector('.sva-group-title').after(...actionControl(name, library.action));
-      }
       chartRow.append(section);
+      // The control of the library whose charts the open group holds (#276):
+      // one, at the right end of the row, outside the scrolling list of names.
+      if (open === group) {
+        for (const name of new Set(members.map(([, entry]) => libraryOf(entry)))) {
+          const library = extras.get(name);
+          if (!library || !library.action || placed.has(name)) continue;
+          placed.add(name);
+          wanted = [name, library.action];
+          break;
+        }
+      }
     }
+    placeControl(wanted);
     // A library's view (#235): a tab after the domains', with what the view
     // says of itself where a domain's tab counts its charts.
     for (const [id, view] of views) {
@@ -557,23 +567,37 @@ export function mountApp(
   }
 
   /**
-   * Bring an element into view within the row that scrolls it, and move
-   * nothing else: at phone width the tabs and the chart names each scroll
-   * sideways in a row of their own (#271).
+   * Bring an element into view within the row that scrolls it, clear of what
+   * stays put at the row's start, and move nothing else: at phone width the
+   * tabs and the chart names each scroll sideways in a row of their own
+   * (#271). One too wide for the room is shown from its start.
    */
-  function reveal(row, element) {
+  function reveal(row, element, covered = 0) {
     if (!row || !element || row.scrollWidth <= row.clientWidth) return;
     const rowBox = row.getBoundingClientRect();
     const box = element.getBoundingClientRect();
-    if (box.left < rowBox.left) row.scrollLeft -= rowBox.left - box.left + 8;
-    else if (box.right > rowBox.right) row.scrollLeft += box.right - rowBox.right + 8;
+    const left = rowBox.left + covered;
+    if (box.left < left || box.width + 8 > rowBox.right - left) {
+      row.scrollLeft -= left - box.left + 8;
+    } else if (box.right > rowBox.right) row.scrollLeft += box.right - rowBox.right + 8;
   }
 
   /** The open tab and the open chart's name, each brought into view in its row. */
   function revealOpen() {
     reveal(tabs, tabs.querySelector('[aria-pressed=true], [aria-current=page]'));
     const group = chartRow.querySelector('.sva-group:not([hidden])');
-    if (group) reveal(group, group.querySelector('[aria-current=page]'));
+    if (!group) return;
+    // The names scroll in their group; at phone width the whole row scrolls
+    // under the R control, which stays first in it (#276).
+    const open = group.querySelector('[aria-current=page]');
+    reveal(group, open);
+    const pinned = chartRow.querySelector('.sva-r');
+    const stays = pinned && getComputedStyle(pinned).position === 'sticky';
+    reveal(
+      chartRow,
+      open,
+      stays ? pinned.getBoundingClientRect().right - chartRow.getBoundingClientRect().left : 0
+    );
   }
 
   /**
@@ -607,27 +631,55 @@ export function mountApp(
     }
   }
 
-  /** A library's control as it says itself now: its button, and what it costs in words beside it. */
-  function actionControl(name, action) {
-    const { label, done, note, hint } = action.state();
-    const button = el('button', 'sva-action', label);
-    button.type = 'button';
-    button.disabled = Boolean(done);
-    if (note) button.title = note;
-    button.onclick = () => {
-      let settled;
-      try {
-        settled = action.press();
-      } catch (error) {
-        console.warn('safety.viz app: a library’s control failed when pressed.', error);
-      }
-      afterAction(name);
-      if (settled && typeof settled.then === 'function') {
-        const update = () => afterAction(name);
-        settled.then(update, update);
-      }
+  // The control in the chart-name row (#276): the open library's, as it says
+  // itself now, and under the row its details panel while that is open. It is
+  // drawn again whenever the row is, so its clock is stopped first.
+  let control = null;
+  let controlOpen = null; // the name of the library whose details are open
+  function placeControl(wanted) {
+    if (control) control.destroy();
+    control = null;
+    controlPanel.innerHTML = '';
+    controlPanel.hidden = true;
+    const said = wanted ? controlState(wanted[1]) : null;
+    if (!said) return;
+    const [name, action] = wanted;
+    const again = () => {
+      const current = status();
+      renderNav(current);
+      revealOpen();
     };
-    return hint ? [button, el('span', 'sva-action-hint', hint)] : [button];
+    control = rControl(said, {
+      open: controlOpen === name,
+      onToggle(open) {
+        controlOpen = open ? name : null;
+        again();
+        // The keyboard goes where the reader's attention is: into the panel, or back to the chip.
+        const next = open
+          ? controlPanel.querySelector('.sva-r-x')
+          : chartRow.querySelector('.sva-chip');
+        if (next) next.focus();
+      },
+      onPress() {
+        controlOpen = null;
+        let settled;
+        try {
+          settled = action.press();
+        } catch (error) {
+          console.warn('safety.viz app: a library’s control failed when pressed.', error);
+        }
+        afterAction(name);
+        if (settled && typeof settled.then === 'function') {
+          const update = () => afterAction(name);
+          settled.then(update, update);
+        }
+      }
+    });
+    chartRow.append(control.row);
+    if (control.panel) {
+      controlPanel.append(control.panel);
+      controlPanel.hidden = false;
+    }
   }
 
   /**
@@ -1242,6 +1294,7 @@ export function mountApp(
     /** Tear the page down: destroy the mounted chart, stop following the address and empty the target. */
     destroy() {
       window.removeEventListener('hashchange', followAddress);
+      if (control) control.destroy();
       destroyChart();
       root.innerHTML = '';
       document.title = appName;

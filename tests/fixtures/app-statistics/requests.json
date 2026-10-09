@@ -48,11 +48,11 @@
   },
   {
    "file": "src/app/libraries.js",
-   "sha256": "187c193e8cc11a39758f3bc7022a2d08185c165cfa67cd271884bc6156c66ab2"
+   "sha256": "62c7d356831ce237f452e62a7172f6ffe610c9c8e5a203882faa01872f22bfb1"
   },
   {
    "file": "src/app/page.js",
-   "sha256": "c4f907c798e83f7b233e67eb6678a6d4be40f85a8ad82030e7298209c0b2735a"
+   "sha256": "a845368744f66029d7f46224ccb13381fe609b64225c7a99f3737a8f426cc0c8"
   },
   {
    "file": "site/vendor/bio.viz/bio.viz.js",

@@ -32,6 +32,8 @@
 
 import { readFiles } from './data-panel.js';
 import { el } from './dom.js';
+import { controlState } from './libraries.js';
+import { rControl } from './r-control.js';
 import {
   NOT_CSV,
   filesForR,
@@ -45,18 +47,23 @@ import {
 import {
   NONE_PLACED,
   NO_FILES,
+  R_LIMITS,
   doneSentence,
-  failureSentence,
+  failureOf,
   isoDay,
   metricInputs,
   metricList,
   needSentence,
   overviewInputs,
   ranOn,
+  rbqmWords,
   sameFiles,
   stepSentence,
   warningsSaid
 } from './rbqm.js';
+
+/** What waiting on R comes to when R gave no answer in time (#261). */
+const SILENT = Symbol('R gave no answer');
 
 const messageOf = (error) =>
   (error && typeof error.message === 'string' && error.message) || String(error);
@@ -71,6 +78,7 @@ const messageOf = (error) =>
  * @param {?Object} [options.needs] What gsm's workflows need, as desktop R reads it from their specs (site/rbqm/needs.json): the columns of each raw domain's file, and the tables each mapping and metric needs. With it the tab takes a reader's own files; without it the loaded raw files are handed to R as they are named.
  * @param {?{workflows: {name: string, version: string}, charts: {name: string, version: string}}} [options.copies] What is copied in and not installed in R, each with its version: gsm.kri's metric workflows and gsm.viz's charts. The tab names them beside the versions R reports.
  * @param {?string} [options.unavailable] On a page that cannot start R, the sentence that says so; the tab then offers no control.
+ * @param {{start: number, attach: number, run: number}} [options.limits] How long R is waited on at each step before the tab gives up, in seconds (#261).
  * @param {() => Date} [options.now] The clock; used by the tests.
  * @returns {{id: string, title: string, tag: Function, render: Function, state: Function}} The view, as page.js takes one.
  */
@@ -82,6 +90,7 @@ export function rbqmTab({
   needs = null,
   copies = null,
   unavailable = null,
+  limits = R_LIMITS,
   now = () => new Date()
 } = {}) {
   // idle → starting → attaching → running → done, or → failed (R is not up)
@@ -92,7 +101,10 @@ export function rbqmTab({
   let up = false;
   let connection = null;
   let pressedAt = 0;
-  let failure = '';
+  let failure = null; // what the control says of an R that did not start, or stopped (rbqm.js::failureOf)
+  let whyOpen = false; // whether the reason is open
+  let failed = null; // the control that says so, while it is on the page
+  const words = rbqmWords(downloads);
   let result = null; // { answer, files, seconds, sinceStart, snapshotDate }
   let chosen = null; // the id of the metric whose charts are shown
   let runs = 0;
@@ -181,7 +193,7 @@ export function rbqmTab({
         downloads
       });
     }
-    if (phase === 'failed' || phase === 'stopped') return failure;
+    if (phase === 'failed' || phase === 'stopped') return failure.say;
     if (phase === 'done' && result) return doneSentence(result.answer, { ...result, copies });
     if (!files) {
       const any = loaded(app).length || Object.keys((app && app.state.files) || {}).length;
@@ -209,6 +221,41 @@ export function rbqmTab({
     shown.app.redrawView(view.id);
   }
 
+  /**
+   * Wait on R for one step, and no longer than its limit (#261). An R that
+   * gives no answer in that time is closed, and the tab says that it stopped
+   * answering and offers to start it again; nothing waits on it after that.
+   * @returns {Promise<*>} R's answer, or SILENT when R gave none in time.
+   */
+  function within(when, answer) {
+    const limit = limits[when];
+    if (!Number.isFinite(limit) || limit <= 0) return answer;
+    let timer;
+    const asked = connection;
+    const gaveUp = new Promise((resolve) => {
+      timer = setTimeout(() => resolve(SILENT), limit * 1000);
+    });
+    return Promise.race([answer, gaveUp])
+      .then((first) => {
+        if (first !== SILENT) return first;
+        phase = 'failed';
+        up = false;
+        result = null;
+        // R's memory goes with it: the next run has no earlier folder to remove.
+        kept = null;
+        failure = failureOf(when, null, { downloads, silent: limit });
+        if (connection === asked) connection = null;
+        // Closed without waiting on it: it is not answering.
+        if (asked && typeof asked.close === 'function') {
+          Promise.resolve()
+            .then(() => asked.close())
+            .catch(() => {});
+        }
+        return SILENT;
+      })
+      .finally(() => clearTimeout(timer));
+  }
+
   async function run(app, startedR = false) {
     const { sources, files, count, study, labels } = handed(app);
     if (!files.length) {
@@ -228,27 +275,31 @@ export function rbqmTab({
     kept = folder;
     const snapshotDate = isoDay(now());
     const since = now().getTime();
-    const answer = await connection.run(r.call, {
-      files: Object.fromEntries(
-        files.map((file) => [
-          `${folder}/${file.name}`,
-          // A file of the loaded study goes as text under the standard names.
-          file.entry ? standardCsv(file.entry) : file.text
-        ])
-      ),
-      args: {
-        ...r.args,
-        data: folder,
-        snapshot_date: snapshotDate,
-        // What R calls each of the study's files when it names a column one lacks.
-        ...(Object.keys(labels).length ? { labels } : {}),
-        ...(earlier ? { forget: earlier } : {})
-      }
-    });
+    const answer = await within(
+      'run',
+      connection.run(r.call, {
+        files: Object.fromEntries(
+          files.map((file) => [
+            `${folder}/${file.name}`,
+            // A file of the loaded study goes as text under the standard names.
+            file.entry ? standardCsv(file.entry) : file.text
+          ])
+        ),
+        args: {
+          ...r.args,
+          data: folder,
+          snapshot_date: snapshotDate,
+          // What R calls each of the study's files when it names a column one lacks.
+          ...(Object.keys(labels).length ? { labels } : {}),
+          ...(earlier ? { forget: earlier } : {})
+        }
+      })
+    );
+    if (answer === SILENT) return;
     if (!answer || answer.status !== 'ok' || !answer.value || !answer.value.status) {
       phase = 'stopped';
       result = null;
-      failure = failureSentence('run', answer && answer.message);
+      failure = failureOf('run', answer && answer.message, { downloads });
       return;
     }
     const took = Math.round((now().getTime() - since) / 100) / 10;
@@ -270,7 +321,8 @@ export function rbqmTab({
   async function press(app) {
     if (busy() || unavailable) return;
     pressedAt = now().getTime();
-    failure = '';
+    failure = null;
+    whyOpen = false;
     tick(true);
     const starting = !up;
     try {
@@ -293,18 +345,20 @@ export function rbqmTab({
         });
         // One call every R has: R is fetched, its packages installed and the
         // pipeline's R read on this call, so each can be said as it happens.
-        const started = await connection.run('Sys.time');
+        const started = await within('start', connection.run('Sys.time'));
+        if (started === SILENT) return;
         if (!started || started.status !== 'ok') {
           phase = 'failed';
-          failure = failureSentence('start', started && started.message);
+          failure = failureOf('start', started && started.message, { downloads, step });
           return;
         }
         phase = 'attaching';
         redraw();
-        const attached = await connection.run(r.attach);
+        const attached = await within('attach', connection.run(r.attach));
+        if (attached === SILENT) return;
         if (!attached || attached.status !== 'ok') {
           phase = 'failed';
-          failure = failureSentence('attach', attached && attached.message);
+          failure = failureOf('attach', attached && attached.message, { downloads });
           return;
         }
         up = true;
@@ -312,7 +366,7 @@ export function rbqmTab({
       await run(app, starting);
     } catch (error) {
       phase = up ? 'stopped' : 'failed';
-      failure = failureSentence(up ? 'run' : 'start', messageOf(error));
+      failure = failureOf(up ? 'run' : 'start', messageOf(error), { downloads, step });
     } finally {
       tick(false);
       redraw();
@@ -326,13 +380,11 @@ export function rbqmTab({
     button.type = 'button';
     const files = handed(app).files.length;
     const label = {
-      idle: up ? 'Run the metrics' : 'Start R',
-      starting: 'Starting R…',
-      attaching: 'Starting R…',
+      idle: up ? 'Run the metrics' : words.start,
+      starting: `${words.starting}…`,
+      attaching: `${words.starting}…`,
       running: 'Running…',
-      done: 'Run again',
-      failed: 'Try R again',
-      stopped: 'Run again'
+      done: 'Run again'
     }[phase];
     button.textContent = label;
     button.disabled = busy() || !files;
@@ -646,17 +698,48 @@ export function rbqmTab({
         'Risk-based quality monitoring: gsm’s site metrics, worked out by R in this browser on the loaded study and drawn with gsm.viz.'
       );
       const runBox = el('div', 'sva-rbqm-run');
-      const status = el('p', 'sva-rbqm-status');
-      status.setAttribute('role', 'status');
-      const button = control(app);
-      if (button) runBox.append(button);
-      runBox.append(status);
+      let status;
+      if ((phase === 'failed' || phase === 'stopped') && failure) {
+        // R did not start, or stopped: the failure state every tab that starts
+        // R shows (r-control.js, #277). The words, in the alarm colour, what to
+        // press beside them, and the reason one click away, with what the
+        // browser or R said behind a disclosure inside that.
+        runBox.classList.add('sva-rbqm-failed');
+        if (failed) failed.destroy();
+        failed = rControl(
+          controlState({
+            state: () => ({
+              phase: 'failed',
+              ...failure,
+              disabled: !handed(app).files.length
+            })
+          }),
+          {
+            open: whyOpen,
+            onPress: () => press(app),
+            onToggle(open) {
+              whyOpen = open;
+              redraw();
+            }
+          }
+        );
+        status = failed.row.querySelector('.sva-r-say');
+        status.classList.add('sva-rbqm-status', 'sva-rbqm-problem');
+        failed.row.querySelector('.sva-action').classList.add('sva-rbqm-start');
+        runBox.append(failed.row);
+        if (failed.panel) runBox.append(failed.panel);
+      } else {
+        status = el('p', 'sva-rbqm-status');
+        status.setAttribute('role', 'status');
+        const button = control(app);
+        if (button) runBox.append(button);
+        runBox.append(status);
+      }
       root.append(lede, runBox);
       if (needs && !unavailable) root.append(filesSection(app));
       container.append(root);
       shown = { app, status };
       status.textContent = statusText(app);
-      if (phase === 'failed' || phase === 'stopped') status.classList.add('sva-rbqm-problem');
 
       if (changed) {
         if (up && files.files.length) queueMicrotask(() => press(app));
@@ -688,6 +771,8 @@ export function rbqmTab({
       return {
         destroy() {
           live = false;
+          if (failed) failed.destroy();
+          failed = null;
           for (const chart of drawn) {
             if (chart && typeof chart.destroy === 'function') chart.destroy();
           }

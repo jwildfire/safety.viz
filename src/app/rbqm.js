@@ -9,6 +9,10 @@
 // returned them: a chart is given the rows of its metric, picked out by the
 // metric's ID, and nothing in a row is changed. The seconds a step has taken
 // and the megabytes a download is said to be are not statistics of the study.
+//
+// What is said of R starting, of R being ready and of R not starting is said
+// in the words every tab that starts R uses (r-words.js, #277).
+import { browserSaid, rWords, waitSaid } from './r-words.js';
 
 const isRecord = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const rowsOf = (value) => (Array.isArray(value) ? value.filter(isRecord) : []);
@@ -21,9 +25,6 @@ export function listed(items) {
   if (items.length < 2) return items.join('');
   return `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 }
-
-/** A sentence that ends in one full stop, whatever it was handed. */
-const sentence = (text) => `${String(text).trim().replace(/\.+$/, '')}.`;
 
 /**
  * Where starting R downloads from, and about how much from each, in words:
@@ -95,27 +96,119 @@ export function stepSentence(step, { seconds, files, study = [], downloads }) {
   const packages = downloads.slice(1).map((_, index) => from(index + 1));
   const doing = {
     runtime: `Starting R: downloading R itself, ${from(0)}.`,
-    packages: `Starting R: installing its packages, ${listed(packages)}. This is the longest step.`,
+    packages: `Starting R: installing its packages, ${listed(packages)}.`,
     files: 'Starting R: fetching gsm’s workflow files from this page.',
     source: 'Starting R: reading the pipeline’s R.',
     attach:
-      'R has started. Loading gsm’s packages in R; the database they query with takes the longest.',
+      'R has started. Loading gsm’s packages in R: this is the longest step, and the database they query with is most of it.',
     run: `Running gsm’s workflows on ${ranOn(files, study)}: the mappings, then each metric, then the reporting tables.`
   }[step];
   return `${doing || 'Starting R.'} ${counted(seconds, 'second')} so far.`;
 }
 
+/** Every address starting R downloads from, in words: "webr.r-wasm.org, repo.r-wasm.org and this page". */
+export const hostsSaid = (downloads) =>
+  listed([...new Set(downloads.map(({ host }) => host || 'this page'))]);
+
 /**
- * What the tab says when R did not start, or stopped.
+ * The sentences the tab shares with every tab that starts R (r-words.js).
+ * @param {Array<{what: string, host: ?string, megabytes: number}>} downloads The downloads.
+ * @returns {Object} The sentences.
+ */
+export const rbqmWords = (downloads) =>
+  rWords({
+    needs: 'Site metrics',
+    verb: 'run them',
+    megabytes: totalMegabytes(downloads),
+    from: hostsSaid(downloads),
+    appears: 'The metrics',
+    missing: 'no metric was run',
+    still: 'No metric was run.'
+  });
+
+/**
+ * How long the tab waits on R at each step before it gives up, in seconds
+ * (#261). Each is many times the longest that step was measured to take: the
+ * start downloads about 55 MB, which a slow connection takes minutes over;
+ * loading gsm's packages took 16 seconds by hand and the workflows 3.
+ */
+export const R_LIMITS = Object.freeze({ start: 600, attach: 180, run: 300 });
+
+/** What R was doing at each step, as the sentence for an R that stopped answering names it. */
+const DOING = {
+  start: 'it was starting',
+  attach: 'it was loading gsm’s packages',
+  run: 'it was running the workflows'
+};
+
+/**
+ * What the tab says when R did not start, or stopped: a few words for the
+ * control, what its button does, one plain reason, and what the browser or R
+ * said, which is shown only when a reader asks for it.
  * @param {'start'|'attach'|'run'} when What R was doing.
  * @param {?string} message What R or the browser said.
- * @returns {string} The sentences.
+ * @param {Object} [context]
+ * @param {Array<{what: string, host: ?string, megabytes: number}>} [context.downloads] The downloads.
+ * @param {?string} [context.step] The step of starting R that failed: `runtime`, `packages`, `files` or `source`.
+ * @param {?number} [context.silent] When R gave no answer, the seconds it was waited on.
+ * @returns {{say: string, label: string, why: string, details: Object}} What the control is handed (src/app/libraries.js::controlState).
  */
-export function failureSentence(when, message) {
-  const why = message ? sentence(message) : 'No reason was given.';
-  if (when === 'run') return `R stopped while running the workflows: ${why}`;
-  const what = when === 'attach' ? 'R started, but gsm’s packages did not load' : 'R did not start';
-  return `${what}: ${why} Try again; if it fails again, reload the page.`;
+export function failureOf(when, message, { downloads = [], step = null, silent = null } = {}) {
+  const words = rbqmWords(downloads);
+  const details = (heading, reason, more = null, moreTitle = 'What the browser said') => ({
+    heading,
+    text: [reason],
+    ...(more ? { more: [more], moreTitle } : {})
+  });
+  if (silent !== null) {
+    return {
+      say: words.stopped,
+      label: words.again,
+      why: words.why,
+      details: details(words.stopped, words.stoppedReason(waitSaid(silent), DOING[when]))
+    };
+  }
+  if (when === 'run') {
+    return {
+      say: 'R stopped',
+      label: 'Run again',
+      why: words.why,
+      details: details(
+        'R stopped',
+        'R stopped while it was running gsm’s workflows, so there are no results. Run again; if it stops again, reload the page.',
+        browserSaid(message, 'R'),
+        'What R said'
+      )
+    };
+  }
+  // What was being downloaded when R did not start, and from where.
+  const from = (index) => (downloads[index] && downloads[index].host) || 'this page';
+  const fetching = {
+    runtime: () => words.failedReason('R', from(0)),
+    packages: () =>
+      words.failedReason(
+        'R’s packages',
+        listed([...new Set(downloads.slice(1).map((_, index) => from(index + 1)))])
+      ),
+    files: () => words.failedReason('gsm’s workflow files', 'this page')
+  };
+  const reason =
+    when === 'attach'
+      ? 'R started, but gsm’s packages did not load in it. Try again; if it fails again, reload the page. No metric was run.'
+      : fetching[step]
+        ? fetching[step]()
+        : words.failedOther;
+  return {
+    say: words.failed,
+    label: words.again,
+    why: words.why,
+    details: details(
+      words.failed,
+      reason,
+      browserSaid(message, when === 'attach' ? 'R' : 'The browser'),
+      when === 'attach' ? 'What R said' : 'What the browser said'
+    )
+  };
 }
 
 /**

@@ -343,22 +343,18 @@ test.describe('docs site', () => {
     );
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(HOSTED_PITCH);
     await page.locator('.sva-tab[data-domain="biomarkers"]').click();
-    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-action')).toHaveText(
-      'Start R'
-    );
+    await expect(page.locator('.sva-charts > .sva-r .sva-action')).toHaveText('Start R');
     // Shown, not pressed: nothing is asked of R's hosts.
     expect(requests.filter((url) => /webr\.r-wasm\.org|statistics\.R/.test(url))).toEqual([]);
     // Pressed on the page as built: its own factory and its own `./statistics.R`
     // start R, and a chart prints R's answer.
     await page.evaluate(() => window.__safetyVizApp.select('association-scatter'));
-    await page.locator('.sva-group[data-group="biomarkers"] .sva-action').click();
+    await page.locator('.sva-charts > .sva-r .sva-action').click();
     await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
       "Pearson's product-moment correlation",
       { timeout: 150000 }
     );
-    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-action')).toHaveText(
-      'R started'
-    );
+    await expect(page.locator('.sva-charts > .sva-r .sva-chip')).toHaveText('R ready▾');
     expect(requests).toContain(new URL('/_site/demo/statistics.R', page.url()).href);
     expect(errors).toEqual([]);
   });
