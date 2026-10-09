@@ -1101,10 +1101,56 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
       ['/rbqm/runs/2', '/rbqm/runs/1'],
       ['/rbqm/runs/3', '/rbqm/runs/2']
     ]);
-    // The R function removes the folder it is told of, and never the one it reads.
-    const pipeline = readFileSync(path.join(root, RBQM_TAB.pipeline), 'utf8');
-    expect(pipeline).toMatch(/unlink\(forget, recursive = TRUE\)/);
-    expect(pipeline).toMatch(/normalizePath\(data, mustWork = FALSE\)/);
+  });
+
+  it('APP-RBQM-052: the folder of a run that failed is forgotten by the next run, as a run that answered is', async () => {
+    fakeViz();
+    let asked = 0;
+    const { app, r, $ } = mount({
+      answers: {
+        rbqm_run: () => {
+          asked += 1;
+          return asked === 1
+            ? { status: 'error', message: 'R stopped' }
+            : { status: 'ok', value: whole, form: 'browser' };
+        }
+      }
+    });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    $('.sva-rbqm-start').click();
+    await connection.letGo();
+    const runs = connection.runs.filter((run) => run.name === 'rbqm_run');
+    expect(runs.map((run) => [run.request.args.data, run.request.args.forget])).toEqual([
+      ['/rbqm/runs/1', undefined],
+      ['/rbqm/runs/2', '/rbqm/runs/1']
+    ]);
+  });
+
+  it('APP-RBQM-052: desktop R, asked to forget while it reads one folder, removes only the one folder beside its own: not its own however spelt, its parent, a folder elsewhere, what a pattern matches, two at once, or one that is not there; and a whole run told of the folder before removes it and returns its rows', () => {
+    const { cases, in_a_run: inARun } = pilotExpected.forgets;
+    const all = ['runs/1', 'runs/2', 'runs/else-a', 'elsewhere/9'];
+    expect(cases.map(({ id }) => id)).toEqual(RBQM_PILOT.forgets.map(({ id }) => id));
+    const [beside, ...others] = cases;
+    expect(beside).toEqual({
+      id: 'beside',
+      forget: 'runs/1',
+      removed: true,
+      left: ['runs/2', 'runs/else-a', 'elsewhere/9']
+    });
+    expect(others.length).toBe(8);
+    for (const other of others) {
+      expect([other.id, other.removed, other.left]).toEqual([other.id, false, all]);
+    }
+    expect(inARun).toEqual({
+      earlier_left: false,
+      own_left: true,
+      rows: pilotExpected.answer.Results.length
+    });
+    expect(inARun.rows).toBe(51);
   });
 
   it('APP-RBQM-024: when R comes up and its packages cannot be attached R is not taken as up: the tab says so and offers to try again, and trying again closes that R and makes one fresh connection, started from the beginning (#258)', async () => {

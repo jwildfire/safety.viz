@@ -47,16 +47,33 @@ const bareDestination = (destination) =>
     ? destination.slice(4, -4)
     : destination;
 
+// A destination the site may publish: http(s), or one with no scheme (a path, a
+// fragment). Read as a browser reads it, through the spaces and control
+// characters an author can put before and inside a scheme. Anything else, such
+// as `javascript:` or `data:`, is not published: the link is reduced to its
+// label and the image to its alt text, whoever wrote the row (#258).
+const SCHEME = /^[A-Za-z][A-Za-z0-9+.-]*:/;
+export function publishable(destination) {
+  const bare = destination.replace(/[\s\u0000-\u001f]+/g, '');
+  return !SCHEME.test(bare) || /^https?:\/\//i.test(bare);
+}
+
 export function mdInline(text) {
   return escapeHtml(text)
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(
       new RegExp(`!\\[([^\\]]*)\\]\\((${DESTINATION})\\)`, 'g'),
-      (match, alt, destination) => `<img src="${bareDestination(destination)}" alt="${alt}">`
+      (match, alt, destination) =>
+        publishable(bareDestination(destination))
+          ? `<img src="${bareDestination(destination)}" alt="${alt}">`
+          : alt
     )
     .replace(
       new RegExp(`\\[([^\\]]+)\\]\\((${DESTINATION})\\)`, 'g'),
-      (match, label, destination) => `<a href="${bareDestination(destination)}">${label}</a>`
+      (match, label, destination) =>
+        publishable(bareDestination(destination))
+          ? `<a href="${bareDestination(destination)}">${label}</a>`
+          : label
     )
     .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }

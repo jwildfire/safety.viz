@@ -362,6 +362,11 @@ describe('letting go of R (#258)', () => {
     const noFile = standIn();
     await createConnection(options(noFile, { fetch: fetchOf({}) })).run('rbqm_run');
     expect(count(noFile, 'close')).toBe(1);
+    // An R whose own start failed is closed too.
+    const noStart = standIn({ fail: { init: 'R.bin.wasm: Failed to fetch' } });
+    const stopped = await createConnection(options(noStart)).run('rbqm_run');
+    expect(stopped.status).toBe('unavailable');
+    expect(noStart.calls.map(([call]) => call)).toEqual(['new', 'init', 'close']);
     // An R that could not be fetched was never there to close.
     const offline = standIn({ fail: { import: 'Failed to fetch' } });
     await createConnection(options(offline)).run('rbqm_run');

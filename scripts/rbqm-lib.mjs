@@ -171,6 +171,8 @@ export const RBQM_TAB = {
   call: RBQM_GATE.call,
   /** Attaches the packages; called first, so a page can say what R is doing. */
   attach: 'rbqm_attach',
+  /** Removes the folder of the run before; called by the run, and by the reference script. */
+  forget: 'rbqm_forget',
   pipeline: PIPELINE,
   metrics: RBQM_METRICS,
   snapshotDate: RBQM_GATE.snapshotDate,
@@ -350,6 +352,22 @@ export const RBQM_PILOT = {
    * read trimmed and in capitals, so gsm counts the same serious events (#258).
    */
   seriousnessAsTyped: { id: 'seriousness-as-typed', typed: true },
+  /**
+   * What R is asked to forget while it reads `runs/2`, among the folders
+   * `runs/1`, `runs/2`, `runs/else-a` and `elsewhere/9`: only the one folder
+   * beside its own is removed (#258).
+   */
+  forgets: [
+    { id: 'beside', forget: 'runs/1' },
+    { id: 'its-own', forget: 'runs/2' },
+    { id: 'its-own-respelt', forget: 'runs/1/../2/' },
+    { id: 'its-parent', forget: 'runs' },
+    { id: 'elsewhere', forget: 'elsewhere/9' },
+    { id: 'a-pattern', forget: 'runs/else*' },
+    { id: 'not-there', forget: 'runs/7' },
+    { id: 'two-at-once', forget: ['runs/1', 'runs/else-a'] },
+    { id: 'none', forget: null }
+  ],
   expected: 'tests/fixtures/rbqm/expected-standard.json'
 };
 

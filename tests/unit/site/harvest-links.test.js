@@ -4,9 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { mdInline } from '../../../scripts/site-lib.mjs';
 
 // The harvest script turns wiki text, which is not ours, into matrix rows, and the
-// site build turns a row's `[label](destination)` into a live link. So the rule is
-// held end to end (#238, #258): whatever the harvest keeps, the site build must not
-// publish as a link or an image whose destination has a scheme other than http(s).
+// site build turns a row's `[label](destination)` into a live link. The rule is
+// held in both places (#238, #258): the harvest keeps no link-shaped text whose
+// destination has a scheme other than http(s), and the site build publishes none,
+// whoever wrote the row.
 
 const script = fileURLToPath(
   new URL('../../../scripts/harvest-wiki-requirements.py', import.meta.url)
@@ -31,15 +32,23 @@ function harvested(texts) {
   return JSON.parse(ran.stdout);
 }
 
-// Every destination the site build would publish, read as a browser reads it:
-// through the spaces and control characters before and inside a scheme.
-function published(text) {
-  return [...mdInline(text).matchAll(/(?:href|src)="([^"]*)"/g)].map((match) =>
-    match[1].replace(/[\s\u0000-\u001f]+/g, '')
-  );
-}
-const unsafe = (destination) =>
+// Read as a browser reads a destination: through the spaces and control
+// characters an author can put before and inside a scheme.
+const squeezed = (text) => text.replace(/[\s\u0000-\u001f]+/g, '');
+const otherScheme = (destination) =>
   /^[A-Za-z][A-Za-z0-9+.-]*:/.test(destination) && !/^https?:\/\//i.test(destination);
+
+// Link-shaped text left in a harvested row: `](`, then a scheme that is not
+// http(s). Judged on the text itself, not by any one renderer's reading of it.
+// Looked ahead at, so a link inside another's title is seen too.
+const linkShaped = (text) =>
+  [...text.matchAll(/\]\((?=([^)]*))/g)].some((match) =>
+    otherScheme(squeezed(match[1]).replace(/^<+/, ''))
+  );
+
+// Every destination the site build publishes for a text.
+const published = (text) =>
+  [...mdInline(text).matchAll(/(?:href|src)="([^"]*)"/g)].map((match) => squeezed(match[1]));
 
 const HOSTILE = [
   '[x](javascript:alert(1))',
@@ -55,7 +64,14 @@ const HOSTILE = [
   '[x](<data:text/html,hi>)',
   '![x](javascript:alert(1))',
   '![x](<javascript:alert(1)>)',
-  'before [x](<javascript:alert(1)>) and [y](javascript:alert(2)) after'
+  'before [x](<javascript:alert(1)>) and [y](javascript:alert(2)) after',
+  // A link inside a link: reducing the inner one leaves a new link behind it.
+  '[[x](data:a)](javascript:alert(1))',
+  '[[x](data:a)](<javascript:alert(1)>)',
+  '[[[x](data:a)](data:b)](javascript:alert(1))',
+  // A link inside what reads as an honest link's title.
+  '[a](https://example.org [b](javascript:alert(1)) )',
+  '[a](https://example.org "t [b](javascript:alert(1))")'
 ];
 
 const HONEST = [
@@ -68,27 +84,51 @@ const HONEST = [
 ];
 
 describe('the harvest script keeps only safe link destinations (#238, #258)', () => {
-  it('the site build can publish each hostile link as written, so the harvest is what stops it', () => {
-    const live = HOSTILE.filter((text) => published(text).some(unsafe));
-    // Most of these reach the page live with no harvest in front of them. If this
-    // falls to none, the cases have stopped testing anything.
-    expect(live.length).toBeGreaterThan(8);
+  it('the hostile links are link-shaped as written, so the check below can fail', () => {
+    expect(HOSTILE.filter(linkShaped)).toEqual(HOSTILE);
   });
 
-  it('no hostile link survives the harvest as a destination the site build publishes', () => {
+  it('no hostile link survives the harvest as link-shaped text with another scheme', () => {
     const kept = harvested(HOSTILE);
-    const reached = kept.filter((text) => published(text).some(unsafe));
-    expect(reached).toEqual([]);
+    expect(kept.filter(linkShaped)).toEqual([]);
   });
 
-  it('a destination in angle brackets is reduced to its label, as a bare one is', () => {
-    expect(harvested(['see [the note](<javascript:alert(1)>) here'])).toEqual([
-      'see the note here'
-    ]);
-    expect(harvested(['see [the note](javascript:alert(1)) here'])).toEqual(['see the note here']);
+  it('a destination in angle brackets is reduced to its label, as a bare one is, and a link inside a link to the innermost label', () => {
+    expect(
+      harvested([
+        'see [the note](<javascript:alert(1)>) here',
+        'see [the note](javascript:alert(1)) here',
+        'see [[the note](data:a)](javascript:alert(1)) here'
+      ])
+    ).toEqual(['see the note here', 'see the note here', 'see the note here']);
   });
 
   it('an http(s) or relative link is kept as written', () => {
     expect(harvested(HONEST)).toEqual(HONEST);
+  });
+});
+
+describe('the site build publishes only safe link destinations, whoever wrote the row (#258)', () => {
+  it('no hostile link is published as written, with no harvest in front of it', () => {
+    const reached = HOSTILE.filter((text) => published(text).some(otherScheme));
+    expect(reached).toEqual([]);
+  });
+
+  it('a link or an image with another scheme is reduced to its label or its alt text', () => {
+    expect(mdInline('see [the note](javascript:alert(1)) here')).toBe('see the note here');
+    expect(mdInline('see [the note](<javascript:alert(1)>) here')).toBe('see the note here');
+    expect(mdInline('a ![chart](data:image/png;base64,AAAA) b')).toBe('a chart b');
+  });
+
+  it('an http(s) or relative destination is published as it was', () => {
+    expect(HONEST.map(published)).toEqual([
+      ['https://example.org/a_(b)'],
+      ['https://example.org/a(b)'],
+      ['HTTP://example.org/'],
+      ['requirements/histogram.md'],
+      ['docs/ab.md'],
+      ['#filters']
+    ]);
+    expect(mdInline('![x](<guide/fig(1).png>)')).toBe('<img src="guide/fig(1).png" alt="x">');
   });
 });

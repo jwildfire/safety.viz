@@ -527,7 +527,11 @@ above.
 ## Copied code and its licences
 
 The demo app's RBQM tab runs and draws with other projects' code, each copied
-or built from a release tag. safety.viz changes none of it.
+or built from a release tag. safety.viz changes one line of it: gsm.reporting's
+`Results.yaml` names `FilterByLatestSnapshotDate` without `gsm.kri::`, because
+gsm.kri is not installed in browser R. The `SOURCE.json` beside the copy records
+the line as it was and as it is, and the checks hold the file to its tag with
+that one line changed.
 
 | What                                                            | Version | Licence, as the project states it                               | How it is here                                                              |
 | --------------------------------------------------------------- | ------- | --------------------------------------------------------------- | --------------------------------------------------------------------------- |

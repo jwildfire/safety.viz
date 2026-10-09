@@ -162,8 +162,8 @@ export function createConnection(options = {}) {
     // The channel that needs no cross-origin isolation headers: a static host
     // such as GitHub Pages sends none.
     const webR = new WebR({ baseUrl, channelType: ChannelType.PostMessage });
-    await webR.init();
     try {
+      await webR.init();
       await prepare(webR);
     } catch (error) {
       // An R that could not be made ready is closed: the next run starts another.

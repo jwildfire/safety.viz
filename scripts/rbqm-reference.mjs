@@ -19,7 +19,14 @@
 // fails until it is.
 
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -281,6 +288,65 @@ const seriousEvents = ({ Results }) =>
     0
   );
 const asTyped = runPilot(RBQM_PILOT.seriousnessAsTyped.id, undefined, undefined, true).answer;
+
+// What R removes when it is told of the run before, and what it leaves (#258).
+// The folders are made here and R's own function is asked, case by case; then
+// one whole run is given an earlier folder, to show the run asks it.
+const askR = (id, call, args) => {
+  const request = path.join(work, `${id}-arguments.json`);
+  const reply = path.join(work, `${id}-answer.json`);
+  writeFileSync(request, JSON.stringify({ pipeline: RBQM_TAB.pipeline, call, args }));
+  execFileSync('Rscript', ['scripts/rbqm-reference.R', request, reply], {
+    cwd: rootDir,
+    stdio: ['ignore', 'inherit', 'inherit']
+  });
+  return JSON.parse(readFileSync(reply, 'utf8'));
+};
+function forgetting() {
+  const cases = RBQM_PILOT.forgets.map(({ id, forget }) => {
+    // Fresh folders for every case: the run's own, the one before it beside it,
+    // one elsewhere, and one a pattern would match.
+    const base = path.join(work, `forget-${id}`);
+    const folders = ['runs/1', 'runs/2', 'runs/else-a', 'elsewhere/9'];
+    for (const folder of folders) {
+      mkdirSync(path.join(base, folder), { recursive: true });
+      writeFileSync(path.join(base, folder, 'kept.csv'), 'A\n1\n');
+    }
+    const place = (name) => path.join(base, name);
+    const said = askR(`forget-${id}`, RBQM_TAB.forget, {
+      forget: Array.isArray(forget) ? forget.map(place) : forget === null ? null : place(forget),
+      data: place('runs/2')
+    });
+    return {
+      id,
+      forget,
+      removed: said === true || (Array.isArray(said) && said[0] === true),
+      left: folders.filter((folder) => existsSync(path.join(base, folder, 'kept.csv')))
+    };
+  });
+  // A whole run of the pilot study, told of a folder beside its own.
+  const earlier = path.join(work, 'forget-run-earlier');
+  mkdirSync(earlier);
+  writeFileSync(path.join(earlier, 'kept.csv'), 'A\n1\n');
+  const data = path.join(work, 'forget-run');
+  mkdirSync(data);
+  for (const [name, text] of Object.entries(pilot.files))
+    writeFileSync(path.join(data, name), text);
+  const answer = askR('forget-run', RBQM_TAB.call, {
+    ...tabArgs(data, inRepository),
+    labels: pilot.labels,
+    forget: earlier
+  });
+  return {
+    cases,
+    in_a_run: {
+      earlier_left: existsSync(earlier),
+      own_left: existsSync(data),
+      rows: answer.Results.length
+    }
+  };
+}
+const forgets = forgetting();
 {
   const { Results, Bounds, Groups, Metrics, ...rest } = pilotAnswer;
   writeFileSync(
@@ -301,7 +367,8 @@ const asTyped = runPilot(RBQM_PILOT.seriousnessAsTyped.id, undefined, undefined,
       ` "no_columns": ${JSON.stringify(said(noColumns))},\n` +
       ` "some_sites_blank": ${JSON.stringify(said(someSitesBlank))},\n` +
       ` "all_sites_blank": ${JSON.stringify(said(allSitesBlank))},\n` +
-      ` "seriousness_as_typed": ${JSON.stringify({ ...said(asTyped), serious_events: seriousEvents(asTyped), serious_events_as_held: seriousEvents(pilotAnswer) })}\n}\n`
+      ` "seriousness_as_typed": ${JSON.stringify({ ...said(asTyped), serious_events: seriousEvents(asTyped), serious_events_as_held: seriousEvents(pilotAnswer) })},\n` +
+      ` "forgets": ${JSON.stringify(forgets)}\n}\n`
   );
   console.log(
     `✓ Wrote ${RBQM_PILOT.expected} — ${Results.length} Results rows for ` +

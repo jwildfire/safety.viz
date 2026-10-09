@@ -283,7 +283,6 @@ export function rbqmTab({
         loadLibrary();
         // An R that did not come up is closed before another is started.
         if (connection && typeof connection.close === 'function') await connection.close();
-        kept = null;
         connection = createConnection({
           packages: r.packages,
           repos: r.repos,

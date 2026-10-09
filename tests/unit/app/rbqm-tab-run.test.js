@@ -470,7 +470,10 @@ describe('desktop R on a study it once stopped on, or said nothing of (#258)', (
       );
     }
     expect(all.warnings).toEqual(["254 cases of NA's in GroupID, cases are removed in output"]);
-    expect(all.groups.message).toBe('The Groups table was not made: no metric ran.');
+    // The Groups table says why it was not made: reporting stopped, not that no metric ran.
+    expect(all.groups.message).toBe(
+      "The Groups table was not made: gsm's reporting workflows stopped."
+    );
   });
 
   it('APP-RBQM-053: seriousness typed in small letters between spaces is read trimmed and in capitals, as the end-of-study status is: R counts the same three serious events, and the same rows', () => {

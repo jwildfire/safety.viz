@@ -73,8 +73,6 @@ def safe_links(text: str) -> str:
     reduced to its label, and an image, which a requirement never needs, to its alt
     text. A destination in angle brackets is held to the same rule (#258).
     """
-    text = IMAGE.sub(lambda m: m.group(1), text)
-
     def keep(m: re.Match) -> str:
         label, dest = m.group(1), m.group(2)
         # A browser reads a scheme through the spaces, tabs and line breaks an
@@ -84,7 +82,25 @@ def safe_links(text: str) -> str:
             return label
         return m.group(0)
 
-    return LINK.sub(keep, ANGLED.sub(keep, text))
+    # A link reduced to its label can leave a new link behind it, as
+    # `[[x](data:a)](javascript:b)` does, so the text is read until it stops
+    # changing. The site build holds the same rule on whatever reaches it.
+    for _ in range(20):
+        reduced = LINK.sub(keep, ANGLED.sub(keep, IMAGE.sub(lambda m: m.group(1), text)))
+        if reduced == text:
+            break
+        text = reduced
+
+    # Whatever is left that still reads `](` and then a scheme that is not
+    # http(s) is pulled apart, so that no renderer takes it for a link.
+    def apart(m: re.Match) -> str:
+        bare = re.sub(r"[\s\x00-\x1f<]+", "", m.group(1))
+        if SCHEME.match(bare) and not re.match(r"^https?://", bare, re.I):
+            return "] ("
+        return m.group(0)
+
+    # Looked ahead at, not consumed: a link inside another's title is seen too.
+    return re.sub(r"\]\((?=([^)]{0,80}))", apart, text)
 
 def clean(text: str) -> str:
     text = re.sub(r"\s+", " ", text.strip())
