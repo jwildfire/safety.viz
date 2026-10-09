@@ -517,6 +517,17 @@ test.describe('docs site', () => {
     await expect(page.locator('.card.status-available')).toHaveCount(available.length);
   });
 
+  test('the built home page describes itself with the number of charts the configuration lists as available and not Prototype (#286)', async ({
+    page
+  }) => {
+    const listed = available.filter((renderer) => !renderer.prototype).length;
+    const words = { 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen', 16: 'Sixteen' };
+    await page.goto('/_site/index.html');
+    const description = await page.locator('meta[name="description"]').getAttribute('content');
+    expect(description.split(' ')[0]).toBe(words[listed] || String(listed));
+    expect(description).toMatch(/^\S+ classic clinical-safety graphics from the safetyGraphics /);
+  });
+
   for (const renderer of available) {
     test(`built ${renderer.module} demo mounts the shared shell with no console errors (#7) (#17)`, async ({
       page
