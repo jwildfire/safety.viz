@@ -37,6 +37,12 @@ export const LOGO_SVG =
   '<polygon points="66.0,5.6 80.5,13.9 80.5,30.6 66.0,38.9 51.6,30.6 51.6,13.9" fill="#988bdd"/>' +
   '</svg>';
 
+/**
+ * The mark as an address a page can use for its favicon (#270): the docs site
+ * and the demo app's page both do, so one tab's icon says both are safety.viz.
+ */
+export const LOGO_HREF = `data:image/svg+xml,${encodeURIComponent(LOGO_SVG).replace(/'/g, '%27')}`;
+
 // A row of hex outlines one band tall, and a single hex outline; both are
 // masks, so whatever colour sits behind shows through the strokes.
 const HEX_STRIP =
@@ -65,7 +71,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 
 .sva-header{position:relative;background:var(--rail);border-bottom:1px solid var(--rule);padding-top:9px}
 .sva-bar{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .7rem;padding:.5rem var(--gutter)}
-.sva-brand{display:flex;align-items:center;gap:.5rem;margin-right:.3rem}
+.sva-brand{display:flex;align-items:center;gap:.5rem;margin-right:.3rem;color:inherit;text-decoration:none}
 .sva-logo{flex:none;width:1.9rem;height:1.9rem}
 .sva-logo svg{display:block;width:100%;height:100%}
 .sva-wordmark{font-family:var(--serif);font-size:1.65rem;line-height:1;letter-spacing:-.01em;color:var(--ink)}

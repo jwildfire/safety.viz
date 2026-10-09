@@ -156,9 +156,10 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options.manifest The portfolio manifest.
  * @param {Array<{name: string, colour?: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}, view?: {id: string, title: string, badge?: ?{text: string, title: string}, tag: function(): string, render: function(Element, Object): ?{destroy: Function}}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name, on a tab of the library's `colour`, a six-digit hex colour, or of the first colour no other tab uses when it names none (#268); a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183). A library that brings a `view` (#235) brings a tab of its own in place of charts: its `id` is the tab's address, `title` its name, `badge` a status shown beside the name, `tag()` what the tab's count says, and `render(container, app)` draws it and returns what tears it down. A view whose id is the data view's, a chart's or another view's is left out with a console warning.
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
- * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out.
+ * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out. The wordmark is a link to `docs` too (#270).
  * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages, keyed by module name: its clinical guide and its test evidence. A chart's view carries a footnote linking those it was given an address for (#246).
  * @param {string} [options.version] The safety.viz version, shown in the footer.
+ * @param {string} [options.title] The app's name in the browser tab's title, which names the open view before it: "RBQM · safety.viz demo" (#270).
  * @param {string} [options.pitch] What the footer says the app does with a study; the page that mounts it says what is true there (#183).
  * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`, refusing an answer that is not a success.
  * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to the data panel.
@@ -174,6 +175,7 @@ export function mountApp(
     links = {},
     chartLinks = {},
     version = '',
+    title: appName = 'safety.viz demo',
     pitch = 'Everything runs in this browser. Nothing is sent anywhere.',
     // An error page is not the file: a 404's body would otherwise be read as data.
     fetchText = (url) =>
@@ -294,7 +296,12 @@ export function mountApp(
   // screen readers and not shown.
   const header = el('header', 'sva-header');
   const bar = el('div', 'sva-bar');
-  const brand = el('div', 'sva-brand');
+  // The wordmark leads to the docs home when the page says where that is (#270).
+  const brand = el(links.docs ? 'a' : 'div', 'sva-brand');
+  if (links.docs) {
+    brand.href = links.docs;
+    brand.title = 'safety.viz: docs and chart gallery';
+  }
   const logo = el('span', 'sva-logo');
   logo.innerHTML = LOGO_SVG;
   brand.append(
@@ -692,11 +699,20 @@ export function mountApp(
     return true;
   }
 
+  /** The open view's name as the browser tab says it: the name on its tab or its chip. */
+  function viewName() {
+    if (isChart(state.selected)) return chipLabel(manifest.modules[state.selected], state.selected);
+    if (isView(state.selected)) return views.get(state.selected).title;
+    return 'Data';
+  }
+
   function render() {
     const current = status();
     renderHead(current);
     renderNav(current);
     renderMain(current);
+    // The browser tab's title follows the open view (#270).
+    document.title = `${viewName()} · ${appName}`;
   }
 
   function place(file) {
@@ -1145,6 +1161,7 @@ export function mountApp(
       window.removeEventListener('hashchange', followAddress);
       destroyChart();
       root.innerHTML = '';
+      document.title = appName;
     }
   };
 

@@ -46,7 +46,8 @@ test.describe('docs site', () => {
     });
     await page.goto('/_site/demo/index.html');
     await page.evaluate('window.__safetyVizApp.ready');
-    await expect(page).toHaveTitle('safety.viz demo');
+    // The title names the chart the app opens on (#270).
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
     await expect(page.locator('.sva-count')).toHaveText(
       '18 of 18 charts supported by the loaded data'
     );
@@ -77,6 +78,33 @@ test.describe('docs site', () => {
     await page.goto('/_site/index.html');
     await expect(page.locator('.site-nav a[href="demo/index.html"]')).toHaveText('Demo app');
     expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-039: the docs pages and the demo app serve the same favicon, the hex mark, and the app’s wordmark leads to the docs home (#270)', async ({
+    page
+  }) => {
+    const icon = () => page.locator('link[rel="icon"]');
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(icon()).toHaveCount(1);
+    const app = await icon().getAttribute('href');
+    expect(app.startsWith('data:image/svg+xml,')).toBe(true);
+    expect(decodeURIComponent(app).match(/<polygon/g)).toHaveLength(7);
+    // The wordmark is the way back to the docs: one click, to the docs home.
+    await expect(page.locator('a.sva-brand')).toHaveAttribute('href', '../index.html');
+    await page.locator('a.sva-brand').click();
+    await expect(page).toHaveURL(/\/_site\/index\.html$/);
+    await expect(icon()).toHaveCount(1);
+    expect(await icon().getAttribute('href')).toBe(app);
+    // A chart's own pages and the Domains page carry it too.
+    for (const address of [
+      '/_site/histogram/index.html',
+      '/_site/histogram/evidence.html',
+      '/_site/domains/index.html'
+    ]) {
+      await page.goto(address);
+      expect(await icon().getAttribute('href'), address).toBe(app);
+    }
   });
 
   test('APP-PAGE-034: on the built demo page at 1,280 pixels, in the app’s own typeface, the welcome is one line above the chart and the header is one row with every tab on it (#269)', async ({

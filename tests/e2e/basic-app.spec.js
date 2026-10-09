@@ -675,6 +675,55 @@ test.describe('demo app: the first screen', () => {
     await expect(welcome).toBeVisible();
   });
 
+  test('APP-PAGE-037: the wordmark is a link to the docs home, the mark and the words "Demo app" inside it, and nothing else in the header moves (#270)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    const brand = page.locator('.sva-header a.sva-brand');
+    // The harness page gives the app no addresses, so the app's own default stands: the published site.
+    await expect(brand).toHaveAttribute('href', 'https://jwildfire.github.io/safety.viz/');
+    await expect(brand).toHaveAttribute('title', 'safety.viz: docs and chart gallery');
+    await expect(brand.locator('.sva-wordmark')).toHaveText('safety.viz');
+    await expect(brand.locator('.sva-kicker')).toHaveText('Demo app');
+    // It reads as the wordmark it was: the header's ink, not a link's underline.
+    const look = await brand.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return { line: style.textDecorationLine, colour: style.color };
+    });
+    expect(look).toEqual({ line: 'none', colour: 'rgb(31, 35, 40)' });
+    // The wordmark and every tab are on the header's first row, as before.
+    const tops = await page
+      .locator('.sva-bar > .sva-brand, .sva-tabs > *')
+      .evaluateAll((elements) =>
+        elements.map((element) => {
+          const box = element.getBoundingClientRect();
+          return Math.round(box.top + box.height / 2);
+        })
+      );
+    expect(tops).toHaveLength(7);
+    expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(4);
+  });
+
+  test('APP-PAGE-038: the browser tab’s title names the open view: a chart by the name on its chip, the RBQM tab, and the Data tab (#270)', async ({
+    page
+  }) => {
+    await openOnDemo(page);
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
+    await openChart(page, 'hep-explorer');
+    await expect(page).toHaveTitle('Hepatic Explorer · safety.viz demo');
+    await openChart(page, 'group-comparison');
+    await expect(page).toHaveTitle('Group comparison · safety.viz demo');
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await expect(page).toHaveTitle('RBQM · safety.viz demo');
+    await item(page, 'data').click();
+    await expect(page).toHaveTitle('Data · safety.viz demo');
+    // An address followed without a reload changes it too.
+    await page.evaluate(() => {
+      window.location.hash = '#qt-explorer';
+    });
+    await expect(page).toHaveTitle('QT Explorer · safety.viz demo');
+  });
+
   test('APP-PAGE-036: the welcome line is for the study the app opens on: it goes when another study or a reader’s own files are loaded, and a page that opens with no study has none (#269)', async ({
     page
   }) => {
@@ -3710,7 +3759,8 @@ test.describe('demo app as one file, offline', () => {
     page.on('request', (request) => requests.push(request.url()));
     await context.setOffline(true);
     await page.goto(SINGLE_FILE.href);
-    await expect(page).toHaveTitle('safety.viz demo');
+    // It opens empty, on the Data tab, and the title says so (#270).
+    await expect(page).toHaveTitle('Data · safety.viz demo');
     await expect(page.locator('.sva-wordmark')).toHaveText('safety.viz');
     await expect(page.locator('.sva-kicker')).toHaveText('Demo app');
     await expect(page.locator('.sva-version')).toHaveText(/^safety\.viz \d+\.\d+\.\d+$/);
