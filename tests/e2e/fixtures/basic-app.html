@@ -168,7 +168,9 @@
       libraries.push({ name: 'gsm.viz', view: window.__rbqmView });
       window.__safetyVizApp = SafetyVizApp.mount(
         '#app',
-        empty ? { libraries, pitch } : { demo: { base: '/site/data/', studies }, libraries, pitch }
+        empty
+          ? { libraries, pitch, tiers: window.__appTiers }
+          : { demo: { base: '/site/data/', studies }, libraries, pitch, tiers: window.__appTiers }
       );
     </script>
   </body>

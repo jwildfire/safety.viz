@@ -177,7 +177,22 @@ describe('kit: the shared chart parts as one export', () => {
       const unlisted = Object.keys(module).filter((name) => !names.includes(name));
       const allowed =
         {
-          'src/shell.js': ['experimentalBanner', 'prototypeBanner'],
+          // The status banners and the status label (#273) say safety.viz's own
+          // release status, so they are not kit members.
+          'src/shell.js': [
+            'LADDER_URL',
+            'STATUS_LABEL_STYLES',
+            'TIER_MEANINGS',
+            'TIER_WORDS',
+            'applyStatusLabelStyles',
+            'experimentalBanner',
+            'prototypeBanner',
+            'statusLabel',
+            'statusLabelHtml',
+            'statusLabelTree',
+            'wireStatusLabel',
+            'wireStatusLabels'
+          ],
           'src/box-whisker.js': ['hexToRgba']
         }[file] || [];
       expect(

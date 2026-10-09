@@ -4,6 +4,22 @@
 // classes use the neutral sv- prefix, and one stylesheet is injected per
 // document by whichever module mounts first.
 
+// The status label (#273): the one thing that says where a chart, a tab or the
+// demo app stands on the status ladder. It is drawn by src/status-label.js and
+// reached from here, with the rest of the charts' shared chrome.
+export {
+  LADDER_URL,
+  STATUS_LABEL_STYLES,
+  TIER_MEANINGS,
+  TIER_WORDS,
+  applyStatusLabelStyles,
+  statusLabel,
+  statusLabelHtml,
+  statusLabelTree,
+  wireStatusLabel,
+  wireStatusLabels
+} from './status-label.js';
+
 /**
  * Create an element with an optional class and text content.
  * @param {string} tag Element tag name.

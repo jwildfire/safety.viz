@@ -77,6 +77,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-wordmark{font-family:var(--serif);font-size:1.65rem;line-height:1;letter-spacing:-.01em;color:var(--ink)}
 .sva-kicker{align-self:flex-end;padding-bottom:.12rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);white-space:nowrap}
 .sva-tabs{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem}
+.sva-appstatus{margin-left:auto;display:flex;align-items:center}
 .sva-item,.sva-tab{position:relative;display:inline-flex;align-items:center;gap:.45rem;border:1px solid transparent;border-radius:999px;background:none;color:var(--ink);font:inherit;font-size:.86rem;line-height:1.2;white-space:nowrap;padding:.36rem .62rem;cursor:pointer}
 .sva-item:hover,.sva-tab:hover{background:var(--accent-soft)}
 .sva-tab[aria-pressed=true],.sva-item[aria-current=page]{background:var(--card);border-color:var(--hue,var(--accent));box-shadow:0 1px 0 var(--rule)}

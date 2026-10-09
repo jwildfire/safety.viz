@@ -46,9 +46,17 @@ import {
 } from './libraries.js';
 import { renderDataPanel } from './data-panel.js';
 import { DEMO_STUDIES, studyUrls } from './studies.js';
-import { dataTag, tabCount, welcomeSentence } from './header.js';
+import {
+  APP_STATUS_LINE,
+  APP_STATUS_TEXT,
+  dataTag,
+  statusCount,
+  tabCount,
+  welcomeSentence
+} from './header.js';
 import { el, plural } from './dom.js';
 import { tierNoteOf, tierOf } from '../tiers.js';
+import { statusLabel } from '../status-label.js';
 import { LOGO_SVG, STYLES } from './styles.js';
 
 const STYLE_ID = 'safety-viz-app-styles';
@@ -324,7 +332,25 @@ export function mountApp(
   tabs.setAttribute('aria-label', 'Data and domains');
   const count = el('div', 'sva-count');
   count.setAttribute('aria-live', 'polite');
-  bar.append(brand, tabs);
+  // The app's own rung, at the right end of the header (#273): everything here
+  // is exploratory, and the label says so on hover and in full on a click.
+  const onRung = (tier, ids) => ids.filter((id) => rungOf(id).tier === tier);
+  const appStatus = el('div', 'sva-appstatus');
+  appStatus.append(
+    statusLabel({
+      tier: 'exploratory',
+      heading: 'This app is exploratory',
+      line: APP_STATUS_LINE,
+      text: [APP_STATUS_TEXT],
+      count: statusCount({
+        exploratory: onRung('exploratory', Object.keys(manifest.modules)).length,
+        experimental: onRung('experimental', Object.keys(manifest.modules)).length,
+        tabs: onRung('experimental', [...views.keys()]).map((id) => views.get(id).title)
+      }),
+      marks: { exploratory: ['This app'] }
+    })
+  );
+  bar.append(brand, tabs, appStatus);
   const chartRow = el('nav', 'sva-charts');
   chartRow.setAttribute('aria-label', 'Charts');
   header.append(bar, chartRow);

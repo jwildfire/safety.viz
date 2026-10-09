@@ -164,7 +164,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         repository: `/${RBQM_TAB.repository}`,
         chartsUrl: `/${RBQM_CHARTS.path}`
       })
-    )};\n`
+    )};\n` +
+      // And every chart's and tab's rung of the status ladder (#272), as the
+      // demo page is handed them.
+      `window.__appTiers = ${JSON.stringify(chartTiers())};\n`
   );
   console.log(
     `Wrote ${path.relative(rootDir, harness)}, the RBQM tab's options for the test page.`
