@@ -19,7 +19,14 @@
 // fails until it is.
 
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  writeFileSync
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -36,7 +43,10 @@ import {
   pilotDerivedFrom,
   pipelineArgs,
   scenarioFiles,
+  blankColumn,
+  seriousnessTyped,
   standardFiles,
+  standardTable,
   studyFiles,
   tabArgs,
   tabDerivedFrom
@@ -214,12 +224,24 @@ console.log(
 
 const manifest = JSON.parse(readFileSync(path.join(rootDir, 'src/data/portfolio.json'), 'utf8'));
 // One run of the pilot study as the app hands it, with or without a mapping cleared.
-function runPilot(id, unmap) {
+function runPilot(id, unmap, blank, typed, above) {
   const folder = path.join(work, id);
   mkdirSync(folder);
-  const handed = standardFiles(RBQM_PILOT.files, needs, manifest, read, unmap);
+  // A scenario may empty one column of the subject-level file on some rows.
+  const subject = RBQM_PILOT.files.find(({ domain }) => domain === 'subject').file;
+  const events = RBQM_PILOT.files.find(({ domain }) => domain === 'ae').file;
+  const reading = (file) => {
+    if (blank && file === subject) {
+      return Buffer.from(blankColumn(read(file).toString('utf8'), blank.column, blank.every));
+    }
+    if (typed && file === events) return Buffer.from(seriousnessTyped(read(file).toString('utf8')));
+    return read(file);
+  };
+  const handed = standardFiles(RBQM_PILOT.files, needs, manifest, reading, unmap);
   for (const [name, text] of Object.entries(handed.files)) {
-    writeFileSync(path.join(folder, name), text);
+    // A scenario may put lines above the header of the subject-level file.
+    const first = above && name === `${standardTable('subject')}.csv` ? above : '';
+    writeFileSync(path.join(folder, name), first + text);
   }
   const request = path.join(work, `${id}-arguments.json`);
   const reply = path.join(work, `${id}-answer.json`);
@@ -242,6 +264,100 @@ function runPilot(id, unmap) {
 const { handed: pilot, answer: pilotAnswer } = runPilot(RBQM_PILOT.id);
 // With the site's mapping cleared: only what R said, the rows being none of the claim.
 const noSite = runPilot(RBQM_PILOT.noSite.id, RBQM_PILOT.noSite.unmap).answer;
+// What R said, and how many rows it returned, on three studies it once stopped
+// on or said nothing of (#258).
+const said = ({ status, groups, ran, warnings, Results }) => ({
+  status,
+  groups,
+  ran,
+  warnings,
+  rows: Results.length
+});
+const noColumns = runPilot(RBQM_PILOT.noColumns.id, RBQM_PILOT.noColumns.unmap).answer;
+const someSitesBlank = runPilot(
+  RBQM_PILOT.someSitesBlank.id,
+  undefined,
+  RBQM_PILOT.someSitesBlank.blank
+).answer;
+const allSitesBlank = runPilot(
+  RBQM_PILOT.allSitesBlank.id,
+  undefined,
+  RBQM_PILOT.allSitesBlank.blank
+).answer;
+// Every serious event R counted, across the sites.
+const seriousEvents = ({ Results }) =>
+  Results.filter((row) => row.MetricID === 'Analysis_kri0002').reduce(
+    (sum, row) => sum + row.Numerator,
+    0
+  );
+const asTyped = runPilot(RBQM_PILOT.seriousnessAsTyped.id, undefined, undefined, true).answer;
+// With blank lines above the subject-level file's header: the same rows.
+const linesAbove = runPilot(
+  RBQM_PILOT.linesAboveHeader.id,
+  undefined,
+  undefined,
+  false,
+  RBQM_PILOT.linesAboveHeader.above
+).answer;
+
+// What R removes when it is told of the run before, and what it leaves (#258).
+// The folders are made here and R's own function is asked, case by case; then
+// one whole run is given an earlier folder, to show the run asks it.
+const askR = (id, call, args) => {
+  const request = path.join(work, `${id}-arguments.json`);
+  const reply = path.join(work, `${id}-answer.json`);
+  writeFileSync(request, JSON.stringify({ pipeline: RBQM_TAB.pipeline, call, args }));
+  execFileSync('Rscript', ['scripts/rbqm-reference.R', request, reply], {
+    cwd: rootDir,
+    stdio: ['ignore', 'inherit', 'inherit']
+  });
+  return JSON.parse(readFileSync(reply, 'utf8'));
+};
+function forgetting() {
+  const cases = RBQM_PILOT.forgets.map(({ id, forget }) => {
+    // Fresh folders for every case: the run's own, the one before it beside it,
+    // one a pattern would match, one named like a pattern, and one elsewhere.
+    const base = path.join(work, `forget-${id}`);
+    const folders = RBQM_PILOT.forgetFolders;
+    for (const folder of folders) {
+      mkdirSync(path.join(base, folder), { recursive: true });
+      writeFileSync(path.join(base, folder, 'kept.csv'), 'A\n1\n');
+    }
+    const place = (name) => path.join(base, name);
+    const said = askR(`forget-${id}`, RBQM_TAB.forget, {
+      forget: Array.isArray(forget) ? forget.map(place) : forget === null ? null : place(forget),
+      data: place('runs/2')
+    });
+    return {
+      id,
+      forget,
+      removed: said === true || (Array.isArray(said) && said[0] === true),
+      left: folders.filter((folder) => existsSync(path.join(base, folder, 'kept.csv')))
+    };
+  });
+  // A whole run of the pilot study, told of a folder beside its own.
+  const earlier = path.join(work, 'forget-run-earlier');
+  mkdirSync(earlier);
+  writeFileSync(path.join(earlier, 'kept.csv'), 'A\n1\n');
+  const data = path.join(work, 'forget-run');
+  mkdirSync(data);
+  for (const [name, text] of Object.entries(pilot.files))
+    writeFileSync(path.join(data, name), text);
+  const answer = askR('forget-run', RBQM_TAB.call, {
+    ...tabArgs(data, inRepository),
+    labels: pilot.labels,
+    forget: earlier
+  });
+  return {
+    cases,
+    in_a_run: {
+      earlier_left: existsSync(earlier),
+      own_left: existsSync(data),
+      rows: answer.Results.length
+    }
+  };
+}
+const forgets = forgetting();
 {
   const { Results, Bounds, Groups, Metrics, ...rest } = pilotAnswer;
   writeFileSync(
@@ -258,7 +374,13 @@ const noSite = runPilot(RBQM_PILOT.noSite.id, RBQM_PILOT.noSite.unmap).answer;
         .map(([key, value]) => `  ${JSON.stringify(key)}: ${JSON.stringify(value)}`)
         .join(',\n') +
       `\n },\n` +
-      ` "no_site": ${JSON.stringify({ status: noSite.status, groups: noSite.groups, ran: noSite.ran, rows: noSite.Results.length })}\n}\n`
+      ` "no_site": ${JSON.stringify({ status: noSite.status, groups: noSite.groups, ran: noSite.ran, rows: noSite.Results.length })},\n` +
+      ` "no_columns": ${JSON.stringify(said(noColumns))},\n` +
+      ` "some_sites_blank": ${JSON.stringify(said(someSitesBlank))},\n` +
+      ` "all_sites_blank": ${JSON.stringify(said(allSitesBlank))},\n` +
+      ` "seriousness_as_typed": ${JSON.stringify({ ...said(asTyped), serious_events: seriousEvents(asTyped), serious_events_as_held: seriousEvents(pilotAnswer) })},\n` +
+      ` "lines_above_header": ${JSON.stringify({ ...said(linesAbove), same_rows_as_held: JSON.stringify(linesAbove.Results) === JSON.stringify(pilotAnswer.Results) })},\n` +
+      ` "forgets": ${JSON.stringify(forgets)}\n}\n`
   );
   console.log(
     `✓ Wrote ${RBQM_PILOT.expected} — ${Results.length} Results rows for ` +

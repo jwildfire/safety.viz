@@ -47,18 +47,49 @@ const bareDestination = (destination) =>
     ? destination.slice(4, -4)
     : destination;
 
+// A destination the site may publish: http(s), or one with no scheme (a path, a
+// fragment). Read as a browser reads it, through the spaces and control
+// characters an author can put before and inside a scheme. Anything else, such
+// as `javascript:` or `data:`, is not published: the link is reduced to its
+// label and the image to its alt text, whoever wrote the row (#258).
+const SCHEME = /^[A-Za-z][A-Za-z0-9+.-]*:/;
+export function publishable(destination) {
+  const bare = destination.replace(/[\s\u0000-\u001f]+/g, '');
+  return !SCHEME.test(bare) || /^https?:\/\//i.test(bare);
+}
+
+// A tag this renderer has written is set aside until the end, and a mark stands
+// in its place: a later rule reads the mark, never the tag, so it cannot write
+// inside an attribute an earlier rule closed. Without that, an image whose
+// destination held a link came out as an `<img>` with attributes of the
+// author's choosing (#258). The mark is a character no text reaches here with.
+const MARK = '\u0000';
+
 export function mdInline(text) {
-  return escapeHtml(text)
+  const tags = [];
+  const aside = (tag) => `${MARK}${tags.push(tag) - 1}${MARK}`;
+  // A destination that holds a mark holds a tag: it is no destination.
+  const plain = (destination) => !destination.includes(MARK);
+  return escapeHtml(String(text).replaceAll(MARK, ''))
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(
       new RegExp(`!\\[([^\\]]*)\\]\\((${DESTINATION})\\)`, 'g'),
-      (match, alt, destination) => `<img src="${bareDestination(destination)}" alt="${alt}">`
+      (match, alt, destination) =>
+        publishable(bareDestination(destination))
+          ? aside(`<img src="${bareDestination(destination)}" alt="${alt}">`)
+          : alt
     )
     .replace(
       new RegExp(`\\[([^\\]]+)\\]\\((${DESTINATION})\\)`, 'g'),
-      (match, label, destination) => `<a href="${bareDestination(destination)}">${label}</a>`
+      (match, label, destination) => {
+        if (!plain(destination)) return match;
+        return publishable(bareDestination(destination))
+          ? `${aside(`<a href="${bareDestination(destination)}">`)}${label}</a>`
+          : label;
+      }
     )
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(new RegExp(`${MARK}(\\d+)${MARK}`, 'g'), (match, index) => tags[Number(index)]);
 }
 
 // GitHub-style heading slug: lowercase, non-alphanumerics collapsed to a single

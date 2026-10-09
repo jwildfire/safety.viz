@@ -101,7 +101,7 @@ describe('the histogram’s removed p-value settings', () => {
   it('SH-CHART-008: a chart given `test_normality` draws with no annotation and no p-value, and says once in the console that the setting was removed and is ignored (#188)', () => {
     expect(removedSetting('test_normality')).toBe(
       'safety.viz histogram: `test_normality` was removed in v1.10.0 and is ignored. ' +
-        'safety.viz computes no statistical test in JavaScript: run the test in R.'
+        'The histogram draws no p-value: run the test in R.'
     );
     const instance = build({ test_normality: true });
     expect(instance.settings).not.toHaveProperty('test_normality');

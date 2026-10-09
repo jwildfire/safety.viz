@@ -32,13 +32,29 @@ if (!checking && args.length) {
   process.exit(1);
 }
 
+/**
+ * The licence a LICENSE file states, by its SPDX name. Only the one gsm.viz has
+ * is known here: any other text stops the copy, to be read by a person.
+ */
+function licenceOf(text) {
+  const head = text.replace(/\s+/g, ' ').trim().slice(0, 200);
+  if (/^Apache License Version 2\.0, January 2004/.test(head)) return 'Apache-2.0';
+  throw new Error(
+    `gsm.viz's LICENSE is not the Apache-2.0 text it was: it begins "${head.slice(0, 60)}".`
+  );
+}
+
 await runVendorCli(GSM_VIZ, {
   args: checking ? args : ['--tag', GSM_VIZ.tag],
-  // The version and the licence are gsm.viz's own, from its package.json at the commit.
+  // The version is gsm.viz's own, from its package.json at the commit. The
+  // licence is the one its LICENSE file states, which is the file copied beside
+  // the bundle: at v2.4.1 package.json still names another (ISC), and the
+  // record says so rather than repeat it (#258).
   async describe({ commit, readAt }) {
     const pkg = JSON.parse((await readAt(commit, 'package.json')).toString('utf8'));
-    const more = { version: pkg.version };
-    if (pkg.license) more.license = pkg.license;
+    const text = (await readAt(commit, 'LICENSE')).toString('utf8');
+    const more = { version: pkg.version, license: licenceOf(text) };
+    if (pkg.license && pkg.license !== more.license) more.license_in_package_json = pkg.license;
     return { more, files: GSM_VIZ.files };
   }
 });

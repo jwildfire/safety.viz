@@ -62,6 +62,9 @@ function standIn({ answer = vector('double', [1]), fail = {} } = {}) {
     async evalRVoid(code) {
       note('evalRVoid', code);
     }
+    close() {
+      note('close');
+    }
   }
   const imported = [];
   const importWebR = async (url) => {
@@ -322,5 +325,51 @@ describe('the connection to R in the browser (#231)', () => {
       '/rbqm/workflow/1_mappings'
     ]);
     expect(foldersOf('/pipeline.R')).toEqual([]);
+  });
+});
+
+describe('letting go of R (#258)', () => {
+  const options = (webR, more = {}) => ({
+    packages: ['workr'],
+    repos: ['https://repo.r-wasm.org'],
+    files: [{ path: '/rbqm/pipeline.R', url: 'pipeline.R' }],
+    source: ['/rbqm/pipeline.R'],
+    importWebR: webR.importWebR,
+    fetch: fetchOf({ 'pipeline.R': 'rbqm_run <- function(...) 1' }),
+    ...more
+  });
+  const count = (webR, call) => webR.calls.filter(([name]) => name === call).length;
+
+  it('APP-RBQM-052: closing a connection closes R’s worker once, and the next run starts R again; a connection that never started R has nothing to close', async () => {
+    const webR = standIn();
+    const connection = createConnection(options(webR));
+    await connection.close();
+    expect(webR.calls).toEqual([]);
+    await connection.run('rbqm_run');
+    expect(count(webR, 'new')).toBe(1);
+    await connection.close();
+    await connection.close();
+    expect(count(webR, 'close')).toBe(1);
+    await connection.run('rbqm_run');
+    expect(count(webR, 'new')).toBe(2);
+  });
+
+  it('APP-RBQM-052: an R that was started and could not be made ready, a package not installed or a file not read, is closed before the connection answers that R did not start', async () => {
+    const noPackage = standIn({ fail: { install: 'package ‘gsm.core’ is not available' } });
+    const answer = await createConnection(options(noPackage)).run('rbqm_run');
+    expect(answer.status).toBe('unavailable');
+    expect(count(noPackage, 'close')).toBe(1);
+    const noFile = standIn();
+    await createConnection(options(noFile, { fetch: fetchOf({}) })).run('rbqm_run');
+    expect(count(noFile, 'close')).toBe(1);
+    // An R whose own start failed is closed too.
+    const noStart = standIn({ fail: { init: 'R.bin.wasm: Failed to fetch' } });
+    const stopped = await createConnection(options(noStart)).run('rbqm_run');
+    expect(stopped.status).toBe('unavailable');
+    expect(noStart.calls.map(([call]) => call)).toEqual(['new', 'init', 'close']);
+    // An R that could not be fetched was never there to close.
+    const offline = standIn({ fail: { import: 'Failed to fetch' } });
+    await createConnection(options(offline)).run('rbqm_run');
+    expect(count(offline, 'close')).toBe(0);
   });
 });

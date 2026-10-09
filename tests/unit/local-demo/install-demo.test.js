@@ -443,7 +443,8 @@ describe('running the installer', () => {
       // What the clone says of itself: a branch's name, and nothing for a tag.
       expect(branchIn(path.join(cwd, 'safety.viz'))).toBe(ref === 'dev' ? 'dev' : null);
     }
-  });
+    // Four runs of the installer, each a child process: room for a busy machine (#258).
+  }, 60000);
 
   it('APP-LOCAL-008: a release tag named over a clone of another branch stops it though the version is the same, and it says which branch the clone is of (#219)', () => {
     const cwd = scratch('branch');

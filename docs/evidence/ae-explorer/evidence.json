@@ -1,6 +1,6 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-10-08T12:40:16.832Z",
+  "generatedAt": "2026-10-09T01:40:39.947Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37777164714",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37777164714"
+    "id": "37870886152",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37870886152"
   },
   "records": [
     {
@@ -2949,6 +2949,22 @@
       "screenshots": []
     },
     {
+      "test": "a study the reader’s mapping gives R little of (#258) APP-RBQM-042: a column the mapping names that the file does not have is not handed to R, which then says the column is not mapped (#258)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-042"],
+      "issueRefs": [258, 258],
+      "screenshots": []
+    },
+    {
+      "test": "a study the reader’s mapping gives R little of (#258) APP-RBQM-050: with none of the subject-level file’s columns mapped the tab says before R is started what desktop R then says, word for word, of every metric and of the Groups table; R is handed that file with no column and no cell",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-050"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
       "test": "ae-explorer checkInputs AE-CFG-003: remapped columns are validated under their new names (#60)",
       "suite": "unit",
       "status": "pass",
@@ -4605,6 +4621,38 @@
       "screenshots": []
     },
     {
+      "test": "desktop R on a study it once stopped on, or said nothing of (#258) APP-RBQM-049: with the site blank for every tenth participant gsm leaves them out of each metric and R says so in a warning, which it returns: the three metrics still ran, a row for each of 17 sites",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-049"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R on a study it once stopped on, or said nothing of (#258) APP-RBQM-050: with none of the subject-level file’s columns mapped R is handed a table of no columns and reads on: no metric ran, and each that needs the file names the columns and the reader’s file",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-050"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R on a study it once stopped on, or said nothing of (#258) APP-RBQM-050: with the site blank for every participant gsm’s reporting workflows stop, and R returns that of each metric that ran in place of one error for the run: the metrics that need a file not loaded still say so, and R’s warning says who was left out",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-050"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "desktop R on a study it once stopped on, or said nothing of (#258) APP-RBQM-053: seriousness typed in small letters between spaces is read trimmed and in capitals, as the end-of-study status is: R counts the same three serious events, and the same rows",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-053"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
       "test": "desktop R’s answer for the pilot study, the one the other charts use (#253) APP-RBQM-044: desktop R’s answer for the pilot study is derived from the pipeline’s R, every workflow and the study’s two files as they are now, by checksum; R made the five raw tables from the two files and ran the adverse event, serious adverse event and study discontinuation metrics, a row for each of 17 sites, with nothing warned (#253)",
       "suite": "unit",
       "status": "pass",
@@ -5042,6 +5090,22 @@
       "status": "pass",
       "requirementIds": ["KIT-API-014"],
       "issueRefs": [154],
+      "screenshots": []
+    },
+    {
+      "test": "letting go of R (#258) APP-RBQM-052: an R that was started and could not be made ready, a package not installed or a file not read, is closed before the connection answers that R did not start",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-052"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "letting go of R (#258) APP-RBQM-052: closing a connection closes R’s worker once, and the next run starts R again; a connection that never started R has nothing to close",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-052"],
+      "issueRefs": [258],
       "screenshots": []
     },
     {
@@ -7357,6 +7421,38 @@
       "screenshots": []
     },
     {
+      "test": "the harvest script keeps only safe link destinations (#238, #258) a destination in angle brackets is reduced to its label, as a bare one is, and a link inside a link to the innermost label",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the harvest script keeps only safe link destinations (#238, #258) an http(s) or relative link is kept as written",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the harvest script keeps only safe link destinations (#238, #258) no hostile link survives the harvest as link-shaped text with another scheme",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the harvest script keeps only safe link destinations (#238, #258) the hostile links are link-shaped as written, so the check below can fail",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "the installer file APP-LOCAL-009: asks for the Node the repository is tested on (#214)",
       "suite": "unit",
       "status": "pass",
@@ -8053,6 +8149,14 @@
       "screenshots": []
     },
     {
+      "test": "the RBQM tab: what R warned of (#258) APP-RBQM-049: each warning R raised along the way is a sentence the tab shows, in R’s words and R’s order; a run with none says nothing, and so does an answer with no warnings in it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-049"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
       "test": "the RBQM tab’s run, as R is given it (#234) APP-RBQM-013: four studies are run, each from a folder of its own: the demo study whole, without its labs file, with the seriousness column taken out of its adverse events file and nothing else changed, and its subjects and adverse events files alone (#234)",
       "suite": "unit",
       "status": "pass",
@@ -8074,6 +8178,54 @@
       "status": "pass",
       "requirementIds": ["APP-BIO-009"],
       "issueRefs": [182],
+      "screenshots": []
+    },
+    {
+      "test": "the site build publishes only safe link destinations, whoever wrote the row (#258) a link or an image with another scheme is reduced to its label or its alt text",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the site build publishes only safe link destinations, whoever wrote the row (#258) an http(s) or relative destination is published as it was",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the site build publishes only safe link destinations, whoever wrote the row (#258) no hostile link is published as written, with no harvest in front of it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the site build writes no tag or attribute of an author’s choosing (#258) a link inside an image, or an image inside a link’s destination, adds no attribute",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the site build writes no tag or attribute of an author’s choosing (#258) five thousand texts put together from the pieces of links, images and attributes add no tag, no attribute and no other scheme",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the site build writes no tag or attribute of an author’s choosing (#258) what the renderer wrote before is written still: a linked image, bold inside a link, code, and a destination with parentheses",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [258],
       "screenshots": []
     },
     {
@@ -8322,6 +8474,86 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-035"],
       "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-019: the count of seconds runs while R starts and runs, and stops when the run ends: nothing is left ticking (#258)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-019"],
+      "issueRefs": [258, 258],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-024: when R comes up and its packages cannot be attached R is not taken as up: the tab says so and offers to try again, and trying again closes that R and makes one fresh connection, started from the beginning (#258)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-024"],
+      "issueRefs": [258, 258],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-028: files loaded while R is running are run when that run ends, without a press, and theirs are the results shown (#258)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-028"],
+      "issueRefs": [258, 258],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-049: what R warned of is listed with the run’s notes, in R’s words; a run with no warning lists none",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-049"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-050: with lines above the subject-level file’s header that are empty or only spaces or a tab, desktop R reads the header from the first line with anything on it and returns the rows it returns without them",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-050"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-051: “after Start R was pressed” is said only of the press that started R: when the study is cleared while R starts, a later press runs the metrics and says how long the run took and nothing of Start R",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-051"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-051: the tab’s count follows the loaded study while another tab is open: after the study is cleared or changed there it reads not run, not the last study’s count; opened with nothing loaded the control cannot be pressed, does not offer to run again, and the list of files is open",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-051"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-052: desktop R, asked to forget while it reads one folder, removes only the one folder beside its own, and reads a name as a name: not its own however spelt, its parent, a folder elsewhere, what a pattern matches, two at once, or one that is not there; and a whole run told of the folder before removes it and returns its rows",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-052"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-052: R is told which folder the run before left its files in, and removes it as the next run begins: the first run names none, each later run names the one before",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-052"],
+      "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-RBQM-052: the folder of a run that failed is forgotten by the next run, as a run that answered is",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-052"],
+      "issueRefs": [258],
       "screenshots": []
     }
   ]

@@ -30,7 +30,8 @@ export const APP_LIBRARIES = [
     path: path.join(BIO_VIZ.directory, BIO_VIZ.files[0].file),
     // What the charts are, in a phrase: "five biomarker charts".
     kind: 'biomarker',
-    site: 'https://jwildfire.github.io/bio.viz/dev/',
+    // The released site: the copy is a release's (site/vendor/bio.viz/SOURCE.json).
+    site: 'https://jwildfire.github.io/bio.viz/',
     repository: BIO_VIZ.repository,
     // R on request (#183): the library's own connection factory, on its global,
     // and the one file R in the browser is given, gsm.bio's statistics

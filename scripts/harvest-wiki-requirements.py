@@ -59,6 +59,10 @@ SKIP_LINES = {"", "---"}
 DEST = r"(?:[^()\s]|\([^()]*\))*"
 IMAGE = re.compile(r"!\[([^\]]*)\]\(" + DEST + r"(?:\s[^)]*)?\)")
 LINK = re.compile(r"\[([^\]]+)\]\((" + DEST + r")(?:\s[^)]*)?\)")
+# Markdown also takes a destination in angle brackets, which may hold spaces and
+# parentheses: `[label](<javascript:alert(1)>)`. The site build drops the brackets,
+# and reads up to the last `>` before the closing parenthesis, so this does too.
+ANGLED = re.compile(r"\[([^\]]+)\]\(\s*<([^\n]*?)>(?:\s[^)]*)?\)")
 SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*:")
 
 def safe_links(text: str) -> str:
@@ -67,17 +71,39 @@ def safe_links(text: str) -> str:
     A matrix row is published: the site build turns `[label](destination)` into a
     live link. Wiki text is not ours, so a destination with any other scheme is
     reduced to its label, and an image, which a requirement never needs, to its alt
-    text.
+    text. A destination in angle brackets is held to the same rule (#258).
     """
-    text = IMAGE.sub(lambda m: m.group(1), text)
-
     def keep(m: re.Match) -> str:
         label, dest = m.group(1), m.group(2)
-        if SCHEME.match(dest) and not re.match(r"^https?://", dest, re.I):
+        # A browser reads a scheme through the spaces, tabs and line breaks an
+        # author can put before and inside it. A stray `<` is not part of one.
+        bare = re.sub(r"[\s\x00-\x1f<]+", "", dest)
+        if SCHEME.match(bare) and not re.match(r"^https?://", bare, re.I):
             return label
         return m.group(0)
 
-    return LINK.sub(keep, text)
+    # A link reduced to its label can leave a new link behind it, as
+    # `[[x](data:a)](javascript:b)` does, so the text is read until it stops
+    # changing. The site build holds the same rule on whatever reaches it.
+    for _ in range(20):
+        reduced = LINK.sub(keep, ANGLED.sub(keep, IMAGE.sub(lambda m: m.group(1), text)))
+        if reduced == text:
+            break
+        text = reduced
+
+    # Whatever is left that still reads `](` and then a scheme that is not
+    # http(s) is pulled apart, so that the site build does not take it for a
+    # link. A scheme written with an entity or a backslash, or an autolink in
+    # angle brackets, is not looked for: the site build escapes those and
+    # publishes none, and it holds this rule itself on every row.
+    def apart(m: re.Match) -> str:
+        bare = re.sub(r"[\s\x00-\x1f<]+", "", m.group(1))
+        if SCHEME.match(bare) and not re.match(r"^https?://", bare, re.I):
+            return "] ("
+        return m.group(0)
+
+    # Looked ahead at, not consumed: a link inside another's title is seen too.
+    return re.sub(r"\]\((?=([^)]{0,80}))", apart, text)
 
 def clean(text: str) -> str:
     text = re.sub(r"\s+", " ", text.strip())

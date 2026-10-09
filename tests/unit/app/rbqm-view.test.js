@@ -999,3 +999,270 @@ describe('the RBQM tab: the study the other charts use', () => {
     ]);
   });
 });
+
+describe('what the review of the v1.10.0 release candidate found (#258)', () => {
+  const pilotExpected = JSON.parse(readFileSync(path.join(root, RBQM_PILOT.expected), 'utf8'));
+  const settle = async () => {
+    for (let turn = 0; turn < 20; turn += 1) await Promise.resolve();
+  };
+  const count = ($) => $('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent;
+
+  it('APP-RBQM-049: what R warned of is listed with the run’s notes, in R’s words; a run with no warning lists none', async () => {
+    fakeViz();
+    const warned = pilotExpected.some_sites_blank.warnings;
+    let run = 0;
+    const { app, r, $, $$ } = mount({
+      answers: {
+        rbqm_run: () => ({
+          status: 'ok',
+          value: (run += 1) === 1 ? { ...whole, warnings: warned } : whole
+        })
+      }
+    });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    expect($$('.sva-rbqm-notes .sva-note').map((note) => note.textContent)).toEqual([
+      "R warned: 26 cases of NA's in GroupID, cases are removed in output."
+    ]);
+    // The metrics still ran, and say so.
+    expect(count($)).toBe('8 of 8');
+    $('.sva-rbqm-start').click();
+    await connection.letGo();
+    expect($('.sva-rbqm-notes')).toBeNull();
+  });
+
+  it('APP-RBQM-051: the tab’s count follows the loaded study while another tab is open: after the study is cleared or changed there it reads not run, not the last study’s count; opened with nothing loaded the control cannot be pressed, does not offer to run again, and the list of files is open', async () => {
+    fakeViz();
+    const { app, r, $ } = mount({ answers: RUN_OK });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    expect(count($)).toBe('8 of 8');
+    app.select('data');
+    expect(count($)).toBe('8 of 8');
+    app.reset();
+    expect(count($)).toBe('not run');
+    app.select('rbqm');
+    await settle();
+    expect(count($)).toBe('not run');
+    expect($('.sva-rbqm-start').textContent).toBe('Run the metrics');
+    expect($('.sva-rbqm-start').disabled).toBe(true);
+    expect($('.sva-rbqm-files').open).toBe(true);
+    expect($('.sva-rbqm-results')).toBeNull();
+    // Nothing was run on nothing.
+    expect(connection.runs.filter((run) => run.name === 'rbqm_run')).toHaveLength(1);
+  });
+
+  it('APP-RBQM-051: “after Start R was pressed” is said only of the press that started R: when the study is cleared while R starts, a later press runs the metrics and says how long the run took and nothing of Start R', async () => {
+    fakeViz();
+    const { app, r, clock, view, $ } = mount({ answers: RUN_OK });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    // The study is cleared while R starts: R comes up and there is nothing to run.
+    app.reset();
+    for (let step = 0; step < 2; step += 1) await connection.letGo();
+    expect(view.state().up).toBe(true);
+    expect(view.state().phase).toBe('idle');
+    clock.now += 10 * 60 * 1000;
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    expect($('.sva-rbqm-start').textContent).toBe('Run the metrics');
+    $('.sva-rbqm-start').click();
+    await connection.letGo();
+    expect(view.state().phase).toBe('done');
+    expect($('.sva-rbqm-status').textContent).toMatch(
+      /^R ran 8 of 8 metrics on the 9 loaded files in /
+    );
+    expect($('.sva-rbqm-status').textContent).not.toContain('after Start R was pressed');
+  });
+
+  it('APP-RBQM-052: R is told which folder the run before left its files in, and removes it as the next run begins: the first run names none, each later run names the one before', async () => {
+    fakeViz();
+    const { app, r, $ } = mount({ answers: RUN_OK });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    for (let again = 0; again < 2; again += 1) {
+      $('.sva-rbqm-start').click();
+      await connection.letGo();
+    }
+    const runs = connection.runs.filter((run) => run.name === 'rbqm_run');
+    expect(runs.map((run) => [run.request.args.data, run.request.args.forget])).toEqual([
+      ['/rbqm/runs/1', undefined],
+      ['/rbqm/runs/2', '/rbqm/runs/1'],
+      ['/rbqm/runs/3', '/rbqm/runs/2']
+    ]);
+  });
+
+  it('APP-RBQM-052: the folder of a run that failed is forgotten by the next run, as a run that answered is', async () => {
+    fakeViz();
+    let asked = 0;
+    const { app, r, $ } = mount({
+      answers: {
+        rbqm_run: () => {
+          asked += 1;
+          return asked === 1
+            ? { status: 'error', message: 'R stopped' }
+            : { status: 'ok', value: whole, form: 'browser' };
+        }
+      }
+    });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    $('.sva-rbqm-start').click();
+    await connection.letGo();
+    const runs = connection.runs.filter((run) => run.name === 'rbqm_run');
+    expect(runs.map((run) => [run.request.args.data, run.request.args.forget])).toEqual([
+      ['/rbqm/runs/1', undefined],
+      ['/rbqm/runs/2', '/rbqm/runs/1']
+    ]);
+  });
+
+  it('APP-RBQM-052: desktop R, asked to forget while it reads one folder, removes only the one folder beside its own, and reads a name as a name: not its own however spelt, its parent, a folder elsewhere, what a pattern matches, two at once, or one that is not there; and a whole run told of the folder before removes it and returns its rows', () => {
+    const { cases, in_a_run: inARun } = pilotExpected.forgets;
+    const all = RBQM_PILOT.forgetFolders;
+    expect(all).toEqual(['runs/1', 'runs/2', 'runs/else-a', 'runs/else*', 'elsewhere/9']);
+    expect(cases.map(({ id }) => id)).toEqual(RBQM_PILOT.forgets.map(({ id }) => id));
+    const without = (folder) => all.filter((each) => each !== folder);
+    const removes = { beside: 'runs/1', 'named-like-a-pattern': 'runs/else*' };
+    expect(cases.length).toBe(10);
+    for (const { id, forget, removed, left } of cases) {
+      // The one folder asked for, where R may remove it; nothing anywhere else.
+      expect([id, removed, left]).toEqual(
+        removes[id] ? [id, true, without(removes[id])] : [id, false, all]
+      );
+      if (removes[id]) expect(forget).toBe(removes[id]);
+    }
+    expect(inARun).toEqual({
+      earlier_left: false,
+      own_left: true,
+      rows: pilotExpected.answer.Results.length
+    });
+    expect(inARun.rows).toBe(51);
+  });
+
+  it('APP-RBQM-050: with lines above the subject-level file’s header that are empty or only spaces or a tab, desktop R reads the header from the first line with anything on it and returns the rows it returns without them', () => {
+    expect(RBQM_PILOT.linesAboveHeader.above).toBe('\n   \n\t\n');
+    const above = pilotExpected.lines_above_header;
+    expect(above.rows).toBe(51);
+    expect(above.same_rows_as_held).toBe(true);
+    expect(above.warnings).toEqual([]);
+    expect(above.status.map(({ id, state }) => [id, state])).toEqual(
+      pilotExpected.answer.status.map(({ id, state }) => [id, state])
+    );
+  });
+
+  it('APP-RBQM-024: when R comes up and its packages cannot be attached R is not taken as up: the tab says so and offers to try again, and trying again closes that R and makes one fresh connection, started from the beginning (#258)', async () => {
+    fakeViz();
+    const inner = fakeR({
+      rbqm_attach: (request, connection) =>
+        connection === inner.made[0]
+          ? { status: 'error', message: 'there is no package called ‘gsm.core’' }
+          : { status: 'ok', value: null },
+      ...RUN_OK
+    });
+    const closed = [];
+    const { app, view, $ } = mount({
+      tab: {
+        createConnection: (options) => {
+          const connection = inner.createConnection(options);
+          connection.close = vi.fn(async () => closed.push(inner.made.indexOf(connection)));
+          return connection;
+        }
+      }
+    });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    for (let step = 0; step < 2; step += 1) await inner.made[0].letGo();
+    expect(view.state().phase).toBe('failed');
+    expect(view.state().up).toBe(false);
+    expect($('.sva-rbqm-start').textContent).toBe('Try R again');
+    expect($('.sva-rbqm-status').textContent).toContain('there is no package called ‘gsm.core’');
+    expect(closed).toEqual([]);
+    $('.sva-rbqm-start').click();
+    await settle();
+    expect(closed).toEqual([0]);
+    expect(inner.made).toHaveLength(2);
+    for (let step = 0; step < 3; step += 1) await inner.made[1].letGo();
+    expect(inner.made[1].runs.map((run) => run.name)).toEqual([
+      'Sys.time',
+      'rbqm_attach',
+      'rbqm_run'
+    ]);
+    expect(view.state().phase).toBe('done');
+    // The first run on the new R names no earlier folder: that R is gone.
+    expect(inner.made[1].runs.at(-1).request.args.forget).toBeUndefined();
+  });
+
+  it('APP-RBQM-028: files loaded while R is running are run when that run ends, without a press, and theirs are the results shown (#258)', async () => {
+    fakeViz();
+    const { app, r, view, $ } = mount({
+      answers: {
+        rbqm_run: (request) => ({
+          status: 'ok',
+          value: Object.keys(request.files).length === 9 ? whole : noLabs
+        })
+      }
+    });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 2; step += 1) await connection.letGo();
+    expect(view.state().phase).toBe('running');
+    // While R runs on nine files, the reader loads eight in their place.
+    app.reset();
+    app.loadRaw(STUDY.filter((file) => file.name !== 'Raw_LB.csv'));
+    await connection.letGo();
+    expect(view.state().phase).toBe('running');
+    await connection.letGo();
+    expect(view.state().phase).toBe('done');
+    const runs = connection.runs.filter((run) => run.name === 'rbqm_run');
+    expect(runs.map((run) => Object.keys(run.request.files).length)).toEqual([9, 8]);
+    app.select('rbqm');
+    expect(count($)).toBe('7 of 8');
+  });
+
+  it('APP-RBQM-019: the count of seconds runs while R starts and runs, and stops when the run ends: nothing is left ticking (#258)', async () => {
+    vi.useFakeTimers();
+    fakeViz();
+    const { app, r, clock, $ } = mount({ answers: RUN_OK });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    // The tab's count is the one thing here that ticks once a second.
+    const set = vi.spyOn(globalThis, 'setInterval');
+    const cleared = vi.spyOn(globalThis, 'clearInterval');
+    const counts = () =>
+      set.mock.calls.flatMap(([, every], index) =>
+        every === 1000 ? [set.mock.results[index].value] : []
+      );
+    const ticking = () =>
+      counts().filter((id) => !cleared.mock.calls.some(([gone]) => gone === id));
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    expect(ticking()).toHaveLength(1);
+    clock.now += 7000;
+    vi.advanceTimersByTime(1000);
+    expect($('.sva-rbqm-status').textContent).toMatch(/7 seconds so far\.$/);
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    expect(counts()).toHaveLength(1);
+    expect(ticking()).toEqual([]);
+    const said = $('.sva-rbqm-status').textContent;
+    clock.now += 60000;
+    vi.advanceTimersByTime(5000);
+    expect($('.sva-rbqm-status').textContent).toBe(said);
+  });
+});

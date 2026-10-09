@@ -12928,7 +12928,7 @@ function renderFilterControl({ spec, values, selected, onChange }) {
 
 // src/histogram/configure.js
 var REMOVED_SETTINGS = ["test_normality", "compare_distributions"];
-var removedSetting = (name) => `safety.viz histogram: \`${name}\` was removed in v1.10.0 and is ignored. safety.viz computes no statistical test in JavaScript: run the test in R.`;
+var removedSetting = (name) => `safety.viz histogram: \`${name}\` was removed in v1.10.0 and is ignored. The histogram draws no p-value: run the test in R.`;
 var DEFAULT_SETTINGS = {
   measure_col: "TEST",
   value_col: "STRESN",

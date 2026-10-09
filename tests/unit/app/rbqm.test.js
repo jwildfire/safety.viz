@@ -13,7 +13,8 @@ import {
   overviewInputs,
   sameFiles,
   stepSentence,
-  totalMegabytes
+  totalMegabytes,
+  warningsSaid
 } from '../../../src/app/rbqm.js';
 import { RBQM_DOWNLOADS } from '../../../scripts/app-libraries.mjs';
 import { RBQM_TAB } from '../../../scripts/rbqm-lib.mjs';
@@ -260,5 +261,30 @@ describe('the RBQM tab: what gsm.viz is handed', () => {
     // A file loaded again is another file, whatever its name.
     expect(sameFiles([a], [{ name: 'Raw_AE.csv' }])).toBe(false);
     expect(sameFiles([], [])).toBe(true);
+  });
+});
+
+describe('the RBQM tab: what R warned of (#258)', () => {
+  it('APP-RBQM-049: each warning R raised along the way is a sentence the tab shows, in R’s words and R’s order; a run with none says nothing, and so does an answer with no warnings in it', () => {
+    expect(
+      warningsSaid({
+        warnings: [
+          'NA’s in GroupID, cases are removed in output',
+          '1 values of [ GroupID ] with a [ Denominator ] value of 0 removed.',
+          '  two\n lines  '
+        ]
+      })
+    ).toEqual([
+      'R warned: NA’s in GroupID, cases are removed in output.',
+      'R warned: 1 values of [ GroupID ] with a [ Denominator ] value of 0 removed.',
+      'R warned: two lines.'
+    ]);
+    // One warning leaves R as a single value, not a list of one.
+    expect(warningsSaid({ warnings: 'only this' })).toEqual(['R warned: only this.']);
+    expect(warningsSaid({ warnings: [] })).toEqual([]);
+    expect(warningsSaid({ warnings: ['', '  '] })).toEqual([]);
+    expect(warningsSaid({})).toEqual([]);
+    expect(warningsSaid(null)).toEqual([]);
+    expect(warningsSaid(whole)).toEqual([]);
   });
 });

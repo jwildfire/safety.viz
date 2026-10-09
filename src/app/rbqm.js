@@ -251,6 +251,22 @@ export function doneSentence(
  * @param {Date} date The moment.
  * @returns {string} The day.
  */
+/**
+ * What R warned of along the way, each as a sentence the tab shows beside the
+ * run's notes: gsm says in a warning when it leaves a participant or a site
+ * out of a metric, and the reader is owed that. The words are R's.
+ * @param {{warnings?: string[]|string}} answer What R returned.
+ * @returns {string[]} One sentence per warning, in R's order.
+ */
+export function warningsSaid(answer) {
+  const given = answer && answer.warnings;
+  const warnings = Array.isArray(given) ? given : typeof given === 'string' ? [given] : [];
+  return warnings
+    .map((warning) => String(warning).replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .map((warning) => `R warned: ${warning.replace(/[.]*$/, '.')}`);
+}
+
 export function isoDay(date) {
   const two = (value) => String(value).padStart(2, '0');
   return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}`;

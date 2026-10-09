@@ -10,6 +10,7 @@ import {
   renderShell
 } from '../../../scripts/site-lib.mjs';
 import { APP_LIBRARIES, chartLinks, libraryManifest } from '../../../scripts/app-libraries.mjs';
+import { BIO_VIZ, readRecord } from '../../../scripts/vendor-lib.mjs';
 import { SITE } from '../../../src/app/site.js';
 import { STYLES } from '../../../src/app/styles.js';
 
@@ -122,9 +123,7 @@ describe('renderDemoAppPage', () => {
     const elsewhere = addresses.filter((url) => url.includes('jwildfire.github.io'));
     expect(elsewhere).toHaveLength(5);
     for (const url of elsewhere) {
-      expect(url).toMatch(
-        /^https:\/\/jwildfire\.github\.io\/bio\.viz\/dev\/[a-z-]+\/evidence\.html$/
-      );
+      expect(url).toMatch(/^https:\/\/jwildfire\.github\.io\/bio\.viz\/[a-z-]+\/evidence\.html$/);
     }
     // R's host is named only as where R comes from, fetched by bio.viz's own
     // connection when the reader presses Start R; the page links nothing there.
@@ -321,7 +320,9 @@ describe('chartLinks', () => {
         expect(links[module]).toEqual({ evidence: `${library.site}${module}/evidence.html` });
       }
     }
-    expect(library.site).toBe('https://jwildfire.github.io/bio.viz/dev/');
+    // The released site, not the development one: the copy is a release's.
+    expect(library.site).toBe('https://jwildfire.github.io/bio.viz/');
+    expect(readRecord(path.join(rootDir, BIO_VIZ.directory)).tag).toMatch(/^v\d+\.\d+\.\d+$/);
     // With no further library, safety.viz's charts alone.
     expect(Object.keys(chartLinks({ libraries: [] }))).toEqual(own);
   });

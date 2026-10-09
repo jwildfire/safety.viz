@@ -4,7 +4,7 @@
 /**
  * Settings the histogram no longer has (#188; @jwildfire, 2026-10-03). Each
  * put a p-value on the chart that was worked out in JavaScript with a
- * shortcut; safety.viz computes no statistical test, and leaves tests to R.
+ * shortcut; the histogram now draws no p-value, and leaves the test to R.
  * v1.9.1 deprecated them and v1.10.0 removed them. A caller that still passes
  * one gets a chart without the annotation and one line in the console.
  */
@@ -17,7 +17,7 @@ export const REMOVED_SETTINGS = ['test_normality', 'compare_distributions'];
  */
 export const removedSetting = (name) =>
   `safety.viz histogram: \`${name}\` was removed in v1.10.0 and is ignored. ` +
-  'safety.viz computes no statistical test in JavaScript: run the test in R.';
+  'The histogram draws no p-value: run the test in R.';
 
 /**
  * Rendering and data-mapping settings for the histogram module. Every key
