@@ -54,6 +54,7 @@ import {
 import {
   NONE_PLACED,
   NO_FILES,
+  RBQM_DOCS,
   RUN_STEPS,
   R_LIMITS,
   failureOf,
@@ -806,6 +807,9 @@ export function rbqmTab({
   const view = {
     id: 'rbqm',
     title: 'RBQM',
+    // The tab's footnote (#271; @jwildfire, 2026-10-10: one link): gsm's own
+    // documentation of the metrics. The docs site has no page for the tab yet.
+    links: [RBQM_DOCS],
 
     /**
      * What the tab's own count says, in a word or two: the header keeps to one

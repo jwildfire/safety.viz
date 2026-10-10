@@ -222,3 +222,84 @@ describe('the page: a view that brings a row of its own (#279)', () => {
     expect($('.sva-view').textContent).toBe('drawn: first page');
   });
 });
+
+describe('the page: a view that brings links for a footnote (#271)', () => {
+  const footnote = () => $('.sva-chart-links');
+  const links = () =>
+    $$('.sva-chart-links a').map((a) => [
+      a.dataset.link,
+      a.getAttribute('href'),
+      a.textContent,
+      a.getAttribute('target'),
+      a.getAttribute('rel')
+    ]);
+
+  it('APP-PAGE-041: a view that brings links ends with the footnote a chart has: its title and each link by the words it gave, under the view, opening in a new tab that is handed nothing of the page (#271)', () => {
+    const { app } = mount({
+      links: [
+        { key: 'docs', label: 'Its documentation', href: 'https://example.org/docs/' },
+        { key: 'evidence', label: 'Test evidence', href: '../own/evidence.html' }
+      ]
+    });
+    // The data view is no view's page.
+    expect(footnote()).toBeNull();
+    app.select('own');
+    expect(footnote().textContent).toBe('Own: Its documentation · Test evidence');
+    expect(footnote().previousElementSibling).toBe($('.sva-view'));
+    expect(links()).toEqual([
+      ['docs', 'https://example.org/docs/', 'Its documentation', '_blank', 'noopener'],
+      ['evidence', '../own/evidence.html', 'Test evidence', '_blank', 'noopener']
+    ]);
+    // Drawn again, there is still one.
+    app.select('data');
+    app.select('own');
+    expect($$('.sva-chart-links')).toHaveLength(1);
+  });
+
+  it('APP-PAGE-041: a view that throws when it is drawn still ends with its footnote, as a chart that did not draw does (#271)', () => {
+    const { app } = mount({
+      links: [{ key: 'docs', label: 'Its documentation', href: 'https://example.org/docs/' }],
+      render() {
+        throw new Error('no page');
+      }
+    });
+    app.select('own');
+    expect($('.sva-view').textContent).toBe('Did not draw. no page');
+    expect(footnote().textContent).toBe('Own: Its documentation');
+  });
+
+  it('APP-PAGE-042: a view’s links are read safely: a view that brings none has no footnote, nor has one whose list is not a list; a link with no words, no address or an address that is a script is left out, and the others are kept (#271)', () => {
+    for (const none of [
+      undefined,
+      null,
+      'https://example.org/',
+      { href: 'https://example.org/' },
+      []
+    ]) {
+      const { app } = mount({ links: none });
+      app.select('own');
+      expect(footnote(), String(none)).toBeNull();
+      expect($('.sva-view').textContent).toBe('drawn: first page');
+    }
+    const { app } = mount({
+      links: [
+        null,
+        'https://example.org/',
+        { label: 'No address' },
+        { href: 'https://example.org/no-words' },
+        { label: '', href: 'https://example.org/empty-words' },
+        { label: 'A script', href: 'javascript:alert(1)' },
+        { label: 'Data', href: 'data:text/html,<p>x' },
+        { label: 'Kept', href: 'https://example.org/kept' },
+        { key: 7, label: 'Kept too', href: 'http://example.org/too' }
+      ]
+    });
+    app.select('own');
+    expect(footnote().textContent).toBe('Own: Kept · Kept too');
+    // A link that names no key is given the plain one.
+    expect(links().map(([key, href]) => [key, href])).toEqual([
+      ['link', 'https://example.org/kept'],
+      ['link', 'http://example.org/too']
+    ]);
+  });
+});
