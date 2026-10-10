@@ -791,28 +791,64 @@ export function mountApp(
   }
 
   /**
+   * A footnote under a view (#246): a name and its links, each opening in a new
+   * tab that is handed nothing of this page, so a study the reader loaded stays
+   * loaded. Null when there is no link.
+   */
+  function footnoteOf(name, links) {
+    if (!links.length) return null;
+    const footnote = el('p', 'sva-chart-links');
+    footnote.append(el('span', 'sva-chart-links-title', `${name}:`));
+    links.forEach(({ key, label, href }, index) => {
+      const anchor = el('a', null, label);
+      anchor.href = href;
+      anchor.dataset.link = key;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener';
+      footnote.append(index ? ' · ' : ' ', anchor);
+    });
+    return footnote;
+  }
+
+  /**
    * The footnote of a chart's view (#246): the chart's name and a link to each
-   * of its own pages the app was given an address for. A link opens in a new
-   * tab, so a study the reader loaded stays loaded. Null when the chart was
+   * of its own pages the app was given an address for. Null when the chart was
    * given no address.
    */
   function chartFootnote(module, entry) {
     const given = has(chartLinks, module) && isRecord(chartLinks[module]) ? chartLinks[module] : {};
-    const anchors = CHART_PAGES.filter(([key]) => given[key] && typeof given[key] === 'string').map(
-      ([key, label]) => {
-        const anchor = el('a', null, label);
-        anchor.href = given[key];
-        anchor.dataset.link = key;
-        anchor.target = '_blank';
-        anchor.rel = 'noopener';
-        return anchor;
-      }
+    return footnoteOf(
+      titleOf(entry, module),
+      CHART_PAGES.filter(([key]) => given[key] && typeof given[key] === 'string').map(
+        ([key, label]) => ({ key, label, href: given[key] })
+      )
     );
-    if (!anchors.length) return null;
-    const footnote = el('p', 'sva-chart-links');
-    footnote.append(el('span', 'sva-chart-links-title', `${titleOf(entry, module)}:`));
-    anchors.forEach((anchor, index) => footnote.append(index ? ' · ' : ' ', anchor));
-    return footnote;
+  }
+
+  /**
+   * The footnote of a tab that is a view of its own (#271): the tab's name and
+   * the links the view brings, each `{ key, label, href }`, by the words the
+   * view gave. They are read safely: a list that is not a list is none; a link
+   * with no words or no address is left out, and so is an address that is not
+   * a page (a `javascript:` or `data:` address); a link that names no key is
+   * given the plain one.
+   */
+  function viewFootnote(view) {
+    const given = Array.isArray(view.links) ? view.links : [];
+    const text = (value) => typeof value === 'string' && value.trim() !== '';
+    const isPage = (href) => !/^[a-z][a-z0-9+.-]*:/i.test(href) || /^https?:\/\//i.test(href);
+    return footnoteOf(
+      view.title,
+      given
+        .filter(
+          (link) => isRecord(link) && text(link.label) && text(link.href) && isPage(link.href)
+        )
+        .map((link) => ({
+          key: text(link.key) ? link.key : 'link',
+          label: link.label,
+          href: link.href
+        }))
+    );
   }
 
   function renderNotes(container) {
@@ -875,6 +911,9 @@ export function mountApp(
           )
         );
       }
+      // A view that brings links ends with them, drawn or not, as a chart does (#271).
+      const footnote = viewFootnote(view);
+      if (footnote) content.append(footnote);
       return;
     }
 

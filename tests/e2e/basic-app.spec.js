@@ -3603,6 +3603,51 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
+  test('APP-RBQM-080: the RBQM tab ends with its footnote, one link reading "gsm.kri documentation": under the tab’s page at 1,280 pixels before R and after a run, on the Overview and on a metric’s page, opening in a new tab and asking nothing of that site until it is clicked; at 390 pixels it is on the page with no sideways scroll (#271)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    const asked = [];
+    page.on('request', (request) => asked.push(new URL(request.url()).host));
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded#rbqm');
+    await page.evaluate(`${APP}.ready`);
+    const footnote = page.locator('.sva-chart-links');
+    const link = footnote.locator('a');
+    const held = async () => {
+      await expect(footnote).toHaveCount(1);
+      await expect(footnote).toHaveText('RBQM: gsm.kri documentation');
+      await expect(link).toHaveAttribute('href', 'https://gilead-public.github.io/gsm.kri/');
+      await expect(link).toHaveAttribute('target', '_blank');
+      await expect(link).toHaveAttribute('rel', 'noopener');
+      // Under everything the tab draws.
+      const [view, note] = [
+        await page.locator('.sva-view').boundingBox(),
+        await footnote.boundingBox()
+      ];
+      expect(note.y).toBeGreaterThanOrEqual(view.y + view.height);
+    };
+    await held();
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
+    await held();
+    await footnote.scrollIntoViewIfNeeded();
+    await captureEvidence(footnote, 'APP-RBQM-080', 'rbqm-footnote');
+    await rbqmChoice(page, 'kri0001').click();
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    await held();
+    // A phone: the footnote is on the page, and nothing runs off it.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await held();
+    await expect.poll(() => sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    await rbqmOverview(page).click();
+    await held();
+    await expect.poll(() => sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    // Showing the link asked nothing of the site it leads to.
+    expect(asked.filter((host) => /gilead/.test(host))).toEqual([]);
+    expect(errors).toEqual([]);
+  });
+
   test('APP-RBQM-072: a link to a metric’s address opens the tab on that metric: before R it is that metric’s page saying R is needed, one press then draws its two charts with no further choice; the address follows the row, and an address typed over it opens the metric it names, or the Overview when it names none (#279)', async ({
     page
   }) => {

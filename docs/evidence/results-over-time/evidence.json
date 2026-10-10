@@ -1,6 +1,6 @@
 {
   "module": "results-over-time",
-  "generatedAt": "2026-10-10T14:11:12.927Z",
+  "generatedAt": "2026-10-10T15:36:19.612Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38058567547",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38058567547"
+    "id": "38064245773",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38064245773"
   },
   "records": [
     {
@@ -1042,6 +1042,14 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-078"],
       "issueRefs": [282],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-080: the RBQM tab ends with its footnote, one link reading \"gsm.kri documentation\": under the tab’s page at 1,280 pixels before R and after a run, on the Overview and on a metric’s page, opening in a new tab and asking nothing of that site until it is clicked; at 390 pixels it is on the page with no sideways scroll (#271)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-080"],
+      "issueRefs": [271],
       "screenshots": []
     },
     {
@@ -8429,6 +8437,30 @@
       "screenshots": []
     },
     {
+      "test": "the page: a view that brings links for a footnote (#271) APP-PAGE-041: a view that brings links ends with the footnote a chart has: its title and each link by the words it gave, under the view, opening in a new tab that is handed nothing of the page (#271)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-041"],
+      "issueRefs": [271, 271],
+      "screenshots": []
+    },
+    {
+      "test": "the page: a view that brings links for a footnote (#271) APP-PAGE-041: a view that throws when it is drawn still ends with its footnote, as a chart that did not draw does (#271)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-041"],
+      "issueRefs": [271, 271],
+      "screenshots": []
+    },
+    {
+      "test": "the page: a view that brings links for a footnote (#271) APP-PAGE-042: a view’s links are read safely: a view that brings none has no footnote, nor has one whose list is not a list; a link with no words, no address or an address that is a script is left out, and the others are kept (#271)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-042"],
+      "issueRefs": [271, 271],
+      "screenshots": []
+    },
+    {
       "test": "the pages APP-LOAD-027: the hosted footer, the single file’s footer and the hosted page’s description say what happens to the data a reader loads, in plain words (#196)",
       "suite": "unit",
       "status": "pass",
@@ -8861,6 +8893,14 @@
       "screenshots": []
     },
     {
+      "test": "the RBQM tab: its footnote (#271) APP-RBQM-079: the tab ends with one link, \"gsm.kri documentation\", to gsm.kri’s own site, under the tab’s name, before R is started and after a run, on the Overview page and on a metric’s; a page that cannot start R has it too",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-079"],
+      "issueRefs": [271],
+      "screenshots": []
+    },
+    {
       "test": "the RBQM tab: the steps of a run and what is said of it APP-RBQM-061: from a press to the first result there are six steps, each with what the control says while it runs and what Run details says once it is done; the control numbers the step it is on, and only loading gsm’s packages is called the long one (#280)",
       "suite": "unit",
       "status": "pass",
@@ -9042,46 +9082,6 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-013"],
       "issueRefs": [234, 234],
-      "screenshots": []
-    },
-    {
-      "test": "the required check’s workflow ci.yml has the shape that makes its gate safe to require: one job named \"Build, format, and test\" that always runs, has no matrix, needs every other job and checks their results first; triggers pull_request and push only; permissions contents: read (#292)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [292],
-      "screenshots": []
-    },
-    {
-      "test": "the required check’s workflow every job of the check and of the evidence refresh run names the ubuntu-24.04 image, so the image the screenshots are compared on changes by a commit (#292)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [292],
-      "screenshots": []
-    },
-    {
-      "test": "the required check’s workflow the browser tests that start real R with gsm’s packages carry the tag the check’s real-R job runs (#292)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [292],
-      "screenshots": []
-    },
-    {
-      "test": "the required check’s workflow the checker reports every way of breaking the gate in its list, each made to a copy of ci.yml (#292)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [292],
-      "screenshots": []
-    },
-    {
-      "test": "the required check’s workflow the gate’s result check passes only when every job before it ended in success: failure, cancelled, skipped and no result at all each fail it (#292)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [292],
       "screenshots": []
     },
     {

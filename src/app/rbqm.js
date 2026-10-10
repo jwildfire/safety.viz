@@ -45,6 +45,18 @@ export function ranOn(files, study = [], word = 'loaded file') {
   return parts.join(' and ');
 }
 
+/**
+ * The tab's footnote (#271): one link, to gsm's own documentation of the
+ * metrics the tab runs (@jwildfire, 2026-10-10). The docs site builds no page
+ * for the tab, so there is no link to one, nor to test evidence. The address is
+ * followed only when the reader clicks it: the app asks nothing of that host.
+ */
+export const RBQM_DOCS = Object.freeze({
+  key: 'docs',
+  label: 'gsm.kri documentation',
+  href: 'https://gilead-public.github.io/gsm.kri/'
+});
+
 /** What the tab says when nothing the metrics can run on is loaded. */
 export const NO_FILES =
   'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.';
