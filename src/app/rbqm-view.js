@@ -480,6 +480,7 @@ export function rbqmTab({
             phase: 'starting',
             say: words.starting,
             since: pressedAt,
+            now: () => now().getTime(),
             step: { say: stepSaid(at), index: stepNumber(at), of: RUN_STEPS.length }
           };
         }

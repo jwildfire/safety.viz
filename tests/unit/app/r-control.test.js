@@ -110,6 +110,14 @@ describe('the R control', () => {
     document.body.innerHTML = '';
     vi.advanceTimersByTime(1000);
     expect(vi.getTimerCount()).toBe(0);
+    // A tab that says which clock its start was read from is counted on that clock.
+    draw(
+      { phase: 'starting', say: 'Starting R', since: 1000, now: () => 8000 },
+      { now: () => clock }
+    );
+    expect($('.sva-r-meta').textContent).toBe('7 s');
+    document.body.innerHTML = '';
+    vi.advanceTimersByTime(1000);
     // With no moment to count from there is no count, and nothing ticks.
     draw({ phase: 'starting', say: 'Starting R', meta: '13 MB' });
     expect($('.sva-r-meta').textContent).toBe('13 MB');
@@ -237,6 +245,7 @@ describe('the R control', () => {
       label: null,
       disabled: false,
       since: null,
+      now: null,
       step: null,
       details: null,
       why: 'Why',
@@ -258,6 +267,10 @@ describe('the R control', () => {
       expect(stateOf({ phase: 'starting', step: broken }).step, JSON.stringify(broken)).toBeNull();
     }
     expect(stateOf({ since: 'yesterday' }).since).toBeNull();
+    // The clock the start was read from: kept when it is one, and passed over when it is not.
+    const tabClock = () => 9000;
+    expect(stateOf({ since: 12, now: tabClock }).now).toBe(tabClock);
+    expect(stateOf({ since: 12, now: 9000 }).now).toBeNull();
     // The details: kept only with a heading, and each part only where it can be drawn.
     expect(stateOf({ details: { rows: [['a', 'b']] } }).details).toBeNull();
     const press = () => {};

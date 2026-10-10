@@ -3048,7 +3048,8 @@ test.describe('demo app: the RBQM tab', () => {
         `Step ${index} of 6`
       );
       await expect(rbqmControl(page).locator('.sva-segs i')).toHaveCount(6);
-      await expect(rbqmControl(page).locator('.sva-r-meta')).toHaveText(/^\d+ s$/);
+      // Counted on the tab's own clock, which stands still on this page.
+      await expect(rbqmControl(page).locator('.sva-r-meta')).toHaveText('0 s');
       // The body: the steps before are done, this one is under way, the rest are to come.
       expect(
         await page

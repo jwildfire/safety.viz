@@ -426,7 +426,8 @@ const textOr = (value, otherwise = null) => (isText(value) ? value : otherwise);
  * - `say`: the few words beside the button, or in the chip. `meta`: the cost,
  *   in a word or two. `title`: the whole sentence, on hover.
  * - `label`: the button's words, and `disabled`, when it cannot be pressed.
- * - `since`: when it started, in milliseconds, for the count of seconds.
+ * - `since`: when it started, in milliseconds, for the count of seconds, and
+ *   `now`, the clock `since` was read from, when it is not the page's own.
  * - `step`: when starting takes long, the step it is on: `say`, its `index`
  *   from 1 and how many there are, `of`.
  * - `details`: what the panel behind the chip holds: a `heading`, `rows` of a
@@ -508,6 +509,7 @@ export function controlState(action) {
     label: textOr(said.label),
     disabled: Boolean(said.disabled || said.done),
     since: Number.isFinite(said.since) ? said.since : null,
+    now: typeof said.now === 'function' ? said.now : null,
     step,
     details,
     why: textOr(said.why, 'Why'),

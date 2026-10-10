@@ -174,7 +174,9 @@ export function rControl(
     }
     const meta = el('span', 'sva-r-meta');
     const said = () => {
-      const seconds = state.since === null ? null : `${secondsSince(state.since, now())} s`;
+      // Counted on the clock the start was read from, when the tab says which.
+      const clock = state.now || now;
+      const seconds = state.since === null ? null : `${secondsSince(state.since, clock())} s`;
       return [state.meta, seconds].filter(Boolean).join(' · ');
     };
     meta.textContent = said();
