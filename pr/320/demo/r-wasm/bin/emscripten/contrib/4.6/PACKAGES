@@ -1,0 +1,47 @@
+Package: gsm.core
+Version: 1.3.1
+Depends: R (>= 4.0)
+Imports: cli, dplyr, glue, lifecycle, lifecycle, magrittr, purrr, rlang
+        (>= 0.4.11), stats, tidyr, workr (>= 1.1.0), yaml
+Suggests: broom, covr, DBI, dbplyr, duckdb, gh, gt, knitr, lamW,
+        rmarkdown, roxygen2, stringr, styler, testthat, tibble,
+        usethis, withr
+License: Apache License (>= 2)
+MD5sum: 53af2cdecd857439fcb0e4c63ef72781
+Built: R 4.6.0; ; 2026-10-07 12:26:47 UTC; unix
+File: gsm.core_1.3.1.tgz
+
+Package: gsm.mapping
+Version: 1.1.6
+Depends: R (>= 4.0)
+Imports: cli, DBI, dbplyr, dplyr, duckdb, glue, gsm.core (>= 1.3.0),
+        purrr, rlang, stringr, tidyr, workr, yaml
+Suggests: DT, htmltools, knitr, reactable, rmarkdown, testthat, tibble
+License: Apache License (>= 2)
+MD5sum: 8533da463bddc7d9ea8a9b00afbd192a
+Built: R 4.6.0; ; 2026-10-07 12:26:41 UTC; unix
+File: gsm.mapping_1.1.6.tgz
+
+Package: gsm.reporting
+Version: 1.1.7
+Depends: R (>= 4.1.0)
+Imports: cli, dplyr, glue, gsm.core (>= 1.1.3), purrr, tibble, tidyr,
+        yaml
+Suggests: DT, gsm.kri (>= 1.2.0), gsm.mapping (>= 1.1.0), gt, knitr,
+        rmarkdown, testthat (>= 3.0.0), withr, workr
+License: Apache License (>= 2)
+MD5sum: cb4004763793f0cf6dfd94057aa378fb
+Built: R 4.6.0; ; 2026-10-07 12:26:44 UTC; unix
+File: gsm.reporting_1.1.7.tgz
+
+Package: workr
+Version: 1.1.0
+Depends: R (>= 4.1.0)
+Imports: base64enc, DBI, dbplyr, dplyr, duckdb, gh, glue, lifecycle,
+        purrr, rlang, yaml
+Suggests: gsm.datasim, knitr, rmarkdown, shiny, testthat (>= 3.0.0),
+        withr
+License: MIT + file LICENSE
+MD5sum: 9bde19e7f8ac07fb4603d1842ae65024
+Built: R 4.6.0; ; 2026-10-07 12:26:55 UTC; unix
+File: workr_1.1.0.tgz

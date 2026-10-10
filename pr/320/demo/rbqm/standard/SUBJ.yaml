@@ -1,0 +1,26 @@
+# gsm's raw subject table, made from the demo app's standard Subject-level
+# domain (#253, obot.roadmap#398). Written in gsm's own workflow dialect and
+# run by workr, in R, before gsm.mapping's workflows: the app computes nothing.
+#
+# Every participant in a subject-level file is taken as enrolled. Time on study
+# is the end-of-study day. The site is handed to gsm as `invid`. What the
+# standard domain does not hold (country, dates, age, sex, race) is left empty.
+meta:
+  Type: Raw
+  ID: SUBJ
+  Description: Raw subject table from the standard Subject-level domain
+  Priority: 1
+spec:
+  Standard_subject:
+    USUBJID:
+      type: character
+    SITEID:
+      type: character
+    EOSDY:
+      type: integer
+steps:
+  - output: Raw_SUBJ
+    name: workr::RunQuery
+    params:
+      df: Standard_subject
+      strQuery: "SELECT 'STUDY' AS studyid, NULLIF(TRIM(SITEID), '') AS invid, CAST(NULL AS VARCHAR) AS country, USUBJID AS subjid, USUBJID AS subject_nsv, 'Y' AS enrollyn, TRY_CAST(EOSDY AS INTEGER) AS timeonstudy, CAST(NULL AS DATE) AS firstparticipantdate, CAST(NULL AS DATE) AS firstdosedate, CAST(NULL AS INTEGER) AS timeontreatment, CAST(NULL AS INTEGER) AS agerep, CAST(NULL AS VARCHAR) AS sex, CAST(NULL AS VARCHAR) AS race, CAST(NULL AS TIMESTAMP) AS mincreated_dts FROM df WHERE NULLIF(TRIM(USUBJID), '') IS NOT NULL"
