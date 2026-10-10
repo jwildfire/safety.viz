@@ -87,8 +87,11 @@ jobs:
       - name: Vendored RBQM demo study matches its source
         run: npm run rbqm-study:check-source
 
+      # The unit and browser steps each write a JSON report beside what they
+      # print, under the runner's temporary directory. The evidence guard
+      # further down reads the two reports, so each suite runs once (#291).
       - name: Run unit tests
-        run: npm test
+        run: npm test -- --reporter=default --reporter=json --outputFile="$RUNNER_TEMP/vitest.json"
 
       - name: Build docs site (link + evidence validation)
         run: npm run site
@@ -96,11 +99,18 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      # --reporter replaces the reporters in playwright.config.js, so the two
+      # named there, list and html, are named again beside json.
       - name: Run browser tests
-        run: npm run test:e2e -- --project=chromium
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/playwright.json
+        run: npm run test:e2e -- --project=chromium --reporter=list,html,json
 
+      # Reads the two reports written above and runs no suite. It refuses a
+      # report that is missing, empty or not a clean run of every test, then
+      # compares every test's name and result with the committed evidence.
       - name: Evidence freshness guard
-        run: npm run evidence:check
+        run: npm run evidence:check -- --vitest-json="$RUNNER_TEMP/vitest.json" --playwright-json="$RUNNER_TEMP/playwright.json"
 
       # Requirement text shown on the evidence pages is extracted from the
       # matrices in requirements/ (#63; relocated from obot.agent in hub#64).
