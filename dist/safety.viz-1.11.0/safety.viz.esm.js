@@ -12604,16 +12604,17 @@ function wireStatusLabel(root) {
   const cross = root.querySelector(".sv-status-close");
   const tip = root.querySelector(".sv-status-tip");
   const keepInside = (element) => {
-    element.style.removeProperty("transform");
+    const side = root.classList.contains("sv-status-left") ? "left" : "right";
+    element.style.removeProperty(side);
     const view = doc.defaultView;
-    const width = view && view.innerWidth || 0;
+    const width = doc.documentElement && doc.documentElement.clientWidth || view && view.innerWidth || 0;
     const box = element.getBoundingClientRect();
     if (!width || !box.width) return;
     const edge = 8;
     let shift = 0;
     if (box.left < edge) shift = edge - box.left;
     else if (box.right > width - edge) shift = width - edge - box.right;
-    if (shift) element.style.transform = `translateX(${Math.round(shift)}px)`;
+    if (shift) element.style[side] = `${Math.round(side === "left" ? shift : -shift)}px`;
   };
   const place = () => keepInside(panel);
   const placeTip = () => {

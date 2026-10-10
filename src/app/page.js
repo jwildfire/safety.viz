@@ -755,6 +755,9 @@ export function mountApp(
     controlPanel.innerHTML = '';
     controlPanel.hidden = true;
     const said = wanted ? controlState(wanted[1]) : null;
+    // Nor does it open by itself when its control has details again: a run
+    // that starts while the panel is open closes it for good (#309).
+    if (controlOpen !== null && !(said && said.details)) controlOpen = null;
     if (!said) return;
     const [name, action] = wanted;
     // An action in the panel, as Run again, closes the panel: what it sets

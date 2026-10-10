@@ -85,7 +85,9 @@ export function icon(name, className = '') {
   svg.setAttribute('focusable', 'false');
   svg.setAttribute('class', ['sva-ico', `sva-ico-${name}`, className].filter(Boolean).join(' '));
   // Only a mark of this file's own (#309): "constructor" is a name every object has.
-  for (const [tag, attributes] of Object.hasOwn(SHAPES, name) ? SHAPES[name] : []) {
+  for (const [tag, attributes] of Object.prototype.hasOwnProperty.call(SHAPES, name)
+    ? SHAPES[name]
+    : []) {
     const shape = document.createElementNS(SVG, tag);
     for (const [key, value] of Object.entries(attributes)) shape.setAttribute(key, value);
     svg.append(shape);

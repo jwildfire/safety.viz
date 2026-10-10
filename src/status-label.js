@@ -226,17 +226,24 @@ export function wireStatusLabel(root) {
   const tip = root.querySelector('.sv-status-tip');
   // Keep the open panel, and the hover line, inside the window, whichever side
   // they hang from.
+  // The room is the page's own width: on a phone the window's inner width
+  // grows with whatever overflows, and with a classic scrollbar it counts the
+  // bar, so either would let the element stay over the edge (#309). The
+  // element is moved by the side it hangs from, not by a transform: a phone
+  // sizes its page by where an element is laid out, wherever it is drawn.
   const keepInside = (element) => {
-    element.style.removeProperty('transform');
+    const side = root.classList.contains('sv-status-left') ? 'left' : 'right';
+    element.style.removeProperty(side);
     const view = doc.defaultView;
-    const width = (view && view.innerWidth) || 0;
+    const width =
+      (doc.documentElement && doc.documentElement.clientWidth) || (view && view.innerWidth) || 0;
     const box = element.getBoundingClientRect();
     if (!width || !box.width) return;
     const edge = 8;
     let shift = 0;
     if (box.left < edge) shift = edge - box.left;
     else if (box.right > width - edge) shift = width - edge - box.right;
-    if (shift) element.style.transform = `translateX(${Math.round(shift)}px)`;
+    if (shift) element.style[side] = `${Math.round(side === 'left' ? shift : -shift)}px`;
   };
   const place = () => keepInside(panel);
   // The line shows on hover and on keyboard focus, by the stylesheet alone; it

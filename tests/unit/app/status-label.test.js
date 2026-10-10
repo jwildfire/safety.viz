@@ -89,34 +89,68 @@ describe('the status label', () => {
     );
   });
 
-  it('APP-TIER-028: the hover line is kept inside the window as it appears, under the pointer or the keyboard and when the panel closes: moved left when it would run off the right edge, right when off the left, and left alone when it fits (#309)', () => {
+  it('APP-TIER-028: the hover line is kept inside the window as it appears, under the pointer or the keyboard and when the panel closes: moved left when it would run off the right edge, right when off the left, and left alone when it fits; it is moved by the side it hangs from, against the page’s own width (#309)', () => {
     const label = statusLabel(CHART);
     document.body.append(label);
-    const { pill } = parts(label);
+    const { pill, panel } = parts(label);
     const tip = pill.querySelector('.sv-status-tip');
     const width = window.innerWidth;
     let box = { left: width - 100, right: width + 110, width: 210 };
     tip.getBoundingClientRect = () => box;
-    // Off the right edge: brought back to 8 pixels inside it.
+    // A label hangs its line from its right edge. Off the window's right edge:
+    // brought back to 8 pixels inside it.
     pill.dispatchEvent(new Event('mouseenter'));
-    expect(tip.style.transform).toBe('translateX(-118px)');
+    expect(tip.style.right).toBe('118px');
+    expect(tip.style.transform).toBe('');
     // Off the left edge.
     box = { left: -20, right: 190, width: 210 };
     pill.dispatchEvent(new Event('pointerenter'));
-    expect(tip.style.transform).toBe('translateX(28px)');
+    expect(tip.style.right).toBe('-28px');
     // Inside: where the stylesheet put it.
     box = { left: 40, right: 250, width: 210 };
     pill.dispatchEvent(new Event('focus'));
-    expect(tip.style.transform).toBe('');
+    expect(tip.style.right).toBe('');
     // Not showing, it has no box, and nothing is done to it.
     box = { left: 0, right: 0, width: 0 };
     pill.dispatchEvent(new Event('mouseenter'));
-    expect(tip.style.transform).toBe('');
+    expect(tip.style.right).toBe('');
     // The panel closed under the pointer shows the line again: it is placed then too.
     pill.click();
     box = { left: width - 100, right: width + 110, width: 210 };
     pill.click();
-    expect(tip.style.transform).toBe('translateX(-118px)');
+    expect(tip.style.right).toBe('118px');
+    // The room is the page's own width where the page has one: on a phone the
+    // window's inner width grows with what overflows it.
+    Object.defineProperty(document.documentElement, 'clientWidth', {
+      value: 393,
+      configurable: true
+    });
+    try {
+      box = { left: 184, right: 454, width: 270 };
+      pill.dispatchEvent(new Event('mouseenter'));
+      expect(tip.style.right).toBe('69px');
+      // The panel is placed against the same width, the same way.
+      panel.getBoundingClientRect = () => ({ left: 160, right: 536, width: 376 });
+      pill.click();
+      expect(panel.style.right).toBe('151px');
+      expect(panel.style.transform).toBe('');
+      pill.click();
+      // A label that hangs leftwards, as the docs pages' do, is moved by its left side.
+      const docs = statusLabel({ ...CHART, align: 'left' });
+      document.body.append(docs);
+      const hung = parts(docs);
+      const line = hung.pill.querySelector('.sv-status-tip');
+      line.getBoundingClientRect = () => ({ left: 184, right: 454, width: 270 });
+      hung.pill.dispatchEvent(new Event('mouseenter'));
+      expect(line.style.left).toBe('-69px');
+      expect(line.style.right).toBe('');
+      hung.panel.getBoundingClientRect = () => ({ left: 160, right: 536, width: 376 });
+      hung.pill.click();
+      expect(hung.panel.style.left).toBe('-151px');
+      hung.pill.click();
+    } finally {
+      delete document.documentElement.clientWidth;
+    }
   });
 
   it('APP-TIER-008: hovering shows one line; a click opens the panel and it stays open; a second click, the cross or Escape closes it, and the pill says which it is (#273)', () => {

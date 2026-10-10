@@ -366,7 +366,7 @@ describe('the page: what a view hands it is read safely, and its details are lef
     expect($('.sva-view').textContent).toBe('drawn: first page');
   });
 
-  it('APP-R-054: a control’s details panel is left with its tab: opened on a view, it is closed when the reader comes back from another tab, by the chip or by openControl, and it stays open while the reader moves among the view’s own items (#309)', () => {
+  it('APP-R-054: a control’s details panel is left with its tab: opened on a view, it is closed when the reader comes back from another tab, by the chip or by openControl; it stays open while the reader moves among the view’s own items; and a run that starts while it is open closes it for good (#309)', () => {
     const control = () => ({
       state: () => ({
         phase: 'ready',
@@ -405,5 +405,28 @@ describe('the page: what a view hands it is read safely, and its details are lef
     // It opens again when asked.
     $('.sva-chip').click();
     expect($('.sva-r-panel')).not.toBeNull();
+
+    // A run that starts while the panel is open closes it for good: when the
+    // control is a chip again, the panel does not come back by itself.
+    let phase = 'ready';
+    const moving = mount({
+      control: () => ({
+        state: () =>
+          phase === 'ready'
+            ? { phase: 'ready', say: 'R ready', details: { heading: 'Ready', text: ['It ran.'] } }
+            : { phase: 'starting', say: 'Running' },
+        press() {}
+      })
+    });
+    moving.app.select('own');
+    $('.sva-chip').click();
+    expect($('.sva-r-panel')).not.toBeNull();
+    phase = 'starting';
+    moving.app.retag();
+    expect($('.sva-r-panel')).toBeNull();
+    phase = 'ready';
+    moving.app.retag();
+    expect($('.sva-r-panel')).toBeNull();
+    expect($('.sva-chip').getAttribute('aria-expanded')).toBe('false');
   });
 });
