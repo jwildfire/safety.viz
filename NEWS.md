@@ -8,7 +8,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.11.0 (Upcoming)
 
-**See it move:** the [demo app on `dev`](https://jwildfire.github.io/safety.viz/dev/demo/) is the release as it stands; the annotated demo page comes with the release candidate.
+**See it move:** [annotated v1.11.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.11-demo/)
 
 The demo app made ready to show: clearer on first open, and the defects found in the review of release 1.10 fixed. No chart and no metric is added, and nothing the app computes changes.
 
@@ -24,14 +24,14 @@ The demo app made ready to show: clearer on first open, and the defects found in
 ## Also in this release
 
 - **The wordmark leads back to the docs, and the browser tab names the open view,** under one favicon for the docs and the app. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#270](https://github.com/jwildfire/safety.viz/issues/270)
-- **On a phone, a link to a tab opens with that tab in view,** and tabs and chart names are 44 pixels tall. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#271](https://github.com/jwildfire/safety.viz/issues/271)
+- **The RBQM tab ends with a link to gsm.kri's documentation.** On a phone, a link to a tab opens with that tab in view, and tab and chart names are 44 pixels tall. [obot.roadmap#402](https://github.com/jwildfire/obot.roadmap/issues/402), [#271](https://github.com/jwildfire/safety.viz/issues/271)
 - **The docs home page counts the site's charts:** thirteen, where it said nine. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#286](https://github.com/jwildfire/safety.viz/issues/286)
 - **The Hepatic ALT Waterfall's titles fit a long arm name.** A long name is cut short with its count kept whole, and hovering shows all of it. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#283](https://github.com/jwildfire/safety.viz/issues/283)
 - **Nothing runs off a phone's screen.** The QT Explorer's table, the Hepatic Explorer's composite tables and the API reference tables scroll inside their own boxes. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#284](https://github.com/jwildfire/safety.viz/issues/284), [#285](https://github.com/jwildfire/safety.viz/issues/285), [#162](https://github.com/jwildfire/safety.viz/issues/162)
 - **The check on a pull request runs each test once.** It ran the unit and browser tests, then ran both again for the evidence guard. The guard now reads the results of the first run, and refuses results that are not a clean run of every test. [obot.roadmap#410](https://github.com/jwildfire/obot.roadmap/issues/410), [#291](https://github.com/jwildfire/safety.viz/issues/291)
-- **The kit's `renderShell` takes an optional `module`**, so that the shell can draw a chart's status label; a caller that passes none sees no change. [obot.roadmap#403](https://github.com/jwildfire/obot.roadmap/issues/403), [#274](https://github.com/jwildfire/safety.viz/issues/274)
+- **The kit's `renderShell` takes an optional `module`**, for a chart's status label; a caller that passes none sees no change. [obot.roadmap#403](https://github.com/jwildfire/obot.roadmap/issues/403), [#274](https://github.com/jwildfire/safety.viz/issues/274)
 - **The RBQM tab gives up on an R that stops answering.** It says so, closes that R and offers to try again. [obot.roadmap#404](https://github.com/jwildfire/obot.roadmap/issues/404), [#261](https://github.com/jwildfire/safety.viz/issues/261)
-- **A test walks the keynote's demo path** on the published demo, with real R: `npm run demo-path`. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#287](https://github.com/jwildfire/safety.viz/issues/287)
+- **A test walks the keynote's demo path** on the published demo: `npm run demo-path`. [obot.roadmap#407](https://github.com/jwildfire/obot.roadmap/issues/407), [#287](https://github.com/jwildfire/safety.viz/issues/287)
 - **The app's conventions and the status ladder are in the contributing guide.** [obot.roadmap#408](https://github.com/jwildfire/obot.roadmap/issues/408), [#288](https://github.com/jwildfire/safety.viz/issues/288)
 
 # safety.viz v1.10.0

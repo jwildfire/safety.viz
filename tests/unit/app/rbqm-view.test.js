@@ -1804,6 +1804,43 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
 
 // The tab's own row, its pages and what is behind its control (#278, #279,
 // #280, obot.roadmap#405).
+describe('the RBQM tab: its footnote (#271)', () => {
+  it('APP-RBQM-079: the tab ends with one link, "gsm.kri documentation", to gsm.kri’s own site, under the tab’s name, before R is started and after a run, on the Overview page and on a metric’s; a page that cannot start R has it too', async () => {
+    const read = ($) => [
+      $('.sva-chart-links').textContent,
+      ...[...document.querySelectorAll('.sva-chart-links a')].map((a) => [
+        a.dataset.link,
+        a.getAttribute('href'),
+        a.getAttribute('target'),
+        a.getAttribute('rel')
+      ])
+    ];
+    const said = [
+      'RBQM: gsm.kri documentation',
+      ['docs', 'https://gilead-public.github.io/gsm.kri/', '_blank', 'noopener']
+    ];
+    fakeViz();
+    const { app, r, $, $$ } = mount({ answers: RUN_OK });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    expect(read($)).toEqual(said);
+    // After everything the tab draws, and once only.
+    expect($('.sva-chart-links').previousElementSibling).toBe($('.sva-view'));
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    expect($('.sva-rbqm-table')).not.toBeNull();
+    expect(read($)).toEqual(said);
+    $('.sva-view-item[data-item="kri0001"]').click();
+    expect(read($)).toEqual(said);
+    expect($$('.sva-chart-links')).toHaveLength(1);
+
+    const without = mount({ tab: { unavailable: 'This file cannot start R.' } });
+    without.app.select('rbqm');
+    expect(read(without.$)).toEqual(said);
+  });
+});
+
 describe('the RBQM tab: a row of its own, one page at a time', () => {
   const noLab = STUDY.filter((file) => file.name !== 'Raw_LB.csv');
   const LAB_NEEDS = 'Grade 3+ Lab Abnormality Rate needs Raw_LB.csv, which is not loaded.';
