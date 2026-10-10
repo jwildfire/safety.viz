@@ -46,6 +46,21 @@ const LOAD_FAILED = {
   message: 'bio.viz: R could not be started in the browser: Failed to fetch.'
 };
 
+// What a connection was asked, leaving out the app's own two questions about
+// R's version (#276).
+const asked = (connection) =>
+  connection.run.mock.calls.map(([name]) => name).filter((name) => name !== 'do.call');
+const NEED_TITLE =
+  'Statistics need R. Start R to compute them: about 13 MB, downloaded once from ' +
+  'webr.r-wasm.org. The study’s data stays in this browser.';
+const VIEW_NEED = 'Statistics need R. Start R, at the top right.';
+const VIEW_STARTING = 'R is starting. The test appears here when it is ready.';
+const VIEW_FAILED = 'R did not start, so there is no test. Try again, at the top right.';
+const DOWNLOAD_FAILED =
+  'The browser could not download R from webr.r-wasm.org. Check the connection, or whether ' +
+  'this network blocks that address, and try again. The charts still draw; only the ' +
+  'statistics are missing.';
+
 const OPTIONS = {
   browser: { sourceUrl: './statistics.R', packages: [] },
   megabytes: 13,
@@ -63,14 +78,18 @@ describe('R on request', () => {
     const { connection, waiting_note: note } = r.settings();
     const answer = await connection.run('Analyze_GroupDifference', { data: [], args: {} });
     expect(answer.status).toBe('unavailable');
-    expect(answer.message).toBe(
-      'Statistics need R. Start R to compute them: it downloads about 13 MB, once, from ' +
-        'webr.r-wasm.org, and the study’s data stays in this browser.'
-    );
+    // One short line, which points at the control (#276).
+    expect(answer.message).toBe(VIEW_NEED);
     expect(createConnection).not.toHaveBeenCalled();
     expect(note).toBeNull();
-    expect(r.action.state()).toMatchObject({ label: 'Start R', done: false });
-    expect(r.action.state().note).toBe(answer.message);
+    // The control: a few words, the cost, the button, and the whole sentence on hover.
+    expect(r.action.state()).toEqual({
+      phase: 'off',
+      say: 'Statistics need R',
+      meta: '13 MB, once',
+      title: NEED_TITLE,
+      label: 'Start R'
+    });
   });
 
   it('APP-R-002: asking makes one connection, with the library’s own factory and the options given, and starts R at once; every chart afterwards uses it, and asking again makes no second (#183)', async () => {
@@ -84,32 +103,94 @@ describe('R on request', () => {
     // Pressing starts R there and then, with one call R already has.
     expect(made[0].run).toHaveBeenCalledTimes(1);
     expect(made[0].run.mock.calls[0][0]).toBe('identity');
-    expect(r.action.state()).toMatchObject({ label: 'Starting R…', done: true });
+    expect(r.action.state()).toMatchObject({ phase: 'starting', say: 'Starting R', meta: '13 MB' });
     await started;
-    expect(r.action.state()).toMatchObject({ label: 'R started', done: true });
+    expect(r.action.state()).toMatchObject({ phase: 'ready', say: 'R ready' });
     // A chart made before the reader asked, and one made after, reach the same R.
     const after = r.settings().connection;
     await before.run('one', { data: [], args: {} });
     await after.run('two', { data: [], args: {} });
     expect(made).toHaveLength(1);
-    expect(made[0].run.mock.calls.map(([name]) => name)).toEqual(['identity', 'one', 'two']);
+    expect(asked(made[0])).toEqual(['identity', 'one', 'two']);
   });
 
-  it('APP-R-015: while R starts the waiting note says what it downloads; once R has answered there is no such note, and the control says R is running (#183)', async () => {
-    const { createConnection } = fakeFactory();
-    const r = rOnRequest({ createConnection, ...OPTIONS });
-    expect(r.action.state().hint).toBe('About 13 MB, once');
-    const started = r.action.press();
-    expect(r.settings().waiting_note).toBe(
-      'R is starting in this browser: about 13 MB to download, once, from webr.r-wasm.org.'
+  it('APP-R-015: while R starts the chart’s line says so in one short sentence and the control counts from the press; once R has answered there is no such line, and the control is a chip whose details say R’s version, how long it took, the download and where R runs (#183, #276)', async () => {
+    // R says its own version when asked; the page knew the runtime's.
+    const { createConnection, made } = fakeFactory((index, name) =>
+      name === 'do.call' ? { status: 'ok', value: { said: made.length } } : null
     );
+    let clock = 1000;
+    const r = rOnRequest({ createConnection, ...OPTIONS, webr: '0.6.0', now: () => clock });
+    const started = r.action.press();
+    expect(r.settings().waiting_note).toBe(VIEW_STARTING);
+    expect(r.action.state()).toEqual({
+      phase: 'starting',
+      say: 'Starting R',
+      meta: '13 MB',
+      since: 1000
+    });
+    clock = 2540;
     await started;
     expect(r.settings().waiting_note).toBeNull();
-    expect(r.action.state()).toMatchObject({
-      label: 'R started',
-      note: 'R is running in this browser.',
-      hint: null
+    expect(r.action.state()).toEqual({
+      phase: 'ready',
+      say: 'R ready',
+      title: 'R is running in this browser',
+      details: {
+        heading: 'R is running in this browser',
+        rows: [
+          ['Version', 'webR 0.6.0'],
+          ['Started', 'in 1.5 seconds'],
+          ['Downloaded', '13 MB, once, from webr.r-wasm.org'],
+          ['Your data', 'stays in this browser; R runs here']
+        ]
+      }
     });
+    // R was asked its version twice, by a call R makes of a function that takes no argument.
+    expect(made[0].run.mock.calls.filter(([name]) => name === 'do.call')).toEqual([
+      ['do.call', { data: [], args: { what: 'R.Version' } }],
+      ['do.call', { data: [], args: { what: 'Sys.getenv' } }]
+    ]);
+  });
+
+  it('APP-R-043: the details say the version R itself gave, "R 4.6.0, on webR 0.6.0"; where R gives none they say what the page knew, and where nothing is known the line is left to the control to leave out (#276)', async () => {
+    const answers = {
+      'R.Version': { status: 'ok', value: { 'version.string': ['R version 4.6.0 (2026-04-24)'] } },
+      'Sys.getenv': { status: 'ok', value: { LANG: ['en_US.UTF-8'], WEBR_VERSION: ['0.6.1'] } }
+    };
+    const version = (r) => r.action.state().details.rows.find(([term]) => term === 'Version')[1];
+    const says = fakeFactory((index, name) => (name === 'do.call' ? null : null));
+    says.createConnection.mockImplementation(() => ({
+      run: vi.fn(async (name, request) =>
+        name === 'do.call' ? answers[request.args.what] : { status: 'ok', value: 1 }
+      )
+    }));
+    const told = rOnRequest({ createConnection: says.createConnection, ...OPTIONS, webr: '0.6.0' });
+    await told.action.press();
+    await vi.waitFor(() => expect(version(told)).toBe('R 4.6.0, on webR 0.6.1'));
+    // R that will not say: an error, an answer that is not a success, or a run that throws.
+    for (const refuses of [
+      async () => ({ status: 'error', message: 'could not find function' }),
+      async () => ({ status: 'unavailable', reason: 'no-r-attached' }),
+      () => {
+        throw new Error('no');
+      }
+    ]) {
+      const silent = rOnRequest({
+        createConnection: () => ({
+          run: (name) => (name === 'do.call' ? refuses() : Promise.resolve({ status: 'ok' }))
+        }),
+        ...OPTIONS,
+        webr: '0.6.0'
+      });
+      await silent.action.press();
+      await Promise.resolve();
+      expect(version(silent)).toBe('webR 0.6.0');
+      expect(silent.action.state().phase).toBe('ready');
+    }
+    const unknown = rOnRequest({ createConnection: fakeFactory().createConnection, ...OPTIONS });
+    await unknown.action.press();
+    expect(version(unknown)).toBeNull();
   });
 
   it('APP-R-016: when R does not start, the control says so and offers to try again, every chart is told without starting R again, and trying again makes one fresh connection (#183)', async () => {
@@ -117,18 +198,29 @@ describe('R on request', () => {
     const { createConnection, made } = fakeFactory((index) => (index === 0 ? LOAD_FAILED : null));
     const r = rOnRequest({ createConnection, ...OPTIONS });
     await r.action.press();
-    expect(r.action.state()).toMatchObject({ label: 'Try R again', done: false });
-    expect(r.action.state().note).toBe(
-      'R did not start: bio.viz: R could not be started in the browser: Failed to fetch. ' +
-        'Try again; if it fails again, reload the page.'
-    );
+    // The words, Try again, and the reason one click away: a plain sentence first,
+    // and what the browser said behind a disclosure, never in the first line (#277).
+    expect(r.action.state()).toEqual({
+      phase: 'failed',
+      say: 'R did not start',
+      label: 'Try again',
+      why: 'Why',
+      details: {
+        heading: 'R did not start',
+        text: [DOWNLOAD_FAILED],
+        more: [
+          'The browser said: bio.viz: R could not be started in the browser: Failed to fetch.'
+        ],
+        moreTitle: 'What the browser said'
+      }
+    });
     // Charts are answered with that, and R is not asked again until the reader asks.
     const answer = await r.settings().connection.run('one', { data: [], args: {} });
     await r.settings().connection.run('two', { data: [], args: {} });
     expect(answer).toEqual({
       status: 'unavailable',
       reason: 'load-failed',
-      message: r.action.state().note
+      message: VIEW_FAILED
     });
     expect(made).toHaveLength(1);
     expect(made[0].run).toHaveBeenCalledTimes(1);
@@ -136,9 +228,9 @@ describe('R on request', () => {
     // Trying again: one fresh connection, which starts R.
     await r.action.press();
     expect(made).toHaveLength(2);
-    expect(r.action.state()).toMatchObject({ label: 'R started', done: true });
+    expect(r.action.state()).toMatchObject({ phase: 'ready', say: 'R ready' });
     expect((await r.settings().connection.run('three', { data: [], args: {} })).status).toBe('ok');
-    expect(made[1].run.mock.calls.map(([name]) => name)).toEqual(['identity', 'three']);
+    expect(asked(made[1])).toEqual(['identity', 'three']);
   });
 
   it('APP-R-016: an answer that says R could not start, arriving for a chart after R had started, is treated the same way (#183)', async () => {
@@ -149,9 +241,9 @@ describe('R on request', () => {
     fail = true;
     const answer = await r.settings().connection.run('one', { data: [], args: {} });
     expect(answer.reason).toBe('load-failed');
-    expect(r.action.state().label).toBe('Try R again');
+    expect(r.action.state()).toMatchObject({ phase: 'failed', label: 'Try again' });
     await r.settings().connection.run('two', { data: [], args: {} });
-    expect(made[0].run).toHaveBeenCalledTimes(2);
+    expect(asked(made[0])).toEqual(['identity', 'one']);
   });
 
   it('APP-R-003: where R cannot be started, the connection answers in words why statistics are unavailable, and there is no control (#183)', async () => {
@@ -189,7 +281,7 @@ describe('the page with a library’s settings and control', () => {
     app.destroy();
   });
 
-  it('APP-R-005: a library’s control is shown with its group’s charts, with what it costs in words beside it; pressing it asks once, hands the open chart its new settings without drawing it again, and the control follows what happened (#183)', async () => {
+  it('APP-R-005: a library’s control is shown while its charts’ tab is open, with what it costs in words beside it; pressing it asks once, hands the open chart its new settings without drawing it again, and the control follows what happened (#183)', async () => {
     let phase = 'idle';
     let finish;
     const press = vi.fn(() => {
@@ -218,13 +310,13 @@ describe('the page with a library’s settings and control', () => {
     const settings = vi.fn(() => ({ extra_col: phase }));
     const app = mounted({ ...standIn, action, settings });
     app.select('stand-in-strip');
-    const group = () => document.querySelector('.sva-group[data-group="stand-in"]');
+    const group = () => document.querySelector('.sva-charts > .sva-r');
     const button = () => group().querySelector('.sva-action');
     expect(button().textContent).toBe('Start R');
     expect(button().title).toBe('Statistics need R.');
     expect(button().disabled).toBe(false);
-    expect(group().querySelector('.sva-action-hint').textContent).toBe('About 13 MB, once');
-    // No other group carries it.
+    expect(group().querySelector('.sva-r-meta').textContent).toBe('About 13 MB, once');
+    // There is one, whichever tab is open.
     expect(document.querySelectorAll('.sva-action')).toHaveLength(1);
     const before = standInLog.length;
     button().click();
@@ -236,7 +328,7 @@ describe('the page with a library’s settings and control', () => {
     ]);
     expect(button().textContent).toBe('Starting R…');
     expect(button().disabled).toBe(true);
-    expect(group().querySelector('.sva-action-hint')).toBeNull();
+    expect(group().querySelector('.sva-r-meta')).toBeNull();
     finish();
     await Promise.resolve();
     await Promise.resolve();
@@ -271,23 +363,22 @@ describe('the page with a library’s settings and control', () => {
     };
     const app = mounted({ ...standIn, action: r.action, settings });
     app.select('stand-in-strip');
-    const button = () => document.querySelector('.sva-action');
     const before = standInLog.length;
-    button().click();
+    document.querySelector('.sva-r .sva-action').click();
     const notes = () =>
       standInLog
         .slice(before)
         .filter((entry) => entry.event === 'setSettings')
         .map((entry) => entry.settings.waiting_note);
-    expect(notes()).toEqual([
-      'R is starting in this browser: about 13 MB to download, once, from webr.r-wasm.org.'
-    ]);
+    expect(notes()).toEqual([VIEW_STARTING]);
+    // While it starts the control is a spinner and a count, and no button.
+    expect(document.querySelector('.sva-r').dataset.phase).toBe('starting');
+    expect(document.querySelector('.sva-r .sva-action')).toBeNull();
     release();
-    await vi.waitFor(() => expect(button().textContent).toBe('R started'));
-    expect(notes()).toEqual([
-      'R is starting in this browser: about 13 MB to download, once, from webr.r-wasm.org.',
-      undefined
-    ]);
+    await vi.waitFor(() =>
+      expect(document.querySelector('.sva-r .sva-chip').textContent).toBe('R ready▾')
+    );
+    expect(notes()).toEqual([VIEW_STARTING, undefined]);
     // Still the one chart, not drawn again.
     expect(standInLog.slice(before).map((entry) => entry.event)).toEqual([
       'setSettings',
@@ -302,23 +393,34 @@ describe('the page with a library’s settings and control', () => {
     });
     const r = rOnRequest({ createConnection, ...OPTIONS });
     await expect(r.action.press()).resolves.toBeUndefined();
-    expect(r.action.state()).toMatchObject({ label: 'Try R again', done: false });
-    expect(r.action.state().note).toBe(
-      'R did not start: bio.viz: webR is not available. Try again; if it fails again, reload the page.'
-    );
+    expect(r.action.state()).toMatchObject({
+      phase: 'failed',
+      say: 'R did not start',
+      label: 'Try again'
+    });
+    // Nothing was downloaded, so the plain reason does not say a download failed.
+    expect(r.action.state().details.text).toEqual([
+      'R could not be started on this page. Try again; if it fails again, reload the page. ' +
+        'The charts still draw; only the statistics are missing.'
+    ]);
+    expect(r.action.state().details.more).toEqual([
+      'The browser said: bio.viz: webR is not available.'
+    ]);
     expect(await r.settings().connection.run('one', { data: [], args: {} })).toEqual({
       status: 'unavailable',
       reason: 'load-failed',
-      message: r.action.state().note
+      message: VIEW_FAILED
     });
     // On the page: pressing it changes the control, and nothing is thrown.
     const fresh = rOnRequest({ createConnection, ...OPTIONS });
     const app = mounted({ ...standIn, action: fresh.action });
     app.select('stand-in-strip');
-    expect(() => document.querySelector('.sva-action').click()).not.toThrow();
+    expect(() => document.querySelector('.sva-r .sva-action').click()).not.toThrow();
     await vi.waitFor(() =>
-      expect(document.querySelector('.sva-action').textContent).toBe('Try R again')
+      expect(document.querySelector('.sva-r .sva-action').textContent).toBe('Try again')
     );
+    expect(document.querySelector('.sva-r .sva-r-say').textContent).toBe('R did not start');
+    expect(document.querySelector('.sva-r .sva-r-say').classList.contains('sva-bad')).toBe(true);
     app.destroy();
   });
 
@@ -334,9 +436,9 @@ describe('the page with a library’s settings and control', () => {
     for (const [how, make] of Object.entries(throwing)) {
       const r = rOnRequest({ createConnection: make, ...OPTIONS });
       await r.action.press();
-      expect(r.action.state().label, how).toBe('Try R again');
-      expect(r.action.state().note, how).toMatch(
-        /^R did not start: (webR could not be created|the worker stopped)\. Try again;/
+      expect(r.action.state(), how).toMatchObject({ phase: 'failed', label: 'Try again' });
+      expect(r.action.state().details.more[0], how).toMatch(
+        /^The browser said: (webR could not be created|the worker stopped)\.$/
       );
       expect((await r.settings().connection.run('one', {})).reason, how).toBe('load-failed');
     }
@@ -349,9 +451,8 @@ describe('the page with a library’s settings and control', () => {
         ...OPTIONS
       });
       await r.action.press();
-      expect(r.action.state().note).toBe(
-        'R did not start, and no reason was given. Try again; if it fails again, reload the page.'
-      );
+      expect(r.action.state().say).toBe('R did not start');
+      expect(r.action.state().details.more).toEqual(['The browser gave no reason.']);
     }
   });
 

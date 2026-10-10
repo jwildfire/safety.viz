@@ -265,6 +265,7 @@ class SafetyQtExplorer {
       this,
       renderShell(this.element, {
         moduleClass: 'safety-qt-explorer',
+        module: 'qt-explorer',
         onToggle: () => this.resize()
       })
     );

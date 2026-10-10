@@ -162,10 +162,11 @@ export const RBQM_METRICS = [1, 2, 3, 4, 5, 6, 7, 12].map(
 
 /**
  * The run the RBQM tab makes: the gate's, with every metric workflow there is
- * and whatever raw files are loaded. Three studies are run in the browser test
+ * and whatever raw files are loaded. Five studies are run in the browser test
  * and in desktop R alike: the demo study whole, the demo study with its labs
  * file left out, the demo study with one column its adverse events file needs
- * taken out, and two of its files alone, as a reader might load them.
+ * taken out, and two of its files alone and three of them alone, as a reader
+ * might load them on the Data tab (#282).
  */
 export const RBQM_TAB = {
   call: RBQM_GATE.call,
@@ -193,6 +194,11 @@ export const RBQM_TAB = {
       id: 'two-files',
       label: 'the demo study’s subjects and adverse events files alone',
       only: ['Raw_SUBJ.csv', 'Raw_AE.csv']
+    },
+    {
+      id: 'three-files',
+      label: 'the demo study’s subjects, adverse events and protocol deviations files alone',
+      only: ['Raw_SUBJ.csv', 'Raw_AE.csv', 'Raw_PD.csv']
     }
   ]
 };

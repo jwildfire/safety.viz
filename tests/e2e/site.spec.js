@@ -343,22 +343,18 @@ test.describe('docs site', () => {
     );
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(HOSTED_PITCH);
     await page.locator('.sva-tab[data-domain="biomarkers"]').click();
-    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-action')).toHaveText(
-      'Start R'
-    );
+    await expect(page.locator('.sva-charts > .sva-r .sva-action')).toHaveText('Start R');
     // Shown, not pressed: nothing is asked of R's hosts.
     expect(requests.filter((url) => /webr\.r-wasm\.org|statistics\.R/.test(url))).toEqual([]);
     // Pressed on the page as built: its own factory and its own `./statistics.R`
     // start R, and a chart prints R's answer.
     await page.evaluate(() => window.__safetyVizApp.select('association-scatter'));
-    await page.locator('.sva-group[data-group="biomarkers"] .sva-action').click();
+    await page.locator('.sva-charts > .sva-r .sva-action').click();
     await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
       "Pearson's product-moment correlation",
       { timeout: 150000 }
     );
-    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-action')).toHaveText(
-      'R started'
-    );
+    await expect(page.locator('.sva-charts > .sva-r .sva-chip')).toHaveText('R ready▾');
     expect(requests).toContain(new URL('/_site/demo/statistics.R', page.url()).href);
     expect(errors).toEqual([]);
   });
@@ -366,7 +362,7 @@ test.describe('docs site', () => {
   // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
   // check is laid out"). Prettier would re-indent the whole test to fit the tag.
   // prettier-ignore
-  test('APP-RBQM-031: the built demo page carries the RBQM tab with its Experimental badge and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)', { tag: '@real-r' }, async ({
+  test('APP-RBQM-031: the built demo page carries the RBQM tab, which says it is Experimental on the corner of its view, and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)', { tag: '@real-r' }, async ({
     page
   }) => {
     // It downloads R and some forty packages, then runs every workflow.
@@ -394,13 +390,23 @@ test.describe('docs site', () => {
     await page.evaluate('window.__safetyVizApp.ready');
     const tab = page.locator('.sva-tab[data-tab="rbqm"]');
     await expect(tab.locator('.sva-tab-title')).toHaveText('RBQM');
-    await expect(tab.locator('.sva-badge')).toHaveText('Experimental');
+    await expect(tab.locator('.sva-badge')).toHaveCount(0);
     await page.locator('.sva-item[data-view="data"]').click();
     await page.locator('.sva-side select.sva-study').selectOption('rbqm');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
     await tab.click();
-    await expect(page.locator('.sva-rbqm-status')).toContainText(
-      'It downloads about 55 MB, once: R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) and gsm’s packages from this page (about 2 MB).'
+    await expect(page.locator('.sva-corner .sv-status-word')).toHaveText('Experimental');
+    await expect(page.locator('.sva-corner .sv-status-tip')).toHaveText(
+      'Experimental: new in 1.10. R runs in the browser, and what the tab shows may still change.',
+      { useInnerText: false }
+    );
+    await expect(page.locator('.sva-rbqm-status')).toHaveText(
+      'Site metrics need R. Start R, at the top right.'
+    );
+    // What starting R downloads, and from where, is on the control (#280).
+    await expect(page.locator('.sva-charts > .sva-r .sva-r-row')).toHaveAttribute(
+      'title',
+      'Site metrics need R. Start R to run them: about 55 MB, downloaded once from webr.r-wasm.org, repo.r-wasm.org and this page. The study’s data stays in this browser.'
     );
     // Shown, not pressed: nothing is asked of R's hosts, nor of the page for R's files or the charts.
     expect(requests.filter((url) => /r-wasm|pipeline\.R|\.yaml$|gsm\.viz\.js/.test(url))).toEqual(
@@ -411,6 +417,9 @@ test.describe('docs site', () => {
       timeout: 360000
     });
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    // A metric's page, from its item in the tab's row (#279).
+    await page.locator('.sva-view-item[data-item="kri0001"]').click();
+    await expect(page).toHaveURL(/#rbqm\/kri0001$/);
     await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
     await expect(tab.locator('.sva-tab-count')).toHaveText('8 of 8');
     // Each came from where the page as built serves it.
@@ -601,6 +610,160 @@ test.describe('docs site', () => {
     expect((await page.request.get('/_site/demo/renamed/dm.csv')).ok()).toBe(true);
     expect((await page.request.get('/_site/demo/rbqm/Raw_LB.csv')).ok()).toBe(true);
     expect(errors).toEqual([]);
+  });
+
+  // The status label on the docs site (#275, obot.roadmap#403): one chart of each
+  // rung in use.
+  const RUNGS = [
+    ['histogram', 'Exploratory', 'solid', 'Safety Histogram is exploratory', null],
+    [
+      'time-to-event',
+      'Experimental',
+      'dashed',
+      'Time-to-Event Explorer is experimental',
+      'Experimental until an external clinical review confirms its Kaplan–Meier estimates.'
+    ],
+    [
+      'patient-journey-explorer',
+      'Prototype',
+      'dotted',
+      'Patient Journey Explorer is a prototype',
+      null
+    ]
+  ];
+  const statusOf = (scope) => scope.locator('.sv-status');
+  const outline = (label) =>
+    label
+      .locator('.sv-status-label')
+      .evaluate((element) => getComputedStyle(element).borderTopStyle);
+
+  test('APP-TIER-024: every gallery card shows its chart’s rung with the status label, and a click opens its panel over the cards beside it: the four rungs, the chart’s own marked and, below Exploratory, its reason; no pill remains (#275)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/_site/index.html');
+    const available = config.renderers.filter((renderer) => renderer.status === 'available');
+    await expect(page.locator('.card .sv-status')).toHaveCount(available.length);
+    await expect(page.locator('.site-badge')).toHaveCount(0);
+    await expect(page.locator('.sv-status-label[data-tier="qualified"]')).toHaveCount(0);
+    for (const [module, word, border, heading, reason] of RUNGS) {
+      const card = page.locator('.card', { has: page.locator(`a[href="${module}/index.html"]`) });
+      const label = statusOf(card);
+      await expect(label.locator('.sv-status-word'), module).toHaveText(word);
+      expect(await outline(label), module).toBe(border);
+      const panel = label.locator('.sv-status-panel');
+      await expect(panel, module).toBeHidden();
+      await label.locator('.sv-status-label').click();
+      await expect(panel, module).toBeVisible();
+      await expect(panel.getByRole('heading'), module).toHaveText(heading);
+      await expect(panel.locator('.sv-status-step'), module).toHaveCount(4);
+      await expect(panel.locator('.sv-status-here .sv-status-rung'), module).toHaveText(word);
+      await expect(panel.locator('.sv-status-mark'), module).toHaveText(['This chart']);
+      if (reason) await expect(panel.locator('.sv-status-text').first(), module).toHaveText(reason);
+      // The panel is not clipped by its card: all of it can be clicked, to its last line.
+      const [inside, around] = [await panel.boundingBox(), await card.boundingBox()];
+      expect(inside.width, module).toBeGreaterThan(300);
+      expect(inside.y + inside.height, module).toBeGreaterThan(around.y);
+      await panel.getByRole('link', { name: 'What each rung means' }).click({ trial: true });
+      if (module === 'time-to-event') {
+        await page.screenshot({
+          path: 'test-results/evidence-preview/site/APP-TIER-024-gallery-label-panel.png'
+        });
+      }
+      // Opening the next closes this one; Escape closes the last.
+    }
+    await expect(page.locator('.sv-status-panel:visible')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.sv-status-panel:visible')).toHaveCount(0);
+  });
+
+  test('APP-TIER-025: the title of each of a chart’s pages shows its rung with the status label, on the demo, evidence, API and guide pages, and a click opens its panel; the kit page’s note carries the Time-to-Event Explorer’s (#275)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    for (const [module, word, border, heading, reason] of RUNGS) {
+      const renderer = config.renderers.find((entry) => entry.module === module);
+      const pages = [
+        'index.html',
+        'evidence.html',
+        'api.html',
+        ...(renderer.guide ? ['guide.html'] : [])
+      ];
+      for (const file of pages) {
+        const where = `${module}/${file}`;
+        await page.goto(`/_site/${where}`);
+        const label = statusOf(page.locator('h1'));
+        await expect(label, where).toHaveCount(1);
+        await expect(label.locator('.sv-status-word'), where).toHaveText(word);
+        expect(await outline(label), where).toBe(border);
+        await expect(page.locator('.site-badge'), where).toHaveCount(0);
+        await label.locator('.sv-status-label').click();
+        const panel = label.locator('.sv-status-panel');
+        await expect(panel, where).toBeVisible();
+        await expect(panel.getByRole('heading'), where).toHaveText(heading);
+        if (reason)
+          await expect(panel.locator('.sv-status-text').first(), where).toHaveText(reason);
+        // The panel is set in its own type, not the title's.
+        expect(
+          await panel
+            .locator('.sv-status-meaning')
+            .first()
+            .evaluate((element) => parseFloat(getComputedStyle(element).fontSize)),
+          where
+        ).toBeLessThan(15);
+        await page.keyboard.press('Escape');
+        await expect(panel, where).toBeHidden();
+      }
+    }
+    // A chart below Exploratory still says so itself on its demo page, where no host shows a label for it.
+    await page.goto('/_site/hep-waterfall/index.html');
+    await expect(page.locator('.sv-main > .sv-status-row .sv-status-word')).toHaveText(
+      'Experimental'
+    );
+    // The kit page's one conditional member carries the chart's label.
+    await page.goto('/_site/kit/index.html');
+    const followed = statusOf(page.locator('.kit-status'));
+    await expect(followed.locator('.sv-status-word')).toHaveText('Experimental');
+    await followed.locator('.sv-status-label').click();
+    await expect(followed.getByRole('heading')).toHaveText(
+      'Time-to-Event Explorer is experimental'
+    );
+    await expect(page.locator('.site-badge')).toHaveCount(0);
+  });
+
+  test('APP-TIER-026: at 390 pixels a gallery card’s label and a page title’s label are on screen, and each panel opens inside the window with nothing running off the page (#275)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    for (const [where, scope] of [
+      ['index.html', '.card:has(a[href="time-to-event/index.html"])'],
+      ['time-to-event/index.html', 'h1'],
+      ['patient-journey-explorer/evidence.html', 'h1']
+    ]) {
+      await page.goto(`/_site/${where}`);
+      const label = statusOf(page.locator(scope));
+      await label.locator('.sv-status-label').scrollIntoViewIfNeeded();
+      const pillBox = await label.locator('.sv-status-label').boundingBox();
+      expect(pillBox.x, where).toBeGreaterThanOrEqual(0);
+      expect(pillBox.x + pillBox.width, where).toBeLessThanOrEqual(390);
+      expect(await overflow(), where).toBeLessThanOrEqual(0);
+      await label.locator('.sv-status-label').click();
+      const panel = label.locator('.sv-status-panel');
+      await expect(panel, where).toBeVisible();
+      const box = await panel.boundingBox();
+      expect(box.x, where).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, where).toBeLessThanOrEqual(390);
+      expect(await overflow(), where).toBeLessThanOrEqual(0);
+      if (where === 'time-to-event/index.html') {
+        await page.screenshot({
+          path: 'test-results/evidence-preview/site/APP-TIER-026-phone-title-label-panel.png'
+        });
+      }
+      await panel.getByRole('button', { name: 'Close' }).click();
+      await expect(panel, where).toBeHidden();
+    }
   });
 
   test('gallery shows one card per available renderer (#7)', async ({ page }) => {

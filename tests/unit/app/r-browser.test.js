@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   WEBR_BASE_URL,
   WEBR_VERSION,
@@ -352,6 +352,60 @@ describe('letting go of R (#258)', () => {
     expect(count(webR, 'close')).toBe(1);
     await connection.run('rbqm_run');
     expect(count(webR, 'new')).toBe(2);
+  });
+
+  it('APP-R-048: closing never waits on R: an R that stopped answering while it started is closed at once, the run that was waiting on it is left to itself, and the next run starts another; an R that was still being fetched is never made (#261)', async () => {
+    // An R whose start never comes back.
+    const webR = standIn();
+    const stuck = [];
+    const importWebR = async (url) => {
+      const imported = await webR.importWebR(url);
+      class Stuck extends imported.WebR {
+        init() {
+          stuck.push(this);
+          // The first never answers; one made after it does.
+          return stuck.length === 1 ? new Promise(() => {}) : super.init();
+        }
+      }
+      return { ...imported, WebR: Stuck };
+    };
+    const connection = createConnection({ ...options(webR), importWebR });
+    let answered = false;
+    connection.run('rbqm_run').then(() => (answered = true));
+    await vi.waitFor(() => expect(stuck).toHaveLength(1));
+    // Closing settles though R has not answered, and R's worker is closed.
+    await connection.close();
+    expect(count(webR, 'close')).toBe(1);
+    expect(answered).toBe(false);
+    // The next run starts another R, which answers.
+    expect((await connection.run('rbqm_run')).status).toBe('ok');
+    expect(count(webR, 'new')).toBe(2);
+    await connection.close();
+    expect(count(webR, 'close')).toBe(2);
+
+    // Closed while R itself was still being fetched: no R is made when it arrives.
+    const late = standIn();
+    let arrive;
+    const fetching = new Promise((resolve) => (arrive = resolve));
+    const slow = createConnection({
+      ...options(late),
+      importWebR: async (url) => {
+        await fetching;
+        return late.importWebR(url);
+      }
+    });
+    const first = slow.run('rbqm_run');
+    await slow.close();
+    arrive();
+    expect(await first).toEqual({
+      status: 'unavailable',
+      reason: 'load-failed',
+      message: 'R was closed while it was starting'
+    });
+    expect(count(late, 'new')).toBe(0);
+    // And the connection still starts R when asked again.
+    expect((await slow.run('rbqm_run')).status).toBe('ok');
+    expect(count(late, 'new')).toBe(1);
   });
 
   it('APP-RBQM-052: an R that was started and could not be made ready, a package not installed or a file not read, is closed before the connection answers that R did not start', async () => {

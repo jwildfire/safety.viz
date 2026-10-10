@@ -52,13 +52,31 @@ test.describe('safety.viz hep-waterfall module', () => {
     expect(page._hwfErrors).toEqual([]);
   });
 
-  test('HWF-CFG-001: the chart carries an Experimental banner saying it may change (#97, #165)', async ({
+  test('HWF-CFG-001: drawn alone, with no host around it, the chart carries its status label: Experimental, with its reason on hover and in a panel on a click, and no banner (#97, #165, #274)', async ({
     page
   }) => {
-    const banner = page.locator('.sv-main .sv-experimental');
-    await expect(banner).toHaveCount(1);
-    await expect(banner).toContainText('Experimental');
-    await expect(banner).toContainText('may change');
+    const label = page.locator('.sv-main > .sv-status-row .sv-status');
+    await expect(label).toHaveCount(1);
+    const pill = label.locator('.sv-status-label');
+    await expect(pill.locator('.sv-status-word')).toHaveText('Experimental');
+    expect(await pill.evaluate((element) => getComputedStyle(element).borderTopStyle)).toBe(
+      'dashed'
+    );
+    const reason =
+      'Experimental: a new chart, drawn from a 2025 paper; its layout and settings may still change.';
+    await pill.hover();
+    await expect(pill.locator('.sv-status-tip')).toBeVisible();
+    await expect(pill.locator('.sv-status-tip')).toHaveText(reason);
+    await pill.click();
+    const panel = label.locator('.sv-status-panel');
+    await expect(panel).toBeVisible();
+    await expect(panel.getByRole('heading')).toHaveText('Hepatic ALT Waterfall is experimental');
+    await expect(panel.locator('.sv-status-text').nth(0)).toHaveText(reason);
+    await expect(panel.locator('.sv-status-mark')).toHaveText(['This chart']);
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    // The banners the label replaced are gone.
+    await expect(page.locator('.sv-main .sv-experimental')).toHaveCount(0);
     await expect(page.locator('.sv-main .sv-prototype')).toHaveCount(0);
   });
 

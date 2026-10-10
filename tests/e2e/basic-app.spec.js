@@ -1124,13 +1124,19 @@ const sideAction = (page, name) => page.locator(`.sva-side [data-action="${name}
 // statistics are unavailable. The sentence is bio.viz's own.
 // Since R on request (#183) the hosted app hands the charts a connection that
 // waits for the reader, so until R is started each line says statistics need
-// R and what starting it downloads (APP-R-006).
+// R, in one short sentence that points at the control; the control's own
+// sentence, on hover, says what starting R downloads (APP-R-006, #276).
 // Since the copy of bio.viz was made again (#212, obot.roadmap#367) there are
 // five: the cross-tabulation is listed, and the group comparison has three
 // levels: trend tiles, one biomarker over time, and one visit.
-const NO_R =
-  'Statistics need R. Start R to compute them: it downloads about 13 MB, once, from ' +
-  'webr.r-wasm.org, and the study’s data stays in this browser.';
+const NO_R = 'Statistics need R. Start R, at the top right.';
+const NEED_R_TITLE =
+  'Statistics need R. Start R to compute them: about 13 MB, downloaded once from ' +
+  'webr.r-wasm.org. The study’s data stays in this browser.';
+// The R control, at the right end of the chart-name row (#276), and its parts.
+const rControl = (page) => page.locator('.sva-charts > .sva-r');
+const rChip = (page) => rControl(page).locator('.sva-chip.sva-r-ready');
+const rPanel = (page) => page.locator('.sva-header .sva-r-panel');
 
 // The pilot demo study's own rows, read here as the tests' side of every count
 // the charts print. Neither file quotes a field.
@@ -1536,6 +1542,10 @@ test.describe('demo app with the biomarker charts', () => {
 // there against a stand-in that records what is asked and here against real R.
 const R_HOST = /webr\.r-wasm\.org|statistics\.R/;
 const NEED_R = NO_R;
+const R_DOWNLOAD_FAILED =
+  'The browser could not download R from webr.r-wasm.org. Check the connection, or whether ' +
+  'this network blocks that address, and try again. The charts still draw; only the ' +
+  'statistics are missing.';
 const expectedStatistics = JSON.parse(
   readFileSync(new URL('./../fixtures/app-statistics/expected.json', import.meta.url), 'utf8')
 );
@@ -1611,8 +1621,10 @@ test.describe('demo app with R on request', () => {
       ).toBeVisible();
     }
     await tab(page, 'biomarkers').click();
+    await expect(rControl(page)).toHaveAttribute('data-phase', 'off');
+    await expect(rControl(page).locator('.sva-r-say')).toHaveText('Statistics need R');
     await expect(page.locator('.sva-action')).toHaveText('Start R');
-    await expect(page.locator('.sva-action')).toHaveAttribute('title', NEED_R);
+    await expect(page.locator('.sva-action')).toHaveAttribute('title', NEED_R_TITLE);
     expect(requests.filter((url) => R_HOST.test(url))).toEqual([]);
     expect(await page.evaluate(() => window.__rConnections)).toBe(0);
     expect(errors).toEqual([]);
@@ -1631,17 +1643,14 @@ test.describe('demo app with R on request', () => {
     });
     await openOnDemo(page);
     await tab(page, 'biomarkers').click();
-    await expect(page.locator('.sva-action-hint')).toHaveText('About 13 MB, once');
+    await expect(rControl(page).locator('.sva-r-meta')).toHaveText('13 MB, once');
     // Pressed on the trend tiles, which ask R for nothing: R starts all the
     // same, and the control says so, then that it is running.
     await openAndStartR(page);
-    await expect(page.locator('.sva-action')).toHaveText('Starting R…');
-    await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
-    await expect(page.locator('.sva-action')).toBeDisabled();
-    await expect(page.locator('.sva-action')).toHaveAttribute(
-      'title',
-      'R is running in this browser.'
-    );
+    await expect(rControl(page)).toHaveAttribute('data-phase', /starting|ready/);
+    await expect(rChip(page)).toHaveText('R ready▾', { timeout: 150000 });
+    // A chip, and no button: no greyed "R started" pill is left in the row.
+    await expect(page.locator('.sva-action')).toHaveCount(0);
     expect(transferred).toBeGreaterThan(10e6);
     expect(await page.evaluate(() => window.__rAnswers)).toEqual([]);
     // The walk the requests were recorded on, now with real R. What each step
@@ -1753,7 +1762,7 @@ test.describe('demo app with R on request', () => {
     await openOnDemo(page);
     await openChart(page, 'group-comparison');
     await page.locator('.sva-action').click();
-    await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
+    await expect(rChip(page)).toBeVisible({ timeout: 150000 });
     // Every statistics line the open chart prints from here on is recorded.
     await page.evaluate(() => {
       window.__lines = [];
@@ -1856,7 +1865,7 @@ test.describe('demo app with R on request', () => {
     await correct(page);
     await openChart(page, 'group-comparison');
     await page.locator('.sva-action').click();
-    await expect(page.locator('.sva-action')).toHaveText('R started', { timeout: 150000 });
+    await expect(rChip(page)).toBeVisible({ timeout: 150000 });
     await biomarkerControl(page).selectOption({ index: 1 });
     // The biomarker opens across its visits, and R's p-value is under each (#212).
     await expect(
@@ -1939,12 +1948,28 @@ test.describe('demo app with R on request', () => {
     await biomarkerControl(page).selectOption({ label: expectedStatistics.measure });
     await page.locator('.sva-action').click();
     const action = page.locator('.sva-action');
-    await expect(action).toHaveText('Try R again', { timeout: 60000 });
+    await expect(action).toHaveText('Try again', { timeout: 60000 });
     await expect(action).toBeEnabled();
-    await expect(action).toHaveAttribute(
-      'title',
-      /^R did not start: .* Try again; if it fails again, reload the page\.$/
+    // The failure state every tab that starts R shows (#277): the words, in
+    // the alarm colour, Try again beside them, and no raw error in that line.
+    await expect(rControl(page)).toHaveAttribute('data-phase', 'failed');
+    await expect(rControl(page).locator('.sva-r-row')).toHaveText('R did not startTry againWhy▾');
+    await expect(rControl(page).locator('.sva-r-say')).toHaveCSS('color', 'rgb(162, 66, 58)');
+    // The reason is one click away, and what the browser said is behind a
+    // disclosure inside it.
+    await expect(rPanel(page)).toHaveCount(0);
+    await rControl(page).locator('.sva-r-why').click();
+    await expect(rPanel(page).locator('.sva-r-heading')).toHaveText('R did not start');
+    await expect(rPanel(page).locator(':scope > .sva-r-text')).toHaveText(R_DOWNLOAD_FAILED);
+    await expect(rPanel(page).locator('.sva-r-more summary')).toHaveText('What the browser said');
+    await expect(rPanel(page).locator('.sva-r-more .sva-r-text')).toBeHidden();
+    await rPanel(page).locator('.sva-r-more summary').click();
+    await expect(rPanel(page).locator('.sva-r-more .sva-r-text')).toHaveText(
+      /^The browser said: .*webr\.r-wasm\.org.*\.$/
     );
+    await captureEvidence(page.locator('.sva-header'), 'APP-R-018', 'r-did-not-start');
+    await page.keyboard.press('Escape');
+    await expect(rPanel(page)).toHaveCount(0);
     await settled(page, 30000);
     await expect(
       page.locator('.sva-chart .bv-statistic').filter({ hasText: 'R did not start' }).first()
@@ -1978,7 +2003,7 @@ test.describe('demo app with R on request', () => {
     await openOnDemo(page);
     await openChart(page, 'association-scatter');
     await page.locator('.sva-action').click();
-    await expect(page.locator('.sva-action')).toHaveText('Try R again', { timeout: 150000 });
+    await expect(page.locator('.sva-action')).toHaveText('Try again', { timeout: 150000 });
     await settled(page, 30000);
     await expect(page.locator('.sva-chart .bv-statistic')).toContainText('R did not start');
     const first = { all: rRequests(requests).length, webr: webrImports(requests).length };
@@ -1995,8 +2020,204 @@ test.describe('demo app with R on request', () => {
     expect(rRequests(requests)).toHaveLength(first.all);
     // Trying again makes one fresh start: the statistics file is asked for once more.
     await page.locator('.sva-action').click();
-    await expect(page.locator('.sva-action')).toHaveText('Try R again', { timeout: 150000 });
-    expect(requests.filter((url) => /statistics\.R/.test(url))).toHaveLength(2);
+    await expect(rControl(page)).toHaveAttribute('data-phase', 'failed', { timeout: 150000 });
+    await expect
+      .poll(() => requests.filter((url) => /statistics\.R/.test(url)).length, { timeout: 150000 })
+      .toBe(2);
+    await expect(page.locator('.sva-action')).toHaveText('Try again', { timeout: 150000 });
+  });
+
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-R-051: the R control is at the right end of the chart-name row, outside the names that scroll; before a press it reads its reason, its cost and Start R; a press shows a spinner and a count of seconds, then a chip saying R is ready, and the chip opens R’s version, how long it took, the download and where R runs (#276)', { tag: '@real-r' }, async ({
+    page
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openOnDemo(page);
+    await openChart(page, 'cross-tab');
+    const control = rControl(page);
+    // In the row, after the names, and not among them: it does not scroll with them.
+    await expect(page.locator('.sva-group .sva-r')).toHaveCount(0);
+    const boxes = async () => {
+      const [row, names, own] = await Promise.all(
+        ['.sva-charts', '.sva-group:not([hidden])', '.sva-charts > .sva-r'].map((selector) =>
+          page.locator(selector).boundingBox()
+        )
+      );
+      return { row, names, own };
+    };
+    const off = await boxes();
+    expect(off.own.x).toBeGreaterThanOrEqual(off.names.x + off.names.width);
+    expect(off.own.x + off.own.width).toBeLessThanOrEqual(off.row.x + off.row.width);
+    expect(off.row.x + off.row.width - (off.own.x + off.own.width)).toBeLessThan(40);
+    await expect(control.locator('.sva-r-row')).toHaveText('Statistics need R13 MB, onceStart R');
+    await expect(control.locator('.sva-r-row')).toHaveAttribute('title', NEED_R_TITLE);
+    // The line inside the chart is one short sentence, which points at the control.
+    await expect(page.locator('.sva-chart .bv-statistic').first()).toHaveText(NO_R);
+    await captureEvidence(page.locator('.sva-header'), 'APP-R-051', 'r-control-off');
+    await control.locator('.sva-action').click();
+    // A spinner and seconds while it starts; R is quick, so either is seen.
+    await expect(control).toHaveAttribute('data-phase', /starting|ready/);
+    if ((await control.getAttribute('data-phase')) === 'starting') {
+      await expect(control.locator('.sva-r-meta')).toHaveText(/^13 MB · \d+ s$/);
+    }
+    await expect(rChip(page)).toHaveText('R ready▾', { timeout: 150000 });
+    await expect(rChip(page)).toHaveAttribute('aria-expanded', 'false');
+    await expect(page.locator('.sva-charts .sva-action')).toHaveCount(0);
+    // The statistic appears, with nothing drawn again.
+    await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText('Chi-squared', {
+      timeout: 60000
+    });
+    // The chip opens the details, under the row and inside the window.
+    await rChip(page).click();
+    await expect(rChip(page)).toHaveAttribute('aria-expanded', 'true');
+    const panel = rPanel(page);
+    await expect(panel.locator('.sva-r-heading')).toHaveText('R is running in this browser');
+    await expect(panel.locator('dt')).toHaveText(['Version', 'Started', 'Downloaded', 'Your data']);
+    const said = await panel.locator('dd').allTextContents();
+    // R said its own version; the page knew the runtime's.
+    expect(said[0]).toMatch(/^R \d+\.\d+\.\d+, on webR \d+\.\d+\.\d+$/);
+    expect(said[1]).toMatch(/^in \d+(\.\d)? seconds?$/);
+    expect(said.slice(2)).toEqual([
+      '13 MB, once, from webr.r-wasm.org',
+      'stays in this browser; R runs here'
+    ]);
+    const place = await panel.boundingBox();
+    expect(place.x + place.width).toBeLessThanOrEqual(1280);
+    expect(place.y).toBeGreaterThan(off.row.y);
+    // How long R took differs from run to run, so that one line is covered in the picture.
+    await captureEvidence(page, 'APP-R-051', 'r-control-ready-details', {
+      clip: { x: 0, y: 0, width: 1280, height: 420 },
+      mask: [panel.locator('dd').nth(1)],
+      maskColor: '#e4e6e3'
+    });
+    // The cross closes it and the keyboard goes back to the chip; Escape closes it too.
+    await panel.locator('.sva-r-x').click();
+    await expect(panel).toHaveCount(0);
+    await expect(rChip(page)).toBeFocused();
+    await rChip(page).click();
+    await page.keyboard.press('Escape');
+    await expect(rPanel(page)).toHaveCount(0);
+    // Another biomarker chart: the chip is still there, and R is not started again.
+    await item(page, 'association-scatter').click();
+    await expect(rChip(page)).toHaveText('R ready▾');
+    // A tab whose charts ask R for nothing has no control.
+    await tab(page, 'bds').click();
+    await expect(page.locator('.sva-charts > .sva-r')).toHaveCount(0);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-052: at a 390-pixel viewport the control is first in the chart-name row and stays in view while the names scroll under it; it starts R, becomes the chip, and its details open inside the window; the page is never wider than the window (#276)', async ({
+    page
+  }) => {
+    test.setTimeout(240000);
+    const errors = watchErrors(page);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openOnDemo(page);
+    await tab(page, 'biomarkers').click();
+    await item(page, 'cross-tab').click();
+    const control = rControl(page);
+    const wide = () => page.evaluate(() => document.documentElement.scrollWidth);
+    const inView = async (locator) => {
+      const box = await locator.boundingBox();
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(390);
+      return box;
+    };
+    // First in the row, with its cost and its button; the reason is the line in the chart.
+    const first = await inView(control);
+    expect(first.x).toBeLessThan(2);
+    await expect(control.locator('.sva-r-say')).toBeHidden();
+    await expect(control.locator('.sva-r-meta')).toHaveText('13 MB, once');
+    await expect(page.locator('.sva-chart .bv-statistic').first()).toHaveText(
+      'Statistics need R. Start R, above.'
+    );
+    // The open chart's name is clear of it, and scrolling the names leaves it where it is.
+    const open = await item(page, 'cross-tab').boundingBox();
+    expect(open.x).toBeGreaterThanOrEqual(first.x + first.width);
+    await page.locator('.sva-charts').evaluate((row) => (row.scrollLeft = row.scrollWidth));
+    expect((await control.boundingBox()).x).toBeLessThan(2);
+    expect(await wide()).toBeLessThanOrEqual(390);
+    await captureEvidence(page, 'APP-R-052', 'r-control-390-off', {
+      clip: { x: 0, y: 0, width: 390, height: 300 }
+    });
+    await control.locator('.sva-action').click();
+    await expect(rChip(page)).toBeVisible({ timeout: 150000 });
+    await inView(rChip(page));
+    await rChip(page).click();
+    await inView(rPanel(page));
+    await expect(rPanel(page).locator('dt')).toHaveText([
+      'Version',
+      'Started',
+      'Downloaded',
+      'Your data'
+    ]);
+    expect(await wide()).toBeLessThanOrEqual(390);
+    await captureEvidence(page, 'APP-R-052', 'r-control-390-details', {
+      clip: { x: 0, y: 0, width: 390, height: 420 },
+      mask: [rPanel(page).locator('dd').nth(1)],
+      maskColor: '#e4e6e3'
+    });
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-053: with R’s hosts blocked, the Biomarkers tab and the RBQM tab say the same thing: "R did not start", in the alarm colour, with Try again beside it, the reason one click away and what the browser said behind a disclosure; no raw error is in the first line (#277)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(240000);
+    await context.route(/r-wasm\.org/, (route) => route.abort());
+    await openOnDemo(page);
+    const read = async (control, panel) => {
+      await expect(control).toHaveAttribute('data-phase', 'failed', { timeout: 120000 });
+      const line = await control.locator('.sva-r-row').textContent();
+      const colour = await control
+        .locator('.sva-r-say')
+        .evaluate((node) => getComputedStyle(node).color);
+      await expect(panel).toHaveCount(0);
+      await control.locator('.sva-r-why').click();
+      const heading = await panel.locator('.sva-r-heading').textContent();
+      const reason = await panel.locator(':scope > .sva-r-text').textContent();
+      await expect(panel.locator('.sva-r-more .sva-r-text')).toBeHidden();
+      await panel.locator('.sva-r-more summary').click();
+      const browser = await panel.locator('.sva-r-more .sva-r-text').textContent();
+      return { line, colour, heading, reason, browser };
+    };
+    await openChart(page, 'cross-tab');
+    await rControl(page).locator('.sva-action').click();
+    const biomarkers = await read(rControl(page), rPanel(page));
+    await page.keyboard.press('Escape');
+    await rbqmTab(page).click();
+    await rbqmStart(page).click();
+    // The RBQM tab's control is the same one, in the same place (#280).
+    const rbqm = await read(rControl(page), rPanel(page));
+    await captureEvidence(page, 'APP-R-053', 'rbqm-r-host-blocked');
+    await page.keyboard.press('Escape');
+    // The same first line, the same colour and the same heading on both tabs.
+    expect(biomarkers.line).toBe('R did not startTry againWhy▾');
+    expect(rbqm.line).toBe(biomarkers.line);
+    expect(rbqm.colour).toBe(biomarkers.colour);
+    expect(biomarkers.colour).toBe('rgb(162, 66, 58)');
+    expect(rbqm.heading).toBe('R did not start');
+    expect(biomarkers.heading).toBe('R did not start');
+    // One plain reason, in the same sentence; each tab ends it with what it has lost.
+    const frame =
+      'The browser could not download R from webr.r-wasm.org. Check the connection, or whether this network blocks that address, and try again. ';
+    expect(biomarkers.reason).toBe(
+      `${frame}The charts still draw; only the statistics are missing.`
+    );
+    expect(rbqm.reason).toBe(`${frame}No metric was run.`);
+    // What the browser said is there for a reader who asks, and nowhere else.
+    for (const said of [biomarkers, rbqm]) {
+      expect(said.browser).toMatch(/^The browser said: .*webr\.r-wasm\.org/);
+      expect(said.line).not.toMatch(/fetch|import|module|http/i);
+      expect(said.reason).not.toMatch(/Failed to fetch|dynamically imported/);
+    }
+    await expect(rbqmStart(page)).toHaveText('Try again');
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('no R');
   });
 
   test('APP-R-008: a second biomarker chart opened after R has started uses the same R: no second connection and no second download (#183)', async ({
@@ -2247,7 +2468,10 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'load')).toHaveText('4 files loaded');
     await expect(step(page, 'map')).toHaveAttribute('data-state', 'current');
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 6 needed by a chart');
-    await expect(stepStatus(page, 'open')).toHaveText('12 of 18 charts ready');
+    // The RBQM tab's count sits beside the charts' (#281): this study has no site column.
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '12 of 18 charts ready · 0 of 8 RBQM metrics'
+    );
     await captureEvidence(page, 'APP-LOAD-017', 'sidebar');
 
     await correct(page);
@@ -2255,7 +2479,9 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 0 needed by a chart');
     await expect(step(page, 'map')).toHaveAttribute('data-state', 'done');
     await expect(step(page, 'open')).toHaveAttribute('data-state', 'current');
-    await expect(stepStatus(page, 'open')).toHaveText('18 of 18 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '18 of 18 charts ready · 0 of 8 RBQM metrics'
+    );
     await sideAction(page, 'open-chart').click();
     await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
@@ -2333,7 +2559,11 @@ test.describe('demo app data view sidebar', () => {
     await expect(stepStatus(page, 'map')).toHaveText(
       'Nothing to map: gsm’s raw files are kept as they are'
     );
-    await expect(stepStatus(page, 'open')).toHaveText('0 of 18 charts ready');
+    // No chart reads them: the third step leads to the tab that runs them (#281).
+    await expect(step(page, 'open').locator('.sva-step-title')).toHaveText('Open the RBQM tab');
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '8 of 8 metrics supported · 0 of 18 charts ready'
+    );
     await expect(item(page, 'data').locator('.sva-tag')).toHaveText('RBQM study');
     // On a phone the nine cards and the sidebar fit the screen's width.
     await page.setViewportSize({ width: 390, height: 844 });
@@ -2344,7 +2574,10 @@ test.describe('demo app data view sidebar', () => {
     // The pilot study replaces it whole.
     await menu.selectOption('pilot');
     await expect(page.locator('.sva-file.sva-raw')).toHaveCount(0);
-    await expect(stepStatus(page, 'open')).toHaveText('18 of 18 charts ready');
+    await expect(step(page, 'open').locator('.sva-step-title')).toHaveText('Open a chart');
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '18 of 18 charts ready · 3 of 8 RBQM metrics'
+    );
     expect(errors).toEqual([]);
   });
 
@@ -2384,7 +2617,9 @@ test.describe('demo app data view sidebar', () => {
     await menu.selectOption('liver');
     await expect(page.locator('.sva-loaded-name')).toHaveText(['adbds-abnbl.csv']);
     await expect(stepStatus(page, 'load')).toHaveText('1 file loaded');
-    await expect(stepStatus(page, 'open')).toHaveText('13 of 18 charts ready');
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '13 of 18 charts ready · 0 of 8 RBQM metrics'
+    );
     await expect(page.locator('.sva-tab .sva-tab-count')).toHaveText([
       '8 of 9',
       '0',
@@ -2603,16 +2838,67 @@ const WEBR_FILES_FOR_PACKAGES = [
 const rbqmTab = (page) => page.locator('.sva-tab[data-tab="rbqm"]');
 const rbqmStatus = (page) => page.locator('.sva-rbqm-status');
 const rbqmStart = (page) => page.locator('.sva-rbqm-start');
-const rbqmChoice = (page, id) => page.locator(`.sva-rbqm-choice[data-metric="${id}"]`);
-const RBQM_NEED =
-  'Start R to run gsm’s workflows on the 9 loaded raw files. It downloads about 55 MB, once: ' +
-  'R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) ' +
-  'and gsm’s packages from this page (about 2 MB). The files stay in this browser, and R runs here.';
-// What the tab says on the study the app opens with, the one the other charts use (#253).
-const PILOT_NEED = RBQM_NEED.replace(
-  'the 9 loaded raw files',
-  'the loaded study’s adsl.csv and adae.csv'
-);
+// The tab's own row (#279): Overview, then one item for each metric.
+const rbqmOverview = (page) => page.locator('.sva-view-item[data-item=""]');
+const rbqmChoice = (page, id) => page.locator(`.sva-view-item[data-item="${id}"]`);
+const rbqmItems = (page) => page.locator('.sva-view-items .sva-view-item');
+// Its R control, at the right end of that row (#280), and the panel behind its chip.
+const rbqmControl = (page) => page.locator('.sva-charts > .sva-r');
+const rbqmChip = (page) => rbqmControl(page).locator('.sva-chip.sva-r-ready');
+const rbqmPanel = (page) => page.locator('.sva-header .sva-r-panel');
+// Run details, read from the panel, which is opened if it is closed: its
+// opening sentence, and under each heading what is listed there, a step with
+// its note and a term with what is said of it each as one line.
+async function runDetails(page) {
+  if (!(await rbqmPanel(page).count())) await rbqmChip(page).click();
+  await expect(rbqmPanel(page)).toBeVisible();
+  return rbqmPanel(page).evaluate((panel) => {
+    const line = (node) =>
+      [...node.children].length
+        ? [...node.children]
+            .map((part) => part.textContent.trim())
+            .filter(Boolean)
+            .join(' ')
+        : node.textContent.trim();
+    const sections = {};
+    for (const heading of panel.querySelectorAll('.sva-r-title')) {
+      const lines = [];
+      for (let next = heading.nextElementSibling; next; next = next.nextElementSibling) {
+        if (next.matches('.sva-r-title')) break;
+        if (next.matches('dl')) {
+          const terms = [...next.querySelectorAll('dt')];
+          lines.push(
+            ...terms.map((term) => `${term.textContent}: ${term.nextElementSibling.textContent}`)
+          );
+        } else if (next.matches('ol, ul')) lines.push(...[...next.children].map(line));
+        else lines.push(next.textContent.trim());
+      }
+      sections[heading.textContent] = lines;
+    }
+    return {
+      heading: panel.querySelector('.sva-r-heading').textContent,
+      text: [...panel.querySelectorAll(':scope > .sva-r-text')].map((node) => node.textContent),
+      sections,
+      actions: [...panel.querySelectorAll('.sva-r-actions button')].map((node) => node.textContent)
+    };
+  });
+}
+// The one line the tab opens on before R is started (#280), on any study.
+const RBQM_NEED = 'Site metrics need R. Start R, at the top right.';
+const PILOT_NEED = RBQM_NEED;
+// What the control's own sentence says, on hover: what starting R downloads, and from where.
+const RBQM_NEED_TITLE =
+  'Site metrics need R. Start R to run them: about 55 MB, downloaded once from ' +
+  'webr.r-wasm.org, repo.r-wasm.org and this page. The study’s data stays in this browser.';
+// The six steps from the press to the first result, as the body lists them.
+const RBQM_STEPS = [
+  'Downloading R',
+  'Installing R packages',
+  'Fetching gsm’s workflow files',
+  'Loading gsm’s packages, the long one',
+  'Reading the study',
+  'Running the workflows'
+];
 // A site's row of the overview table is keyed by the site's ID, the first word of its label.
 const overviewRows = (page) =>
   page.evaluate(() =>
@@ -2648,6 +2934,7 @@ const sidewaysScroll = (page) =>
 const onDisk = (file) => fileURLToPath(new URL(`../../${file}`, import.meta.url));
 const OWN_SUBJ = onDisk('site/data/rbqm/Raw_SUBJ.csv');
 const OWN_AE = onDisk('site/data/rbqm/Raw_AE.csv');
+const OWN_PD = onDisk('site/data/rbqm/Raw_PD.csv');
 const OWN_NOTES = onDisk('tests/e2e/fixtures/app/site_notes.csv');
 const NOTES_UNPLACED =
   'site_notes.csv is not recognised: its name and its columns match no gsm raw domain.';
@@ -2660,8 +2947,27 @@ function withoutAColumn(testInfo) {
   writeFileSync(written, files['Raw_AE.csv']);
   return written;
 }
-const rbqmFiles = (page) => page.locator('.sva-rbqm-files');
-const rbqmSupport = (page, id) => page.locator(`.sva-rbqm-support li[data-metric="${id}"]`);
+// Every file comes in on the Data tab (#282): its one chooser takes gsm's raw
+// files too, and one card there says what the loaded data supports (#281).
+async function chooseOnDataTab(page, files) {
+  await item(page, 'data').click();
+  await page.locator('.sva-file-input').setInputFiles(files);
+}
+const supportCard = (page) => page.locator('.sva-data .sva-support[data-support="rbqm"]');
+const supportSay = (page) => supportCard(page).locator('.sva-support-say');
+const rawTags = (page) => page.locator('.sva-file.sva-raw .sva-tag');
+// What the card says of each metric before R is started: its id, whether the
+// loaded data supports it, and for one it does not R's sentence saying why.
+const saidOnCard = (page) =>
+  supportCard(page).evaluate((card) => {
+    const reasons = [...card.querySelectorAll('.sva-support-why li')].map(
+      (node) => node.textContent
+    );
+    return [...card.querySelectorAll('.sva-support-items li')].map((node) => {
+      const can = node.dataset.state !== 'cannot';
+      return [node.dataset.item, can, can ? '' : reasons.shift()];
+    });
+  });
 
 async function openRbqm(page, query = '') {
   await page.goto(`/tests/e2e/fixtures/basic-app.html${query}`);
@@ -2690,7 +2996,7 @@ test.describe('demo app: the RBQM tab', () => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
 
-  test('APP-RBQM-018: the RBQM tab follows the domains’ tabs with its Experimental badge; before Start R is pressed it says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235)', async ({
+  test('APP-RBQM-018: the RBQM tab follows the domains’ tabs and carries no pill of its own; before Start R is pressed it says in one line that site metrics need R and what the loaded study supports, its control says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235, #280)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -2705,34 +3011,16 @@ test.describe('demo app: the RBQM tab', () => {
       'Biomarkers',
       'RBQM'
     ]);
-    await expect(rbqmTab(page).locator('.sva-badge')).toHaveText('Experimental');
-    await expect(rbqmTab(page).locator('.sva-badge')).toHaveAttribute(
-      'title',
-      'Still being worked on, and fine to use: its behaviour and settings may change.'
-    );
-    // At this width the header has no room for the word on one line, so the tab
-    // says it on hover and its view carries the badge; from 1,340 pixels the
-    // tab shows it, and on a phone, where the tabs scroll.
-    await expect(rbqmTab(page).locator('.sva-badge')).toBeHidden();
-    await expect(rbqmTab(page)).toHaveAttribute(
-      'title',
-      'Experimental: Still being worked on, and fine to use: its behaviour and settings may change.'
-    );
-    for (const [width, shown] of [
-      [1440, true],
-      [390, true],
-      [1280, false]
-    ]) {
+    // The tab says its status once, on the corner of its view (#274): no pill
+    // in the tab, and no word that only a hover shows.
+    await expect(rbqmTab(page).locator('.sva-badge')).toHaveCount(0);
+    await expect(rbqmTab(page)).not.toHaveAttribute('title', /.+/);
+    // The header's bar is one line at a desktop's width, with the tab in it.
+    for (const width of [1440, 1280]) {
       await page.setViewportSize({ width, height: 800 });
-      await expect(rbqmTab(page).locator('.sva-badge')).toBeVisible({ visible: shown });
-      // The header's bar is one line at a desktop's width, with the tab in it.
-      if (width > 760) {
-        expect(
-          await page.evaluate(
-            () => document.querySelector('.sva-bar').getBoundingClientRect().height
-          )
-        ).toBeLessThan(60);
-      }
+      expect(
+        await page.evaluate(() => document.querySelector('.sva-bar').getBoundingClientRect().height)
+      ).toBeLessThan(60);
     }
     await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('not run');
     // On the study the page opens with, the tab says what the press costs and
@@ -2740,20 +3028,33 @@ test.describe('demo app: the RBQM tab', () => {
     await rbqmTab(page).click();
     await expect(page).toHaveURL(/#rbqm$/);
     await expect(page.locator('.sva-title')).toHaveText('RBQM');
-    await expect(page.locator('.sva-charts')).toBeHidden();
+    // The tab has a row like every other tab's (#279), with its control at the end.
+    await expect(page.locator('.sva-charts')).toBeVisible();
     await expect(rbqmStatus(page)).toHaveText(PILOT_NEED);
+    await expect(page.locator('.sva-rbqm-supports')).toHaveText(
+      'The loaded study supports 3 of 8 metrics. Change the data on the Data tab.'
+    );
+    await expect(rbqmControl(page).locator('.sva-r-row')).toHaveText(
+      'Site metrics need R55 MB, onceStart R'
+    );
+    await expect(rbqmControl(page).locator('.sva-r-row')).toHaveAttribute('title', RBQM_NEED_TITLE);
     await expect(rbqmStart(page)).toBeEnabled();
+    // No run box is left in the body.
+    await expect(page.locator('.sva-content .sva-rbqm-start, .sva-rbqm-run')).toHaveCount(0);
     // With the RBQM study loaded it says what the press costs.
     await item(page, 'data').click();
     await page.locator('.sva-side select.sva-study').selectOption('rbqm');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
     await rbqmTab(page).click();
     await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
+    await expect(page.locator('.sva-rbqm-supports')).toHaveText(
+      'The loaded study supports 8 of 8 metrics. Change the data on the Data tab.'
+    );
     await expect(rbqmStart(page)).toHaveText('Start R');
     await expect(rbqmStart(page)).toBeEnabled();
-    await expect(page.locator('.sva-rbqm-lede .sva-badge')).toBeVisible();
-    await expect(page.locator('.sva-rbqm-lede .sva-badge')).toHaveText('Experimental');
-    await expect(page.locator('.sva-rbqm-results')).toHaveCount(0);
+    await expect(page.locator('.sva-rbqm .sva-badge')).toHaveCount(0);
+    await expect(page.locator('.sva-corner .sv-status-word')).toHaveText('Experimental');
+    await expect(page.locator('.sva-rbqm-table')).toHaveCount(0);
     // Nothing has been asked of R's hosts, and nothing of R's has been fetched from the page.
     await page.waitForLoadState('networkidle');
     expect(requests.filter((url) => /r-wasm\.org/.test(url))).toEqual([]);
@@ -2763,36 +3064,59 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-019: from the press to the first result the tab says what R is doing at every step: downloading R, installing its packages, fetching the workflow files, reading the pipeline, loading the packages and running the workflows; its control cannot be pressed meanwhile, and its tab says R is starting, then running (#235)', async ({
+  test('APP-RBQM-019: from the press to the first result the tab says what R is doing at every step: the control names the step, fills one of six segments and counts, the body ticks off the six steps, only one of which is called the long one, and the metrics that will run turn in the row; nothing can be pressed meanwhile, and the tab says R is starting, then running (#235, #280)', async ({
     page
   }) => {
     const errors = watchErrors(page);
     await openRbqm(page, '?rbqm=recorded&slow');
     await rbqmStart(page).click();
     const letGo = () => page.evaluate(() => window.__rbqmLetGo());
-    const steps = [
-      'Starting R: downloading R itself, about 13 MB from webr.r-wasm.org. 0 seconds so far.',
-      'Starting R: installing its packages, about 40 MB from repo.r-wasm.org and about 2 MB from this page. This is the longest step. 0 seconds so far.',
-      'Starting R: fetching gsm’s workflow files from this page. 0 seconds so far.',
-      'Starting R: reading the pipeline’s R. 0 seconds so far.'
+    // What the connection reports, and the step of the six each is part of:
+    // fetching the workflow files and reading the pipeline's R are one step.
+    const moments = [
+      [1, 'Downloading R', 'starting'],
+      [2, 'Installing R packages', 'starting'],
+      [3, 'Fetching gsm’s workflow files', 'starting'],
+      [3, 'Fetching gsm’s workflow files', 'starting'],
+      [4, 'Loading gsm’s packages', 'starting'],
+      [5, 'Reading the study', 'running'],
+      [6, 'Running the workflows', 'running']
     ];
-    for (const step of steps) {
-      await expect(rbqmStatus(page)).toHaveText(step);
-      await expect(rbqmStart(page)).toHaveText('Starting R…');
-      await expect(rbqmStart(page)).toBeDisabled();
-      await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('starting');
+    await expect(page.locator('.sva-rbqm-steps li')).toHaveText(RBQM_STEPS);
+    for (const [index, name, tag] of moments) {
+      await expect(rbqmControl(page)).toHaveAttribute('data-phase', 'starting');
+      await expect(rbqmControl(page).locator('.sva-r-say')).toHaveText(`${index} of 6 · ${name}`);
+      await expect(rbqmControl(page).locator('.sva-segs')).toHaveAttribute(
+        'aria-label',
+        `Step ${index} of 6`
+      );
+      await expect(rbqmControl(page).locator('.sva-segs i')).toHaveCount(6);
+      // Counted on the tab's own clock, which stands still on this page.
+      await expect(rbqmControl(page).locator('.sva-r-meta')).toHaveText('0 s');
+      // The body: the steps before are done, this one is under way, the rest are to come.
+      expect(
+        await page
+          .locator('.sva-rbqm-steps li')
+          .evaluateAll((items) => items.map((item) => item.dataset.state))
+      ).toEqual(
+        RBQM_STEPS.map((_, at) => (at + 1 < index ? 'done' : at + 1 === index ? 'now' : 'todo'))
+      );
+      await expect(rbqmStatus(page)).toHaveText(
+        tag === 'running'
+          ? 'R is running the metrics. They appear here when it is done.'
+          : 'R is starting. The metrics run by themselves when it is ready.'
+      );
+      // Nothing to press: the control is a spinner, and every metric is turning.
+      await expect(page.locator('.sva-charts .sva-action')).toHaveCount(0);
+      await expect(rbqmItems(page).locator('.sva-ico-running')).toHaveCount(8);
+      await expect(rbqmChoice(page, 'kri0001')).toHaveAttribute(
+        'aria-label',
+        'Adverse Event Rate: running'
+      );
+      await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText(tag);
+      if (index === 2) await captureEvidence(page, 'APP-RBQM-019', 'rbqm-tab-running');
       await letGo();
     }
-    await expect(rbqmStatus(page)).toHaveText(
-      'R has started. Loading gsm’s packages in R; the database they query with takes the longest. 0 seconds so far.'
-    );
-    await letGo();
-    await expect(rbqmStatus(page)).toHaveText(
-      'Running gsm’s workflows on the 9 loaded files: the mappings, then each metric, then the reporting tables. 0 seconds so far.'
-    );
-    await expect(rbqmStart(page)).toHaveText('Running…');
-    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('running');
-    await letGo();
     await expect(rbqmStatus(page)).toHaveText(/^R ran 8 of 8 metrics on the 9 loaded files/);
     await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('8 of 8');
     // R was asked three things, in this order, and once each.
@@ -2804,7 +3128,7 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-020: the tab draws what R returned with gsm.viz: the site overview with a row per site and a column per metric, and the chosen metric’s scatter plot and bar chart; each of the eight metrics in turn draws both, from a metric’s button or from a cell of the overview, and R is not asked again (#235)', async ({
+  test('APP-RBQM-020: the tab draws what R returned with gsm.viz, one page at a time: the site overview with a row per site and a column per metric, or one metric’s scatter plot and bar chart; each of the eight metrics in turn draws both, from its item in the row or from a cell of the overview, and R is not asked again (#235, #279)', async ({
     page
   }) => {
     test.setTimeout(MANY_CHARTS);
@@ -2821,11 +3145,28 @@ test.describe('demo app: the RBQM tab', () => {
       'Amber Flags',
       ...whole.Metrics.map((metric) => metric.Abbreviation)
     ]);
-    await expect(page.locator('.sva-rbqm-choice')).toHaveCount(8);
+    // The Overview page holds the table and no chart; no buttons choose a metric in the body.
+    await expect(rbqmOverview(page)).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-rbqm canvas')).toHaveCount(0);
+    await expect(page.locator('.sva-content .sva-rbqm-choice, .sva-rbqm-metrics')).toHaveCount(0);
+    await expect(rbqmItems(page)).toHaveText([
+      'Overview',
+      ...whole.Metrics.map((metric) => metric.Abbreviation)
+    ]);
     for (const metric of whole.Metrics) {
       await rbqmChoice(page, metric.ID).click();
-      await expect(rbqmChoice(page, metric.ID)).toHaveAttribute('aria-pressed', 'true');
+      await expect(rbqmChoice(page, metric.ID)).toHaveAttribute('aria-current', 'page');
+      await expect(rbqmChoice(page, metric.ID)).toHaveAttribute(
+        'aria-label',
+        `${metric.Metric}: ran`
+      );
+      await expect(page).toHaveURL(new RegExp(`#rbqm/${metric.ID}$`));
       await expect(page.locator('.sva-rbqm-metric-name')).toHaveText(metric.Metric);
+      await expect(page.locator('.sva-rbqm-metric .sva-rbqm-count')).toHaveText(
+        `${metric.Abbreviation}, ran`
+      );
+      // A metric's page holds its two charts and nothing else: no table.
+      await expect(page.locator('.sva-rbqm-table')).toHaveCount(0);
       const canvases = page.locator('.sva-rbqm-figures canvas');
       await expect(canvases).toHaveCount(2);
       for (const index of [0, 1]) {
@@ -2837,6 +3178,8 @@ test.describe('demo app: the RBQM tab', () => {
       'Point size is relative to the number of enrolled participants.'
     );
     // A cell of the overview opens its metric: the first site's serious adverse events.
+    await rbqmOverview(page).click();
+    await expect(page).toHaveURL(/#rbqm$/);
     await page
       .locator('.sva-rbqm-table tbody tr')
       .first()
@@ -2844,7 +3187,9 @@ test.describe('demo app: the RBQM tab', () => {
       .nth(1)
       .click();
     await expect(page.locator('.sva-rbqm-metric-name')).toHaveText('Serious Adverse Event Rate');
-    await expect(rbqmChoice(page, 'kri0002')).toHaveAttribute('aria-pressed', 'true');
+    await expect(rbqmChoice(page, 'kri0002')).toHaveAttribute('aria-current', 'page');
+    await expect(page).toHaveURL(/#rbqm\/kri0002$/);
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
     expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([
       'Sys.time',
       'rbqm_attach',
@@ -2855,37 +3200,58 @@ test.describe('demo app: the RBQM tab', () => {
     await rbqmTab(page).click();
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
     expect(await page.evaluate(() => window.__rbqmSteps)).toHaveLength(3);
-    await page.setViewportSize({ width: 1280, height: 1400 });
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await captureEvidence(page, 'APP-RBQM-020', 'rbqm-tab');
     await rbqmChoice(page, 'kri0001').click();
     await expect.poll(() => inked(page.locator('.sva-rbqm-figures canvas').nth(1))).toBe(true);
-    await captureEvidence(page, 'APP-RBQM-020', 'rbqm-tab');
+    await captureEvidence(page, 'APP-RBQM-020', 'rbqm-metric');
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-022: a metric that did not run shows R’s sentence saying why in place of its charts, and with no Groups table the overview still has a row for every site R scored and the tab says what is missing (#235)', async ({
+  test('APP-RBQM-022: a metric that did not run is in the row with a grey bar, and its page is R’s sentence saying why with the way to the data in place of its charts; with no Groups table the overview still has a row for every site R scored and Run details says what is missing (#235, #279)', async ({
     page
   }) => {
     const errors = watchErrors(page);
     await openRbqm(page, '?rbqm=recorded');
-    // Two files of the reader's own, chosen on the tab: they take the demo
-    // study's place, and the page says so.
-    await page.locator('.sva-rbqm-input').setInputFiles([OWN_SUBJ, OWN_AE]);
+    // Two files of the reader's own, chosen on the Data tab (#282): they take
+    // the demo study's place, and the page says so.
+    await chooseOnDataTab(page, [OWN_SUBJ, OWN_AE]);
+    await expect(page.locator('.sva-loaded-name')).toHaveText(['Raw_SUBJ.csv', 'Raw_AE.csv']);
+    await rbqmTab(page).click();
     await expect(page.locator('.sva-content > .sva-notes .sva-note')).toHaveText([
       'The demo study (RBQM study) was cleared to load your files.'
     ]);
-    await expect(rbqmStatus(page)).toContainText('on the 2 loaded raw files');
+    await expect(page.locator('.sva-rbqm-supports')).toHaveText(
+      'The loaded files support 2 of 8 metrics. Change the data on the Data tab.'
+    );
+    // Before R the row already says which metrics the files cannot support.
+    const states = () =>
+      rbqmItems(page).evaluateAll((items) => items.slice(1).map((node) => node.dataset.state));
+    expect(await states()).toEqual(['todo', 'todo', ...Array(6).fill('cannot')]);
     await rbqmStart(page).click();
-    await expect(rbqmStatus(page)).toHaveText(/^R ran 2 of 8 metrics on the 2 loaded files/);
+    await expect(rbqmStatus(page)).toHaveText(
+      /^R ran 2 of 8 metrics on the 2 loaded files in [\d.]+ seconds?\. The other 6 need data it does not have: change the data on the Data tab\. Run details$/
+    );
     await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('2 of 8');
-    await expect(page.locator('.sva-rbqm-choice .sva-tag')).toHaveText([
-      'ran',
-      'ran',
-      ...Array(6).fill('did not run')
-    ]);
+    expect(await states()).toEqual(['ran', 'ran', ...Array(6).fill('cannot')]);
+    await expect(rbqmItems(page).locator('.sva-ico-ran')).toHaveCount(2);
+    await expect(rbqmItems(page).locator('.sva-ico-cannot')).toHaveCount(6);
+    // The mark of one that did not run is grey: missing data is not an error.
+    await expect(rbqmChoice(page, 'kri0012').locator('.sva-ico')).toHaveCSS(
+      'color',
+      'rgb(139, 147, 157)'
+    );
     const two = tabExpected.partial['two-files'];
     for (const entry of two.status.filter((metric) => metric.state !== 'ran')) {
       await rbqmChoice(page, entry.id).click();
+      await expect(rbqmChoice(page, entry.id)).toHaveAttribute(
+        'aria-label',
+        `${entry.metric}: did not run`
+      );
       await expect(page.locator('.sva-rbqm-metric-name')).toHaveText(entry.metric);
+      await expect(page.locator('.sva-rbqm-metric .sva-rbqm-count')).toHaveText(
+        `${entry.abbreviation}, did not run`
+      );
       await expect(page.locator('.sva-rbqm-why')).toHaveText(entry.message);
       await expect(page.locator('.sva-rbqm-figures')).toHaveCount(0);
       await expect(page.locator('.sva-rbqm-metric canvas')).toHaveCount(0);
@@ -2893,13 +3259,36 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(page.locator('.sva-rbqm-why')).toHaveText(
       'Screen Failure Rate needs Raw_ENROLL.csv, which is not loaded.'
     );
-    // What R said beside its tables, and what the overview then lacks.
-    await expect(page.locator('.sva-rbqm-notes .sva-note')).toHaveText([
+    // The way to the data is the Data tab, where every file comes in (#282):
+    // the RBQM tab has no place to load one.
+    await expect(
+      page.locator('.sva-view input[type="file"], .sva-view .sva-drop, .sva-view details')
+    ).toHaveCount(0);
+    await page.locator('.sva-rbqm-whybox .sva-rbqm-data').click();
+    await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-data .sva-drop')).toBeInViewport();
+    await expect(supportSay(page)).toHaveText('This data supports 2 of 8 metrics.');
+    // Nothing was loaded there, so back on the tab R's answer stands.
+    await rbqmTab(page).click();
+    await rbqmOverview(page).click();
+    await expect(rbqmOverview(page)).toHaveAttribute('aria-current', 'page');
+    // What R said beside its tables, and what the overview then lacks, are in Run details.
+    const details = await runDetails(page);
+    expect(details.sections.Notes).toEqual([
       ...two.notes,
       two.groups.message,
-      'With no Groups table, the overview names each site by its ID alone and shows no enrolment.'
+      'With no Groups table, the overview names each site by its ID alone and shows no enrolment.',
+      'The demo study (RBQM study) was cleared to load your files.'
     ]);
+    expect(details.sections['Did not run']).toEqual(
+      two.status.filter((metric) => metric.state !== 'ran').map((metric) => metric.message)
+    );
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.sva-content .sva-notes')).toHaveCount(0);
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(148);
+    await expect(page.locator('.sva-rbqm-headrow .sva-rbqm-count')).toHaveText(
+      '148 sites, 12 shown here'
+    );
     await expect(page.locator('.sva-rbqm-table thead th')).toHaveText([
       'Group',
       'Red Flags',
@@ -2911,63 +3300,441 @@ test.describe('demo app: the RBQM tab', () => {
     await rbqmChoice(page, 'kri0001').click();
     await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
     await expect(page.locator('.sva-rbqm-caption')).toHaveCount(0);
-    await page.setViewportSize({ width: 390, height: 844 });
     await rbqmChoice(page, 'kri0012').click();
+    await captureEvidence(page, 'APP-RBQM-022', 'metric-did-not-run-1280');
+    await page.setViewportSize({ width: 390, height: 844 });
     expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
     await captureEvidence(page.locator('.sva-rbqm-metric'), 'APP-RBQM-022', 'metric-did-not-run');
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-023: at a 390-pixel viewport the tab does not scroll sideways before the press, while R starts or with the results drawn, and the overview table and both charts fit the width (#235)', async ({
+  test('APP-RBQM-023: at a 390-pixel viewport the tab does not scroll sideways before the press, while R starts or with the results drawn; its row scrolls under the R control as any other tab’s does, the overview table and both charts fit the width, and the table’s headings are at least 10 pixels (#235, #278, #279)', async ({
     page
   }) => {
     const errors = watchErrors(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await openRbqm(page, '?rbqm=recorded');
     expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    // The row: the control first and in view, the nine items scrolling under it.
+    const control = await rbqmControl(page).boundingBox();
+    expect(control.x).toBeLessThan(2);
+    expect(control.x + control.width).toBeLessThanOrEqual(390);
+    expect(
+      await page.locator('.sva-charts').evaluate((row) => row.scrollWidth > row.clientWidth)
+    ).toBe(true);
+    for (const one of await rbqmItems(page).all()) {
+      expect((await one.boundingBox()).height).toBeGreaterThanOrEqual(44);
+    }
+    await rbqmChoice(page, 'kri0012').scrollIntoViewIfNeeded();
+    expect((await rbqmControl(page).boundingBox()).x).toBeLessThan(2);
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
     await rbqmStart(page).click();
-    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
-    await expect.poll(() => inked(page.locator('.sva-rbqm-figures canvas').nth(1))).toBe(true);
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
     expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
     // The table fits its box: nothing of it is off to the side.
     const table = await page
       .locator('.sva-rbqm-table')
       .evaluate((node) => ({ inner: node.scrollWidth, box: node.clientWidth }));
     expect(table.inner).toBeLessThanOrEqual(table.box);
+    // Its headings are at least 10 pixels (#278).
+    const headings = await page
+      .locator('.sva-rbqm-table thead th')
+      .evaluateAll((cells) => cells.map((cell) => parseFloat(getComputedStyle(cell).fontSize)));
+    expect(Math.min(...headings)).toBeGreaterThanOrEqual(10);
+    await captureEvidence(page, 'APP-RBQM-023', 'rbqm-tab-390');
+    // Run details opens inside the window.
+    await rbqmChip(page).click();
+    const panel = await rbqmPanel(page).boundingBox();
+    expect(panel.x).toBeGreaterThanOrEqual(0);
+    expect(panel.x + panel.width).toBeLessThanOrEqual(390);
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    await page.keyboard.press('Escape');
+    await rbqmChoice(page, 'kri0001').click();
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    await expect.poll(() => inked(page.locator('.sva-rbqm-figures canvas').nth(1))).toBe(true);
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
     for (const box of await page.locator('.sva-rbqm-figures canvas').all()) {
       const { x, width } = await box.boundingBox();
       expect(x).toBeGreaterThanOrEqual(0);
       expect(x + width).toBeLessThanOrEqual(390);
     }
-    await captureEvidence(page, 'APP-RBQM-023', 'rbqm-tab-390');
     await page.locator('.sva-rbqm-metric').scrollIntoViewIfNeeded();
     await captureEvidence(page.locator('.sva-rbqm-metric'), 'APP-RBQM-023', 'rbqm-charts-390');
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-024: when R does not start the tab says so and why and offers to try again; when R stops during the run it says R stopped and why, and offers to run again (#235)', async ({
+  test('APP-RBQM-024: when R does not start the tab’s control says so and why and offers to try again, and the body says no metric was run; when R stops during the run they say R stopped and why, and offer to run again (#235, #280)', async ({
     page
   }) => {
     const errors = watchErrors(page);
     await openRbqm(page, '?rbqm=recorded');
     await page.evaluate(() => (window.__rbqmFails = 'start'));
     await rbqmStart(page).click();
+    // The same failure state as the Biomarkers tab's (#277), in the same place,
+    // the row's control (#280): the same words, Try again beside them, and the
+    // reason one click away.
+    const failed = rbqmControl(page);
+    await expect(failed).toHaveAttribute('data-phase', 'failed');
+    await expect(failed.locator('.sva-r-row')).toHaveText('R did not startTry againWhy▾');
     await expect(rbqmStatus(page)).toHaveText(
-      'R did not start: Failed to fetch. Try again; if it fails again, reload the page.'
+      'R did not start, so no metric was run. Try again, at the top right.'
     );
-    await expect(rbqmStart(page)).toHaveText('Try R again');
+    await expect(rbqmStatus(page)).toHaveCSS('color', 'rgb(162, 66, 58)');
+    await expect(page.locator('.sva-rbqm-run')).toHaveCount(0);
+    await expect(page.locator('.sva-rbqm-steps')).toHaveCount(0);
+    await expect(rbqmStart(page)).toHaveText('Try again');
+    // No metric is left turning: each is back to what the files support.
+    await expect(rbqmItems(page).locator('.sva-ico-running')).toHaveCount(0);
+    await expect(rbqmItems(page).locator('.sva-ico-todo')).toHaveCount(8);
+    await failed.locator('.sva-r-why').click();
+    const reason = rbqmPanel(page);
+    await expect(reason.locator(':scope > .sva-r-text')).toHaveText(
+      'The browser could not download R from webr.r-wasm.org. Check the connection, or whether this network blocks that address, and try again. No metric was run.'
+    );
+    await expect(reason.locator('.sva-r-more .sva-r-text')).toBeHidden();
+    await reason.locator('.sva-r-more summary').click();
+    await expect(reason.locator('.sva-r-more .sva-r-text')).toHaveText(
+      'The browser said: Failed to fetch.'
+    );
+    await captureEvidence(page, 'APP-RBQM-024', 'rbqm-r-did-not-start');
+    await page.keyboard.press('Escape');
     await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('no R');
-    await expect(page.locator('.sva-rbqm-results')).toHaveCount(0);
+    await expect(page.locator('.sva-rbqm-table')).toHaveCount(0);
     await page.evaluate(() => (window.__rbqmFails = 'run'));
     await rbqmStart(page).click();
+    await expect(failed.locator('.sva-r-row')).toHaveText('R stoppedRun againWhy▾');
     await expect(rbqmStatus(page)).toHaveText(
-      'R stopped while running the workflows: Error in rbqm_run: something gave way.'
+      'R stopped, so there are no results. Run again, at the top right.'
     );
+    await failed.locator('.sva-r-why').click();
+    await expect(rbqmPanel(page).locator(':scope > .sva-r-text')).toHaveText(
+      'R stopped while it was running gsm’s workflows, so there are no results. Run again; if it stops again, reload the page.'
+    );
+    await rbqmPanel(page).locator('.sva-r-more summary').click();
+    await expect(rbqmPanel(page).locator('.sva-r-more .sva-r-text')).toHaveText(
+      'R said: Error in rbqm_run: something gave way.'
+    );
+    await page.keyboard.press('Escape');
     await expect(rbqmStart(page)).toHaveText('Run again');
     await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('stopped');
     await page.evaluate(() => (window.__rbqmFails = null));
     await rbqmStart(page).click();
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    expect(errors).toEqual([]);
+  });
+
+  // The site overview's measurements at 1,280 pixels (#278): each column's
+  // width, the table's box against its card, and the rows the box shows.
+  const overviewMeasured = (page) =>
+    page.evaluate(() => {
+      const box = document.querySelector('.sva-rbqm-table');
+      const card = document.querySelector('.sva-rbqm-page');
+      const style = getComputedStyle(card);
+      const edge = box.getBoundingClientRect();
+      const border = parseFloat(getComputedStyle(box).borderBottomWidth);
+      const rows = [...box.querySelectorAll('tbody tr')].map((row) => row.getBoundingClientRect());
+      const inView = rows.filter((row) => row.top < edge.bottom - border - 1);
+      return {
+        columns: [...box.querySelectorAll('thead th')]
+          .slice(1)
+          .map((cell) => cell.getBoundingClientRect().width),
+        table: box.querySelector('table').getBoundingClientRect().width,
+        box: edge.width,
+        inside: card.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+        hidden: box.scrollWidth - box.clientWidth,
+        rows: rows.length,
+        inView: inView.length,
+        // How far the last row in view ends from the foot of the box: nothing, when it is whole.
+        cut: inView.at(-1).bottom - (edge.bottom - border)
+      };
+    });
+
+  test('APP-RBQM-070: at 1,280 pixels the site overview is fitted to its numbers: on the study the app opens with, no number or flag column is wider than 100 pixels and the table is narrower than its card; on the RBQM study, with eight metrics, the table fits its card with nothing off to the side; the heading counts the sites and how many show, the last row in view is whole, and the key to the flags is shown (#278)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    await rbqmTab(page).click();
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
+    const pilot = await overviewMeasured(page);
+    // Enrolled, the two flag counts and three metrics.
+    expect(pilot.columns).toHaveLength(6);
+    for (const width of pilot.columns) expect(width).toBeLessThanOrEqual(100.5);
+    expect(pilot.table).toBeLessThan(pilot.inside - 100);
+    expect(pilot.box).toBeLessThan(pilot.inside);
+    expect(pilot.hidden).toBeLessThanOrEqual(0);
+    expect([pilot.rows, pilot.inView]).toEqual([17, 12]);
+    expect(Math.abs(pilot.cut)).toBeLessThanOrEqual(1);
+    await expect(page.locator('.sva-rbqm-headrow h2, .sva-rbqm-headrow h3').first()).toHaveText(
+      'Site overview'
+    );
+    await expect(page.locator('.sva-rbqm-headrow .sva-rbqm-count')).toHaveText(
+      '17 sites, 12 shown here'
+    );
+    // The key is beside the table, where the card has room for it.
+    const key = page.locator('.sva-rbqm-key');
+    await expect(key).toBeVisible();
+    await expect(key.locator('li')).toHaveText([
+      'within limits',
+      'amber flag: high, or low when it points down',
+      'red flag: high, or low when it points down',
+      'no score, so no flag'
+    ]);
+    await expect(key.locator('li svg')).toHaveCount(4);
+    const [keyBox, tableBox] = [
+      await key.boundingBox(),
+      await page.locator('.sva-rbqm-table').boundingBox()
+    ];
+    expect(keyBox.x).toBeGreaterThanOrEqual(tableBox.x + tableBox.width);
+    // The rest of the sites are a scroll away, inside the table's own box.
+    await page.locator('.sva-rbqm-table').evaluate((box) => box.scrollTo(0, box.scrollHeight));
+    await expect(page.locator('.sva-rbqm-table tbody tr').last()).toBeInViewport();
+    await page.locator('.sva-rbqm-table').evaluate((box) => box.scrollTo(0, 0));
+    await captureEvidence(page, 'APP-RBQM-070', 'overview-fitted-pilot');
+
+    // The RBQM study: eight metrics, 150 sites.
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+    await rbqmTab(page).click();
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    const whole = await overviewMeasured(page);
+    expect(whole.columns).toHaveLength(11);
+    for (const width of whole.columns) expect(width).toBeLessThanOrEqual(100.5);
+    expect(whole.box).toBeLessThanOrEqual(whole.inside);
+    expect(whole.hidden).toBeLessThanOrEqual(0);
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    expect([whole.rows, whole.inView]).toEqual([150, 12]);
+    expect(Math.abs(whole.cut)).toBeLessThanOrEqual(1);
+    await expect(page.locator('.sva-rbqm-headrow .sva-rbqm-count')).toHaveText(
+      '150 sites, 12 shown here'
+    );
+    await expect(key).toBeVisible();
+    await captureEvidence(page, 'APP-RBQM-070', 'overview-fitted-rbqm');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-071: at 1,280 pixels the RBQM tab has a row of its own: Overview and one item for each metric, each with a mark for its state and a name a screen reader says in full, "Adverse Event Rate: ran"; with eight metrics the row fits beside the R control and does not scroll; on the study the app opens with, the five metrics it cannot support are marked so before R, as ones that cannot run, and after, as ones that did not; the body holds no button that chooses a metric (#279)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const named = () =>
+      rbqmItems(page).evaluateAll((items) =>
+        items.map((node) => [
+          node.textContent,
+          node.getAttribute('aria-label'),
+          [...(node.querySelector('svg') || { classList: [] }).classList].find((name) =>
+            name.startsWith('sva-ico-')
+          ) || null
+        ])
+      );
+    const fits = async () => {
+      const row = await page
+        .locator('.sva-charts')
+        .evaluate((node) => ({ inner: node.scrollWidth, box: node.clientWidth }));
+      expect(row.inner).toBeLessThanOrEqual(row.box);
+      // Every item, and the control after the last of them, on one line.
+      const control = await rbqmControl(page).boundingBox();
+      const last = await rbqmItems(page).last().boundingBox();
+      expect(last.x + last.width).toBeLessThanOrEqual(control.x);
+      expect(Math.abs(last.y + last.height / 2 - (control.y + control.height / 2))).toBeLessThan(
+        control.height
+      );
+      expect(control.x + control.width).toBeLessThanOrEqual(1280);
+    };
+
+    // The study the app opens with: three metrics it supports, five it cannot.
+    await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    await rbqmTab(page).click();
+    const { status } = pilotExpected.answer;
+    expect(await named()).toEqual([
+      ['Overview', null, null],
+      ...status.map((entry) => [
+        entry.abbreviation,
+        `${entry.metric}: ${entry.state === 'ran' ? 'not started' : 'cannot run'}`,
+        entry.state === 'ran' ? 'sva-ico-todo' : 'sva-ico-cannot'
+      ])
+    ]);
+    await expect(rbqmOverview(page)).toHaveAttribute('aria-current', 'page');
+    await fits();
+    await captureEvidence(page, 'APP-RBQM-071', 'rbqm-row-before-r');
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
+    expect(await named()).toEqual([
+      ['Overview', null, null],
+      ...status.map((entry) => [
+        entry.abbreviation,
+        `${entry.metric}: ${entry.state === 'ran' ? 'ran' : 'did not run'}`,
+        entry.state === 'ran' ? 'sva-ico-ran' : 'sva-ico-cannot'
+      ])
+    ]);
+    // A mark is decoration: the state is in the item's name.
+    await expect(rbqmItems(page).locator('svg[aria-hidden="true"]')).toHaveCount(8);
+    await expect(rbqmChoice(page, 'kri0001').locator('.sva-ico')).toHaveCSS(
+      'color',
+      'rgb(95, 158, 69)'
+    );
+    await fits();
+    // No buttons for choosing a metric are left in the body.
+    await expect(page.locator('.sva-content button[data-metric]')).toHaveCount(0);
+    await captureEvidence(page, 'APP-RBQM-071', 'rbqm-row-pilot');
+
+    // The RBQM study: all eight run.
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+    await rbqmTab(page).click();
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    expect(await named()).toEqual([
+      ['Overview', null, null],
+      ...tabExpected.whole.Metrics.map((metric) => [
+        metric.Abbreviation,
+        `${metric.Metric}: ran`,
+        'sva-ico-ran'
+      ])
+    ]);
+    await fits();
+    await captureEvidence(page, 'APP-RBQM-071', 'rbqm-row-rbqm');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-072: a link to a metric’s address opens the tab on that metric: before R it is that metric’s page saying R is needed, one press then draws its two charts with no further choice; the address follows the row, and an address typed over it opens the metric it names, or the Overview when it names none (#279)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded#rbqm/kri0002');
+    await page.evaluate(`${APP}.ready`);
+    await expect(rbqmTab(page)).toHaveAttribute('aria-pressed', 'true');
+    await expect(rbqmChoice(page, 'kri0002')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-rbqm-metric-name')).toHaveText('Serious Adverse Event Rate');
+    await expect(page.locator('.sva-rbqm-metric .sva-rbqm-count')).toHaveText('SAE, not started');
+    await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
+    await expect(page.locator('.sva-rbqm-table')).toHaveCount(0);
+    // One press, and the metric the link named is drawn.
+    await rbqmStart(page).click();
+    const canvases = page.locator('.sva-rbqm-figures canvas');
+    await expect(canvases).toHaveCount(2);
+    await expect.poll(() => inked(canvases.nth(0))).toBe(true);
+    await expect.poll(() => inked(canvases.nth(1))).toBe(true);
+    await expect(page.locator('.sva-rbqm-metric .sva-rbqm-count')).toHaveText('SAE, ran');
+    await expect(page).toHaveURL(/#rbqm\/kri0002$/);
+    // The address follows the row, and the page follows an address typed over it.
+    await rbqmChoice(page, 'kri0001').click();
+    await expect(page).toHaveURL(/#rbqm\/kri0001$/);
+    await rbqmOverview(page).click();
+    await expect(page).toHaveURL(/#rbqm$/);
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
+    await page.evaluate(() => (window.location.hash = '#rbqm/kri0001'));
+    await expect(page.locator('.sva-rbqm-metric-name')).toHaveText('Adverse Event Rate');
+    await expect(rbqmChoice(page, 'kri0001')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    // A metric the study cannot support, by its address.
+    await page.evaluate(() => (window.location.hash = '#rbqm/kri0012'));
+    await expect(page.locator('.sva-rbqm-why')).toHaveText(
+      'Screen Failure Rate needs Raw_ENROLL.csv, which is not loaded.'
+    );
+    // An address that names no metric of the tab.
+    await page.evaluate(() => (window.location.hash = '#rbqm/nothing'));
+    await expect(rbqmOverview(page)).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
+    expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([
+      'Sys.time',
+      'rbqm_attach',
+      'rbqm_run'
+    ]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-073: once R has run, the control is a chip whose panel is closed until it is opened, from the chip or from Run details beside the outcome; the panel holds the steps, what R was handed, what did not run, the versions and R’s warnings, and Run again, which runs the metrics on the R already started; choosing another study then runs it with no press (#280)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    await rbqmTab(page).click();
+    await captureEvidence(page, 'APP-RBQM-073', 'rbqm-before-r-1280');
+    // One press, and no second.
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
+    await expect(rbqmControl(page)).toHaveAttribute('data-phase', 'ready');
+    await expect(rbqmControl(page).locator('.sva-r-row')).toHaveText('R ready▾');
+    await expect(page.locator('.sva-charts .sva-action')).toHaveCount(0);
+    await expect(rbqmPanel(page)).toHaveCount(0);
+    await expect(rbqmChip(page)).toHaveAttribute('aria-expanded', 'false');
+    await captureEvidence(page, 'APP-RBQM-073', 'rbqm-after-run-1280');
+
+    // Opened from the line above the table.
+    await page.locator('.sva-rbqm-details').click();
+    await expect(rbqmPanel(page)).toBeVisible();
+    await expect(rbqmChip(page)).toHaveAttribute('aria-expanded', 'true');
+    const details = await runDetails(page);
+    expect(details.heading).toBe('R is running in this browser');
+    expect(Object.keys(details.sections)).toEqual([
+      'Steps',
+      'What R was handed',
+      'Did not run',
+      'Versions',
+      'Warnings from R'
+    ]);
+    expect(details.sections.Steps.slice(0, 5)).toEqual([
+      'Downloaded R 13 MB',
+      'Installed R packages 42 MB',
+      'Fetched gsm’s workflow files',
+      'Loaded gsm’s packages',
+      expect.stringMatching(/^Ran the workflows [\d.]+ s$/)
+    ]);
+    expect(details.sections['What R was handed']).toHaveLength(2);
+    expect(details.sections['Did not run']).toHaveLength(5);
+    expect(details.actions).toEqual(['Run again']);
+    // The panel is inside the window, under the control.
+    const panel = await rbqmPanel(page).boundingBox();
+    expect(panel.x).toBeGreaterThanOrEqual(0);
+    expect(panel.x + panel.width).toBeLessThanOrEqual(1280);
+    await captureEvidence(page, 'APP-RBQM-073', 'rbqm-run-details-1280');
+    // Closed by Escape, opened again from the chip.
+    await page.keyboard.press('Escape');
+    await expect(rbqmPanel(page)).toHaveCount(0);
+    await rbqmChip(page).click();
+    await expect(rbqmPanel(page)).toBeVisible();
+
+    // Run again: the metrics, on the R already started.
+    await rbqmPanel(page).locator('.sva-r-actions button', { hasText: 'Run again' }).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
+    await expect(rbqmControl(page)).toHaveAttribute('data-phase', 'ready');
+    expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([
+      'Sys.time',
+      'rbqm_attach',
+      'rbqm_run',
+      'rbqm_run'
+    ]);
+    const again = await runDetails(page);
+    expect(again.sections.Steps).toEqual([
+      expect.stringMatching(/^Ran the workflows [\d.]+ s$/),
+      'R was already running, so only the last step ran again.'
+    ]);
+    await page.keyboard.press('Escape');
+
+    // Another study, chosen once R is ready, runs with no press.
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+    await rbqmTab(page).click();
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 8 of 8 metrics on the 9 loaded files in /);
+    await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('8 of 8');
+    expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([
+      'Sys.time',
+      'rbqm_attach',
+      'rbqm_run',
+      'rbqm_run',
+      'rbqm_run'
+    ]);
     expect(errors).toEqual([]);
   });
 
@@ -2994,8 +3761,11 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
       timeout: 360000
     });
-    await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
-    for (const metric of RBQM_TAB.metrics) await rbqmChoice(page, metric).click();
+    // Each metric's page in turn, from the tab's row (#279): its two charts.
+    for (const metric of RBQM_TAB.metrics) {
+      await rbqmChoice(page, metric).click();
+      await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    }
     // That was the last action.
     await watch.quiet();
     const after = watch.onlyReads(own);
@@ -3085,38 +3855,53 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-036: a reader’s own files on the tab, with no demo study: files chosen from disk and a file dropped are listed with the raw domain each was placed in, a file of no raw domain is named as not recognised and one that lacks a column is named with the column; the tab says which metrics the files support before R is started; Start R then draws the two adverse event metrics and says of each other metric which file it needs (#236)', async ({
+  test('APP-RBQM-036: a reader’s own raw files, with no demo study: files chosen from disk on the Data tab are kept as raw files, each card naming the raw domain it was placed in and one that lacks a column naming the column; a file of no raw domain dropped there is no raw file; the Data tab’s card says which metrics the files support before R is started, in the words desktop R said after running; Start R on the RBQM tab then draws the two adverse event metrics and says of each other metric which file it needs (#236, #281, #282)', async ({
     page
   }, testInfo) => {
     const errors = watchErrors(page);
     await page.goto('/tests/e2e/fixtures/basic-app.html?empty&rbqm=recorded');
     await page.evaluate(`${APP}.ready`);
+    // With nothing loaded the RBQM tab has nothing to run, and no place to load a file.
     await rbqmTab(page).click();
-    await expect(rbqmFiles(page).locator('summary')).toHaveText('No files are loaded.');
-    await expect(rbqmFiles(page)).toHaveAttribute('open', '');
+    await expect(rbqmStatus(page)).toHaveText(
+      'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.'
+    );
     await expect(rbqmStart(page)).toBeDisabled();
+    await expect(
+      page.locator('.sva-view input[type="file"], .sva-view .sva-drop, .sva-view details')
+    ).toHaveCount(0);
 
-    // Chosen from disk, with the browser's own file chooser.
+    // Chosen from disk on the Data tab, with the browser's own file chooser.
+    await item(page, 'data').click();
+    await expect(page.locator('.sva-drop-note')).toHaveText(
+      'Study files or gsm raw files. They are read in this browser and sent nowhere.'
+    );
+    await expect(supportCard(page)).toHaveCount(0);
     const chooser = page.waitForEvent('filechooser');
-    await page.locator('.sva-rbqm-choose').click();
+    await sideAction(page, 'choose-files').click();
     await (await chooser).setFiles([OWN_SUBJ, withoutAColumn(testInfo)]);
-    await expect(page.locator('.sva-rbqm-file')).toHaveText([
-      'Raw_SUBJ.csv is Raw_SUBJ, by its name.',
-      'Raw_AE.csv is Raw_AE, by its name. It lacks the column aeser.'
+    await expect(rawTags(page)).toHaveText([
+      'gsm raw file: Raw_SUBJ, by its name',
+      'gsm raw file: Raw_AE, by its name'
     ]);
-    await expect(rbqmFiles(page).locator('summary')).toHaveText(
-      '2 files loaded, 2 placed in a gsm raw domain. They support 0 of 8 metrics.'
+    await expect(rawTags(page).nth(1)).toHaveAttribute(
+      'title',
+      'Raw_AE.csv is Raw_AE, by its name. It lacks the column aeser.'
     );
-    await expect(rbqmSupport(page, 'kri0001')).toHaveText(
-      'AE Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
+    await expect(supportSay(page)).toHaveText('This data supports 0 of 8 metrics.');
+    const reasons = supportCard(page).locator('.sva-support-why li');
+    await supportCard(page).locator('.sva-support-why summary').click();
+    await expect(reasons.nth(0)).toHaveText(
+      'Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
     );
-    await expect(rbqmSupport(page, 'kri0002')).toHaveText(
-      'SAE Serious Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
+    await expect(reasons.nth(1)).toHaveText(
+      'Serious Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
     );
 
-    // The whole file of the same name takes its place; a file of no raw domain
-    // is dropped on the tab, as a reader drops one.
-    await page.locator('.sva-rbqm-input').setInputFiles([OWN_AE]);
+    // The whole file of the same name takes its place. A file of no raw domain,
+    // dropped as a reader drops one, is no raw file: it is a study file the
+    // app could not place, and R is not handed it.
+    await page.locator('.sva-file-input').setInputFiles([OWN_AE]);
     const dropped = await page.evaluateHandle(
       (text) => {
         const transfer = new DataTransfer();
@@ -3125,46 +3910,55 @@ test.describe('demo app: the RBQM tab', () => {
       },
       readFileSync(OWN_NOTES, 'utf8')
     );
-    await page.dispatchEvent('.sva-rbqm-drop', 'drop', { dataTransfer: dropped });
-    await expect(page.locator('.sva-rbqm-file')).toHaveText([
-      'Raw_SUBJ.csv is Raw_SUBJ, by its name.',
-      'Raw_AE.csv is Raw_AE, by its name.',
-      NOTES_UNPLACED
+    await page.dispatchEvent('.sva-drop', 'drop', { dataTransfer: dropped });
+    await expect(page.locator('.sva-file.sva-unplaced .sva-file-name')).toHaveText([
+      'site_notes.csv'
     ]);
-    await expect(page.locator('.sva-rbqm-unused')).toHaveText([NOTES_UNPLACED]);
-    await expect(rbqmFiles(page).locator('summary')).toHaveText(
-      '3 files loaded, 2 placed in a gsm raw domain. They support 2 of 8 metrics.'
+    await expect(rawTags(page)).toHaveText([
+      'gsm raw file: Raw_SUBJ, by its name',
+      'gsm raw file: Raw_AE, by its name'
+    ]);
+    await expect(rawTags(page).nth(1)).toHaveAttribute(
+      'title',
+      'Raw_AE.csv is Raw_AE, by its name.'
     );
     // Said before R is started, in the words desktop R said after running.
     const two = tabExpected.partial['two-files'];
-    for (const entry of two.status) {
-      await expect(rbqmSupport(page, entry.id)).toHaveText(
-        entry.state === 'ran'
-          ? `${entry.abbreviation} ${entry.metric}: the files and columns it needs are loaded.`
-          : `${entry.abbreviation} ${entry.message}`
-      );
-    }
-    await expect(page.locator('.sva-rbqm-support .sva-rbqm-groups')).toHaveText(two.groups.message);
-    await expect(rbqmStatus(page)).toContainText('on the 2 loaded raw files.');
+    await expect(supportSay(page)).toHaveText('This data supports 2 of 8 metrics.');
+    expect(await saidOnCard(page)).toEqual(
+      two.status.map((entry) => [entry.id, entry.state === 'ran', entry.message])
+    );
+    await expect(supportCard(page).locator('.sva-support-why summary')).toHaveText(
+      'Why 6 cannot run'
+    );
+    await expect(reasons.last()).toHaveText(two.groups.message);
     expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([]);
-    // None was placed in a safety domain or given a mapping.
+    // Neither raw file was placed in a safety domain or given a mapping.
     expect(
       await page.evaluate(() => {
         const { files, unplaced, raw } = window.__safetyVizApp.state;
-        return [Object.keys(files), unplaced.length, raw.map((file) => file.name)];
+        return [
+          Object.keys(files),
+          unplaced.map((entry) => entry.file.name),
+          raw.map((file) => file.name)
+        ];
       })
-    ).toEqual([[], 0, ['Raw_SUBJ.csv', 'Raw_AE.csv', 'site_notes.csv']]);
-    await captureEvidence(page.locator('.sva-rbqm'), 'APP-RBQM-036', 'own-files-before-r');
+    ).toEqual([[], ['site_notes.csv'], ['Raw_SUBJ.csv', 'Raw_AE.csv']]);
+    await captureEvidence(page.locator('.sva-data-main'), 'APP-RBQM-036', 'own-files-before-r');
 
+    // The card's button leads to the tab, where R is started.
+    await supportCard(page).locator('[data-action="open-view"]').click();
+    await expect(page.locator('.sva-rbqm-supports')).toHaveText(
+      'The loaded files support 2 of 8 metrics. Change the data on the Data tab.'
+    );
     await rbqmStart(page).click();
     await expect(rbqmStatus(page)).toHaveText(/^R ran 2 of 8 metrics on the 2 loaded files/);
-    // R was handed the two files it can use, under gsm's names, and not the third.
+    // R was handed the two raw files, under gsm's names, and not the third.
     expect(
       await page.evaluate(() =>
         Object.keys(window.__rbqmRequest.files).map((file) => file.split('/').pop())
       )
     ).toEqual(['Raw_SUBJ.csv', 'Raw_AE.csv']);
-    await expect(rbqmFiles(page)).not.toHaveAttribute('open', '');
     for (const entry of two.status) {
       await rbqmChoice(page, entry.id).click();
       await expect(page.locator('.sva-rbqm-metric-name')).toHaveText(entry.metric);
@@ -3182,12 +3976,388 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
     await captureEvidence(page.locator('.sva-rbqm'), 'APP-RBQM-036', 'own-files-two');
 
-    // At a phone's width the list of files and what they support fits.
+    // Back on the Data tab the card's marks are the tab's: two ran. At a
+    // phone's width the card and its reasons fit.
     await page.setViewportSize({ width: 390, height: 844 });
-    await rbqmFiles(page).locator('summary').click();
-    await expect(rbqmFiles(page)).toHaveAttribute('open', '');
+    await page.evaluate(`${APP}.select('data')`);
+    await expect(supportCard(page).locator('.sva-support-items li')).toHaveCount(8);
+    expect(
+      await supportCard(page)
+        .locator('.sva-support-items li')
+        .evaluateAll((items) => items.map((node) => node.dataset.state))
+    ).toEqual(['ran', 'ran', ...Array(6).fill('cannot')]);
+    await supportCard(page).locator('.sva-support-why summary').click();
+    await expect(reasons).toHaveCount(7);
     expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
-    await captureEvidence(rbqmFiles(page), 'APP-RBQM-036', 'own-files-390');
+    await captureEvidence(supportCard(page), 'APP-RBQM-036', 'own-files-390');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-075: a study’s files and gsm raw files chosen together on the Data tab each go where they belong: the raw files are kept as they are, the Renamed columns study is read as a study with `ae.csv` its adverse events file, and its charts draw; a demo study gives way once; a raw file that is not a CSV is refused with its sentence (#282)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    await item(page, 'data').click();
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(4);
+    // One choice of seven files: the four of the Renamed columns study and three raw files.
+    await page.locator('.sva-file-input').setInputFiles([...STUDY, OWN_SUBJ, OWN_AE, OWN_PD]);
+    await expect(page.locator('.sva-notes .sva-note')).toHaveText([
+      'The demo study (Pilot study) was cleared to load your files.'
+    ]);
+    await expect(page.locator('.sva-file[data-domain] .sva-file-name')).toHaveText([
+      'dm.csv',
+      'ae.csv',
+      'labs_final.csv',
+      'ecg.json'
+    ]);
+    await expect(card(page, 'ae').locator('.sva-file-name')).toHaveText('ae.csv');
+    await expect(card(page, 'ae').locator('.sva-map')).toBeVisible();
+    await expect(page.locator('.sva-file.sva-raw .sva-file-name')).toHaveText([
+      'Raw_SUBJ.csv',
+      'Raw_AE.csv',
+      'Raw_PD.csv'
+    ]);
+    await expect(rawTags(page)).toHaveText([
+      'gsm raw file: Raw_SUBJ, by its name',
+      'gsm raw file: Raw_AE, by its name',
+      'gsm raw file: Raw_PD, by its name'
+    ]);
+    await expect(page.locator('.sva-file.sva-raw .sva-map')).toHaveCount(0);
+    await expect(page.locator('.sva-file.sva-unplaced')).toHaveCount(0);
+    await expect(stepStatus(page, 'load')).toHaveText('7 files loaded');
+    await expect(stepStatus(page, 'map')).toHaveText('23 guessed, 6 needed by a chart');
+    // The study's charts lead the third step; the metrics are counted beside them.
+    await expect(step(page, 'open').locator('.sva-step-title')).toHaveText('Open a chart');
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '12 of 18 charts ready · 4 of 8 RBQM metrics'
+    );
+    await captureEvidence(page, 'APP-RBQM-075', 'mixed-drop-1280');
+
+    // A raw file that is not a CSV, told by its name, is refused in the tab's sentence.
+    await page.locator('.sva-file-input').setInputFiles([
+      {
+        name: 'Raw_LB.json',
+        mimeType: 'application/json',
+        buffer: Buffer.from('[{"subjid":"0001","toxgrg_nsv":"3"}]')
+      }
+    ]);
+    await expect(page.locator('.sva-notes .sva-note')).toHaveText([
+      'Raw_LB.json is not a CSV file: the RBQM tab reads gsm’s raw files as CSV.'
+    ]);
+    await expect(page.locator('.sva-file.sva-raw')).toHaveCount(3);
+    await expect(page.locator('.sva-file[data-domain]')).toHaveCount(4);
+
+    // The study's charts draw as they did before the Data tab took raw files.
+    await correct(page);
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '18 of 18 charts ready · 4 of 8 RBQM metrics'
+    );
+    await sideAction(page, 'open-chart').click();
+    await expect(item(page, 'histogram')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await openChart(page, 'ae-explorer');
+    await expect(page.locator('.sva-chart').locator(DRAWN).first()).toBeVisible();
+    // And the raw files are what R is handed on the RBQM tab, with the study's
+    // subject-level file for the one raw table they do not give. The stand-in
+    // for R answers with another study's rows here, so only what it was handed is read.
+    await rbqmTab(page).click();
+    await expect(page.locator('.sva-rbqm-supports')).toHaveText(
+      'The loaded files support 4 of 8 metrics. Change the data on the Data tab.'
+    );
+    await rbqmStart(page).click();
+    await expect(rbqmStatus(page)).toHaveText(
+      /^R ran \d of 8 metrics on the 3 loaded files and the loaded study’s dm\.csv /
+    );
+    expect(
+      await page.evaluate(() =>
+        Object.keys(window.__rbqmRequest.files)
+          .map((file) => file.split('/').pop())
+          .filter((file) => file.startsWith('Raw_'))
+      )
+    ).toEqual(['Raw_SUBJ.csv', 'Raw_AE.csv', 'Raw_PD.csv']);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-076: the Data tab’s one RBQM card, between the drop zone and the files, in its three states at 1,280 pixels and at 390: on three raw files, four of eight metrics with R’s reasons behind "Why 4 cannot run"; on the RBQM study, eight of eight and no reasons; on the study the app opens with, three of eight with the reasons in the open and which raw tables R makes from which file; each metric has the mark the RBQM tab’s row gives it, nothing scrolls sideways, and the card’s button opens the tab (#281)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    const marks = () =>
+      supportCard(page)
+        .locator('.sva-support-items li')
+        .evaluateAll((items) =>
+          items.map((node) => [
+            node.textContent,
+            node.dataset.state,
+            node.querySelector('svg').getAttribute('class')
+          ])
+        );
+    const three = tabExpected.partial['three-files'];
+    // At both widths the card sits under the drop zone and above the first file's card.
+    const placed = async () => {
+      const [drop, said, file] = await Promise.all(
+        ['.sva-drop', '.sva-support[data-support="rbqm"]', '.sva-file'].map((selector) =>
+          page.locator(`.sva-data-main ${selector}`).first().boundingBox()
+        )
+      );
+      expect(said.y).toBeGreaterThanOrEqual(drop.y + drop.height);
+      expect(file.y).toBeGreaterThanOrEqual(said.y + said.height);
+      expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    };
+    const both = async (slug) => {
+      await page.setViewportSize({ width: 1280, height: 900 });
+      await page.evaluate(() => window.scrollTo(0, 0));
+      await placed();
+      await captureEvidence(page, 'APP-RBQM-076', `${slug}-1280`);
+      await page.setViewportSize({ width: 390, height: 844 });
+      await placed();
+      await captureEvidence(supportCard(page), 'APP-RBQM-076', `${slug}-390`);
+      await page.setViewportSize({ width: 1280, height: 900 });
+    };
+
+    // Three raw files of the reader's own, dropped on the one drop zone.
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/tests/e2e/fixtures/basic-app.html?empty&rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    await expect(supportCard(page)).toHaveCount(0);
+    const dropped = await page.evaluateHandle(
+      (files) => {
+        const transfer = new DataTransfer();
+        for (const [name, text] of files) {
+          transfer.items.add(new File([text], name, { type: 'text/csv' }));
+        }
+        return transfer;
+      },
+      [OWN_SUBJ, OWN_AE, OWN_PD].map((file) => [file.split('/').pop(), readFileSync(file, 'utf8')])
+    );
+    await page.dispatchEvent('.sva-drop', 'drop', { dataTransfer: dropped });
+    await expect(supportCard(page).locator('.sva-support-title')).toHaveText('RBQM');
+    await expect(supportSay(page)).toHaveText('This data supports 4 of 8 metrics.');
+    expect(await marks()).toEqual(
+      three.status.map((entry) => [
+        entry.abbreviation,
+        entry.state === 'ran' ? 'todo' : 'cannot',
+        expect.stringContaining(entry.state === 'ran' ? 'sva-ico-todo' : 'sva-ico-cannot')
+      ])
+    );
+    // What the card says of each metric is what desktop R said after running the three files.
+    expect(await saidOnCard(page)).toEqual(
+      three.status.map((entry) => [entry.id, entry.state === 'ran', entry.message])
+    );
+    const why = supportCard(page).locator('.sva-support-why');
+    await expect(why.locator('summary')).toHaveText('Why 4 cannot run');
+    expect(await why.evaluate((node) => node.open)).toBe(false);
+    await expect(why.locator('li').last()).toHaveText(three.groups.message, {
+      useInnerText: false
+    });
+    await expect(supportCard(page).locator('.sva-support-key span')).toHaveText([
+      'not started',
+      'cannot run: missing data'
+    ]);
+    await expect(supportCard(page).locator('.sva-support-note')).toHaveText(
+      'Read from the files’ names and columns. R says the same when it runs.'
+    );
+    await expect(rawTags(page)).toHaveText([
+      'gsm raw file: Raw_SUBJ, by its name',
+      'gsm raw file: Raw_AE, by its name',
+      'gsm raw file: Raw_PD, by its name'
+    ]);
+    // A metric's mark says its state and R's reason to a pointer and to a screen reader.
+    await expect(supportCard(page).locator('li[data-item="kri0012"]')).toHaveAttribute(
+      'aria-label',
+      'Screen Failure Rate: cannot run: missing data. Screen Failure Rate needs Raw_ENROLL.csv, which is not loaded.'
+    );
+    await both('own-files');
+    expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([]);
+
+    // The RBQM study, on the page as it is served with its demo studies: all
+    // eight, and nothing to explain.
+    await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+    await expect(supportSay(page)).toHaveText('This data supports 8 of 8 metrics.');
+    await expect(supportCard(page).locator('.sva-support-why')).toHaveCount(0);
+    await expect(supportCard(page).locator('.sva-support-key span')).toHaveText(['not started']);
+    expect((await marks()).map(([, state]) => state)).toEqual(Array(8).fill('todo'));
+    await expect(rawTags(page)).toHaveCount(9);
+    await both('rbqm-study');
+
+    // The study the app opens with: three of eight, with the reasons in the open.
+    await page.locator('.sva-side select.sva-study').selectOption('pilot');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(4);
+    await expect(supportSay(page)).toHaveText('This data supports 3 of 8 metrics.');
+    expect(await why.evaluate((node) => node.open)).toBe(true);
+    await expect(why.locator('summary')).toHaveText('Why 5 cannot run');
+    expect(await saidOnCard(page)).toEqual(
+      pilotExpected.answer.status.map((entry) => [entry.id, entry.state === 'ran', entry.message])
+    );
+    await expect(supportCard(page).locator('.sva-support-lines li')).toHaveText([
+      'adsl.csv, the Subject-level file, gives Raw_SITE, Raw_STUDCOMP, Raw_STUDY and Raw_SUBJ.',
+      'adae.csv, the Adverse events file, gives Raw_AE.'
+    ]);
+    await expect(page.locator('.sva-file.sva-raw')).toHaveCount(0);
+    await both('pilot-study');
+
+    // The card starts nothing: its one button opens the tab, where R is started.
+    await expect(supportCard(page).locator('button')).toHaveText(['Open RBQM']);
+    await supportCard(page).locator('[data-action="open-view"]').click();
+    await expect(rbqmStatus(page)).toHaveText(PILOT_NEED);
+    expect(new URL(page.url()).hash).toBe('#rbqm');
+    expect(await page.evaluate(() => window.__rbqmSteps)).toEqual([]);
+    // After a run the card's marks are the row's.
+    await rbqmStart(page).click();
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 3 of 8 metrics on the Pilot study/);
+    await item(page, 'data').click();
+    expect((await marks()).map(([, state]) => state)).toEqual(
+      pilotExpected.answer.status.map((entry) => (entry.state === 'ran' ? 'ran' : 'cannot'))
+    );
+    await expect(supportCard(page).locator('.sva-support-key span')).toHaveText([
+      'ran',
+      'cannot run: missing data'
+    ]);
+    await captureEvidence(supportCard(page), 'APP-RBQM-076', 'pilot-study-after-run');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-RBQM-077: with gsm raw files loaded and no chart ready the workflow’s third step reads "Open the RBQM tab", is the current step, counts the metrics before the charts and opens the tab; on the study the app opens with it reads "Open a chart" and counts the RBQM metrics beside the charts (#281)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await page.goto('/tests/e2e/fixtures/basic-app.html?empty&rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    await expect(step(page, 'open').locator('.sva-step-title')).toHaveText('Open a chart');
+    await expect(stepStatus(page, 'open')).toHaveText('0 of 18 charts ready');
+    await page.locator('.sva-file-input').setInputFiles([OWN_SUBJ, OWN_AE, OWN_PD]);
+    await expect(step(page, 'load')).toHaveAttribute('data-state', 'done');
+    await expect(stepStatus(page, 'load')).toHaveText('3 files loaded');
+    await expect(stepStatus(page, 'map')).toHaveText(
+      'Nothing to map: gsm’s raw files are kept as they are'
+    );
+    await expect(step(page, 'open').locator('.sva-step-title')).toHaveText('Open the RBQM tab');
+    await expect(step(page, 'open')).toHaveAttribute('data-state', 'current');
+    await expect(step(page, 'open')).toHaveAttribute('aria-current', 'step');
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '4 of 8 metrics supported · 0 of 18 charts ready'
+    );
+    await expect(step(page, 'open').locator('button')).toHaveText(['Open RBQM']);
+    await expect(sideAction(page, 'open-chart')).toHaveCount(0);
+    await sideAction(page, 'open-view').click();
+    await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
+    await expect(page.locator('.sva-rbqm-supports')).toHaveText(
+      'The loaded files support 4 of 8 metrics. Change the data on the Data tab.'
+    );
+    // The whole RBQM study leads there too, on the page as it is served with its demo studies.
+    await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    await item(page, 'data').click();
+    await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+    await expect(step(page, 'open').locator('.sva-step-title')).toHaveText('Open the RBQM tab');
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '8 of 8 metrics supported · 0 of 18 charts ready'
+    );
+    // A study whose charts are ready: the step is the charts', and the metrics are counted beside them.
+    await page.locator('.sva-side select.sva-study').selectOption('pilot');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(4);
+    await expect(step(page, 'open').locator('.sva-step-title')).toHaveText('Open a chart');
+    await expect(stepStatus(page, 'open')).toHaveText(
+      '18 of 18 charts ready · 3 of 8 RBQM metrics'
+    );
+    await expect(step(page, 'open').locator('button')).toHaveText(['Open first chart']);
+    expect(errors).toEqual([]);
+  });
+
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-RBQM-078: three raw files dropped on the Data tab, in real R: the subjects, adverse events and protocol deviations files are dropped on the drop zone, the RBQM tab is opened from the card and Start R pressed; R runs the four metrics the card said the files support, every Results row of each is desktop R’s to eight decimal places, and what R says of each other metric is what the card said before R was started (#282)', { tag: '@real-r' }, async ({
+    page
+  }) => {
+    test.setTimeout(480000);
+    const errors = watchErrors(page);
+    await page.goto('/tests/e2e/fixtures/basic-app.html?empty');
+    await page.evaluate(`${APP}.ready`);
+    const dropped = await page.evaluateHandle(
+      (files) => {
+        const transfer = new DataTransfer();
+        for (const [name, text] of files) {
+          transfer.items.add(new File([text], name, { type: 'text/csv' }));
+        }
+        return transfer;
+      },
+      [OWN_SUBJ, OWN_AE, OWN_PD].map((file) => [file.split('/').pop(), readFileSync(file, 'utf8')])
+    );
+    await page.dispatchEvent('.sva-drop', 'drop', { dataTransfer: dropped });
+    await expect(supportSay(page)).toHaveText('This data supports 4 of 8 metrics.');
+    const before = await saidOnCard(page);
+    // The three are kept as they are: none is placed in a standard domain or mapped.
+    expect(
+      await page.evaluate(() => {
+        const { files, unplaced, raw } = window.__safetyVizApp.state;
+        return [Object.keys(files), unplaced.length, raw.map((file) => file.name)];
+      })
+    ).toEqual([[], 0, ['Raw_SUBJ.csv', 'Raw_AE.csv', 'Raw_PD.csv']]);
+    await supportCard(page).locator('[data-action="open-view"]').click();
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
+      timeout: 360000
+    });
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 4 of 8 metrics on the 3 loaded files/);
+
+    // What R returned to the tab is what desktop R returned for the same three files.
+    const three = tabExpected.partial['three-files'];
+    const answer = await page.evaluate(() => window.__rbqmView.state().result.answer);
+    expect(answer.warnings).toEqual([]);
+    expect(answer.ran).toEqual(three.ran);
+    expect(answer.ran.metrics).toEqual(['kri0001', 'kri0002', 'kri0003', 'kri0004']);
+    const said = answer.status.map((entry) => [entry.id, entry.state === 'ran', entry.message]);
+    expect(said).toEqual(before);
+    expect(said).toEqual(
+      three.status.map((entry) => [entry.id, entry.state === 'ran', entry.message])
+    );
+    expect(answer.groups).toEqual(three.groups);
+    expect(answer.notes).toEqual(three.notes);
+    // Desktop R's rows for the three files are the whole study's rows for the
+    // four metrics, which scripts/rbqm-reference.mjs checks when it writes them.
+    const key = (row) => `${row.MetricID} ${row.GroupID}`;
+    const results = new Map(answer.Results.map((row) => [key(row), row]));
+    for (const metric of three.ran.metrics) {
+      const reference = tabExpected.whole.Results.filter(
+        (row) => row.MetricID === `Analysis_${metric}`
+      );
+      expect(reference.length, metric).toBeGreaterThan(100);
+      const got = answer.Results.filter((row) => row.MetricID === `Analysis_${metric}`);
+      expect(got.map(key).sort(), metric).toEqual(reference.map(key).sort());
+      for (const row of reference) {
+        const mine = results.get(key(row));
+        // Each key but the snapshot's date, which on the tab is the reader's own day.
+        for (const column of RESULT_KEYS.filter((name) => name !== 'SnapshotDate')) {
+          expect(mine[column], `${key(row)} ${column}`).toBe(row[column]);
+        }
+        for (const column of RESULT_NUMBERS) {
+          if (row[column] === null) expect(mine[column], `${key(row)} ${column}`).toBeNull();
+          else expect(mine[column], `${key(row)} ${column}`).toBeCloseTo(row[column], 8);
+        }
+      }
+    }
+    expect(answer.Results).toHaveLength(three.rows.Results);
+    // Each of the four draws its two charts, and each other says R's sentence.
+    for (const entry of three.status) {
+      await rbqmChoice(page, entry.id).click();
+      if (entry.state === 'ran') {
+        const canvases = page.locator('.sva-rbqm-figures canvas');
+        await expect(canvases).toHaveCount(2);
+        await expect.poll(() => inked(canvases.nth(0))).toBe(true);
+        await expect.poll(() => inked(canvases.nth(1))).toBe(true);
+      } else {
+        await expect(page.locator('.sva-rbqm-why')).toHaveText(entry.message);
+        await expect(page.locator('.sva-rbqm-metric canvas')).toHaveCount(0);
+      }
+    }
     expect(errors).toEqual([]);
   });
 
@@ -3199,39 +4369,53 @@ test.describe('demo app: the RBQM tab', () => {
     await page.setViewportSize({ width: 1280, height: 1400 });
     await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
     await page.evaluate(`${APP}.ready`);
-    // Nothing is chosen or loaded: the tab is opened on the study the page opens with.
-    await rbqmTab(page).click();
-    await expect(rbqmStatus(page)).toHaveText(PILOT_NEED);
-    await expect(rbqmStart(page)).toBeEnabled();
-    // The study runs as it is, so the list of what it gives is there and closed.
-    expect(await rbqmFiles(page).evaluate((node) => node.open)).toBe(false);
-    await expect(rbqmFiles(page).locator('summary')).toHaveText(
-      'The loaded study supports 3 of 8 metrics. R makes gsm’s raw tables from its adsl.csv and adae.csv.'
-    );
-    await rbqmFiles(page).locator('summary').click();
-    await expect(page.locator('.sva-rbqm-study-file')).toHaveText([
+    // Nothing is chosen or loaded: the Data tab's card says what the study the
+    // page opens with supports (#281), and which raw tables R makes from which file.
+    await item(page, 'data').click();
+    await expect(supportSay(page)).toHaveText('This data supports 3 of 8 metrics.');
+    await expect(supportCard(page).locator('.sva-support-lines li')).toHaveText([
       'adsl.csv, the Subject-level file, gives Raw_SITE, Raw_STUDCOMP, Raw_STUDY and Raw_SUBJ.',
       'adae.csv, the Adverse events file, gives Raw_AE.'
     ]);
+    // The study runs as it is, so why the other five cannot is said in the open, in R's words.
     const { answer } = pilotExpected;
-    const saidBefore = await page.evaluate(() =>
-      [...document.querySelectorAll('.sva-rbqm-support li[data-metric]')].map((node) => [
-        node.dataset.metric,
-        node.classList.contains('sva-rbqm-can'),
-        node.classList.contains('sva-rbqm-can') ? '' : node.lastChild.textContent
-      ])
-    );
-    expect(saidBefore).toEqual(
+    expect(
+      await supportCard(page)
+        .locator('.sva-support-why')
+        .evaluate((node) => node.open)
+    ).toBe(true);
+    expect(await saidOnCard(page)).toEqual(
       answer.status.map((entry) => [entry.id, entry.state === 'ran', entry.message])
+    );
+    // The card's button opens the tab, on the study the page opens with.
+    await supportCard(page).locator('[data-action="open-view"]').click();
+    await expect(rbqmStatus(page)).toHaveText(PILOT_NEED);
+    await expect(page.locator('.sva-rbqm-supports')).toHaveText(
+      'The loaded study supports 3 of 8 metrics. Change the data on the Data tab.'
+    );
+    await expect(rbqmStart(page)).toBeEnabled();
+    // The row says the same before R: three metrics to run, five the study cannot support.
+    expect(
+      await rbqmItems(page).evaluateAll((items) => items.slice(1).map((node) => node.dataset.state))
+    ).toEqual(
+      pilotExpected.answer.status.map((entry) => (entry.state === 'ran' ? 'todo' : 'cannot'))
     );
     await captureEvidence(page.locator('.sva-rbqm'), 'APP-RBQM-046', 'pilot-before-r');
 
     await rbqmStart(page).click();
     await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
     await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 3 of 8 metrics on the loaded study’s adsl\.csv and adae\.csv in /
+      /^R ran 3 of 8 metrics on the Pilot study in [\d.]+ seconds?\. The other 5 need data it does not have: change the data on the Data tab\. Run details$/
+    );
+    await expect(page.locator('.sva-rbqm-headrow .sva-rbqm-count')).toHaveText(
+      '17 sites, 12 shown here'
     );
     await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('3 of 8');
+    expect(
+      await rbqmItems(page).evaluateAll((items) => items.slice(1).map((node) => node.dataset.state))
+    ).toEqual(
+      pilotExpected.answer.status.map((entry) => (entry.state === 'ran' ? 'ran' : 'cannot'))
+    );
     // R was handed the study's two files, under the standard names, and nothing else.
     const handed = await page.evaluate(() => ({
       files: Object.keys(window.__rbqmRequest.files),
@@ -3282,8 +4466,21 @@ test.describe('demo app: the RBQM tab', () => {
       });
     }
     expect(cellsChecked).toBe(51);
-    // R made the Groups table, so the tab stands nothing in for it.
-    await expect(page.locator('.sva-rbqm-note')).toHaveCount(0);
+    // R made the Groups table, so the tab stands nothing in for it; Run details
+    // says what R was handed and which metrics did not run, in R's words.
+    const details = await runDetails(page);
+    expect(details.text).toEqual([
+      'It ran 3 of 8 metrics on the Pilot study. About 55 MB was downloaded, once; the study’s data stays here.'
+    ]);
+    expect(details.sections['Did not run']).toEqual(
+      answer.status.filter((entry) => entry.state !== 'ran').map((entry) => entry.message)
+    );
+    expect(details.sections.Notes).toBeUndefined();
+    expect(details.actions).toEqual(['Run again']);
+    await captureEvidence(page, 'APP-RBQM-046', 'pilot-run-details');
+    await page.keyboard.press('Escape');
+    await expect(rbqmPanel(page)).toHaveCount(0);
+    await captureEvidence(page, 'APP-RBQM-046', 'pilot-overview');
 
     // Each metric in turn: its two charts, or the file it needs.
     for (const entry of answer.status) {
@@ -3316,16 +4513,18 @@ test.describe('demo app: the RBQM tab', () => {
     // The charts take a moment to follow the window down to its new width.
     await expect.poll(() => sidewaysScroll(page)).toBeLessThanOrEqual(0);
     await expect.poll(() => inked(page.locator('.sva-rbqm-figures canvas').nth(1))).toBe(true);
-    const table = await page
-      .locator('.sva-rbqm-table')
-      .evaluate((node) => ({ inner: node.scrollWidth, box: node.clientWidth }));
-    expect(table.inner).toBeLessThanOrEqual(table.box);
     for (const box of await page.locator('.sva-rbqm-figures canvas').all()) {
       const { x, width } = await box.boundingBox();
       expect(x).toBeGreaterThanOrEqual(0);
       expect(x + width).toBeLessThanOrEqual(390);
     }
     await captureEvidence(page, 'APP-RBQM-046', 'pilot-tab-390');
+    await rbqmOverview(page).click();
+    const table = await page
+      .locator('.sva-rbqm-table')
+      .evaluate((node) => ({ inner: node.scrollWidth, box: node.clientWidth }));
+    expect(table.inner).toBeLessThanOrEqual(table.box);
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
 
     // The RBQM study still runs all eight, on its own raw files; and the pilot
     // study, chosen again, runs its three.
@@ -3334,15 +4533,17 @@ test.describe('demo app: the RBQM tab', () => {
     await page.locator('.sva-side select.sva-study').selectOption('rbqm');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
     await rbqmTab(page).click();
-    await expect(rbqmStatus(page)).toHaveText(/^R ran 8 of 8 metrics on the 9 loaded files in /);
+    await rbqmOverview(page).click();
+    await expect(rbqmStatus(page)).toHaveText(
+      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?\. To use other files, change the data on the Data tab\. Run details$/
+    );
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
     await item(page, 'data').click();
     await page.locator('.sva-side select.sva-study').selectOption('pilot');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(4);
     await rbqmTab(page).click();
-    await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 3 of 8 metrics on the loaded study’s adsl\.csv and adae\.csv in /
-    );
+    await rbqmOverview(page).click();
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 3 of 8 metrics on the Pilot study in /);
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(17);
     expect(errors).toEqual([]);
   });
@@ -3361,20 +4562,14 @@ test.describe('demo app: the RBQM tab', () => {
     await page.goto('/tests/e2e/fixtures/basic-app.html?empty');
     await page.evaluate(`${APP}.ready`);
     const own = new URL(page.url()).origin;
-    await rbqmTab(page).click();
+    // The files are chosen on the Data tab, where every file comes in (#282).
     watch.chosen = true;
-    await page.locator('.sva-rbqm-input').setInputFiles([OWN_SUBJ, OWN_AE, OWN_NOTES]);
-    await expect(rbqmFiles(page).locator('summary')).toHaveText(
-      '3 files loaded, 2 placed in a gsm raw domain. They support 2 of 8 metrics.'
-    );
+    await chooseOnDataTab(page, [OWN_SUBJ, OWN_AE, OWN_NOTES]);
+    await expect(supportSay(page)).toHaveText('This data supports 2 of 8 metrics.');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(3);
     const two = tabExpected.partial['two-files'];
-    const before = await page.evaluate(() =>
-      [...document.querySelectorAll('.sva-rbqm-support li[data-metric]')].map((item) => [
-        item.dataset.metric,
-        item.classList.contains('sva-rbqm-can'),
-        item.classList.contains('sva-rbqm-can') ? '' : item.lastChild.textContent
-      ])
-    );
+    const before = await saidOnCard(page);
+    await rbqmTab(page).click();
     await rbqmStart(page).click();
     await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
       timeout: 360000
@@ -3408,22 +4603,27 @@ test.describe('demo app: the RBQM tab', () => {
       }
     }
 
-    // The adverse events file with a column taken out: R is up, so it is run
-    // at once, and R names the column as the tab did.
-    await page.locator('.sva-rbqm-input').setInputFiles([withoutAColumn(testInfo)]);
+    // The adverse events file with a column taken out, chosen on the Data tab:
+    // its card names the column, and R is up, so on the tab it is run at once
+    // and R names the column too.
+    await chooseOnDataTab(page, [withoutAColumn(testInfo)]);
+    await expect(supportSay(page)).toHaveText('This data supports 0 of 8 metrics.');
+    expect((await saidOnCard(page))[0]).toEqual([
+      'kri0001',
+      false,
+      'Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
+    ]);
+    await rbqmTab(page).click();
+    await rbqmOverview(page).click();
     await expect(rbqmStatus(page)).toHaveText(/^R ran 0 of 8 metrics on the 2 loaded files/, {
       timeout: 120000
     });
+    await expect(page.locator('.sva-rbqm-overview .sva-problem')).toHaveText(
+      'No metric ran, so there is no overview to draw.'
+    );
     await rbqmChoice(page, 'kri0001').click();
     await expect(page.locator('.sva-rbqm-why')).toHaveText(
       'Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
-    );
-    await rbqmFiles(page).locator('summary').click();
-    await expect(rbqmSupport(page, 'kri0001')).toHaveText(
-      'AE Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
-    );
-    await expect(page.locator('.sva-rbqm-overview .sva-problem')).toHaveText(
-      'No metric ran, so there is no overview to draw.'
     );
 
     // That was the last action.
@@ -3486,23 +4686,25 @@ test.describe('demo app: the RBQM tab', () => {
     const own = new URL(page.url()).origin;
     // The study is loaded; from here on nothing of it may leave.
     watch.chosen = true;
+    // What the study supports is said on the Data tab's card, before R (#281).
+    await item(page, 'data').click();
+    await expect(supportSay(page)).toHaveText('This data supports 3 of 8 metrics.');
+    const before = await saidOnCard(page);
     await rbqmTab(page).click();
     await expect(rbqmStatus(page)).toHaveText(PILOT_NEED);
-    await rbqmFiles(page).locator('summary').click();
-    const before = await page.evaluate(() =>
-      [...document.querySelectorAll('.sva-rbqm-support li[data-metric]')].map((node) => [
-        node.dataset.metric,
-        node.classList.contains('sva-rbqm-can'),
-        node.classList.contains('sva-rbqm-can') ? '' : node.lastChild.textContent
-      ])
-    );
     await rbqmStart(page).click();
     await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
       timeout: 360000
     });
     await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 3 of 8 metrics on the loaded study’s adsl\.csv and adae\.csv in [\d.]+ seconds?, \d+ seconds after Start R was pressed\./
+      /^R ran 3 of 8 metrics on the Pilot study in [\d.]+ seconds?\. The other 5 need data it does not have: change the data on the Data tab\. Run details$/
     );
+    // What R was handed, as Run details says it: the study's two files.
+    const details = await runDetails(page);
+    expect(details.sections['What R was handed']).toHaveLength(2);
+    expect(details.sections['What R was handed'].join(' ')).toMatch(/adsl\.csv.*adae\.csv/);
+    expect(details.sections.Steps.at(-1)).toMatch(/^\d+ seconds from the press to the charts\.$/);
+    await page.keyboard.press('Escape');
 
     // What R returned to the tab is what desktop R returned for the same two files.
     const desktop = pilotExpected.answer;
@@ -3561,7 +4763,8 @@ test.describe('demo app: the RBQM tab', () => {
     await item(page, 'data').click();
     await page.evaluate(`${APP}.setColumn('subject', 'SITEID', null)`);
     await rbqmTab(page).click();
-    await expect(rbqmStatus(page)).toHaveText(/^R ran 0 of 8 metrics on the loaded study’s /, {
+    await rbqmOverview(page).click();
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 0 of 8 metrics on the Pilot study in /, {
       timeout: 120000
     });
     const unmapped = await page.evaluate(() => {
@@ -3628,35 +4831,62 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
     const pressed = Date.now();
     await rbqmStart(page).click();
-    // It says what R is doing from the first moment, and counts the seconds.
-    await expect(rbqmStatus(page)).toHaveText(/^Starting R: .* \d+ seconds? so far\.$/);
-    await expect(rbqmStart(page)).toBeDisabled();
+    // It says what R is doing from the first moment, and counts the seconds:
+    // the control names the step of six, and nothing is left to press.
+    await expect(rbqmControl(page)).toHaveAttribute('data-phase', 'starting');
+    await expect(rbqmControl(page).locator('.sva-r-say')).toHaveText(/^[1-6] of 6 · /);
+    await expect(rbqmControl(page).locator('.sva-r-meta')).toHaveText(/^\d+ s$/);
+    await expect(rbqmStatus(page)).toHaveText(
+      'R is starting. The metrics run by themselves when it is ready.'
+    );
+    await expect(page.locator('.sva-rbqm-steps li')).toHaveText(RBQM_STEPS);
+    await expect(page.locator('.sva-charts .sva-action')).toHaveCount(0);
     const said = new Set();
     const listen = setInterval(async () => {
-      const text = await rbqmStatus(page)
+      const text = await rbqmControl(page)
+        .locator('.sva-r-say')
         .textContent()
         .catch(() => '');
-      said.add(text.replace(/ \d+ seconds? so far\.$/, ''));
-    }, 500);
+      said.add(text);
+    }, 250);
     await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
       timeout: 360_000
     });
     clearInterval(listen);
     const firstResult = (Date.now() - pressed) / 1000;
+    // One line above the table; the rest is one click away, in Run details.
     await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?, \d+ seconds after Start R was pressed\. The snapshot is dated \d{4}-\d\d-\d\d\. R 4\.\d+\.\d+, gsm\.core [\d.]+, gsm\.mapping [\d.]+, gsm\.reporting [\d.]+ and workr [\d.]+\. The metric workflows are gsm\.kri 1\.7\.0’s and the charts gsm\.viz 2\.4\.1’s\.$/
+      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?\. To use other files, change the data on the Data tab\. Run details$/
     );
+    await expect(rbqmChip(page)).toHaveText('R ready▾');
+    await expect(rbqmItems(page).locator('.sva-ico-ran')).toHaveCount(8);
     // Every step was said while it happened.
     for (const step of [
-      'Starting R: installing its packages',
-      'R has started. Loading gsm’s packages in R',
-      'Running gsm’s workflows on the 9 loaded files'
+      '2 of 6 · Installing R packages',
+      '4 of 6 · Loading gsm’s packages',
+      '6 of 6 · Running the workflows'
     ]) {
-      expect(
-        [...said].some((text) => text.startsWith(step)),
-        step
-      ).toBe(true);
+      expect([...said], step).toContain(step);
     }
+    await page.locator('.sva-rbqm-details').click();
+    const details = await runDetails(page);
+    expect(details.heading).toBe('R is running in this browser');
+    expect(details.text).toEqual([
+      'It ran 8 of 8 metrics on the 9 loaded files. About 55 MB was downloaded, once; the study’s data stays here.'
+    ]);
+    expect(details.sections.Steps.at(-1)).toMatch(/^\d+ seconds from the press to the charts\.$/);
+    expect(details.sections['Did not run']).toEqual(['Nothing: all 8 ran.']);
+    const versions = details.sections.Versions;
+    expect(versions[0]).toMatch(/^R: 4\.\d+\.\d+, on webR \d+\.\d+\.\d+$/);
+    expect(versions[1]).toMatch(
+      /^gsm: gsm\.core [\d.]+, gsm\.mapping [\d.]+, gsm\.reporting [\d.]+(,| and) workr [\d.]+$/
+    );
+    expect(versions.join(' | ')).toMatch(/gsm\.kri 1\.7\.0/);
+    expect(versions.join(' | ')).toMatch(/gsm\.viz 2\.4\.1/);
+    expect(versions.at(-1)).toMatch(/^Snapshot: \d{4}-\d\d-\d\d$/);
+    expect(details.sections['Warnings from R']).toEqual(['None.']);
+    expect(details.actions).toEqual(['Run again']);
+    await page.keyboard.press('Escape');
 
     // What R returned to the tab.
     const answer = await page.evaluate(() => window.__rbqmView.state().result.answer);
@@ -3747,6 +4977,10 @@ test.describe('demo app: the RBQM tab', () => {
     // And on a phone the tab still does not scroll sideways.
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
+    // The charts take a moment to follow the window down to its new width.
+    await expect.poll(() => sidewaysScroll(page)).toBeLessThanOrEqual(0);
+    await rbqmOverview(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
     expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0);
 
     // What starting R downloaded, by where it came from, beside what the tab says.
@@ -3945,15 +5179,18 @@ test.describe('demo app as one file, offline', () => {
     page.on('request', (request) => requests.push(request.url()));
     const tabOfIts = page.locator('.sva-tab[data-tab="rbqm"]');
     await expect(tabOfIts.locator('.sva-tab-title')).toHaveText('RBQM');
-    await expect(tabOfIts.locator('.sva-badge')).toHaveText('Experimental');
+    await expect(tabOfIts.locator('.sva-badge')).toHaveCount(0);
     await expect(tabOfIts.locator('.sva-tab-count')).toHaveText('needs R');
     await tabOfIts.click();
+    // The file is handed the tab's rung with the charts', so the tab says it is Experimental.
+    await expect(page.locator('.sva-corner .sv-status-word')).toHaveText('Experimental');
     await expect(page.locator('.sva-rbqm-status')).toHaveText(FILE_NO_RBQM);
     await expect(page.locator('.sva-rbqm-status')).toHaveText(
       'The RBQM tab needs R, and this file loads nothing, so it cannot start R. The hosted demo app can start R in your browser.'
     );
     await expect(page.locator('.sva-rbqm-start')).toHaveCount(0);
-    await expect(page.locator('.sva-rbqm-results')).toHaveCount(0);
+    await expect(page.locator('.sva-charts > .sva-r')).toHaveCount(0);
+    await expect(page.locator('.sva-rbqm-table')).toHaveCount(0);
     expect(requests.filter((url) => !/^(blob|data):/.test(url))).toEqual([]);
     expect(errors).toEqual([]);
   });
@@ -3981,5 +5218,352 @@ test.describe('demo app as one file, offline', () => {
         .replace(/<\/script/gi, '<\\/script')
         .trim()
     );
+  });
+});
+
+// ---- The status ladder (obot.roadmap#403) ----
+
+const appLabel = (page) => page.locator('.sva-appstatus .sv-status');
+const pill = (label) => label.locator('.sv-status-label');
+const panelOf = (label) => label.locator('.sv-status-panel');
+const APP_LINE = 'Nothing in this app is qualified. Confirm every result.';
+const APP_TEXT =
+  'Nothing here is qualified. The charts, statistics and site metrics are tested and documented, ' +
+  'but none has been through qualification. Confirm every result in a qualified system before ' +
+  'you rely on it.';
+const RUNG_MEANINGS = [
+  ['Qualified', 'Validated for regulated use. Nothing in safety.viz is, yet.'],
+  ['Exploratory', 'Tested and documented. Confirm every result.'],
+  ['Experimental', 'Tested and documented, but what it shows or how it behaves may still change.'],
+  ['Prototype', 'An early look, on the docs site only. Not in this app.']
+];
+// Whether a box is wholly inside the window.
+const insideWindow = async (page, locator) => {
+  const box = await locator.boundingBox();
+  const { width, height } = page.viewportSize();
+  return box.x >= 0 && box.y >= 0 && box.x + box.width <= width && box.y + box.height <= height;
+};
+
+test.describe('demo app: the status label', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  test('APP-TIER-014: at 1,280 pixels the header shows one label reading Exploratory on the tabs’ row; hovering it shows one line, a click opens the disclaimer and the four rungs with the app’s marked, and Escape, a second click or the cross closes it (#273)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openOnDemo(page);
+    const label = appLabel(page);
+    await expect(page.locator('.sva-header .sv-status')).toHaveCount(1);
+    await expect(pill(label).locator('.sv-status-word')).toHaveText('Exploratory');
+    await expect(pill(label)).toHaveAttribute('data-tier', 'exploratory');
+    // The header is still one row: the wordmark, the last tab and the label share a line.
+    const middle = async (locator) => {
+      const box = await locator.boundingBox();
+      return box.y + box.height / 2;
+    };
+    const row = await middle(page.locator('.sva-brand'));
+    expect(Math.abs((await middle(page.locator('.sva-tab[data-tab="rbqm"]'))) - row)).toBeLessThan(
+      8
+    );
+    expect(Math.abs((await middle(pill(label))) - row)).toBeLessThan(8);
+    // Ink on white with a solid outline, and no mark.
+    const drawn = await pill(label).evaluate((element) => {
+      const style = getComputedStyle(element);
+      return [style.borderTopStyle, style.borderTopColor, style.color, style.backgroundColor];
+    });
+    expect(drawn).toEqual(['solid', 'rgb(31, 35, 40)', 'rgb(31, 35, 40)', 'rgb(255, 255, 255)']);
+    await expect(pill(label).locator('svg, img')).toHaveCount(0);
+
+    // Hover: one line, and the panel stays shut.
+    const tip = pill(label).locator('.sv-status-tip');
+    await expect(tip).toBeHidden();
+    await pill(label).hover();
+    await expect(tip).toBeVisible();
+    await expect(tip).toHaveText(APP_LINE);
+    await expect(panelOf(label)).toBeHidden();
+    expect(await insideWindow(page, tip)).toBe(true);
+
+    // A click: the panel, which stays open.
+    await pill(label).click();
+    const panel = panelOf(label);
+    await expect(panel).toBeVisible();
+    await expect(tip).toBeHidden();
+    await expect(pill(label)).toHaveAttribute('aria-expanded', 'true');
+    await expect(panel.getByRole('heading')).toHaveText('This app is exploratory');
+    await expect(panel.locator('.sv-status-text').nth(0)).toHaveText(APP_TEXT);
+    await expect(panel.locator('.sv-status-count')).toHaveText(
+      '13 charts are Exploratory. 5 charts and the RBQM tab are Experimental, and say so when you open them.'
+    );
+    const steps = panel.locator('.sv-status-step');
+    await expect(steps.locator('.sv-status-rung')).toHaveText(RUNG_MEANINGS.map(([word]) => word));
+    await expect(steps.locator('.sv-status-meaning')).toHaveText(
+      RUNG_MEANINGS.map(([, meaning]) => meaning)
+    );
+    await expect(panel.locator('.sv-status-here')).toHaveAttribute('data-tier', 'exploratory');
+    await expect(panel.locator('.sv-status-mark')).toHaveText(['This app']);
+    // The four outlines, top to bottom: filled, solid, dashed, dotted and grey.
+    const outlines = await steps.locator('.sv-status-rung').evaluateAll((rungs) =>
+      rungs.map((rung) => {
+        const style = getComputedStyle(rung);
+        return [style.borderTopStyle, style.backgroundColor, style.color];
+      })
+    );
+    expect(outlines).toEqual([
+      ['solid', 'rgb(31, 35, 40)', 'rgb(255, 255, 255)'],
+      ['solid', 'rgb(255, 255, 255)', 'rgb(31, 35, 40)'],
+      ['dashed', 'rgb(255, 255, 255)', 'rgb(31, 35, 40)'],
+      ['dotted', 'rgb(255, 255, 255)', 'rgb(91, 100, 112)']
+    ]);
+    await expect(panel.getByRole('link', { name: 'What each rung means' })).toHaveAttribute(
+      'href',
+      /developer-guidelines\.md#status-ladder$/
+    );
+    expect(await insideWindow(page, panel)).toBe(true);
+    await captureEvidence(page, 'APP-TIER-014', 'app-label-panel');
+    // It stays open while the reader goes on working: a click on the page does not close it.
+    await page.locator('.sva-main').click({ position: { x: 5, y: 5 } });
+    await expect(panel).toBeVisible();
+    // Escape closes it.
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(pill(label)).toHaveAttribute('aria-expanded', 'false');
+    // A second click closes it.
+    await pill(label).click();
+    await expect(panel).toBeVisible();
+    await pill(label).click();
+    await expect(panel).toBeHidden();
+    // The cross closes it.
+    await pill(label).click();
+    await panel.getByRole('button', { name: 'Close' }).click();
+    await expect(panel).toBeHidden();
+    // Nothing in the app is labelled Qualified.
+    await expect(page.locator('.sv-status-label[data-tier="qualified"]')).toHaveCount(0);
+  });
+
+  test('APP-TIER-015: the app’s label is reached and opened from the keyboard: it follows the last tab, Enter or Space opens it, the next stop is its cross, and closing hands the keyboard back to it (#273)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openOnDemo(page);
+    const label = appLabel(page);
+    const panel = panelOf(label);
+    // From the last tab, one press of Tab reaches the label.
+    await page.locator('.sva-tab[data-tab="rbqm"]').focus();
+    await page.keyboard.press('Tab');
+    await expect(pill(label)).toBeFocused();
+    // Focus shows the hover line, and a ring.
+    await expect(pill(label).locator('.sv-status-tip')).toBeVisible();
+    expect(await pill(label).evaluate((element) => getComputedStyle(element).outlineStyle)).toBe(
+      'solid'
+    );
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeVisible();
+    // The panel follows the label in the page, so Tab goes into it: the cross first.
+    await page.keyboard.press('Tab');
+    await expect(panel.getByRole('button', { name: 'Close' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeHidden();
+    await expect(pill(label)).toBeFocused();
+    // Space opens it too, and Escape from inside it closes it and hands the keyboard back.
+    await page.keyboard.press('Space');
+    await expect(panel).toBeVisible();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    await expect(panel.getByRole('link', { name: 'What each rung means' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(pill(label)).toBeFocused();
+  });
+
+  test('APP-TIER-016: at 390 pixels the app’s label is on screen beside the wordmark, and its panel opens inside the window with nothing running off the page (#273)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openOnDemo(page);
+    const label = appLabel(page);
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    await expect(pill(label)).toBeVisible();
+    expect(await insideWindow(page, pill(label))).toBe(true);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    // A tap opens the panel; a phone has no hover.
+    await pill(label).click();
+    const panel = panelOf(label);
+    await expect(panel).toBeVisible();
+    expect(await insideWindow(page, panel)).toBe(true);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    await expect(panel.locator('.sv-status-text').nth(0)).toHaveText(APP_TEXT);
+    await expect(panel.locator('.sv-status-step')).toHaveCount(4);
+    // The cross is big enough for a thumb's tip, and closes it.
+    const cross = panel.getByRole('button', { name: 'Close' });
+    expect(await insideWindow(page, cross)).toBe(true);
+    await captureEvidence(page, 'APP-TIER-016', 'phone-app-label-panel');
+    await cross.click();
+    await expect(panel).toBeHidden();
+  });
+});
+
+test.describe('demo app: the label on a chart or a tab below Exploratory', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+  // The five Experimental charts and the RBQM tab, each with the name its panel
+  // is headed by and the sentence that says why: the approved design's table.
+  const BELOW = [
+    [
+      'time-to-event',
+      'Time-to-Event Explorer is experimental',
+      'Experimental until an external clinical review confirms its Kaplan–Meier estimates.'
+    ],
+    [
+      'hep-waterfall',
+      'Hepatic ALT Waterfall is experimental',
+      'Experimental: a new chart, drawn from a 2025 paper; its layout and settings may still change.'
+    ],
+    [
+      'nep-explorer',
+      'Nephrotoxicity Explorer is experimental',
+      'Experimental until its kidney-injury staging has had a clinical review.'
+    ],
+    [
+      'participant-profile',
+      'Participant Profile is experimental',
+      'Experimental: what it lists for a participant, and how, may still change.'
+    ],
+    [
+      'qt-explorer',
+      'QT Safety Explorer is experimental',
+      'Experimental: its settings and its table may still change.'
+    ],
+    [
+      'rbqm',
+      'The RBQM tab is experimental',
+      'Experimental: new in 1.10. R runs in the browser, and what the tab shows may still change.'
+    ]
+  ];
+  const corner = (page) => page.locator('.sva-content .sva-corner .sv-status');
+  const open = (page, id) =>
+    page.evaluate(([app, view]) => window[app].select(view), ['__safetyVizApp', id]);
+
+  test('APP-TIER-021: each of the five Experimental charts and the RBQM tab shows the label on the corner of its card with its own reason, and no chart draws a status banner inside itself; an Exploratory chart shows no second label (#274)', async ({
+    page
+  }) => {
+    test.setTimeout(MANY_CHARTS);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openOnDemo(page);
+    // The page was handed the rung of every chart and of the tab.
+    const told = await page.evaluate(`${APP}.tiers()`);
+    expect(Object.keys(told)).toHaveLength(modules.length + bioCharts.length + 1);
+    expect(
+      Object.keys(told)
+        .filter((id) => told[id].tier === 'experimental')
+        .sort()
+    ).toEqual(BELOW.map(([id]) => id).sort());
+    expect(Object.values(told).filter((rung) => rung.tier === 'qualified')).toEqual([]);
+
+    for (const [id, heading, reason] of BELOW) {
+      await open(page, id);
+      const label = corner(page);
+      await expect(label, id).toHaveCount(1);
+      await expect(pill(label).locator('.sv-status-word'), id).toHaveText('Experimental');
+      // Dashed, for Experimental.
+      expect(
+        await pill(label).evaluate((element) => getComputedStyle(element).borderTopStyle),
+        id
+      ).toBe('dashed');
+      await expect(pill(label), id).toHaveAttribute(
+        'aria-label',
+        `Status: Experimental. ${reason}`
+      );
+      await pill(label).click();
+      const panel = panelOf(label);
+      await expect(panel.getByRole('heading'), id).toHaveText(heading);
+      await expect(panel.locator('.sv-status-text').nth(0), id).toHaveText(reason);
+      await expect(panel.locator('.sv-status-here'), id).toHaveAttribute(
+        'data-tier',
+        'experimental'
+      );
+      await expect(panel.locator('.sv-status-mark'), id).toHaveText([
+        'This app',
+        id === 'rbqm' ? 'This tab' : 'This chart'
+      ]);
+      expect(await insideWindow(page, panel), id).toBe(true);
+      if (id === 'time-to-event') {
+        // The label sits on the top edge of the chart's card, at its right.
+        const [card, on] = [
+          await page.locator('.sva-content .sva-chart').boundingBox(),
+          await pill(label).boundingBox()
+        ];
+        expect(on.y).toBeLessThan(card.y);
+        expect(on.y + on.height).toBeGreaterThan(card.y);
+        expect(card.x + card.width - (on.x + on.width)).toBeGreaterThan(0);
+        expect(card.x + card.width - (on.x + on.width)).toBeLessThan(40);
+        await captureEvidence(page, 'APP-TIER-021', 'chart-label-panel');
+      }
+      // The label is the one place the status is said: nothing inside the chart, no pill.
+      await expect(page.locator('.sva-content .sv-experimental'), id).toHaveCount(0);
+      await expect(page.locator('.sva-content .sv-status'), id).toHaveCount(1);
+      await expect(page.locator('.sva-badge'), id).toHaveCount(0);
+      // The app's own label is still the only one in the header, and opening this one closed nothing else.
+      await expect(page.locator('.sva-header .sv-status'), id).toHaveCount(1);
+      await page.keyboard.press('Escape');
+      await expect(panel, id).toBeHidden();
+    }
+
+    // An Exploratory chart, of safety.viz's and of the biomarker library's: no second label.
+    for (const id of ['histogram', 'ae-explorer', 'hep-explorer', bioCharts[0][0]]) {
+      await open(page, id);
+      await expect(item(page, id), id).toHaveAttribute('aria-current', 'page');
+      await expect(page.locator('.sva-main .sv-status'), id).toHaveCount(0);
+      await expect(page.locator('.sva-content .sv-experimental'), id).toHaveCount(0);
+    }
+    // Nor the Hepatic Explorer's migration view, which carried a banner of its own.
+    await open(page, 'hep-explorer');
+    await page.locator('.sva-chart .sv-view-option', { hasText: 'Migration' }).click();
+    await expect(page.locator('.sva-chart .hep-sankey')).toBeVisible();
+    await expect(page.locator('.sva-content .sv-experimental')).toHaveCount(0);
+    await expect(page.locator('.sva-main .sv-status')).toHaveCount(0);
+  });
+
+  test('APP-TIER-022: at 390 pixels the label on a chart’s card is on screen and its panel opens inside the window, with nothing running off the page; the RBQM tab’s label has a line of its own above the tab’s first words (#274)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/tests/e2e/fixtures/basic-app.html#time-to-event');
+    await page.evaluate(`${APP}.ready`);
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const label = corner(page);
+    await expect(pill(label)).toBeVisible();
+    await pill(label).scrollIntoViewIfNeeded();
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    await pill(label).click();
+    const panel = panelOf(label);
+    await expect(panel).toBeVisible();
+    const box = await panel.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    await expect(panel.getByRole('heading')).toHaveText('Time-to-Event Explorer is experimental');
+    await captureEvidence(page, 'APP-TIER-022', 'phone-chart-label-panel');
+    await panel.getByRole('button', { name: 'Close' }).click();
+    await expect(panel).toBeHidden();
+    // The RBQM tab's too.
+    await page.evaluate(() => {
+      window.location.hash = '#rbqm';
+    });
+    await expect(corner(page).locator('.sv-status-word')).toHaveText('Experimental');
+    // On a tab's view the label has a line of its own at this width, above
+    // the tab's card and not over its first words.
+    const own = await pill(corner(page)).boundingBox();
+    const card = await page.locator('.sva-rbqm-page').boundingBox();
+    expect(own.y + own.height).toBeLessThanOrEqual(card.y);
+    await pill(corner(page)).click();
+    const tabBox = await panelOf(corner(page)).boundingBox();
+    expect(tabBox.x).toBeGreaterThanOrEqual(0);
+    expect(tabBox.x + tabBox.width).toBeLessThanOrEqual(390);
+    expect(await overflow()).toBeLessThanOrEqual(0);
   });
 });

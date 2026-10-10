@@ -348,7 +348,7 @@ describe('the required check’s workflow', () => {
     }
   });
 
-  it('the eight browser tests that start real R with gsm’s packages carry the tag the check’s real-R job runs (#292)', () => {
+  it('the browser tests that start real R with gsm’s packages carry the tag the check’s real-R job runs (#292)', () => {
     const tagged = [];
     for (const spec of ['basic-app', 'rbqm-pipeline', 'site']) {
       const source = readFileSync(new URL(`../e2e/${spec}.spec.js`, import.meta.url), 'utf8');
@@ -362,12 +362,14 @@ describe('the required check’s workflow', () => {
     for (const id of [
       'APP-R-032',
       'APP-R-037',
+      'APP-R-051',
       'APP-RBQM-012',
       'APP-RBQM-021',
       'APP-RBQM-030',
       'APP-RBQM-031',
       'APP-RBQM-039',
-      'APP-RBQM-047'
+      'APP-RBQM-047',
+      'APP-RBQM-078'
     ]) {
       expect(tagged, id).toContain(id);
     }

@@ -97,7 +97,7 @@ describe('buildDemoAppDir', () => {
     // The single file beside it says the tab cannot start R, and carries none of it.
     const single = readFileSync(path.join(hosted, 'safety.viz-app.html'), 'utf8');
     expect(single).toContain(
-      'SafetyVizApp.rbqmTab({"unavailable":"The RBQM tab needs R, and this file loads nothing, so it cannot start R. The hosted demo app can start R in your browser.","badge":{"text":"Experimental"'
+      'SafetyVizApp.rbqmTab({"unavailable":"The RBQM tab needs R, and this file loads nothing, so it cannot start R. The hosted demo app can start R in your browser."})'
     );
     expect(single).not.toContain('createRConnection, ...');
     expect(single).not.toContain('repo.r-wasm.org');
@@ -141,7 +141,7 @@ describe('buildDemoAppDir', () => {
     // The single file is the same file in both, and its addresses are the published site's.
     for (const dir of [hosted, local]) {
       const single = readFileSync(path.join(dir, 'safety.viz-app.html'), 'utf8');
-      const [, inFile] = single.match(/chartLinks: (\{.*\}) \}\);<\/script>/);
+      const [, inFile] = single.match(/chartLinks: (\{.*\}), tiers: \{.*\} \}\);<\/script>/);
       expect(JSON.parse(inFile)).toEqual(chartLinks());
     }
   });

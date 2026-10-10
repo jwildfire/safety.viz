@@ -131,7 +131,7 @@ describe('the pages', () => {
     );
     expect(html).toContain(
       'SafetyVizApp.rOnRequest({ createConnection: window.BioViz?.r?.createConnection, ' +
-        'browser: { sourceUrl: "./statistics.R", packages: [] }, megabytes: 13, host: "webr.r-wasm.org" })'
+        'browser: { sourceUrl: "./statistics.R", packages: [] }, megabytes: 13, host: "webr.r-wasm.org", webr: window.BioViz?.r?.WEBR_VERSION })'
     );
     expect(html).toContain(`pitch: '${HOSTED_PITCH.replace(/'/g, "\\'")}'`);
     // It says what starting R downloads, and from where (#196).

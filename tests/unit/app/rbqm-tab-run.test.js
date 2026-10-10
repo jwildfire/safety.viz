@@ -92,15 +92,16 @@ describe('the RBQM tab’s run, as R is given it (#234)', () => {
     for (const { file } of tabStudyFiles()) expect(existsSync(path.join(root, file))).toBe(true);
   });
 
-  it('APP-RBQM-013: four studies are run, each from a folder of its own: the demo study whole, without its labs file, with the seriousness column taken out of its adverse events file and nothing else changed, and its subjects and adverse events files alone (#234)', () => {
+  it('APP-RBQM-013: five studies are run, each from a folder of its own: the demo study whole, without its labs file, with the seriousness column taken out of its adverse events file and nothing else changed, its subjects and adverse events files alone, and those two with its protocol deviations file (#234, #282)', () => {
     expect(RBQM_TAB.scenarios.map((item) => item.id)).toEqual([
       'whole',
       'no-labs',
       'no-column',
-      'two-files'
+      'two-files',
+      'three-files'
     ]);
     const folders = RBQM_TAB.scenarios.map(scenarioFolder);
-    expect(new Set(folders).size).toBe(4);
+    expect(new Set(folders).size).toBe(5);
     expect(folders[0]).toBe('/rbqm/scenarios/whole');
     const names = RBQM_STUDY.files.map((entry) => entry.file);
     const whole = scenarioFiles(scenario('whole'), read);
@@ -125,6 +126,11 @@ describe('the RBQM tab’s run, as R is given it (#234)', () => {
     expect(Object.keys(scenarioFiles(scenario('two-files'), read))).toEqual([
       'Raw_SUBJ.csv',
       'Raw_AE.csv'
+    ]);
+    expect(Object.keys(scenarioFiles(scenario('three-files'), read))).toEqual([
+      'Raw_SUBJ.csv',
+      'Raw_AE.csv',
+      'Raw_PD.csv'
     ]);
     // A column that is not there to take out is said, not passed over.
     expect(() =>

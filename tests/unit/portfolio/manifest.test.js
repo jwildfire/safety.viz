@@ -17,19 +17,19 @@ const manifest = read('src/data/portfolio.json');
 const manifestSchema = read('src/data/schema/portfolio.json');
 const moduleSchema = (module) => read(`src/data/schema/${module}.json`);
 
-// Prototypes: charts the site's config marks `prototype: true`. A prototype is
+// Prototypes: charts the site's config puts on the Prototype rung (`tier`, #272). A prototype is
 // not ready for production: it is exported from the bundle and shown on the
 // docs site, but left out of the manifest by rule, so that neither the demo app
 // nor the Domains page presents it as a finished chart (@jwildfire, 2026-10-02,
 // #165). An experimental chart, by contrast, ships: it is in the manifest. The
 // list is read from the config, not kept here: a chart leaves it by losing the
-// flag and gaining a manifest entry, and the tests below fail for any chart
+// rung and gaining a manifest entry, and the tests below fail for any chart
 // that is in neither. Module name → the name it is exported under.
 const siteConfig = read('site/config.json');
 const exportName = (module) => module.replace(/-(\w)/g, (match, letter) => letter.toUpperCase());
 const PROTOTYPES = Object.fromEntries(
   siteConfig.renderers
-    .filter((renderer) => renderer.prototype)
+    .filter((renderer) => renderer.tier === 'prototype')
     .map((renderer) => [renderer.module, exportName(renderer.module)])
 );
 
@@ -153,10 +153,7 @@ describe('portfolio manifest', () => {
     expect(onStandardSet).toHaveLength(13);
     // The tiers, as the site's config sets them, decide what the manifest lists.
     const tier = Object.fromEntries(
-      siteConfig.renderers.map((renderer) => [
-        renderer.module,
-        renderer.prototype ? 'prototype' : renderer.experimental ? 'experimental' : 'stable'
-      ])
+      siteConfig.renderers.map((renderer) => [renderer.module, renderer.tier || 'exploratory'])
     );
     // The Patient Journey Explorer is the prototype; nothing else is.
     expect(Object.keys(PROTOTYPES)).toEqual(['patient-journey-explorer']);
