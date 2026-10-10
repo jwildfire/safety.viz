@@ -22,6 +22,7 @@ import {
   FILE_PITCH,
   RBQM_CHARTS,
   chartLinks as chartLinksFor,
+  chartTiers,
   inlineJson,
   librariesExpression,
   libraryScript,
@@ -53,9 +54,10 @@ const inlineScript = (script) =>
  * @param {string} options.script The bundled app script.
  * @param {Array<{name: string, global: string, script: string}>} [options.libraries] Further libraries: name, the global their bundle defines, and the bundle.
  * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages (#246), handed to the app for the footnote under each chart: addresses a reader may follow, which the file asks nothing of.
+ * @param {Object<string, {tier: string, note?: string}>} [options.tiers] Each chart's and each tab's rung of the status ladder (#272), as scripts/app-libraries.mjs::chartTiers gives them, handed to the app.
  * @returns {string} The HTML document.
  */
-export function renderAppHtml({ script, libraries = [], chartLinks = {} }) {
+export function renderAppHtml({ script, libraries = [], chartLinks = {}, tiers = {} }) {
   const inline = inlineScript(script);
   const others = libraries
     .map((library) => `<script>${inlineScript(library.script)}</script>\n`)
@@ -69,7 +71,8 @@ export function renderAppHtml({ script, libraries = [], chartLinks = {} }) {
           `pitch: ${JSON.stringify(FILE_PITCH)}`
         ]
       : []),
-    ...(Object.keys(chartLinks).length ? [`chartLinks: ${inlineJson(chartLinks)}`] : [])
+    ...(Object.keys(chartLinks).length ? [`chartLinks: ${inlineJson(chartLinks)}`] : []),
+    ...(Object.keys(tiers).length ? [`tiers: ${inlineJson(tiers)}`] : [])
   ];
   const mount = options.length
     ? `SafetyVizApp.mount('#app', { ${options.join(', ')} })`
@@ -129,7 +132,12 @@ export async function buildApp(outDir) {
   // The file has no site beside it, so its charts' pages are the published site's (#246).
   writeFileSync(
     htmlFile,
-    renderAppHtml({ script: outputFiles[0].text, libraries, chartLinks: chartLinksFor() })
+    renderAppHtml({
+      script: outputFiles[0].text,
+      libraries,
+      chartLinks: chartLinksFor(),
+      tiers: chartTiers()
+    })
   );
 
   return {
@@ -156,7 +164,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
         repository: `/${RBQM_TAB.repository}`,
         chartsUrl: `/${RBQM_CHARTS.path}`
       })
-    )};\n`
+    )};\n` +
+      // And every chart's and tab's rung of the status ladder (#272), as the
+      // demo page is handed them.
+      `window.__appTiers = ${JSON.stringify(chartTiers())};\n`
   );
   console.log(
     `Wrote ${path.relative(rootDir, harness)}, the RBQM tab's options for the test page.`

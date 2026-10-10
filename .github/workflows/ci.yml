@@ -1,5 +1,21 @@
 name: CI
 
+# The required check on dev is the last job below, the gate, which carries the
+# name the ruleset asks for: "Build, format, and test". Three jobs run side by
+# side before it, so every test runs once and the check answers in about six
+# minutes in place of twelve (#292):
+#
+#   static          formatting, the build, the vendored-source checks, the unit
+#                   tests, the docs site build and the requirement-text guard
+#   browser         the browser tests that do not carry the real-R tag
+#   browser-real-r  the browser tests that do
+#   gate            fails unless all three succeeded, then merges the two
+#                   browser reports and runs the evidence guard on the results
+#
+# tests/unit/ci-workflow.test.js reads this file and fails unless the gate
+# keeps the shape that makes it safe to require. CONTRIBUTING.md, "How the
+# check is laid out", says what each part is for. Change both with this file.
+
 on:
   pull_request:
     # Explicit types so a draft marked ready for review is checked; the default
@@ -17,10 +33,17 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # The tag on a browser test that starts real R (CONTRIBUTING.md). One browser
+  # job runs the tests that carry it and the other runs the rest, from this one
+  # value, so the two patterns cannot drift apart and no test is in neither.
+  REAL_R_TAG: '@real-r'
+
 jobs:
-  build-and-test:
-    name: Build, format, and test
-    runs-on: ubuntu-latest
+  static:
+    name: Static checks and unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -87,20 +110,13 @@ jobs:
       - name: Vendored RBQM demo study matches its source
         run: npm run rbqm-study:check-source
 
+      # Writes a JSON report beside what it prints, for the gate's evidence
+      # guard to read, so the unit tests run once (#291).
       - name: Run unit tests
-        run: npm test
+        run: npm test -- --reporter=default --reporter=json --outputFile="$RUNNER_TEMP/vitest.json"
 
       - name: Build docs site (link + evidence validation)
         run: npm run site
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Run browser tests
-        run: npm run test:e2e -- --project=chromium
-
-      - name: Evidence freshness guard
-        run: npm run evidence:check
 
       # Requirement text shown on the evidence pages is extracted from the
       # matrices in requirements/ (#63; relocated from obot.agent in hub#64).
@@ -109,13 +125,192 @@ jobs:
       - name: Requirement-text sync guard
         run: npm run requirements:check
 
-      - name: Upload Playwright report
-        if: always()
+      - name: Upload the unit results
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-results
+          path: ${{ runner.temp }}/vitest.json
+          if-no-files-found: error
+          retention-days: 3
+
+  browser:
+    name: Browser tests without real R
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # With its system packages, as the screenshot baselines were written.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      # Every browser test that does not carry the tag.
+      # The blob report is what the gate merges; --reporter replaces the
+      # reporters in playwright.config.js, so list is named again beside it.
+      - name: Run browser tests
+        env:
+          PLAYWRIGHT_BLOB_OUTPUT_FILE: ${{ runner.temp }}/blob-report/browser.zip
+        run: npm run test:e2e -- --project=chromium --grep-invert "$REAL_R_TAG" --reporter=list,blob
+
+      # Uploaded after a failed test too, so the gate's merged report shows it.
+      - name: Upload the browser report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-report
+          path: ${{ runner.temp }}/blob-report/browser.zip
+          if-no-files-found: error
+          retention-days: 3
+
+  browser-real-r:
+    name: Browser tests with real R
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # With its system packages, as the screenshot baselines were written.
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      # Every browser test that carries the tag: the ones that start real R.
+      # The blob report is what the gate merges; --reporter replaces the
+      # reporters in playwright.config.js, so list is named again beside it.
+      - name: Run browser tests
+        env:
+          PLAYWRIGHT_BLOB_OUTPUT_FILE: ${{ runner.temp }}/blob-report/browser-real-r.zip
+        run: npm run test:e2e -- --project=chromium --grep "$REAL_R_TAG" --reporter=list,blob
+
+      # Uploaded after a failed test too, so the gate's merged report shows it.
+      - name: Upload the browser report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-real-r-report
+          path: ${{ runner.temp }}/blob-report/browser-real-r.zip
+          if-no-files-found: error
+          retention-days: 3
+
+  # The required check. GitHub counts a required job that was skipped as
+  # passed, so this job always runs, and its first step fails unless every job
+  # it needs ended in success: failed, cancelled and skipped all fail it. The
+  # evidence guard alone is not enough to decide, since it compares names and
+  # results and cannot see a job that never ran.
+  gate:
+    name: Build, format, and test
+    needs: [static, browser, browser-real-r]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Every job before the gate succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ',') }}
+          NEEDS: ${{ toJSON(needs) }}
+        run: |
+          echo "$NEEDS"
+          if [ -z "$RESULTS" ]; then
+            echo "::error::The gate was given no job results."
+            exit 1
+          fi
+          left=",$RESULTS,"
+          while [ "$left" != "," ]; do
+            case "$left" in
+              ,success,*) left=",${left#,success,}" ;;
+              *)
+                echo "::error::A job before the gate did not succeed (results: $RESULTS)."
+                exit 1
+                ;;
+            esac
+          done
+          echo "Every job before the gate succeeded."
+
+      # From here to the merge, the steps also run after a failure above, so
+      # that a failed browser test still gets its merged report.
+      - name: Checkout
+        if: ${{ !cancelled() }}
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: ${{ !cancelled() }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        if: ${{ !cancelled() }}
+        run: npm ci
+
+      # Artifacts of this run's own jobs, by their fixed names, into the
+      # runner's temporary directory and never into the checkout.
+      - name: Download the unit results
+        uses: actions/download-artifact@v4
+        with:
+          name: unit-results
+          path: ${{ runner.temp }}/results
+
+      - name: Download the browser report
+        if: ${{ !cancelled() }}
+        uses: actions/download-artifact@v4
+        with:
+          name: browser-report
+          path: ${{ runner.temp }}/blob-reports
+
+      - name: Download the real-R browser report
+        if: ${{ !cancelled() }}
+        uses: actions/download-artifact@v4
+        with:
+          name: browser-real-r-report
+          path: ${{ runner.temp }}/blob-reports
+
+      # One JSON report for the guard, and one HTML report to read a failure in.
+      - name: Merge the two browser reports
+        if: ${{ !cancelled() }}
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ runner.temp }}/results/playwright.json
+          PLAYWRIGHT_HTML_OUTPUT_DIR: ${{ runner.temp }}/playwright-report
+        run: npx playwright merge-reports --reporter=json,html "$RUNNER_TEMP/blob-reports"
+
+      # Reads the unit results and the merged browser results and runs no
+      # suite (#291). It refuses results that are not a clean run of every
+      # test, a test that ran in both browser jobs among them, then compares
+      # every test's name and result with the committed evidence: a test that
+      # ran in neither browser job is missing from the results and is named.
+      - name: Evidence freshness guard
+        run: npm run evidence:check -- --vitest-json="$RUNNER_TEMP/results/vitest.json" --playwright-json="$RUNNER_TEMP/results/playwright.json"
+
+      - name: Upload the merged Playwright report
+        if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: |
-            playwright-report/
-            test-results/
-          if-no-files-found: ignore
+          path: ${{ runner.temp }}/playwright-report/
+          if-no-files-found: error
           retention-days: 14

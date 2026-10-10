@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { test, expect } from '@playwright/test';
+import { test, expect, devices } from '@playwright/test';
 import { CANONICAL } from './evidence.js';
 import {
   APP_LIBRARIES,
@@ -31,6 +31,40 @@ const manifest = JSON.parse(readFileSync(manifestFile, 'utf8'));
 const bioManifest = libraryManifest(APP_LIBRARIES[0]);
 const has = (object, key) => Object.prototype.hasOwnProperty.call(object, key);
 
+// What a page's main content lays out past the viewport, and whether a box
+// that scrolls sideways holds it. The docs site clips sideways overflow on the
+// page, so on a phone whatever runs past the viewport with no such box round it
+// is cut off where it cannot be reached (#285, #162).
+const phoneLayout = (page) =>
+  page.evaluate(() => {
+    const width = document.documentElement.clientWidth;
+    const scrolls = (element) => ['auto', 'scroll'].includes(getComputedStyle(element).overflowX);
+    const boxOf = (element) => {
+      for (let box = element.parentElement; box; box = box.parentElement) {
+        if (box.matches('main')) return null;
+        if (scrolls(box)) return box;
+      }
+      return null;
+    };
+    const past = [...document.querySelectorAll('main *')].filter(
+      (element) =>
+        element.getClientRects().length > 0 && element.getBoundingClientRect().right > width + 0.5
+    );
+    const boxes = [...new Set(past.map(boxOf).filter(Boolean))];
+    return {
+      width,
+      page: document.documentElement.scrollWidth,
+      past: past.length,
+      cutOff: past
+        .filter((element) => !boxOf(element))
+        .map((element) => `${element.tagName.toLowerCase()}.${element.className}`),
+      boxes: boxes.map((box) => {
+        const { left, right } = box.getBoundingClientRect();
+        return { left, right, scrollWidth: box.scrollWidth, clientWidth: box.clientWidth };
+      })
+    };
+  });
+
 test.describe('docs site', () => {
   test.beforeAll(() => {
     execSync('npm run site', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
@@ -46,14 +80,13 @@ test.describe('docs site', () => {
     });
     await page.goto('/_site/demo/index.html');
     await page.evaluate('window.__safetyVizApp.ready');
-    await expect(page).toHaveTitle('safety.viz demo');
+    // The title names the chart the app opens on (#270).
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
     await expect(page.locator('.sva-count')).toHaveText(
       '18 of 18 charts supported by the loaded data'
     );
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
-    await expect(page.locator('.sva-tab[data-domain="biomarkers"] .sva-tab-count')).toHaveText(
-      '5 of 5'
-    );
+    await expect(page.locator('.sva-tab[data-domain="biomarkers"] .sva-tab-count')).toHaveText('5');
     // Its description counts the charts it carries (#212).
     await expect(page.locator('meta[name="description"]')).toHaveAttribute(
       'content',
@@ -81,6 +114,61 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  test('APP-PAGE-039: the docs pages and the demo app serve the same favicon, the hex mark, and the app’s wordmark leads to the docs home (#270)', async ({
+    page
+  }) => {
+    const icon = () => page.locator('link[rel="icon"]');
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(icon()).toHaveCount(1);
+    const app = await icon().getAttribute('href');
+    expect(app.startsWith('data:image/svg+xml,')).toBe(true);
+    expect(decodeURIComponent(app).match(/<polygon/g)).toHaveLength(7);
+    // The wordmark is the way back to the docs: one click, to the docs home.
+    await expect(page.locator('a.sva-brand')).toHaveAttribute('href', '../index.html');
+    await page.locator('a.sva-brand').click();
+    await expect(page).toHaveURL(/\/_site\/index\.html$/);
+    await expect(icon()).toHaveCount(1);
+    expect(await icon().getAttribute('href')).toBe(app);
+    // A chart's own pages and the Domains page carry it too.
+    for (const address of [
+      '/_site/histogram/index.html',
+      '/_site/histogram/evidence.html',
+      '/_site/domains/index.html'
+    ]) {
+      await page.goto(address);
+      expect(await icon().getAttribute('href'), address).toBe(app);
+    }
+  });
+
+  test('APP-PAGE-034: on the built demo page at 1,280 pixels, in the app’s own typeface, the welcome is one line above the chart and the header is one row with every tab on it (#269)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await page.evaluate(() => document.fonts.ready);
+    const welcome = page.locator('.sva-welcome');
+    await expect(welcome.locator('p')).toHaveText(
+      'You are looking at the CDISC pilot study, a public demo: 254 participants, 18 charts on five tabs. ' +
+        'To use your own files, open Data. They are read in this browser and never leave it.'
+    );
+    // One line of text: the paragraph is no taller than a line and a half of it.
+    const lines = await welcome.locator('p').evaluate((element) => {
+      const style = getComputedStyle(element);
+      return element.getBoundingClientRect().height / parseFloat(style.lineHeight);
+    });
+    expect(lines).toBeLessThan(1.5);
+    // The header's first row holds the wordmark and all six tabs on one line.
+    const tops = await page
+      .locator('.sva-tabs > *')
+      .evaluateAll((elements) =>
+        elements.map((element) => Math.round(element.getBoundingClientRect().top))
+      );
+    expect(tops).toHaveLength(6);
+    expect(new Set(tops).size).toBe(1);
+    await expect(page.locator('.sva-item[data-view="data"] .sva-tag')).toHaveText('Pilot study');
+  });
   test('APP-PAGE-031: on the built demo page every chart’s footnote leads where its pages are: each safety chart’s test evidence, and the clinical guide of the six that have one, are pages the site serves; a biomarker chart’s test evidence is on bio.viz’s site (#246)', async ({
     page
   }) => {
@@ -255,27 +343,26 @@ test.describe('docs site', () => {
     );
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(HOSTED_PITCH);
     await page.locator('.sva-tab[data-domain="biomarkers"]').click();
-    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-action')).toHaveText(
-      'Start R'
-    );
+    await expect(page.locator('.sva-charts > .sva-r .sva-action')).toHaveText('Start R');
     // Shown, not pressed: nothing is asked of R's hosts.
     expect(requests.filter((url) => /webr\.r-wasm\.org|statistics\.R/.test(url))).toEqual([]);
     // Pressed on the page as built: its own factory and its own `./statistics.R`
     // start R, and a chart prints R's answer.
     await page.evaluate(() => window.__safetyVizApp.select('association-scatter'));
-    await page.locator('.sva-group[data-group="biomarkers"] .sva-action').click();
+    await page.locator('.sva-charts > .sva-r .sva-action').click();
     await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
       "Pearson's product-moment correlation",
       { timeout: 150000 }
     );
-    await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-action')).toHaveText(
-      'R started'
-    );
+    await expect(page.locator('.sva-charts > .sva-r .sva-chip')).toHaveText('R ready▾');
     expect(requests).toContain(new URL('/_site/demo/statistics.R', page.url()).href);
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-031: the built demo page carries the RBQM tab with its Experimental badge and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-RBQM-031: the built demo page carries the RBQM tab, which says it is Experimental on the corner of its view, and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)', { tag: '@real-r' }, async ({
     page
   }) => {
     // It downloads R and some forty packages, then runs every workflow.
@@ -303,13 +390,23 @@ test.describe('docs site', () => {
     await page.evaluate('window.__safetyVizApp.ready');
     const tab = page.locator('.sva-tab[data-tab="rbqm"]');
     await expect(tab.locator('.sva-tab-title')).toHaveText('RBQM');
-    await expect(tab.locator('.sva-badge')).toHaveText('Experimental');
+    await expect(tab.locator('.sva-badge')).toHaveCount(0);
     await page.locator('.sva-item[data-view="data"]').click();
     await page.locator('.sva-side select.sva-study').selectOption('rbqm');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
     await tab.click();
-    await expect(page.locator('.sva-rbqm-status')).toContainText(
-      'It downloads about 55 MB, once: R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) and gsm’s packages from this page (about 2 MB).'
+    await expect(page.locator('.sva-corner .sv-status-word')).toHaveText('Experimental');
+    await expect(page.locator('.sva-corner .sv-status-tip')).toHaveText(
+      'Experimental: new in 1.10. R runs in the browser, and what the tab shows may still change.',
+      { useInnerText: false }
+    );
+    await expect(page.locator('.sva-rbqm-status')).toHaveText(
+      'Site metrics need R. Start R, at the top right.'
+    );
+    // What starting R downloads, and from where, is on the control (#280).
+    await expect(page.locator('.sva-charts > .sva-r .sva-r-row')).toHaveAttribute(
+      'title',
+      'Site metrics need R. Start R to run them: about 55 MB, downloaded once from webr.r-wasm.org, repo.r-wasm.org and this page. The study’s data stays in this browser.'
     );
     // Shown, not pressed: nothing is asked of R's hosts, nor of the page for R's files or the charts.
     expect(requests.filter((url) => /r-wasm|pipeline\.R|\.yaml$|gsm\.viz\.js/.test(url))).toEqual(
@@ -320,6 +417,9 @@ test.describe('docs site', () => {
       timeout: 360000
     });
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    // A metric's page, from its item in the tab's row (#279).
+    await page.locator('.sva-view-item[data-item="kri0001"]').click();
+    await expect(page).toHaveURL(/#rbqm\/kri0001$/);
     await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
     await expect(tab.locator('.sva-tab-count')).toHaveText('8 of 8');
     // Each came from where the page as built serves it.
@@ -512,9 +612,262 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  // The status label on the docs site (#275, obot.roadmap#403): one chart of each
+  // rung in use.
+  const RUNGS = [
+    ['histogram', 'Exploratory', 'solid', 'Safety Histogram is exploratory', null],
+    [
+      'time-to-event',
+      'Experimental',
+      'dashed',
+      'Time-to-Event Explorer is experimental',
+      'Experimental until an external clinical review confirms its Kaplan–Meier estimates.'
+    ],
+    [
+      'patient-journey-explorer',
+      'Prototype',
+      'dotted',
+      'Patient Journey Explorer is a prototype',
+      null
+    ]
+  ];
+  const statusOf = (scope) => scope.locator('.sv-status');
+  const outline = (label) =>
+    label
+      .locator('.sv-status-label')
+      .evaluate((element) => getComputedStyle(element).borderTopStyle);
+
+  test('APP-TIER-024: every gallery card shows its chart’s rung with the status label, and a click opens its panel over the cards beside it: the four rungs, the chart’s own marked and, below Exploratory, its reason; no pill remains (#275)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/_site/index.html');
+    const available = config.renderers.filter((renderer) => renderer.status === 'available');
+    await expect(page.locator('.card .sv-status')).toHaveCount(available.length);
+    await expect(page.locator('.site-badge')).toHaveCount(0);
+    await expect(page.locator('.sv-status-label[data-tier="qualified"]')).toHaveCount(0);
+    for (const [module, word, border, heading, reason] of RUNGS) {
+      const card = page.locator('.card', { has: page.locator(`a[href="${module}/index.html"]`) });
+      const label = statusOf(card);
+      await expect(label.locator('.sv-status-word'), module).toHaveText(word);
+      expect(await outline(label), module).toBe(border);
+      const panel = label.locator('.sv-status-panel');
+      await expect(panel, module).toBeHidden();
+      await label.locator('.sv-status-label').click();
+      await expect(panel, module).toBeVisible();
+      await expect(panel.getByRole('heading'), module).toHaveText(heading);
+      await expect(panel.locator('.sv-status-step'), module).toHaveCount(4);
+      await expect(panel.locator('.sv-status-here .sv-status-rung'), module).toHaveText(word);
+      await expect(panel.locator('.sv-status-mark'), module).toHaveText(['This chart']);
+      if (reason) await expect(panel.locator('.sv-status-text').first(), module).toHaveText(reason);
+      // The panel is not clipped by its card: all of it can be clicked, to its last line.
+      const [inside, around] = [await panel.boundingBox(), await card.boundingBox()];
+      expect(inside.width, module).toBeGreaterThan(300);
+      expect(inside.y + inside.height, module).toBeGreaterThan(around.y);
+      await panel.getByRole('link', { name: 'What each rung means' }).click({ trial: true });
+      if (module === 'time-to-event') {
+        await page.screenshot({
+          path: 'test-results/evidence-preview/site/APP-TIER-024-gallery-label-panel.png'
+        });
+      }
+      // Opening the next closes this one; Escape closes the last.
+    }
+    await expect(page.locator('.sv-status-panel:visible')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.sv-status-panel:visible')).toHaveCount(0);
+  });
+
+  test('APP-TIER-025: the title of each of a chart’s pages shows its rung with the status label, on the demo, evidence, API and guide pages, and a click opens its panel; the kit page’s note carries the Time-to-Event Explorer’s (#275)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    for (const [module, word, border, heading, reason] of RUNGS) {
+      const renderer = config.renderers.find((entry) => entry.module === module);
+      const pages = [
+        'index.html',
+        'evidence.html',
+        'api.html',
+        ...(renderer.guide ? ['guide.html'] : [])
+      ];
+      for (const file of pages) {
+        const where = `${module}/${file}`;
+        await page.goto(`/_site/${where}`);
+        const label = statusOf(page.locator('h1'));
+        await expect(label, where).toHaveCount(1);
+        await expect(label.locator('.sv-status-word'), where).toHaveText(word);
+        expect(await outline(label), where).toBe(border);
+        await expect(page.locator('.site-badge'), where).toHaveCount(0);
+        await label.locator('.sv-status-label').click();
+        const panel = label.locator('.sv-status-panel');
+        await expect(panel, where).toBeVisible();
+        await expect(panel.getByRole('heading'), where).toHaveText(heading);
+        if (reason)
+          await expect(panel.locator('.sv-status-text').first(), where).toHaveText(reason);
+        // The panel is set in its own type, not the title's.
+        expect(
+          await panel
+            .locator('.sv-status-meaning')
+            .first()
+            .evaluate((element) => parseFloat(getComputedStyle(element).fontSize)),
+          where
+        ).toBeLessThan(15);
+        await page.keyboard.press('Escape');
+        await expect(panel, where).toBeHidden();
+      }
+    }
+    // A chart below Exploratory still says so itself on its demo page, where no host shows a label for it.
+    await page.goto('/_site/hep-waterfall/index.html');
+    await expect(page.locator('.sv-main > .sv-status-row .sv-status-word')).toHaveText(
+      'Experimental'
+    );
+    // The kit page's one conditional member carries the chart's label.
+    await page.goto('/_site/kit/index.html');
+    const followed = statusOf(page.locator('.kit-status'));
+    await expect(followed.locator('.sv-status-word')).toHaveText('Experimental');
+    await followed.locator('.sv-status-label').click();
+    await expect(followed.getByRole('heading')).toHaveText(
+      'Time-to-Event Explorer is experimental'
+    );
+    await expect(page.locator('.site-badge')).toHaveCount(0);
+  });
+
+  test('APP-TIER-026: at 390 pixels a gallery card’s label and a page title’s label are on screen, and each panel opens inside the window with nothing running off the page (#275)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    for (const [where, scope] of [
+      ['index.html', '.card:has(a[href="time-to-event/index.html"])'],
+      ['time-to-event/index.html', 'h1'],
+      ['patient-journey-explorer/evidence.html', 'h1']
+    ]) {
+      await page.goto(`/_site/${where}`);
+      const label = statusOf(page.locator(scope));
+      await label.locator('.sv-status-label').scrollIntoViewIfNeeded();
+      const pillBox = await label.locator('.sv-status-label').boundingBox();
+      expect(pillBox.x, where).toBeGreaterThanOrEqual(0);
+      expect(pillBox.x + pillBox.width, where).toBeLessThanOrEqual(390);
+      expect(await overflow(), where).toBeLessThanOrEqual(0);
+      await label.locator('.sv-status-label').click();
+      const panel = label.locator('.sv-status-panel');
+      await expect(panel, where).toBeVisible();
+      const box = await panel.boundingBox();
+      expect(box.x, where).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, where).toBeLessThanOrEqual(390);
+      expect(await overflow(), where).toBeLessThanOrEqual(0);
+      if (where === 'time-to-event/index.html') {
+        await page.screenshot({
+          path: 'test-results/evidence-preview/site/APP-TIER-026-phone-title-label-panel.png'
+        });
+      }
+      await panel.getByRole('button', { name: 'Close' }).click();
+      await expect(panel, where).toBeHidden();
+    }
+  });
+
+  test('APP-TIER-028: a status label’s hover line stays inside the window and never widens the page: on every gallery card at 1,280, 1,024 and 390 pixels, and on a page title’s label at 390 pixels after its panel is closed under the pointer or with Escape (#309)', async ({
+    page
+  }) => {
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const inside = async (pill, width, where) => {
+      const tip = pill.locator('.sv-status-tip');
+      await expect(tip, where).toBeVisible();
+      const box = await tip.boundingBox();
+      expect(box.x, where).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, where).toBeLessThanOrEqual(width);
+      expect(await overflow(), where).toBeLessThanOrEqual(0);
+    };
+    for (const width of [1280, 1024, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/_site/index.html');
+      const pills = page.locator('.card .sv-status-label');
+      const count = await pills.count();
+      expect(count).toBe(available.length);
+      for (let index = 0; index < count; index += 1) {
+        const pill = pills.nth(index);
+        await pill.scrollIntoViewIfNeeded();
+        await pill.hover();
+        await inside(pill, width, `card ${index + 1} at ${width}`);
+        // The last card of the first row is the one nearest the right edge.
+        if (width === 1280 && index === 2) {
+          await page.screenshot({
+            path: 'test-results/evidence-preview/site/APP-TIER-028-hover-line-inside.png'
+          });
+        }
+      }
+    }
+    // A page title's label at 390 pixels: its panel opened and closed with the
+    // pointer still on it, and then closed with Escape, which leaves the
+    // keyboard on it. Either way the line shows again.
+    await page.goto('/_site/time-to-event/index.html');
+    const pill = statusOf(page.locator('h1')).locator('.sv-status-label');
+    await pill.click();
+    await pill.click();
+    await inside(pill, 390, 'title, closed under the pointer');
+    await pill.click();
+    await page.mouse.move(0, 800);
+    await page.keyboard.press('Escape');
+    await expect(pill).toBeFocused();
+    await inside(pill, 390, 'title, closed with Escape');
+  });
+
+  test('APP-TIER-028: on a phone’s screen, where the window grows with what overflows it, a label’s panel and its hover line are inside the screen on a gallery card and on a page title, and the page is no wider than the screen (#309)', async ({
+    browser,
+    baseURL
+  }) => {
+    // A phone as the browser emulates one: touch, and a window whose inner
+    // width is not the screen's once something runs past the edge.
+    const context = await browser.newContext({ ...devices['Pixel 5'], baseURL });
+    const page = await context.newPage();
+    const screen = () => page.evaluate(() => document.documentElement.clientWidth);
+    const overflow = () =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+      );
+    const inside = async (part, where) => {
+      await expect(part, where).toBeVisible();
+      const box = await part.boundingBox();
+      expect(box.x, where).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, where).toBeLessThanOrEqual(await screen());
+      expect(await overflow(), where).toBeLessThanOrEqual(0);
+    };
+    for (const [where, scope] of [
+      ['index.html', '.card:has(a[href="time-to-event/index.html"])'],
+      ['index.html', '.card:has(a[href="histogram/index.html"])'],
+      ['time-to-event/index.html', 'h1'],
+      ['hep-explorer/guide.html', 'h1']
+    ]) {
+      await page.goto(`/_site/${where}`);
+      const label = statusOf(page.locator(scope));
+      const pill = label.locator('.sv-status-label');
+      await pill.scrollIntoViewIfNeeded();
+      await pill.tap();
+      await inside(label.locator('.sv-status-panel'), `${where} ${scope}: the panel`);
+      // Tapped closed, the line shows: the tap's hover stays on the label.
+      await pill.tap();
+      await expect(label.locator('.sv-status-panel')).toBeHidden();
+      await inside(pill.locator('.sv-status-tip'), `${where} ${scope}: the hover line`);
+    }
+    await context.close();
+  });
+
   test('gallery shows one card per available renderer (#7)', async ({ page }) => {
     await page.goto('/_site/index.html');
     await expect(page.locator('.card.status-available')).toHaveCount(available.length);
+  });
+
+  test('the built home page describes itself with the number of charts the configuration lists as available and not Prototype (#286)', async ({
+    page
+  }) => {
+    // A Prototype is named by the status ladder's one field, `tier` (#272).
+    const listed = available.filter((renderer) => renderer.tier !== 'prototype').length;
+    const words = { 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen', 16: 'Sixteen' };
+    await page.goto('/_site/index.html');
+    const description = await page.locator('meta[name="description"]').getAttribute('content');
+    expect(description.split(' ')[0]).toBe(words[listed] || String(listed));
+    expect(description).toMatch(/^\S+ classic clinical-safety graphics from the safetyGraphics /);
   });
 
   for (const renderer of available) {
@@ -549,6 +902,105 @@ test.describe('docs site', () => {
   // the gallery index, and its disclosure button reveals one link per available
   // renderer straight to that chart's demo. The list is data-driven, so its
   // count tracks the config; interaction is hover + click + full keyboard.
+  // The docs site clips sideways overflow on the page, so on a phone whatever
+  // runs past the viewport cannot be reached unless a box of its own scrolls
+  // it. The Hepatic Explorer's demo page opens on the composite view, whose
+  // two tables are wider than a phone (#285).
+  test('the Hepatic Explorer demo page holds at a 390px viewport: in each of its views nothing in the main content runs past the viewport without a scrolling box of its own around it, and the composite view’s tables scroll to their last column (#285)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/_site/hep-explorer/index.html');
+    await expect(page.locator('.safety-hep-explorer .hep-composite-panels canvas')).toHaveCount(4);
+
+    const layout = () => phoneLayout(page);
+
+    const views = await page.locator('.safety-hep-explorer .sv-view-option').allTextContents();
+    expect(views).toHaveLength(3);
+    for (const view of views) {
+      await page.locator('.safety-hep-explorer .sv-view-option', { hasText: view }).click();
+      await expect(page.locator('.safety-hep-explorer .sv-view-option.is-active')).toHaveText(view);
+      const held = await layout();
+      expect(held.width).toBe(390);
+      expect(held.page, view).toBe(390);
+      expect(held.cutOff, view).toEqual([]);
+      // Every box that scrolls is itself inside the viewport.
+      held.boxes.forEach((box) => {
+        expect(box.left).toBeGreaterThanOrEqual(0);
+        expect(box.right).toBeLessThanOrEqual(390);
+      });
+    }
+
+    // The check is not vacuous: the composite view, the last of the three and
+    // the one the page opens on, has two tables wider than their boxes.
+    await expect(page.locator('.safety-hep-explorer .sv-view-option.is-active')).toHaveText(
+      /Composite/
+    );
+    const composite = await layout();
+    expect(composite.past).toBeGreaterThan(0);
+    expect(composite.boxes).toHaveLength(2);
+    composite.boxes.forEach((box) => expect(box.scrollWidth).toBeGreaterThan(box.clientWidth));
+    // Each scrolls to its table's last column.
+    const reached = await page.evaluate(() =>
+      [...document.querySelectorAll('.safety-hep-explorer .hep-composite .hep-migration')].map(
+        (box) => {
+          box.scrollLeft = box.scrollWidth;
+          const last = box.querySelector('thead tr:first-child th:last-child');
+          return {
+            scrolled: box.scrollLeft > 0,
+            lastRight: last.getBoundingClientRect().right,
+            boxRight: box.getBoundingClientRect().right
+          };
+        }
+      )
+    );
+    expect(reached).toHaveLength(2);
+    reached.forEach((table) => {
+      expect(table.scrolled).toBe(true);
+      expect(table.lastRight).toBeLessThanOrEqual(table.boxRight + 0.5);
+    });
+    expect(await page.evaluate(() => window.scrollX)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+
+  // Every chart's API reference (#162): stacked under its contents list on a
+  // phone, the body is held to the viewport, and each table wider than it
+  // scrolls in a box of its own.
+  test('every chart’s API reference page holds at a 390px viewport: the page is no wider than the viewport, and nothing in its main content runs past it without a scrolling box of its own around it (#162)', async ({
+    page
+  }) => {
+    test.setTimeout(60000);
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(available.length).toBeGreaterThan(9);
+    for (const renderer of available) {
+      await page.goto(`/_site/${renderer.module}/api.html`);
+      await expect(page.locator('.api-layout .api-body h2').first()).toBeVisible();
+      const held = await phoneLayout(page);
+      expect(held.width).toBe(390);
+      expect(held.page, renderer.module).toBe(390);
+      expect(held.cutOff, renderer.module).toEqual([]);
+      held.boxes.forEach((box) => {
+        expect(box.left, renderer.module).toBeGreaterThanOrEqual(0);
+        expect(box.right, renderer.module).toBeLessThanOrEqual(390);
+      });
+      // Not vacuous: the page has tables wider than a phone, in boxes that scroll.
+      expect(held.boxes.length, renderer.module).toBeGreaterThan(0);
+      expect(
+        held.boxes.some((box) => box.scrollWidth > box.clientWidth),
+        renderer.module
+      ).toBe(true);
+      // The contents list and the body are stacked, each as wide as the column.
+      const columns = await page.evaluate(() =>
+        ['.api-toc', '.api-body'].map(
+          (selector) => document.querySelector(selector).getBoundingClientRect().width
+        )
+      );
+      columns.forEach((width) => expect(width, renderer.module).toBeLessThanOrEqual(390));
+    }
+  });
+
   test.describe('gallery nav dropdown (#71)', () => {
     test('lists one chart link per available renderer, closed by default (#71)', async ({
       page

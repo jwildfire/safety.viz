@@ -271,4 +271,27 @@ describe('qt-explorer printed central-tendency values (QT-CT-008)', () => {
     expect(instance.tableWrap.classList.contains('qt-empty')).toBe(true);
     expect(instance.noteEl.textContent).toContain('needs a placebo arm');
   });
+
+  it('QT-CT-009: the table is in a box of its own that can scroll: a region, named after the table in it, that takes focus; a different table starts at its first column and the same one keeps its place (#284)', () => {
+    const instance = build();
+    const box = instance.tableWrap;
+    expect(box.contains(box.querySelector('table.qt-ct-table'))).toBe(true);
+    expect(box.getAttribute('role')).toBe('region');
+    expect(box.getAttribute('tabindex')).toBe('0');
+    const caption = () => box.querySelector('caption').textContent;
+    expect(box.getAttribute('aria-label')).toBe(caption());
+    expect(caption()).toContain('change by visit and arm');
+
+    // The same table drawn again stays where the reader scrolled it.
+    box.scrollLeft = 120;
+    rerender(instance);
+    expect(box.scrollLeft).toBe(120);
+
+    // The categorical view's table takes the box: renamed, and from its start.
+    instance.state.view = 'categorical';
+    rerender(instance);
+    expect(caption()).toContain('participants exceeding thresholds by arm');
+    expect(box.getAttribute('aria-label')).toBe(caption());
+    expect(box.scrollLeft).toBe(0);
+  });
 });

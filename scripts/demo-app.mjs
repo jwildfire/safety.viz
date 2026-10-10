@@ -24,12 +24,13 @@
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { publishDemoAppFonts, renderDemoAppPage } from './site-lib.mjs';
+import { countWord, publishDemoAppFonts, renderDemoAppPage } from './site-lib.mjs';
 import { APP_BUNDLE, APP_HTML, buildApp } from './build-app.mjs';
 import {
   APP_LIBRARIES,
   RBQM_CHARTS,
   chartLinks,
+  chartTiers,
   libraryManifest,
   libraryScript,
   servedBesideTheApp,
@@ -54,30 +55,7 @@ export const LOCAL_LINKS = Object.freeze({ docs: null, domains: null });
  */
 export const LOCAL_SITE = SITE;
 
-const WORDS = [
-  'no',
-  'one',
-  'two',
-  'three',
-  'four',
-  'five',
-  'six',
-  'seven',
-  'eight',
-  'nine',
-  'ten',
-  'eleven',
-  'twelve',
-  'thirteen',
-  'fourteen',
-  'fifteen',
-  'sixteen',
-  'seventeen',
-  'eighteen',
-  'nineteen',
-  'twenty'
-];
-const counted = (count, noun) => `${WORDS[count] || count} ${noun}${count === 1 ? '' : 's'}`;
+const counted = (count, noun) => `${countWord(count)} ${noun}${count === 1 ? '' : 's'}`;
 
 /**
  * What the app reviews a study in, for its page's description: every chart it
@@ -163,7 +141,8 @@ export async function buildDemoAppDir(outDir, { links, site = '../' } = {}) {
       libraries: APP_LIBRARIES,
       charts: chartsCarried(),
       links,
-      chartLinks: chartLinks({ site })
+      chartLinks: chartLinks({ site }),
+      tiers: chartTiers()
     })
   );
   return { dir: outDir, page };

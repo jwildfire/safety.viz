@@ -9,6 +9,10 @@
 // returned them: a chart is given the rows of its metric, picked out by the
 // metric's ID, and nothing in a row is changed. The seconds a step has taken
 // and the megabytes a download is said to be are not statistics of the study.
+//
+// What is said of R starting, of R being ready and of R not starting is said
+// in the words every tab that starts R uses (r-words.js, #277).
+import { browserSaid, rWords, waitSaid } from './r-words.js';
 
 const isRecord = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 const rowsOf = (value) => (Array.isArray(value) ? value.filter(isRecord) : []);
@@ -20,23 +24,6 @@ const counted = (count, noun) => `${count} ${noun}${count === 1 ? '' : 's'}`;
 export function listed(items) {
   if (items.length < 2) return items.join('');
   return `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
-}
-
-/** A sentence that ends in one full stop, whatever it was handed. */
-const sentence = (text) => `${String(text).trim().replace(/\.+$/, '')}.`;
-
-/**
- * Where starting R downloads from, and about how much from each, in words:
- * "R itself from webr.r-wasm.org (about 13 MB), ...".
- * @param {Array<{what: string, host: ?string, megabytes: number}>} downloads Each download; a null host is the page's own address.
- * @returns {string} The phrase.
- */
-export function downloadsPhrase(downloads) {
-  return listed(
-    downloads.map(
-      ({ what, host, megabytes }) => `${what} from ${host || 'this page'} (about ${megabytes} MB)`
-    )
-  );
 }
 
 /** The megabytes of every download together. */
@@ -59,63 +46,341 @@ export function ranOn(files, study = [], word = 'loaded file') {
 }
 
 /**
- * What the tab says before R is started: what starting it downloads, and from
- * where, and that the files stay here.
- * @param {number} files How many raw files are loaded.
- * @param {Array<{what: string, host: ?string, megabytes: number}>} downloads The downloads.
- * @param {string[]} [study] The loaded study's files that stand in for raw tables, by name.
- * @returns {string} The sentences.
+ * The tab's footnote (#271): one link, to gsm's own documentation of the
+ * metrics the tab runs (@jwildfire, 2026-10-10). The docs site builds no page
+ * for the tab, so there is no link to one, nor to test evidence. The address is
+ * followed only when the reader clicks it: the app asks nothing of that host.
  */
-export function needSentence(files, downloads, study = []) {
-  return (
-    `Start R to run gsm’s workflows on ${ranOn(files, study, 'loaded raw file')}. ` +
-    `It downloads about ${totalMegabytes(downloads)} MB, once: ${downloadsPhrase(downloads)}. ` +
-    'The files stay in this browser, and R runs here.'
-  );
-}
+export const RBQM_DOCS = Object.freeze({
+  key: 'docs',
+  label: 'gsm.kri documentation',
+  href: 'https://gilead-public.github.io/gsm.kri/'
+});
 
 /** What the tab says when nothing the metrics can run on is loaded. */
 export const NO_FILES =
-  'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or drop gsm raw files here.';
+  'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.';
 
 /** What the tab says when files are loaded and none is one the metrics can run on. */
 export const NONE_PLACED =
   'None of the loaded files is a subject-level or adverse events file, or a gsm raw file, so there is nothing for R to run.';
 
 /**
- * What the tab says R is doing, for every step from the press to the first
- * result, with how long it has been since the press.
- * @param {string} step `runtime`, `packages`, `files`, `source`, `attach` or `run`.
- * @param {{seconds: number, files: number, study?: string[], downloads: Array<{what: string, host: ?string, megabytes: number}>}} context Whole seconds since the press, how many raw files are loaded, the loaded study's files that stand in for raw tables, and the downloads.
- * @returns {string} The sentence.
+ * What the Data tab's card says of the loaded data (#281, obot.roadmap#406):
+ * how many metrics it supports, as the card's sentence and as the workflow's
+ * third step counts them; what the card says of a metric's state, under the
+ * key to its marks and in the metric's full name; the title over the reasons;
+ * and the small print. Nothing here says why a metric cannot run: those
+ * sentences are R's (rbqm-files.js).
+ * @param {number} can How many metrics the loaded data supports.
+ * @param {number} of How many metrics there are.
+ * @returns {{say: string, lead: string, also: string, states: Object<string, string>, why: function(number): string, note: string}} The words.
  */
-export function stepSentence(step, { seconds, files, study = [], downloads }) {
-  const from = (index) =>
-    `about ${downloads[index].megabytes} MB from ${downloads[index].host || 'this page'}`;
-  const packages = downloads.slice(1).map((_, index) => from(index + 1));
-  const doing = {
-    runtime: `Starting R: downloading R itself, ${from(0)}.`,
-    packages: `Starting R: installing its packages, ${listed(packages)}. This is the longest step.`,
-    files: 'Starting R: fetching gsm’s workflow files from this page.',
-    source: 'Starting R: reading the pipeline’s R.',
-    attach:
-      'R has started. Loading gsm’s packages in R; the database they query with takes the longest.',
-    run: `Running gsm’s workflows on ${ranOn(files, study)}: the mappings, then each metric, then the reporting tables.`
-  }[step];
-  return `${doing || 'Starting R.'} ${counted(seconds, 'second')} so far.`;
+export function supportWords(can, of) {
+  const count = `${can} of ${counted(of, 'metric')}`;
+  return {
+    say: `This data supports ${count}.`,
+    lead: `${count} supported`,
+    also: `${can} of ${of} RBQM ${of === 1 ? 'metric' : 'metrics'}`,
+    // In the order the key lists them.
+    states: {
+      ran: 'ran',
+      running: 'running',
+      todo: 'not started',
+      cannot: 'cannot run: missing data'
+    },
+    why: (count) => `Why ${count} cannot run`,
+    note: 'Read from the files’ names and columns. R says the same when it runs.'
+  };
 }
 
 /**
- * What the tab says when R did not start, or stopped.
+ * What a kept raw file's card says of it on the Data tab (#281): the raw
+ * domain it was placed in and how that was told, or that it was placed in none.
+ * @param {{table: ?string, by: ?string}} entry One file of rawStudy's (rbqm-files.js).
+ * @returns {string} The few words of the card's tag.
+ */
+export const rawTag = (entry) =>
+  entry.table
+    ? `gsm raw file: ${entry.table}, by its ${entry.by === 'name' ? 'name' : 'columns'}`
+    : 'gsm raw file: not recognised';
+
+/** Every address starting R downloads from, in words: "webr.r-wasm.org, repo.r-wasm.org and this page". */
+export const hostsSaid = (downloads) =>
+  listed([...new Set(downloads.map(({ host }) => host || 'this page'))]);
+
+/**
+ * The sentences the tab shares with every tab that starts R (r-words.js).
+ * @param {Array<{what: string, host: ?string, megabytes: number}>} downloads The downloads.
+ * @returns {Object} The sentences.
+ */
+export const rbqmWords = (downloads) =>
+  rWords({
+    needs: 'Site metrics',
+    verb: 'run them',
+    megabytes: totalMegabytes(downloads),
+    from: hostsSaid(downloads),
+    appears: 'The metrics',
+    missing: 'no metric was run',
+    still: 'No metric was run.'
+  });
+
+/**
+ * How long the tab waits on R at each step before it gives up, in seconds
+ * (#261). Each is many times the longest that step was measured to take: the
+ * start downloads about 55 MB, which a slow connection takes minutes over;
+ * loading gsm's packages took 16 seconds by hand and the workflows 3.
+ */
+export const R_LIMITS = Object.freeze({ start: 600, attach: 180, run: 300 });
+
+/** What R was doing at each step, as the sentence for an R that stopped answering names it. */
+const DOING = {
+  start: 'it was starting',
+  attach: 'it was loading gsm’s packages',
+  run: 'it was running the workflows'
+};
+
+/**
+ * What the tab says when R did not start, or stopped: a few words for the
+ * control, what its button does, one plain reason, and what the browser or R
+ * said, which is shown only when a reader asks for it.
  * @param {'start'|'attach'|'run'} when What R was doing.
  * @param {?string} message What R or the browser said.
- * @returns {string} The sentences.
+ * @param {Object} [context]
+ * @param {Array<{what: string, host: ?string, megabytes: number}>} [context.downloads] The downloads.
+ * @param {?string} [context.step] The step of starting R that failed: `runtime`, `packages`, `files` or `source`.
+ * @param {?number} [context.silent] When R gave no answer, the seconds it was waited on.
+ * @returns {{say: string, label: string, why: string, details: Object}} What the control is handed (src/app/libraries.js::controlState).
  */
-export function failureSentence(when, message) {
-  const why = message ? sentence(message) : 'No reason was given.';
-  if (when === 'run') return `R stopped while running the workflows: ${why}`;
-  const what = when === 'attach' ? 'R started, but gsm’s packages did not load' : 'R did not start';
-  return `${what}: ${why} Try again; if it fails again, reload the page.`;
+export function failureOf(when, message, { downloads = [], step = null, silent = null } = {}) {
+  const words = rbqmWords(downloads);
+  const details = (heading, reason, more = null, moreTitle = 'What the browser said') => ({
+    heading,
+    text: [reason],
+    ...(more ? { more: [more], moreTitle } : {})
+  });
+  if (silent !== null) {
+    return {
+      say: words.stopped,
+      label: words.again,
+      why: words.why,
+      details: details(words.stopped, words.stoppedReason(waitSaid(silent), DOING[when]))
+    };
+  }
+  if (when === 'run') {
+    return {
+      say: 'R stopped',
+      label: 'Run again',
+      why: words.why,
+      details: details(
+        'R stopped',
+        'R stopped while it was running gsm’s workflows, so there are no results. Run again; if it stops again, reload the page.',
+        browserSaid(message, 'R'),
+        'What R said'
+      )
+    };
+  }
+  // What was being downloaded when R did not start, and from where.
+  const from = (index) => (downloads[index] && downloads[index].host) || 'this page';
+  const fetching = {
+    runtime: () => words.failedReason('R', from(0)),
+    packages: () =>
+      words.failedReason(
+        'R’s packages',
+        listed([...new Set(downloads.slice(1).map((_, index) => from(index + 1)))])
+      ),
+    files: () => words.failedReason('gsm’s workflow files', 'this page')
+  };
+  const reason =
+    when === 'attach'
+      ? 'R started, but gsm’s packages did not load in it. Try again; if it fails again, reload the page. No metric was run.'
+      : fetching[step]
+        ? fetching[step]()
+        : words.failedOther;
+  return {
+    say: words.failed,
+    label: words.again,
+    why: words.why,
+    details: details(
+      words.failed,
+      reason,
+      browserSaid(message, when === 'attach' ? 'R' : 'The browser'),
+      when === 'attach' ? 'What R said' : 'What the browser said'
+    )
+  };
+}
+
+/**
+ * The six steps from a press to the first result, as the tab names them (#280):
+ * what the control says while each runs, what the body's list says, and what
+ * Run details says once it is done. `from` are the names the connection and
+ * the tab give the moments that make up the step.
+ */
+export const RUN_STEPS = Object.freeze([
+  { id: 'runtime', from: ['runtime'], say: 'Downloading R', done: 'Downloaded R' },
+  {
+    id: 'packages',
+    from: ['packages'],
+    say: 'Installing R packages',
+    done: 'Installed R packages'
+  },
+  {
+    id: 'files',
+    from: ['files', 'source'],
+    say: 'Fetching gsm’s workflow files',
+    done: 'Fetched gsm’s workflow files'
+  },
+  {
+    id: 'attach',
+    from: ['attach'],
+    say: 'Loading gsm’s packages',
+    // The one step called the long one (#277): 16 of 23 seconds, by hand.
+    long: true,
+    done: 'Loaded gsm’s packages'
+  },
+  { id: 'read', from: ['read'], say: 'Reading the study', done: 'Read the study' },
+  { id: 'run', from: ['run'], say: 'Running the workflows', done: 'Ran the workflows' }
+]);
+
+/** Which of the six steps a moment belongs to, from 1; 1 for one it does not know. */
+export const stepNumber = (moment) =>
+  Math.max(1, RUN_STEPS.findIndex((step) => step.from.includes(moment)) + 1);
+
+/** What the control says of a step: "2 of 6 · Installing R packages". */
+export const stepSaid = (moment) => {
+  const index = stepNumber(moment);
+  return `${index} of ${RUN_STEPS.length} · ${RUN_STEPS[index - 1].say}`;
+};
+
+/** What the body's list says of each step: the long one is called so, and no other. */
+export const stepLines = () =>
+  RUN_STEPS.map((step) => (step.long ? `${step.say}, the long one` : step.say));
+
+/**
+ * What a run was on, as the line above the table names it: the loaded demo
+ * study by its name ("the Pilot study", "the “Renamed columns” study"), or the
+ * files as `ranOn` says them.
+ * @param {number} files How many raw files R was handed.
+ * @param {string[]} study The loaded study's files R was handed, by name.
+ * @param {?string} [name] The loaded demo study's name ("Pilot study"), when what is loaded is one.
+ * @returns {string} The phrase.
+ */
+export const ranOnSaid = (files, study = [], name = null) => {
+  if (!(name && study.length && !files)) return ranOn(files, study);
+  // A name that does not end in "study" is said as one (#309): "the Renamed
+  // columns" reads as columns, not as a study.
+  return /\bstudy$/i.test(name) ? `the ${name}` : `the “${name}” study`;
+};
+
+/** Seconds, as a result line says them: "3.1 seconds", "1 second". */
+const secondsSaid = (seconds) => counted(seconds, 'second');
+
+/**
+ * The one line above the site overview (#280): what ran, on what and how
+ * long it took, and then what a reader can do about the rest, which ends in a
+ * link the tab adds.
+ * @param {Object} answer What `rbqm_run` returned.
+ * @param {{files: number, study?: string[], seconds: number, name?: ?string}} run The run.
+ * @returns {{ran: string, rest: string}} The sentence, and the words that lead to the link.
+ */
+export function outcomeSaid(answer, { files, study = [], seconds, name = null }) {
+  const metrics = metricList(answer);
+  const ran = metrics.filter((metric) => metric.ran).length;
+  const others = metrics.length - ran;
+  return {
+    ran:
+      `R ran ${ran} of ${counted(metrics.length, 'metric')} on ${ranOnSaid(files, study, name)} ` +
+      `in ${secondsSaid(seconds)}.`,
+    rest: others
+      ? `The other ${others} ${others === 1 ? 'needs' : 'need'} data it does not have: `
+      : 'To use other files, '
+  };
+}
+
+/**
+ * What the chip's panel holds once R has run (#280): the steps, what R was
+ * handed, why any metric did not run, the versions, and R's warnings.
+ * @param {Object} answer What `rbqm_run` returned.
+ * @param {Object} run The run: `files`, `study`, `name`, `webr` (the runtime's version), `seconds`, `sinceStart` (null for a run that started nothing), `snapshotDate`, `handed` (a sentence for each thing R was handed), `notes` (sentences about the load) and `copies`.
+ * @param {Array<{what: string, host: ?string, megabytes: number}>} downloads The downloads.
+ * @returns {{text: string[], columns: Array<Array<Object>>}} The panel's opening sentence and its three columns.
+ */
+export function runDetails(answer, run, downloads) {
+  const metrics = metricList(answer);
+  const ran = metrics.filter((metric) => metric.ran);
+  const not = metrics.filter((metric) => !metric.ran);
+  const versions = isRecord(answer.versions) ? answer.versions : {};
+  const started = run.sinceStart !== null && run.sinceStart !== undefined;
+  const megabytes = (from) => downloads.slice(...from).reduce((sum, one) => sum + one.megabytes, 0);
+  // What each step is known to have cost: the downloads' sizes, and the run's time.
+  const notes = { runtime: `${megabytes([0, 1])} MB`, packages: `${megabytes([1])} MB` };
+  const steps = RUN_STEPS.filter(
+    (step) => step.id !== 'read' && (started || step.id === 'run')
+  ).map((step) => ({
+    say: step.done,
+    note: step.id === 'run' ? `${run.seconds} s` : notes[step.id] || null,
+    state: 'done'
+  }));
+  const gsm = ['gsm.core', 'gsm.mapping', 'gsm.reporting', 'workr']
+    .filter((name) => versions[name])
+    .map((name) => `${name} ${versions[name]}`);
+  const said = [
+    ...(Array.isArray(answer.notes) ? answer.notes : []),
+    ...(answer.groups && answer.groups.state !== 'ran' && answer.groups.message
+      ? [answer.groups.message]
+      : []),
+    ...(run.notes || [])
+  ];
+  const warnings = warningsSaid(answer);
+  return {
+    text: [
+      `It ran ${ran.length} of ${counted(metrics.length, 'metric')} on ` +
+        `${ranOnSaid(run.files, run.study, run.name)}. About ${totalMegabytes(downloads)} MB ` +
+        'was downloaded, once; the study’s data stays here.'
+    ],
+    columns: [
+      [
+        {
+          title: 'Steps',
+          steps,
+          text: [
+            started
+              ? `${secondsSaid(run.sinceStart)} from the press to the charts.`
+              : 'R was already running, so only the last step ran again.'
+          ]
+        }
+      ],
+      [
+        { title: 'What R was handed', items: run.handed || [] },
+        {
+          title: 'Did not run',
+          items: not.length
+            ? not.map((metric) => metric.message)
+            : [`Nothing: all ${metrics.length} ran.`]
+        },
+        ...(said.length ? [{ title: 'Notes', items: said }] : [])
+      ],
+      [
+        {
+          title: 'Versions',
+          rows: [
+            ['R', versions.R ? `${versions.R}${run.webr ? `, on webR ${run.webr}` : ''}` : null],
+            ['gsm', gsm.length ? gsm.join(', ') : null],
+            [
+              'Metric workflows',
+              run.copies ? `${run.copies.workflows.name} ${run.copies.workflows.version}` : null
+            ],
+            [
+              'Charts',
+              run.copies ? `${run.copies.charts.name} ${run.copies.charts.version}` : null
+            ],
+            ['Snapshot', run.snapshotDate]
+          ]
+        },
+        { title: 'Warnings from R', items: warnings.length ? warnings : ['None.'] }
+      ]
+    ]
+  };
 }
 
 /**
@@ -214,44 +479,6 @@ export function metricInputs(answer, metricId) {
 }
 
 /**
- * What the tab says once R has answered: how many metrics ran, on how many
- * files, how long R took, and the versions R reports.
- * @param {Object} answer What `rbqm_run` returned.
- * @param {{files: number, study?: string[], seconds: number, sinceStart: ?number, snapshotDate: string, copies?: ?{workflows: {name: string, version: string}, charts: {name: string, version: string}}}} run The raw files the run was given, the loaded study's files that stood in for raw tables, how long the run took, how long it was from the press that started R to this result (null for a later run), the snapshot's date, and what is copied in and not installed in R: the metric workflows and the charts, each with its version.
- * @returns {string} The sentences.
- */
-export function doneSentence(
-  answer,
-  { files, study = [], seconds, sinceStart, snapshotDate, copies = null }
-) {
-  const metrics = metricList(answer);
-  const ran = metrics.filter((metric) => metric.ran).length;
-  const versions = isRecord(answer.versions) ? answer.versions : {};
-  const named = ['R', 'gsm.core', 'gsm.mapping', 'gsm.reporting', 'workr']
-    .filter((name) => versions[name])
-    .map((name) => `${name} ${versions[name]}`);
-  return (
-    `R ran ${ran} of ${counted(metrics.length, 'metric')} on ${ranOn(files, study)} ` +
-    `in ${counted(seconds, 'second')}` +
-    (sinceStart === null || sinceStart === undefined
-      ? '.'
-      : `, ${counted(sinceStart, 'second')} after Start R was pressed.`) +
-    ` The snapshot is dated ${snapshotDate}.` +
-    (named.length ? ` ${listed(named)}.` : '') +
-    // gsm.kri is not installed in R, and gsm.viz is not R's: R reports neither.
-    (copies
-      ? ` The metric workflows are ${copies.workflows.name} ${copies.workflows.version}’s ` +
-        `and the charts ${copies.charts.name} ${copies.charts.version}’s.`
-      : '')
-  );
-}
-
-/**
- * A date as R reads one: the reader's own calendar day, `2026-10-07`.
- * @param {Date} date The moment.
- * @returns {string} The day.
- */
-/**
  * What R warned of along the way, each as a sentence the tab shows beside the
  * run's notes: gsm says in a warning when it leaves a participant or a site
  * out of a metric, and the reader is owed that. The words are R's.
@@ -267,6 +494,11 @@ export function warningsSaid(answer) {
     .map((warning) => `R warned: ${warning.replace(/[.]*$/, '.')}`);
 }
 
+/**
+ * A date as R reads one: the reader's own calendar day, `2026-10-07`.
+ * @param {Date} date The moment.
+ * @returns {string} The day.
+ */
 export function isoDay(date) {
   const two = (value) => String(value).padStart(2, '0');
   return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}`;

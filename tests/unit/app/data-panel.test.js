@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
 import { MAX_FILE_BYTES, readFiles } from '../../../src/app/data-panel.js';
+import { claimSaid, supportSaid } from '../../../src/app/libraries.js';
 import { DEMO_STUDIES } from '../../../src/app/studies.js';
 
 // The renamed-column study (scripts/build-app-fixture.mjs): SDTM-style names
@@ -111,7 +112,7 @@ describe('demo app: the data panel', () => {
       bds: ['labs_final.csv', 'bds', '7 of 13 columns found', '2,223 rows'],
       eg: ['ecg.json', 'eg', '9 of 10 columns found', '516 rows']
     });
-    expect(tag('data')).toBe('4 files');
+    expect(tag('data')).toBe('Your 4 files');
   });
 
   it('APP-LOAD-002: a file that belongs to no domain is reported in one sentence, and can be placed by hand (#151)', () => {
@@ -121,7 +122,7 @@ describe('demo app: the data panel', () => {
     ]);
     const unplaced = root.querySelector('.sva-file.sva-unplaced');
     expect(unplaced.querySelector('.sva-file-name').textContent).toBe('site_notes.csv');
-    expect(tag('data')).toBe('4 files');
+    expect(tag('data')).toBe('Your 4 files');
     // By hand it goes where the user says, replacing what was there, and says so.
     choose(unplaced.querySelector('.sva-domain'), 'subject');
     expect(card('subject').querySelector('.sva-file-name').textContent).toBe('site_notes.csv');
@@ -826,7 +827,7 @@ describe('demo app: the data panel', () => {
     expect(cards[3].querySelector('.sva-tag').textContent).toBe('gsm raw file, kept as it is');
     expect(root.querySelectorAll('.sva-file[data-domain]')).toHaveLength(0);
     expect(root.querySelector('.sva-map')).toBeNull();
-    expect(tag('data')).toBe('9 files');
+    expect(tag('data')).toBe('RBQM study');
     expect(steps()).toEqual([
       ['Load your files', 'done', '9 files loaded'],
       ['Check the mapping', 'todo', 'Nothing to map: gsm’s raw files are kept as they are'],
@@ -866,7 +867,7 @@ describe('demo app: the data panel', () => {
     expect(app.state.study).toBeNull();
     app.loadFiles(STUDY);
     expect(app.state.raw).toHaveLength(1);
-    expect(tag('data')).toBe('5 files');
+    expect(tag('data')).toBe('Your 5 files');
   });
 
   it('APP-LOAD-021: the sidebar belongs to the data view: a chart view has none (#159)', () => {
@@ -876,5 +877,376 @@ describe('demo app: the data panel', () => {
     app.select('histogram');
     expect(root.querySelector('.sva-side')).toBeNull();
     expect(root.querySelector('.sva-chart')).not.toBeNull();
+  });
+});
+
+// What a tab hands the Data tab (#281, #282, obot.roadmap#406): whether a file
+// is its own, and what the loaded data supports. The tab here is a stand-in
+// with words of its own, so nothing of the RBQM tab's is in these tests: the
+// Data tab draws what it is handed.
+describe('demo app: what a tab hands the Data tab', () => {
+  const $ = (selector) => document.querySelector(selector);
+  const $$ = (selector) => [...document.querySelectorAll(selector)];
+  const notes = () => $$('.sva-note').map((node) => node.textContent);
+  const steps = () =>
+    $$('.sva-step').map((node) => [
+      node.querySelector('.sva-step-title').textContent,
+      node.dataset.state,
+      node.querySelector('.sva-step-status').textContent
+    ]);
+  const GADGET = { name: 'gadget_one.csv', text: 'id,weight\n1,2\n2,3\n' };
+  const OTHER = { name: 'gadget_two.csv', text: 'id,weight\n1,2\n' };
+  // A tab that takes files named for a gadget, and can run its two tasks on a file of them.
+  const tab = (over = {}) => {
+    const view = {
+      id: 'gadgets',
+      title: 'Gadgets',
+      ran: false,
+      tag: () => 'idle',
+      render(container) {
+        container.textContent = 'The gadgets tab.';
+      },
+      claims: (file) =>
+        !/^gadget_/.test(file.name)
+          ? null
+          : file.name.endsWith('.csv')
+            ? { keep: true }
+            : { refuse: `${file.name} is a gadget file the tab cannot read.` },
+      supports: (app) =>
+        !app.state.raw.length && !Object.keys(app.state.files).length
+          ? null
+          : {
+              say: 'This data supports 1 of 2 tasks.',
+              items: [
+                {
+                  id: 'weigh',
+                  label: 'W',
+                  icon: view.ran ? 'ran' : 'todo',
+                  state: view.ran ? 'ran' : 'todo',
+                  name: view.ran ? 'Weighing: ran' : 'Weighing: not started'
+                },
+                {
+                  id: 'count',
+                  label: 'C',
+                  icon: 'cannot',
+                  state: 'cannot',
+                  name: 'Counting: cannot run'
+                }
+              ],
+              key: [
+                { icon: view.ran ? 'ran' : 'todo', say: view.ran ? 'ran' : 'not started' },
+                { icon: 'cannot', say: 'cannot run' }
+              ],
+              why: { title: 'Why 1 cannot run', items: ['Counting needs a tally.'], open: false },
+              lines: ['A line said in the open.'],
+              note: 'Small print.',
+              files: app.state.raw.map((file) => ({
+                name: file.name,
+                tag: 'gadget file',
+                title: `${file.name} is a gadget file.`
+              })),
+              step: { lead: '1 of 2 tasks supported', also: '1 of 2 gadget tasks' }
+            },
+      ...over
+    };
+    return view;
+  };
+  const mount = (view) => {
+    document.body.innerHTML = '<div id="app"></div>';
+    window.history.replaceState(null, '', '#');
+    const app = mountApp('#app', {
+      charts: fakeCharts(),
+      manifest,
+      libraries: view ? [{ name: 'gadget.viz', view }] : []
+    });
+    app.select('data');
+    return app;
+  };
+
+  it('APP-LOAD-028: a file the tab says is its own is kept as it is, neither placed in a domain nor mapped, and the study files dropped with it are placed as ever; one the tab cannot read is refused in the tab’s sentence; the drop zone says it takes both kinds (#282)', () => {
+    const view = tab();
+    const asked = vi.spyOn(view, 'claims');
+    const app = mount(view);
+    expect($('.sva-drop .sva-drop-note').textContent).toBe(
+      'Study files or gsm raw files. They are read in this browser and sent nowhere.'
+    );
+    app.loadFiles([GADGET, ...STUDY, { name: 'gadget_three.json', text: '[{"id":1}]' }]);
+    // The tab is asked of each file by its name and its columns, and of nothing else.
+    expect(asked.mock.calls.map(([file]) => file)).toEqual([
+      { name: 'gadget_one.csv', columns: ['id', 'weight'] },
+      ...STUDY.map((file) => ({ name: file.name, columns: expect.any(Array) })),
+      { name: 'gadget_three.json', columns: ['id'] }
+    ]);
+    expect(app.state.raw.map((file) => [file.name, file.rows, file.text])).toEqual([
+      ['gadget_one.csv', 2, GADGET.text]
+    ]);
+    expect(Object.keys(app.state.files).sort()).toEqual(['ae', 'bds', 'eg', 'subject']);
+    expect(app.state.unplaced).toEqual([]);
+    expect(notes()).toEqual(['gadget_three.json is a gadget file the tab cannot read.']);
+    expect($$('.sva-file.sva-raw').map((node) => node.dataset.raw)).toEqual(['gadget_one.csv']);
+    expect($$('.sva-file[data-domain]')).toHaveLength(4);
+    // Loaded again, a kept file replaces itself.
+    app.loadFiles([{ ...GADGET, text: 'id,weight\n1,2\n' }]);
+    expect(app.state.raw.map((file) => [file.name, file.rows])).toEqual([['gadget_one.csv', 1]]);
+    // With no such tab every file is a study file, and the drop zone says what it always did.
+    const plain = mount(null);
+    expect(plain.ownFiles).toBe(false);
+    expect(plain.support()).toEqual([]);
+    expect($('.sva-drop .sva-drop-note').textContent).toBe(
+      'They are read in this browser and sent nowhere.'
+    );
+    plain.loadFiles([GADGET]);
+    expect(plain.state.raw).toEqual([]);
+    expect(plain.state.unplaced.map((item) => item.file.name)).toEqual(['gadget_one.csv']);
+    expect($('.sva-support')).toBeNull();
+  });
+
+  it('APP-LOAD-028: files of the reader’s own, kept or placed, clear a loaded demo study whole, and the page says so once (#282)', async () => {
+    document.body.innerHTML = '<div id="app"></div>';
+    const app = mountApp('#app', {
+      charts: fakeCharts(),
+      manifest,
+      libraries: [{ name: 'gadget.viz', view: tab() }],
+      demo: { base: './data/' },
+      fetchText: demoFetch()
+    });
+    await app.ready;
+    app.select('data');
+    expect(app.state.study).toBe('pilot');
+    app.loadFiles([GADGET, OTHER]);
+    expect(app.state.study).toBeNull();
+    expect(app.state.files).toEqual({});
+    expect(app.state.raw.map((file) => file.name)).toEqual(['gadget_one.csv', 'gadget_two.csv']);
+    expect(notes()).toEqual(['The demo study (Pilot study) was cleared to load your files.']);
+    // A demo study's own files are never asked of a tab: the study says what they are.
+    const asked = vi.fn(() => ({ keep: true }));
+    const greedy = mountApp('#app', {
+      charts: fakeCharts(),
+      manifest,
+      libraries: [{ name: 'gadget.viz', view: tab({ claims: asked }) }],
+      demo: { base: './data/' },
+      fetchText: demoFetch()
+    });
+    await greedy.ready;
+    expect(asked).not.toHaveBeenCalled();
+    expect(Object.keys(greedy.state.files).sort()).toEqual(['ae', 'bds', 'eg', 'subject']);
+    expect(greedy.state.raw).toEqual([]);
+  });
+
+  it('APP-LOAD-028: the Data tab draws what the tab says the loaded data supports as one card between the drop zone and the files, in the tab’s words: its sentence, each item with the mark for its state and a name that says both, the key, why some cannot run behind its title, and a button that opens the tab; a kept file’s card carries the tab’s words for it; with nothing said there is no card (#281)', () => {
+    const view = tab();
+    const app = mount(view);
+    expect($('.sva-support')).toBeNull();
+    app.loadFiles([GADGET]);
+    const card = $('.sva-data-main > .sva-support-cards > .sva-support');
+    expect(card.dataset.support).toBe('gadgets');
+    expect(card.getAttribute('aria-label')).toBe('Gadgets: This data supports 1 of 2 tasks.');
+    expect($('.sva-data-main').children[0].className).toBe('sva-drop');
+    expect($('.sva-data-main').children[1].className).toBe('sva-support-cards');
+    expect($('.sva-data-main').children[2].className).toContain('sva-file');
+    expect($('.sva-support-title').textContent).toBe('Gadgets');
+    expect($('.sva-support-say').textContent).toBe('This data supports 1 of 2 tasks.');
+    expect(
+      $$('.sva-support-items li').map((node) => [
+        node.dataset.item,
+        node.dataset.state,
+        node.textContent,
+        node.title,
+        node.getAttribute('aria-label'),
+        node.querySelector('svg').getAttribute('aria-hidden')
+      ])
+    ).toEqual([
+      ['weigh', 'todo', 'W', 'Weighing: not started', 'Weighing: not started', 'true'],
+      ['count', 'cannot', 'C', 'Counting: cannot run', 'Counting: cannot run', 'true']
+    ]);
+    // No item is a control: the one button on the card opens the tab.
+    expect($$('.sva-support button').map((node) => node.textContent)).toEqual(['Open Gadgets']);
+    expect($$('.sva-support-key span').map((node) => node.textContent)).toEqual([
+      'not started',
+      'cannot run'
+    ]);
+    const why = $('.sva-support-why');
+    expect(why.open).toBe(false);
+    expect(why.querySelector('summary').textContent).toBe('Why 1 cannot run');
+    expect([...why.querySelectorAll('li')].map((node) => node.textContent)).toEqual([
+      'Counting needs a tally.'
+    ]);
+    expect($$('.sva-support-lines li').map((node) => node.textContent)).toEqual([
+      'A line said in the open.'
+    ]);
+    expect($('.sva-support-note').textContent).toBe('Small print.');
+    const tag = $('.sva-file.sva-raw .sva-tag');
+    expect([tag.textContent, tag.title]).toEqual([
+      'gadget file',
+      'gadget_one.csv is a gadget file.'
+    ]);
+    // The tab's state moves while the Data tab is open: the card follows, and
+    // the reasons stay as the reader left them.
+    why.open = true;
+    view.ran = true;
+    const main = $('.sva-data-main');
+    app.redrawView('gadgets');
+    expect($('.sva-data-main')).toBe(main);
+    expect($$('.sva-support-items li').map((node) => node.dataset.state)).toEqual([
+      'ran',
+      'cannot'
+    ]);
+    expect($$('.sva-support-key span').map((node) => node.textContent)).toEqual([
+      'ran',
+      'cannot run'
+    ]);
+    expect($('.sva-support-why').open).toBe(true);
+    $('.sva-support [data-action="open-view"]').click();
+    expect(app.state.selected).toBe('gadgets');
+    expect($('.sva-view').textContent).toContain('The gadgets tab.');
+    // A file the tab says nothing of keeps the words the app has for any kept file.
+    const quiet = mount(tab({ supports: () => null }));
+    quiet.loadFiles([GADGET]);
+    expect($('.sva-support')).toBeNull();
+    expect($('.sva-file.sva-raw .sva-tag').textContent).toBe('gsm raw file, kept as it is');
+  });
+
+  it('APP-LOAD-028: with the tab’s own files loaded and no chart ready, the workflow’s third step is the tab: it is the current step, named for the tab, says how much the files support, and its button opens the tab; with a chart ready the step is the charts’, and counts what the tab supports beside them (#281)', () => {
+    const app = mount(tab());
+    expect(steps()[2]).toEqual(['Open a chart', 'todo', '0 of 13 charts ready']);
+    app.loadFiles([GADGET]);
+    expect(steps()).toEqual([
+      ['Load your files', 'done', '1 file loaded'],
+      ['Check the mapping', 'todo', 'Nothing to map: gsm’s raw files are kept as they are'],
+      ['Open the Gadgets tab', 'current', '1 of 2 tasks supported · 0 of 13 charts ready']
+    ]);
+    const open = $('.sva-step[data-step="open"]');
+    expect(open.getAttribute('aria-current')).toBe('step');
+    expect(
+      [...open.querySelectorAll('button')].map((node) => [node.dataset.action, node.textContent])
+    ).toEqual([['open-view', 'Open Gadgets']]);
+    open.querySelector('button').click();
+    expect(app.state.selected).toBe('gadgets');
+    expect(window.location.hash).toBe('#gadgets');
+    // A study file beside them whose mapping a chart still waits on: the step
+    // still leads to the tab, but checking the mapping is the one current step.
+    app.select('data');
+    app.loadFiles(STUDY.filter((file) => file.name === 'ecg.json'));
+    expect(steps().map(([title, state]) => [title, state])).toEqual([
+      ['Load your files', 'done'],
+      ['Check the mapping', 'current'],
+      ['Open the Gadgets tab', 'todo']
+    ]);
+    expect($$('.sva-step[aria-current="step"]')).toHaveLength(1);
+    // The whole study beside them: its charts lead, and the tab's count sits beside theirs.
+    app.loadFiles(STUDY);
+    for (const [domain, kind, key, value] of CORRECTIONS) {
+      if (kind === 'column') app.setColumn(domain, key, value);
+      else app.setMeasure(domain, key, value);
+    }
+    const [title, state, status] = steps()[2];
+    expect([title, state]).toEqual(['Open a chart', 'current']);
+    expect(status).toMatch(/^\d+ of 13 charts ready · 1 of 2 gadget tasks$/);
+    expect(
+      [...$('.sva-step[data-step="open"]').querySelectorAll('button')].map(
+        (node) => node.dataset.action
+      )
+    ).toEqual(['open-chart']);
+  });
+
+  it('APP-LOAD-028: what a tab hands over is read safely: a tab with neither function, one that throws, or one that answers with something else claims no file and has no card, and of a card only the parts that are words of the right kind are kept (#281, #282)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const file = { name: 'a.csv', columns: ['x'] };
+    expect(claimSaid(null, file)).toBeNull();
+    expect(claimSaid({}, file)).toBeNull();
+    expect(claimSaid({ claims: () => true }, file)).toBeNull();
+    expect(claimSaid({ claims: () => ({ keep: 'yes' }) }, file)).toBeNull();
+    expect(claimSaid({ claims: () => ({ keep: true, more: 1 }) }, file)).toEqual({ keep: true });
+    expect(claimSaid({ claims: () => ({ refuse: 'No.', keep: true }) }, file)).toEqual({
+      refuse: 'No.'
+    });
+    expect(claimSaid({ claims: () => ({ refuse: '' }) }, file)).toBeNull();
+    const throws = () => {
+      throw new Error('no');
+    };
+    expect(claimSaid({ claims: throws }, file)).toBeNull();
+    expect(supportSaid(null, {})).toBeNull();
+    expect(supportSaid({}, {})).toBeNull();
+    expect(supportSaid({ supports: () => 'eight' }, {})).toBeNull();
+    expect(supportSaid({ supports: () => ({ items: [] }) }, {})).toBeNull();
+    expect(supportSaid({ supports: throws }, {})).toBeNull();
+    expect(warn).toHaveBeenCalledTimes(2);
+    // The sentence alone is a card; every other part is there, empty.
+    const bare = supportSaid({ supports: () => ({ say: 'Something.' }) }, {});
+    expect({ ...bare, files: [...bare.files] }).toEqual({
+      say: 'Something.',
+      items: [],
+      key: [],
+      why: null,
+      lines: [],
+      note: null,
+      files: [],
+      step: { lead: null, also: null }
+    });
+    const odd = supportSaid(
+      {
+        supports: () => ({
+          say: 'Something.',
+          items: [{ label: 'A' }, { id: 'b' }, null, { id: 'c', label: 'C', icon: 3, name: 'Cee' }],
+          key: [{ icon: 'ran', say: 'ran' }, { icon: 'ran' }, 'ran'],
+          why: { title: 'Why', items: [1, 'One reason.'], open: 1 },
+          lines: ['One.', 2, ''],
+          note: 4,
+          files: [
+            { name: 'toString', tag: 'kept' },
+            { name: 'a.csv' },
+            { name: 'b.csv', tag: 'kept', title: 'b.csv is kept.' }
+          ],
+          step: { lead: 'Leads', also: 5 }
+        })
+      },
+      {}
+    );
+    expect(odd.items).toEqual([
+      { id: '', label: 'A', icon: null, state: null, name: 'A' },
+      { id: 'c', label: 'C', icon: null, state: null, name: 'Cee' }
+    ]);
+    expect(odd.key).toEqual([{ icon: 'ran', say: 'ran' }]);
+    expect(odd.why).toEqual({ title: 'Why', items: ['One reason.'], open: true });
+    expect(odd.lines).toEqual(['One.']);
+    expect(odd.note).toBeNull();
+    // A file may be called anything, a name every object inherits among them.
+    expect([...odd.files]).toEqual([
+      ['toString', { tag: 'kept', title: null }],
+      ['b.csv', { tag: 'kept', title: 'b.csv is kept.' }]
+    ]);
+    expect(odd.files.get('constructor')).toBeUndefined();
+    expect(odd.step).toEqual({ lead: 'Leads', also: null });
+    // A reason list with no sentence is no list.
+    expect(
+      supportSaid({ supports: () => ({ say: 'S.', why: { title: 'Why', items: [] } }) }, {}).why
+    ).toBeNull();
+    // On the page, a tab that throws leaves the Data tab as it is with no such tab's card.
+    const app = mount(tab({ claims: throws, supports: throws }));
+    app.loadFiles([GADGET]);
+    expect(app.state.raw).toEqual([]);
+    expect(app.state.unplaced.map((item) => item.file.name)).toEqual(['gadget_one.csv']);
+    expect($('.sva-support')).toBeNull();
+    warn.mockRestore();
+  });
+
+  it('APP-LOAD-028: the Data tab’s own code names no site metric and no gsm raw domain: what it draws of them it is handed (#281, #282)', () => {
+    const source = readFileSync(path.join(repoDir, 'src/app/data-panel.js'), 'utf8');
+    const { needs } = JSON.parse(readFileSync(path.join(repoDir, 'site/rbqm/needs.json'), 'utf8'));
+    expect(needs.metrics).toHaveLength(8);
+    expect(needs.raw).toHaveLength(9);
+    const word = (text) => new RegExp(`\\b${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+    for (const metric of needs.metrics) {
+      expect(source, metric.id).not.toMatch(word(metric.id));
+      expect(source.toLowerCase(), metric.metric).not.toContain(metric.metric.toLowerCase());
+      expect(source, metric.abbreviation).not.toMatch(word(metric.abbreviation));
+    }
+    for (const { table } of needs.raw) expect(source, table).not.toMatch(word(table));
+    for (const { output } of needs.mappings) expect(source, output).not.toMatch(word(output));
+    // Nor the tab itself, R's function, or a metric as such.
+    expect(source).not.toMatch(/rbqm|kri\d|metric|Raw_|Mapped_/i);
+    // It asks the app for what the tabs said, and reads no tab's module.
+    expect(source).toContain('app.support()');
+    expect(source).not.toMatch(/from '\.\/rbqm/);
   });
 });

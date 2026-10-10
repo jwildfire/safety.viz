@@ -136,7 +136,7 @@ function entryProblem(entry, domains, groups) {
  * @param {Object} host safety.viz's portfolio manifest.
  * @param {Object} hostCharts safety.viz's chart factories, keyed by export name.
  * @param {Array<{name: string, charts: ?Object, manifest: ?Object, file?: string}>} [libraries] The further libraries; `file` is the script the page loaded the library from, named when it did not load.
- * @returns {{manifest: Object, problems: Object<string, string>, unloaded: string[], libraries: Map<string, Object>, factoryOf: (module: string) => ?Function}} The merged manifest; for each chart that cannot be drawn, the sentence that says why; for each library asked for whose charts are not listed, the sentence that says why; the libraries used, by name; and the factory to draw a chart with, or null.
+ * @returns {{manifest: Object, problems: Object<string, string>, unloaded: string[], libraries: Map<string, Object>, declaredBy: Object<string, string>, factoryOf: (module: string) => ?Function}} The merged manifest; for each chart that cannot be drawn, the sentence that says why; for each library asked for whose charts are not listed, the sentence that says why; the libraries used, by name; the library that declared each group; and the factory to draw a chart with, or null.
  */
 export function mergeLibraries(host, hostCharts, libraries = []) {
   const modules = {};
@@ -144,6 +144,8 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
   const charts = { [OWN_LIBRARY]: hostCharts };
   const used = new Map();
   const unloaded = [];
+  // Which library declared each group: a group is painted with its library's colour (#268).
+  const declaredBy = {};
   const warn = (message) => console.warn(`safety.viz app: ${message}`);
   // A group a library may not declare: one a standard domain or the group
   // outside the set already is, whose tab is safety.viz's own.
@@ -194,7 +196,10 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
         warn(`${name} declares the group ${id}, which is safety.viz's own tab; it was left out.`);
       } else if (has(groups, id)) {
         warn(`${name} declares the group ${id}, which is already declared.`);
-      } else groups[id] = group;
+      } else {
+        groups[id] = group;
+        declaredBy[id] = name;
+      }
     }
     for (const [module, entry] of Object.entries(list.modules)) {
       // Listed, it would be a chip that opens the data view: say so instead.
@@ -250,6 +255,7 @@ export function mergeLibraries(host, hostCharts, libraries = []) {
     problems,
     unloaded,
     libraries: used,
+    declaredBy,
     factoryOf(module) {
       if (!has(modules, module) || has(problems, module)) return null;
       const entry = modules[module];
@@ -312,14 +318,307 @@ export function groupLabel(group, manifest) {
 }
 
 /**
- * The class that gives a group its hue. Each standard domain and the group
- * outside the set has a hue of its own; every declared group takes the
- * library hue, the graphite of the mark's centre hex, which no domain and no
- * state uses (styles.js).
+ * The class a group's tab, chart names and chart card carry. Each standard
+ * domain and the group outside the set has a hue of its own, set by its class
+ * (styles.js). A declared group's class sets none: the page paints it with its
+ * library's colour, which {@link tabColours} gives.
  * @param {string} group A group id.
  * @param {Object} manifest The merged manifest.
  * @returns {string} The class name.
  */
 export function hueClass(group, manifest) {
   return isDeclared(group, manifest) ? 'sva-library-group' : `sva-domain-${group}`;
+}
+
+/**
+ * The hue of each standard domain's tab and of the tab of the charts outside
+ * the standard set, as styles.js sets them: green, teal, blue, violet, pink.
+ */
+export const DOMAIN_COLOURS = {
+  subject: '#77a95b',
+  ae: '#00afa9',
+  bds: '#519fdd',
+  eg: '#988bdd',
+  other: '#c67bb6'
+};
+
+/**
+ * The colours a library's tab is given when the library names none, in the
+ * order they are given out: pink, amber, green (#268). Red is not one of
+ * them: it means "missing" and "did not draw" everywhere in the app.
+ */
+export const TAB_COLOURS = ['#c67bb6', '#c78a3b', '#77a95b'];
+
+const INK = [0x1f, 0x23, 0x28];
+const isHex = (value) => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value);
+
+/**
+ * A colour mixed 40 percent toward the app's ink, channel by channel: what a
+ * tab is given once every colour of the list is in use.
+ * @param {string} colour A six-digit hex colour.
+ * @returns {string} The darker colour, as a six-digit hex.
+ */
+export function towardInk(colour) {
+  const mixed = [1, 3, 5].map((at, index) =>
+    Math.round(parseInt(colour.slice(at, at + 2), 16) * 0.6 + INK[index] * 0.4)
+  );
+  return `#${mixed.map((value) => value.toString(16).padStart(2, '0')).join('')}`;
+}
+
+/**
+ * The colour of each library's tab (#268, obot.roadmap#402). A library that
+ * names a colour gets it. One that names none is given the first open colour
+ * of {@link TAB_COLOURS}, where open means no tab in the header uses it: not a
+ * standard domain's tab, and not a library before it. When the list runs out
+ * the rule goes round again with each colour mixed 40 percent toward ink, and
+ * past that a colour is used twice: no tab is ever grey.
+ *
+ * The libraries are taken in the order they were handed in, which is the
+ * order the app's build lists them, so the same library has the same colour
+ * on every load and a library added at the end moves nobody. Whether a
+ * library's script loaded changes nothing: it keeps its place in the order.
+ * A second library of a name is left out, as the merge leaves it out.
+ *
+ * @param {Array<{name: string, colour?: string}>} libraries The libraries, in the order the page was handed them.
+ * @param {string[]} [taken] The colours the header's other tabs already use.
+ * @returns {Map<string, string>} Each library's colour, by its name, as a lower-case six-digit hex.
+ */
+export function tabColours(libraries, taken = []) {
+  const used = new Set(taken.filter(isHex).map((colour) => colour.toLowerCase()));
+  const offered = [...TAB_COLOURS, ...TAB_COLOURS.map(towardInk)];
+  const colours = new Map();
+  let given = 0;
+  for (const library of Array.isArray(libraries) ? libraries : []) {
+    const name = isRecord(library) ? library.name : undefined;
+    if (!isText(name) || colours.has(name)) continue;
+    let colour;
+    if (isHex(library.colour)) colour = library.colour.toLowerCase();
+    else {
+      if (library.colour !== undefined) {
+        console.warn(
+          `safety.viz app: ${name} names a tab colour that is not a six-digit hex colour; the app chose one.`
+        );
+      }
+      colour = offered.find((candidate) => !used.has(candidate));
+      // Every colour of both rounds is in use: one is used twice, in the list's order.
+      if (!colour) colour = offered[given % offered.length];
+      given += 1;
+    }
+    used.add(colour);
+    colours.set(name, colour);
+  }
+  return colours;
+}
+
+// ---- A library's control (#183, #276) ----
+
+const CONTROL_PHASES = ['off', 'starting', 'ready', 'failed'];
+const textOr = (value, otherwise = null) => (isText(value) ? value : otherwise);
+
+/**
+ * What a library's control says of itself, read safely: the contract a tab
+ * gives the R control (#276, src/app/r-control.js).
+ *
+ * A control's `state()` answers with:
+ *
+ * - `phase`: `off`, `starting`, `ready` or `failed`. One that names none is
+ *   `off`, so a control that only names a button is drawn as a button.
+ * - `say`: the few words beside the button, or in the chip. `meta`: the cost,
+ *   in a word or two. `title`: the whole sentence, on hover.
+ * - `label`: the button's words, and `disabled`, when it cannot be pressed.
+ * - `since`: when it started, in milliseconds, for the count of seconds, and
+ *   `now`, the clock `since` was read from, when it is not the page's own.
+ * - `step`: when starting takes long, the step it is on: `say`, its `index`
+ *   from 1 and how many there are, `of`.
+ * - `details`: what the panel behind the chip holds: a `heading`, `rows` of a
+ *   term and what is said of it, `text` in sentences, `more` sentences behind a
+ *   disclosure titled `moreTitle`, and `actions`, each a `label` and a `press`.
+ *   A tab with more to say gives `columns`: each a list of sections, and each
+ *   section a `title` over any of `steps` (each `say`, a `note` at its right
+ *   and its `state`: `done`, `now` or `todo`), `items` in sentences, `rows`
+ *   of a term and what is said of it, and `text`. The panel is then a wide one.
+ * - `className`: a class for the control's button, for a tab that names its own.
+ * - `why`: the word on the chip that opens the details of a failure.
+ *
+ * The control of #183 named `label`, `done`, `note` and `hint`; they are read
+ * as the button's words, whether it is disabled, the sentence on hover and the
+ * cost, so a library written for it is drawn as it was.
+ * @param {?{state: Function}} action The library's control.
+ * @returns {?Object} The state, every member present and of its kind; null when the control says nothing that can be read.
+ */
+export function controlState(action) {
+  let said;
+  try {
+    said = action && typeof action.state === 'function' ? action.state() : null;
+  } catch (error) {
+    console.warn('safety.viz app: a library’s control could not say its state.', error);
+    return null;
+  }
+  if (!isRecord(said)) return null;
+  const phase = CONTROL_PHASES.includes(said.phase) ? said.phase : 'off';
+  const step =
+    isRecord(said.step) &&
+    isText(said.step.say) &&
+    Number.isInteger(said.step.index) &&
+    Number.isInteger(said.step.of) &&
+    said.step.index >= 1 &&
+    said.step.index <= said.step.of
+      ? { say: said.step.say, index: said.step.index, of: said.step.of }
+      : null;
+  const list = (value) => (Array.isArray(value) ? value : []);
+  const pairs = (value) =>
+    list(value).filter((row) => Array.isArray(row) && isText(row[0]) && isText(row[1]));
+  const section = (given) => ({
+    title: given.title,
+    steps: list(given.steps)
+      .filter((item) => isRecord(item) && isText(item.say))
+      .map((item) => ({
+        say: item.say,
+        note: textOr(item.note),
+        state: ['done', 'now', 'todo'].includes(item.state) ? item.state : 'done'
+      })),
+    items: list(given.items).filter(isText),
+    rows: pairs(given.rows),
+    text: list(given.text).filter(isText)
+  });
+  const details =
+    isRecord(said.details) && isText(said.details.heading)
+      ? {
+          heading: said.details.heading,
+          rows: pairs(said.details.rows),
+          text: list(said.details.text).filter(isText),
+          more: list(said.details.more).filter(isText),
+          moreTitle: textOr(said.details.moreTitle, 'More'),
+          actions: list(said.details.actions).filter(
+            (item) => isRecord(item) && isText(item.label) && typeof item.press === 'function'
+          ),
+          columns: list(said.details.columns)
+            .map((column) =>
+              list(column)
+                .filter((given) => isRecord(given) && isText(given.title))
+                .map(section)
+            )
+            .filter((column) => column.length)
+        }
+      : null;
+  return {
+    phase,
+    say: textOr(said.say, ''),
+    meta: textOr(said.meta, textOr(said.hint)),
+    title: textOr(said.title, textOr(said.note)),
+    label: textOr(said.label),
+    disabled: Boolean(said.disabled || said.done),
+    since: Number.isFinite(said.since) ? said.since : null,
+    now: typeof said.now === 'function' ? said.now : null,
+    step,
+    details,
+    why: textOr(said.why, 'Why'),
+    className: textOr(said.className)
+  };
+}
+
+// ---- A tab's own files, and what the loaded data supports (#281, #282) ----
+
+/**
+ * Whether a tab says a file is its own, read safely: the first of the two
+ * things a tab hands the Data tab (obot.roadmap#406). The page asks it of each
+ * file a reader loads, before the file is placed in a standard domain
+ * (src/app/page.js).
+ *
+ * A view's `claims(file)` is handed the file's `name` and its `columns`, and
+ * answers with nothing for a file that is not its own, `{ keep: true }` for
+ * one that is, which the app then keeps as it is and neither places nor maps,
+ * or `{ refuse: sentence }` for one that is its own and that it cannot read.
+ * A view with no such function, or one that throws, claims nothing.
+ * @param {?{claims?: Function}} view A library's view.
+ * @param {{name: string, columns: string[]}} file A file as it was read.
+ * @returns {?{keep: true}|{refuse: string}} What the tab said, or null.
+ */
+export function claimSaid(view, file) {
+  if (!isRecord(view) || typeof view.claims !== 'function') return null;
+  let said;
+  try {
+    said = view.claims(file);
+  } catch (error) {
+    console.warn('safety.viz app: a view could not say whether a file is its own.', error);
+    return null;
+  }
+  if (!isRecord(said)) return null;
+  if (isText(said.refuse)) return { refuse: said.refuse };
+  return said.keep === true ? { keep: true } : null;
+}
+
+/**
+ * What a tab says the loaded data supports, read safely: the second of the two
+ * things a tab hands the Data tab (obot.roadmap#406), which draws it as one
+ * card and knows nothing else of the tab (src/app/data-panel.js).
+ *
+ * A view's `supports(app)` answers with nothing when nothing it can read is
+ * loaded, or with:
+ *
+ * - `say`: the card's one sentence, "This data supports 4 of 8 metrics."
+ * - `items`: what the tab runs or draws, each an `id`, a short `label`, the
+ *   `icon` for its state (src/app/icons.js), the `state` in a word, and a
+ *   `name` that says both in full.
+ * - `key`: what each icon shown means, each an `icon` and what to `say` of it.
+ * - `why`: the reasons some items cannot run, a `title` over `items` in
+ *   sentences, and whether the list is `open` to begin with.
+ * - `lines`: further sentences, said in the open.
+ * - `note`: the small print under them.
+ * - `files`: what the tab says of each file kept as its own: the file's
+ *   `name`, the few words of its card's `tag`, and the `title` that says more.
+ * - `step`: how much the data supports as the workflow's third step says it,
+ *   `lead` when the tab is where the data leads and `also` beside the charts.
+ * @param {?{supports?: Function}} view A library's view.
+ * @param {Object} app The app handle.
+ * @returns {?Object} What the tab said, every member present and of its kind, with `files` as a Map by file name; null when it said nothing that can be read.
+ */
+export function supportSaid(view, app) {
+  if (!isRecord(view) || typeof view.supports !== 'function') return null;
+  let said;
+  try {
+    said = view.supports(app);
+  } catch (error) {
+    console.warn('safety.viz app: a view could not say what the loaded data supports.', error);
+    return null;
+  }
+  if (!isRecord(said) || !isText(said.say)) return null;
+  const list = (value) => (Array.isArray(value) ? value : []);
+  const why =
+    isRecord(said.why) && isText(said.why.title) && list(said.why.items).some(isText)
+      ? {
+          title: said.why.title,
+          items: list(said.why.items).filter(isText),
+          open: Boolean(said.why.open)
+        }
+      : null;
+  // By name in a Map: a file's name is the reader's, and may be any word.
+  const files = new Map(
+    list(said.files)
+      .filter((entry) => isRecord(entry) && isText(entry.name) && isText(entry.tag))
+      .map((entry) => [entry.name, { tag: entry.tag, title: textOr(entry.title) }])
+  );
+  return {
+    say: said.say,
+    items: list(said.items)
+      .filter((item) => isRecord(item) && isText(item.label))
+      .map((item) => ({
+        id: textOr(item.id, ''),
+        label: item.label,
+        icon: textOr(item.icon),
+        state: textOr(item.state),
+        name: textOr(item.name, item.label)
+      })),
+    key: list(said.key)
+      .filter((item) => isRecord(item) && isText(item.icon) && isText(item.say))
+      .map((item) => ({ icon: item.icon, say: item.say })),
+    why,
+    lines: list(said.lines).filter(isText),
+    note: textOr(said.note),
+    files,
+    step: {
+      lead: isRecord(said.step) ? textOr(said.step.lead) : null,
+      also: isRecord(said.step) ? textOr(said.step.also) : null
+    }
+  };
 }

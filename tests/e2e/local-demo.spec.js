@@ -61,7 +61,7 @@ test.describe('the demo app served by `npm run demo`', () => {
     });
     await page.goto(base);
     await page.evaluate('window.__safetyVizApp.ready');
-    await expect(page).toHaveTitle('safety.viz demo');
+    await expect(page).toHaveTitle(/ · safety\.viz demo$/);
     // Every chart the app carries is supported by the study it opens on.
     await expect(page.locator('.sva-count')).toHaveText(
       /^(\d+) of \1 charts supported by the loaded data$/
@@ -175,7 +175,7 @@ test.describe('the demo app served by `npm run demo`', () => {
     await page.goto(base);
     await page.evaluate('window.__safetyVizApp.ready');
     await page.evaluate(() => window.__safetyVizApp.select('association-scatter'));
-    await page.locator('.sva-group[data-group="biomarkers"] .sva-action').click();
+    await page.locator('.sva-charts > .sva-r .sva-action').click();
     await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText(
       "Pearson's product-moment correlation",
       { timeout: 150000 }

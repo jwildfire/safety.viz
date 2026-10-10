@@ -46,13 +46,7 @@ import {
   Legend
 } from 'chart.js';
 
-import {
-  controlBuilders,
-  createElement,
-  experimentalBanner,
-  option,
-  renderShell
-} from './shell.js';
+import { controlBuilders, createElement, option, renderShell } from './shell.js';
 import { boxWhiskerPlugin } from './box-whisker.js';
 import { ARM_SIDE_COLORS } from './hep-core/arms.js';
 import { checkInputs } from './hep-waterfall/checkInputs.js';
@@ -82,6 +76,7 @@ import {
   BOX_PANEL_NOTE,
   JAUNDICE_PRECEDENCE,
   TRACE_COLOR,
+  DIVIDER_COLOR,
   armDividerPlugin,
   barColor,
   boxHitTest,
@@ -98,6 +93,9 @@ import { unique } from './hep-explorer/structureData.js';
 import { renderListing } from './histogram/listing.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
+// Title stays registered though no chart here draws one any more
+// (HWF-TITLE-001): this module is the one that registers it, and the kit's
+// reference lists it among what the bundled Chart.js can draw (KIT-DOC-003).
 Chart.register(
   BarController,
   BarElement,
@@ -111,7 +109,20 @@ Chart.register(
   Legend
 );
 
+/**
+ * The band at the top of a flanking panel that holds its title, in pixels: one
+ * line of 11-pixel text and the space Chart.js put round the title it used to
+ * draw there, so the boxes below sit where they always have.
+ */
+const PANEL_TITLE_HEIGHT = 33.2;
+
+/** How far a caption over the plot stays from the edges of its half, in pixels. */
+const CAPTION_INSET = 4;
+
 const STYLE_ID = 'safety-viz-hep-waterfall-styles';
+// The titles (HWF-TITLE-001) are set in the faces the canvas text beside them
+// is drawn in: Chart.js's default for a panel's title, the divider's for a
+// caption. A title is a name and a count: the name gives way, the count never.
 const STYLES = `
 .safety-hep-waterfall .hwf-layout{display:grid;grid-template-columns:110px 1fr 110px;gap:.5rem;height:100%;align-items:stretch}
 .safety-hep-waterfall .hwf-panel{position:relative;min-width:0}
@@ -122,6 +133,12 @@ const STYLES = `
 .safety-hep-waterfall .hwf-legend-box{display:inline-flex;align-items:center;gap:.3rem}
 .safety-hep-waterfall .hwf-legend-glyph{display:inline-block;width:1.6rem;height:.9rem;vertical-align:middle}
 .safety-hep-waterfall .hwf-box-canvas{outline-offset:2px}
+.safety-hep-waterfall .hwf-title{position:absolute;box-sizing:border-box;display:flex;justify-content:center;align-items:center;align-content:center;column-gap:.3em;margin:0;overflow:hidden;pointer-events:none;font:700 11px/1.2 'Helvetica Neue','Helvetica','Arial',sans-serif;color:#666;letter-spacing:normal;text-transform:none}
+.safety-hep-waterfall .hwf-title[hidden]{display:none}
+.safety-hep-waterfall .hwf-title-name{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:auto}
+.safety-hep-waterfall .hwf-title-n{flex:none;white-space:nowrap;pointer-events:auto}
+.safety-hep-waterfall .hwf-panel-title{top:0;left:0;right:0;height:${PANEL_TITLE_HEIGHT}px;flex-wrap:wrap}
+.safety-hep-waterfall .hwf-arm-caption{font:600 11px/1.2 system-ui,-apple-system,sans-serif;color:${DIVIDER_COLOR}}
 .safety-hep-waterfall .hwf-tip{position:absolute;left:0;top:0;display:none;width:max-content;max-width:220px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.72rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
 .safety-hep-waterfall .hwf-tip.is-visible{display:block}
 .safety-hep-waterfall .hwf-tip.is-right{transform:translateX(-100%)}
@@ -137,6 +154,34 @@ function applyWaterfallStyles() {
   style.id = STYLE_ID;
   style.textContent = STYLES;
   document.head.append(style);
+}
+
+/**
+ * A title for an arm (HWF-TITLE-001): its name and its participant count, as
+ * two parts of one element, so the name can be cut short where the space is
+ * and the count cannot. Empty until `setTitle` fills it.
+ * @private
+ */
+function createTitle(className) {
+  const title = createElement('div', `hwf-title ${className}`);
+  title.append(
+    createElement('span', 'hwf-title-name'),
+    document.createTextNode(' '),
+    createElement('span', 'hwf-title-n')
+  );
+  return title;
+}
+
+/**
+ * Fill a title with an arm's name and count. Its text is the whole of both,
+ * which is what a screen reader reads however much of the name is drawn, and
+ * the same text is given on hover.
+ * @private
+ */
+function setTitle(title, label, count) {
+  title.querySelector('.hwf-title-name').textContent = label;
+  title.querySelector('.hwf-title-n').textContent = `(n=${count})`;
+  title.setAttribute('title', `${label} (n=${count})`);
 }
 
 /**
@@ -168,6 +213,9 @@ class SafetyHepWaterfall {
     this.flankChartsBySide = { left: null, right: null };
     this.boxTips = { left: null, right: null };
     this.boxHover = { side: null, index: -1 };
+    this.panelTitles = { left: null, right: null };
+    this.armCaptions = { placebo: null, active: null };
+    this.captionsPlaced = '';
     this.state = this.seedState();
     this.renderShellDom();
   }
@@ -222,27 +270,34 @@ class SafetyHepWaterfall {
       this,
       renderShell(this.element, {
         moduleClass: 'safety-hep-waterfall',
+        module: 'hep-waterfall',
         onToggle: () => this.resize()
       })
     );
     applyWaterfallStyles();
-    // Experimental marking: a notice at the top of the chart so the status
-    // travels with the widget wherever it renders, not only on the gallery
-    // pages (which also carry the config's Experimental badge).
-    this.main.insertBefore(experimentalBanner(), this.main.firstChild);
     this.legendEl = createElement('div', 'hwf-legend');
     this.main.insertBefore(this.legendEl, this.chartWrap);
 
     const layout = createElement('div', 'hwf-layout');
+    // Each panel's title, and a caption over each half of the plot, are
+    // elements laid over the canvases, not text drawn on them (HWF-TITLE-001).
+    this.panelTitles = {
+      left: createTitle('hwf-panel-title'),
+      right: createTitle('hwf-panel-title')
+    };
+    this.armCaptions = {
+      placebo: createTitle('hwf-arm-caption'),
+      active: createTitle('hwf-arm-caption')
+    };
     const leftPanel = createElement('div', 'hwf-panel');
     this.boxCanvasLeft = createElement('canvas', 'hwf-box-canvas hwf-box-left');
-    leftPanel.append(this.boxCanvasLeft);
+    leftPanel.append(this.boxCanvasLeft, this.panelTitles.left);
     const mainPanel = createElement('div', 'hwf-panel hwf-main-panel');
     this.canvas.remove();
-    mainPanel.append(this.canvas);
+    mainPanel.append(this.canvas, this.armCaptions.placebo, this.armCaptions.active);
     const rightPanel = createElement('div', 'hwf-panel');
     this.boxCanvasRight = createElement('canvas', 'hwf-box-canvas hwf-box-right');
-    rightPanel.append(this.boxCanvasRight);
+    rightPanel.append(this.boxCanvasRight, this.panelTitles.right);
     layout.append(leftPanel, mainPanel, rightPanel);
     this.chartWrap.insertBefore(layout, this.mainAnnotation);
 
@@ -829,7 +884,9 @@ class SafetyHepWaterfall {
     ].map(([side, canvas, label, subjects]) => {
       // The panel titles carry their arm's n (HWF-BOX-006): two boxes drawn to
       // the same domain look equally authoritative whether they summarize four
-      // participants or four hundred, and only the count says which.
+      // participants or four hundred, and only the count says which. The title
+      // is an element in the band the chart leaves clear at its top.
+      setTitle(this.panelTitles[side], label, (subjects || []).length);
       canvas.setAttribute(
         'aria-label',
         boxPanelDescription(this.boxSpecs[side], {
@@ -845,14 +902,10 @@ class SafetyHepWaterfall {
           maintainAspectRatio: false,
           responsive: true,
           animation: false,
+          layout: { padding: { top: PANEL_TITLE_HEIGHT } },
           plugins: {
             legend: { display: false },
-            tooltip: { enabled: false },
-            title: {
-              display: true,
-              text: `${label} (n=${(subjects || []).length})`,
-              font: { size: 11 }
-            }
+            tooltip: { enabled: false }
           },
           scales: flankScales(domain, this.boxSpecs[side].length, { labels })
         },
@@ -867,6 +920,30 @@ class SafetyHepWaterfall {
       this.charts.push(chart);
       this.flankChartsBySide[side] = chart;
       return chart;
+    });
+  }
+
+  /**
+   * Set the caption over each half of the plot (HWF-COLOR-003, HWF-TITLE-001):
+   * the arm divider calls this on every draw with where the halves are. Each
+   * caption is held inside its own half, so two cannot meet; a half too narrow
+   * for its count shows no caption, and the panel beside it still names the arm.
+   * @private
+   */
+  placeArmCaptions(halves, top) {
+    const placed = JSON.stringify([halves, top]);
+    if (placed === this.captionsPlaced) return;
+    this.captionsPlaced = placed;
+    Object.entries(this.armCaptions).forEach(([side, caption]) => {
+      const half = halves.find((entry) => entry.side === side);
+      caption.hidden = !half;
+      if (!half) return;
+      setTitle(caption, half.label, half.count);
+      const width = Math.max(half.right - half.left - 2 * CAPTION_INSET, 0);
+      caption.style.left = `${this.canvas.offsetLeft + half.left + CAPTION_INSET}px`;
+      caption.style.top = `${this.canvas.offsetTop + top + CAPTION_INSET}px`;
+      caption.style.width = `${width}px`;
+      caption.hidden = caption.querySelector('.hwf-title-n').offsetWidth > width;
     });
   }
 
@@ -946,6 +1023,8 @@ class SafetyHepWaterfall {
     // A hover held across a rebuild would point an index at a destroyed chart,
     // so the panels always come back closed (HWF-BOX-005).
     this.boxHover = { side: null, index: -1 };
+    // The next draw sets the captions again, whatever it finds.
+    this.captionsPlaced = '';
     Object.values(this.boxTips).forEach((tip) => {
       if (tip) tip.classList.remove('is-visible');
     });

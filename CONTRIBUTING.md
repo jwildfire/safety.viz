@@ -21,6 +21,7 @@ npm ci
 | `node scripts/derive-app-statistics.mjs`  | Record what the app's biomarker charts ask R for, then `Rscript scripts/app-statistics.R` answers it in desktop R (`tests/fixtures/app-statistics/`)                                                                                                                                                                              |
 | `npm run build:app`                       | Bundle the demo app (`src/app/`) into `build/app/` (gitignored): `safety.viz-app.js` for the browser tests and `safety.viz-app.html`, the single file that runs offline; the site build writes its own copies into `_site/demo/`                                                                                                  |
 | `npm run demo`                            | Build the demo app's directory into `build/demo/` (gitignored), serve it to this machine only and open it; `scripts/install-demo.mjs` is the one-file installer that clones a release and runs this                                                                                                                               |
+| `npm run demo-path`                       | Walk the keynote's demo path through the published dev demo, or the app at `DEMO_PATH_URL`, with real R, keeping a screenshot of each step in `docs/evidence/basic-app/demo-path/`; apart from the browser suite, and run on request by the `demo-path` workflow                                                                  |
 | `node scripts/build-app-fixture.mjs`      | Regenerate the renamed-column study under `tests/e2e/fixtures/app/` that the demo app's browser tests load                                                                                                                                                                                                                        |
 | `npm test`                                | Vitest unit tests (`tests/unit/`)                                                                                                                                                                                                                                                                                                 |
 | `npm run test:e2e`                        | Playwright browser tests (`tests/e2e/`)                                                                                                                                                                                                                                                                                           |
@@ -43,6 +44,44 @@ From v1.9.0 a change to any kit member is a breaking change: its name, its signa
 ## How a pull request merges
 
 Branch rulesets run the merge. An increment pull request targets `dev`, opens non-draft with auto-merge enabled, and GitHub lands it once CI is green — nobody is asked to review it. A release candidate targets `main` and merges only on @jwildfire's approving review, which `main`'s ruleset requires. The rules themselves are the obot program's GitHub-flows standard, applied from the hub's `scripts/github-flows.sh`.
+
+## How the check is laid out
+
+`dev` requires one check, "Build, format, and test". It is the last of four jobs in `.github/workflows/ci.yml`:
+
+| Job                                | What it runs                                                                                                                                  |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Static checks and unit tests       | Formatting, the build, the fresh-build check, the six vendored-source checks, the unit tests, the docs site build, the requirement-text guard |
+| Browser tests without real R       | Every browser test that does not carry the tag `@real-r`                                                                                      |
+| Browser tests with real R          | Every browser test that carries it                                                                                                            |
+| Build, format, and test (the gate) | Fails unless the three jobs above succeeded, then merges the two browser reports and runs the evidence guard on every result                  |
+
+The first three run side by side, so each test runs once and the check takes about as long as its longest job. What keeps it honest:
+
+- The gate always runs, and its first step fails unless each of the three jobs ended in success. GitHub counts a required job that was skipped as passed, so a gate that could be skipped, or that left a job out of its `needs`, would report green without every test having run.
+- The two browser jobs take their tests from one value, `REAL_R_TAG`: one runs the tests that carry the tag and the other the rest, so every browser test runs in exactly one job.
+- The evidence guard reads the unit results and the merged browser results. A test that ran in neither browser job is missing from them and the guard names it; a test that ran in both appears twice and the guard refuses the results.
+- Results pass between jobs as artifacts of the same run, under fixed names, and are unpacked in the runner's temporary directory, never in the checkout.
+- Every job names the `ubuntu-24.04` image and has a time limit, and the browser is installed with its system packages. The screenshots are compared on that image, so it changes by a commit to the workflow and not when GitHub moves `ubuntu-latest`.
+- The check runs on `pull_request` and `push` with a read-only token. It never moves to `pull_request_target` or `workflow_run`, and nothing in it continues on error.
+
+Two things hold this, and they hold different parts of it:
+
+- `tests/unit/ci-workflow.test.js` reads the workflow file and holds the layout. It fails when the gate could be skipped or leaves a job out, when a command the check rests on is missing, reworded, narrowed, given a condition or written so that it cannot fail (the format check, the build, the unit tests, each browser job's test command, the evidence guard and the rest of the list at the top of the test), when the tag is set anywhere but once for the whole workflow, when a step is given its own shell, and when an artifact, a runner image, a trigger or a permission moves. A change to the layout is a change to that test, made in the same pull request.
+- The evidence guard holds the results, each time the check runs. The test cannot see which tests ran. The guard can: it fails when a test in the evidence is missing from the results, failed, or appears twice.
+
+The test also holds a list of the ten tagged tests, by ID. It does not find a new test that starts real R and was left untagged. That test still runs once, in the job without real R, and still has to pass. The cost is time: that job gets longer.
+
+To tag a browser test that starts real R, give `test` the tag as its second argument and leave the name as it is, because the evidence files are keyed on the name:
+
+```js
+// prettier-ignore
+test('APP-R-032: R in the browser installs …', { tag: '@real-r' }, async ({ page }) => {
+```
+
+- Tag a test when it starts R with gsm's packages; those take about a minute each. The `// prettier-ignore` line keeps Prettier from re-indenting the whole test to fit the tag.
+- A real-R test left untagged still runs, in the other browser job. That job gets slower; no test is skipped.
+- When a browser test fails, the merged HTML report is the `playwright-report` artifact of the run.
 
 ## Traceability convention
 
@@ -150,6 +189,27 @@ the GitHub Actions run, `null` for local runs). The freshness guard
 record set and pass/fail statuses, keyed by test title — so don't rename tests
 without regenerating evidence.
 
+Run by hand, `npm run evidence:check` runs both suites itself. CI runs each
+suite once, in jobs of their own (see "How the check is laid out"), and its
+gate hands the guard the two JSON reports:
+`npm run evidence:check -- --vitest-json=<file> --playwright-json=<file>`.
+Given the reports it runs no suite, and it exits with an error, naming the
+file, on a report that is missing, empty or not a clean run of every test.
+
+## Demo app conventions
+
+The demo app (`src/app/`, the Demo app link on the docs site) is a header of tabs over the charts. These seven conventions hold for every tab at release 1.11, and a change to the app keeps them or changes the sentence here in the same pull request. Each names the rows of [`requirements/demo-app.md`](requirements/demo-app.md) whose tests hold it. They are the settled design of the app ([the design for release 1.11](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.11-design-2026-10-09/)); the obot program's wider rules for a page are in the hub's [developer guidelines](https://github.com/jwildfire/obot.roadmap/blob/main/docs/developer-guidelines.md).
+
+1. Every tab has a colour of its own, and none is grey. A standard domain's tab takes its domain's hue. A library's tab takes the colour its entry in `scripts/app-libraries.mjs` names, or, naming none, the first open colour of the rule's list: pink, then amber, then green (`tabColours` in `src/app/libraries.js`). Red is never given out, because red means missing. Grey read as switched off. Rows `APP-LIB-028` to `APP-LIB-037`.
+2. Every tab but Data has one row of names under the header. A tab of charts lists its charts there. A tab that is a view of its own lists its pages there, its overview first, by handing the page its `items`; the RBQM tab's row is Overview and one item for each metric, each with an address of its own. A tab puts no second set of buttons for the same choice in its body. Rows `APP-PAGE-022` to `APP-PAGE-024`, `APP-RBQM-054` to `APP-RBQM-059`, `APP-RBQM-068`, `APP-RBQM-071`, `APP-RBQM-072`.
+3. R is started on request, from the one control at the right end of that row. Nothing of R is downloaded until the reader presses Start R. Before the press the control says why R is needed, what starting it costs and Start R; while R starts it names the step and counts the seconds; once R is ready it is a chip, and the chip opens the details. A tab draws no start button of its own: it tells the control its state through `controlState` in `src/app/libraries.js`, and the sentences are the one set in `src/app/r-words.js`. Rows `APP-R-039` to `APP-R-053`, `APP-RBQM-061`, `APP-RBQM-063`, `APP-RBQM-073`.
+4. Files come in on the Data tab and nowhere else. A tab that reads files of its own says so through the same seam: `claims` says whether a file is its own, and `supports` says what the loaded data lets it do, which the Data tab draws as that tab's card. No other tab has a file box or a drop zone; a tab that needs other data links to the Data tab. Rows `APP-LOAD-028`, `APP-RBQM-060`, `APP-RBQM-074` to `APP-RBQM-078`.
+5. A result comes first, and its log stays folded. After a run the tab shows what was asked for, under one line saying what ran, on what and in how long. The steps, what R was handed and what did not run are in the chip's panel, closed until it is opened. Rows `APP-RBQM-062` to `APP-RBQM-066`, `APP-RBQM-073`.
+6. Status is an icon, with its words in the accessible name. A name in a row carries a mark for its state, drawn by `src/app/icons.js`, and its accessible name says the state in words, as "Adverse Event Rate: ran" does. Nothing is said by colour alone. Rows `APP-PAGE-020`, `APP-RBQM-067`, `APP-RBQM-071`.
+7. One status label carries the rung, and a chart draws no banner of its own. The app's header has one label, Exploratory. A chart or a tab below that rung carries the same label on the corner of its card, with its one-sentence reason; an Exploratory chart carries none. The label is `statusLabel` in `src/status-label.js`, which `src/shell.js` exports to the charts, and the rung is set in one place, `tier` in `site/config.json` (see the definition of done below). A chart drawn with no page around it shows the label itself, unless its host says it is showing one with a `data-sv-status-host` attribute. Rows `APP-TIER-001` to `APP-TIER-026`.
+
+The path the app is shown by is walked by `npm run demo-path` (`tests/demo-path/`), against the published dev demo and with real R: a change that moves a step of it changes that test in the same pull request.
+
 ## Renderer definition of done
 
 Per [obot.roadmap#21](https://github.com/jwildfire/obot.roadmap/issues/21), a
@@ -159,6 +219,16 @@ Released — until its entry on the
 
 - [ ] **Gallery card**: `site/config.json` entry flipped to `available`, with
       a hero screenshot chosen from the committed evidence set.
+- [ ] **Rung of the status ladder**: the same entry says how far to trust the
+      chart, as `tier`: `exploratory` (the default when `tier` is absent),
+      `experimental` or `prototype`, in the order Qualified, Exploratory,
+      Experimental, Prototype. Below Exploratory it also carries `tierNote`,
+      the one sentence that says why, which the status label shows in the app
+      and on the docs site. Never `qualified`: nothing in safety.viz has been
+      through qualification, and the build stops with a sentence if an entry
+      says so. After changing a rung run `npm run tiers`, which writes the
+      file the charts read their own rung from, and commit it;
+      `npm run tiers:check` fails the check otherwise.
 - [ ] **Live demo page**: mounts the committed `dist/` bundle against
       committed real example data (`site/data/`, built from the canonical
       pharmaverseadam CDISC Pilot 01 source — see

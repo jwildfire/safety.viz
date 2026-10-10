@@ -44,7 +44,7 @@ const MODULE_CSS = `
 .safety-hep-explorer .hep-composite-card h4{font-size:.82rem;margin:0 0 .4rem;color:#52616f;font-weight:600}
 .safety-hep-explorer .hep-composite-canvas{height:280px;position:relative}
 .safety-hep-explorer .hep-composite-panel-canvas{height:210px;position:relative}
-.safety-hep-explorer .hep-migration{margin-top:1.25rem}
+.safety-hep-explorer .hep-migration{margin-top:1.25rem;max-width:100%;overflow-x:auto}
 .safety-hep-explorer .hep-migration table{border-collapse:collapse;font-size:.82rem;background:#fff}
 .safety-hep-explorer .hep-migration th,.safety-hep-explorer .hep-migration td{border:1px solid #d8dee4;padding:.35rem .55rem;text-align:center}
 .safety-hep-explorer .hep-migration th{font-size:.72rem;text-transform:uppercase;letter-spacing:.02em;color:#52616f;font-weight:700}

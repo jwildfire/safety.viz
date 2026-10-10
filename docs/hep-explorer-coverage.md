@@ -48,6 +48,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-COMP-006                                        | —                  | #67   | the View control toggles between the composite and scatter views                                             |
 | HEP-COMP-006                                        | —                  | #67   | degrades gracefully when baseline or on-treatment values are absent                                          |
 | HEP-COMP-007                                        | —                  | #67   | hovering and clicking a point traces the participant across all panels                                       |
+| HEP-COMP-008                                        | HEP-COMP-008       | #285  | two tables scroll sideways inside their own boxes and the page stays as wide as the viewport                 |
 | HEP-MIG-001, HEP-MIG-014                            | —                  | #92   | the migration view renders BOTH an svg diagram and cross tables in the main column                           |
 | HEP-MIG-002/003/010/015                             | —                  | #92   | geometry is stashed on the root, placebo runs left, active runs right, Hy's Law on top                       |
 | HEP-ACC-001/002/003                                 | —                  | #92   | ribbons are named, focusable buttons activated by Enter and Space                                            |

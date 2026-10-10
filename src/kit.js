@@ -16,10 +16,10 @@
 //     its path on the kit changing.
 //   - FROZEN. Two libraries share this object on one page, so neither can
 //     replace, add or remove a member for the other.
-//   - Only what is listed in requirements/kit.md. Three exports of the shared
-//     modules are deliberately left out: shell.js's `prototypeBanner` and
-//     `experimentalBanner`, whose wording is safety.viz's own release status,
-//     and box-whisker.js's `hexToRgba`, a private colour helper of the box
+//   - Only what is listed in requirements/kit.md. Two things the shared
+//     modules export are deliberately left out: shell.js's status label
+//     (`statusLabel`, `chartStatus` and their helpers), whose wording is
+//     safety.viz's own release status, and box-whisker.js's `hexToRgba`, a private colour helper of the box
 //     drawing. Adding a member later is not a breaking change; removing one
 //     is.
 //

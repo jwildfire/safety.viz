@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>safety.viz hep-waterfall on the pilot study</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      /* Wide enough that the chart's card is as wide as the demo app makes it:
+         912 pixels in a 1,280-pixel window and 340 in a 390-pixel one. */
+      #container {
+        width: min(1213px, calc(100% - 50px));
+        margin: 1rem auto;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Playwright harness page for the hep-waterfall module on the pilot study
+      (#283): the labs file the demo app opens on (site/data/adbds.csv), with
+      the settings the app passes the chart for it. The pilot study pools four
+      arms on the active side, and their names joined are longer than any space
+      a title has, which is what this page is for. No build product is loaded:
+      only the committed bundle and the committed file.
+    -->
+    <div id="container"></div>
+    <!-- Bundle path tracks the package.json version; bump them together. -->
+    <script src="/dist/safety.viz-1.11.0/safety.viz.js"></script>
+    <script>
+      // The file has no quoted fields.
+      const parseCsv = (text) => {
+        const [header, ...lines] = text.trim().split(/\r?\n/);
+        const names = header.split(',');
+        return lines.map((line) => {
+          const cells = line.split(',');
+          return Object.fromEntries(names.map((name, index) => [name, cells[index]]));
+        });
+      };
+      // As the demo app maps the pilot study for this chart.
+      const instance = SafetyViz.hepWaterfall('#container', {
+        id_col: 'USUBJID',
+        measure_col: 'TEST',
+        value_col: 'STRESN',
+        unit_col: 'STRESU',
+        normal_col_high: 'STNRHI',
+        normal_col_low: 'STNRLO',
+        studyday_col: 'VISITNUM',
+        visit_col: 'VISIT',
+        visitn_col: 'VISITNUM',
+        arm_col: 'ARM',
+        filters: [
+          { value_col: 'SITEID', label: 'Site' },
+          { value_col: 'SEX', label: 'Sex' },
+          { value_col: 'RACE', label: 'Race' },
+          { value_col: 'ARM', label: 'Treatment arm' }
+        ],
+        measure_values: {
+          ALT: 'Alanine Aminotransferase',
+          AST: 'Aspartate Aminotransferase',
+          TB: 'Bilirubin',
+          ALP: 'Alkaline Phosphatase'
+        }
+      });
+      window.__safetyHepWaterfallInstance = instance;
+      window.__hwfPilotReady = fetch('/site/data/adbds.csv')
+        .then((response) => response.text())
+        .then((text) => {
+          instance.init(parseCsv(text));
+        });
+    </script>
+  </body>
+</html>

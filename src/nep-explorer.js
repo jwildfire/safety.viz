@@ -136,6 +136,7 @@ class SafetyNepExplorer {
       this,
       renderShell(this.element, {
         moduleClass: 'safety-nep-explorer',
+        module: 'nep-explorer',
         onToggle: () => this.resize()
       })
     );

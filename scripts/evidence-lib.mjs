@@ -182,3 +182,116 @@ export function compareEvidence(committed, fresh) {
   }
   return { stale: differences.length > 0, differences };
 }
+
+// Handed results (#291). The check runs each suite once, as its own step, and
+// hands the guard the two JSON reports in place of the guard running both
+// suites again. A test step's exit code used to be what failed the check on a
+// run that was not clean; the three functions below make the guard refuse one
+// by itself, so it is safe to run on results it did not produce.
+
+const RESULTS_FLAGS = { vitest: 'vitest-json', playwright: 'playwright-json' };
+
+// Reads --vitest-json=<file> and --playwright-json=<file> from the arguments.
+// Both or neither, and only with --check; anything else throws with the reason.
+export function resultsArgs(argv, mode) {
+  const given = {};
+  for (const [kind, name] of Object.entries(RESULTS_FLAGS)) {
+    const hits = argv.filter((arg) => arg === `--${name}` || arg.startsWith(`--${name}=`));
+    if (hits.length > 1) throw new Error(`--${name} is given more than once.`);
+    const value = hits.length ? hits[0].slice(name.length + 3) : null;
+    if (hits.length && !value) throw new Error(`--${name}=<file> needs the file's path.`);
+    given[kind] = value;
+  }
+  if ((given.vitest || given.playwright) && mode !== 'check') {
+    throw new Error('--vitest-json and --playwright-json are read only with --check.');
+  }
+  if (given.vitest && !given.playwright) {
+    throw new Error('--vitest-json is given without --playwright-json; the guard needs both.');
+  }
+  if (given.playwright && !given.vitest) {
+    throw new Error('--playwright-json is given without --vitest-json; the guard needs both.');
+  }
+  return given;
+}
+
+const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
+
+// Parses one handed report. `text` is the file's content, or null when the
+// file does not exist. Throws, naming the file, unless it is the JSON report
+// of the reporter named by `kind`.
+export function parseResults(kind, file, text) {
+  if (text === null || text === undefined) throw new Error(`${file} is missing.`);
+  if (!text.trim()) throw new Error(`${file} is empty.`);
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch (error) {
+    throw new Error(`${file} is not JSON (${error.message}).`);
+  }
+  if (kind === 'vitest') {
+    const shaped =
+      isObject(json) &&
+      Array.isArray(json.testResults) &&
+      'success' in json &&
+      Number.isInteger(json.numFailedTestSuites) &&
+      Number.isInteger(json.numTotalTests);
+    if (!shaped) throw new Error(`${file} is not vitest's JSON report.`);
+  } else {
+    const shaped =
+      isObject(json) &&
+      Array.isArray(json.suites) &&
+      Array.isArray(json.errors) &&
+      isObject(json.stats) &&
+      Number.isInteger(json.stats.unexpected) &&
+      Number.isInteger(json.stats.flaky);
+    if (!shaped) throw new Error(`${file} is not Playwright's JSON report.`);
+  }
+  return json;
+}
+
+const count = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+// Everything about two handed reports that is not a clean run of every test
+// and that the comparison of names and statuses cannot see. Empty when clean.
+export function handedResultsProblems({ vitest, playwright }) {
+  const problems = [];
+  if (vitest.success !== true) {
+    problems.push(
+      `unit results: vitest's "success" is ${JSON.stringify(vitest.success)}, not true.`
+    );
+  }
+  if (vitest.numFailedTestSuites > 0) {
+    // A test file that failed to load is a failed suite with no assertions.
+    const failed = (vitest.testResults || [])
+      .filter((file) => file.status === 'failed')
+      .map((file) => `${file.name}: ${String(file.message || 'failed').split('\n')[0]}`);
+    problems.push(
+      `unit results: vitest reports ${count(vitest.numFailedTestSuites, 'failed suite')}` +
+        (failed.length ? `, in ${failed.join('; ')}` : '.')
+    );
+  }
+  if (playwright.errors.length > 0) {
+    const first = String(playwright.errors[0]?.message ?? '').split('\n')[0];
+    problems.push(
+      `browser results: the report carries ${count(playwright.errors.length, 'error')}` +
+        (first ? `, the first: ${first}` : '.')
+    );
+  }
+  if (playwright.stats.unexpected > 0) {
+    problems.push(`browser results: ${count(playwright.stats.unexpected, 'unexpected result')}.`);
+  }
+  if (playwright.stats.flaky > 0) {
+    problems.push(
+      `browser results: ${count(playwright.stats.flaky, 'flaky test')}, failed and then passed on a retry.`
+    );
+  }
+  const seen = new Map();
+  for (const rec of [...normalizeVitest(vitest), ...normalizePlaywright(playwright)]) {
+    const key = `${rec.suite}|${rec.test}`;
+    seen.set(key, (seen.get(key) || 0) + 1);
+  }
+  for (const [key, times] of seen) {
+    if (times > 1) problems.push(`a test name appears ${times} times in the results: ${key}`);
+  }
+  return problems;
+}

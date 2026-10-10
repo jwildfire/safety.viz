@@ -52,13 +52,31 @@ test.describe('safety.viz hep-waterfall module', () => {
     expect(page._hwfErrors).toEqual([]);
   });
 
-  test('HWF-CFG-001: the chart carries an Experimental banner saying it may change (#97, #165)', async ({
+  test('HWF-CFG-001: drawn alone, with no host around it, the chart carries its status label: Experimental, with its reason on hover and in a panel on a click, and no banner (#97, #165, #274)', async ({
     page
   }) => {
-    const banner = page.locator('.sv-main .sv-experimental');
-    await expect(banner).toHaveCount(1);
-    await expect(banner).toContainText('Experimental');
-    await expect(banner).toContainText('may change');
+    const label = page.locator('.sv-main > .sv-status-row .sv-status');
+    await expect(label).toHaveCount(1);
+    const pill = label.locator('.sv-status-label');
+    await expect(pill.locator('.sv-status-word')).toHaveText('Experimental');
+    expect(await pill.evaluate((element) => getComputedStyle(element).borderTopStyle)).toBe(
+      'dashed'
+    );
+    const reason =
+      'Experimental: a new chart, drawn from a 2025 paper; its layout and settings may still change.';
+    await pill.hover();
+    await expect(pill.locator('.sv-status-tip')).toBeVisible();
+    await expect(pill.locator('.sv-status-tip')).toHaveText(reason);
+    await pill.click();
+    const panel = label.locator('.sv-status-panel');
+    await expect(panel).toBeVisible();
+    await expect(panel.getByRole('heading')).toHaveText('Hepatic ALT Waterfall is experimental');
+    await expect(panel.locator('.sv-status-text').nth(0)).toHaveText(reason);
+    await expect(panel.locator('.sv-status-mark')).toHaveText(['This chart']);
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    // The banners the label replaced are gone.
+    await expect(page.locator('.sv-main .sv-experimental')).toHaveCount(0);
     await expect(page.locator('.sv-main .sv-prototype')).toHaveCount(0);
   });
 
@@ -194,6 +212,9 @@ test.describe('safety.viz hep-waterfall module', () => {
     expect(divider.placeboCount).toBe(3);
     expect(divider.activeCount).toBe(4);
     expect(divider.seamIndex).toBe(divider.placeboCount);
+    // The captions are elements over the plot (HWF-TITLE-001), one a half.
+    const captions = page.locator('.hwf-main-panel .hwf-arm-caption:visible');
+    await expect(captions).toHaveText(['Placebo (n=3)', 'Study Drug (n=4)']);
   });
 
   test('HWF-AXIS-002/HWF-AXIS-003/HWF-AXIS-004: mirrored absolute-unit axes and a single-value reference line (#93)', async ({
@@ -319,8 +340,9 @@ test.describe('safety.viz hep-waterfall module', () => {
 
     const panels = await page.evaluate(() => {
       const instance = window.__safetyHepWaterfallInstance;
-      return instance.flankCharts.map((chart) => ({
-        title: chart.options.plugins.title.text,
+      const titles = [...instance.root.querySelectorAll('.hwf-panel-title')];
+      return instance.flankCharts.map((chart, index) => ({
+        title: titles[index].textContent,
         axisShown: chart.options.scales.x.display,
         // The rendered ticks, not the config: proof the slot labels reached the
         // axis Chart.js actually drew.
@@ -712,5 +734,153 @@ test.describe('safety.viz hep-waterfall module', () => {
     }));
     expect(cleared.ids).toEqual([]);
     expect(cleared.events).toEqual([['A-02'], []]);
+  });
+});
+
+// The pilot study pools four arms on the active side, and their names joined
+// are longer than any of the spaces a title has (#283). The harness page mounts
+// the chart on the labs file the demo app opens on, with the settings the app
+// passes for it, with the chart's card as wide as the app makes it: 912 pixels
+// in a 1,280-pixel window, 340 in a 390-pixel one.
+test.describe('safety.viz hep-waterfall module on the pilot study', () => {
+  const POOLED = 'CLD: Study Drug, CLD: Placebo, Xanomeline Low Dose, Xanomeline High Dose';
+
+  // Every title's box, its panel's box, and whether its name was cut short.
+  const measure = (page) =>
+    page.evaluate(() => {
+      const root = document.querySelector('.safety-hep-waterfall');
+      const box = (element) => {
+        const { left, right, top, bottom, width, height } = element.getBoundingClientRect();
+        return { left, right, top, bottom, width, height };
+      };
+      return [...root.querySelectorAll('.hwf-title')]
+        .filter((title) => title.getClientRects().length > 0)
+        .map((title) => {
+          const name = title.querySelector('.hwf-title-name');
+          const count = title.querySelector('.hwf-title-n');
+          return {
+            kind: title.classList.contains('hwf-panel-title') ? 'panel' : 'caption',
+            text: title.textContent,
+            hover: title.getAttribute('title'),
+            box: box(title),
+            panel: box(title.closest('.hwf-panel')),
+            card: Math.round(box(title.closest('.sv-chart-wrap')).width),
+            name: box(name),
+            count: box(count),
+            cut: name.scrollWidth > name.clientWidth,
+            fontSize: parseFloat(getComputedStyle(title).fontSize)
+          };
+        });
+    });
+
+  const inside = (inner, outer) =>
+    inner.left >= outer.left - 0.5 &&
+    inner.right <= outer.right + 0.5 &&
+    inner.top >= outer.top - 0.5 &&
+    inner.bottom <= outer.bottom + 0.5;
+  const apart = (a, b) =>
+    a.right <= b.left + 0.5 ||
+    b.right <= a.left + 0.5 ||
+    a.bottom <= b.top + 0.5 ||
+    b.bottom <= a.top + 0.5;
+
+  test('HWF-TITLE-001: on the pilot study at 1,280 pixels the two panel titles and the two captions over the plot stay apart and inside their panels, the count stays whole, and the full arm names are given on hover; at 390 pixels they still hold (#283)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/tests/e2e/fixtures/hep-waterfall-pilot.html');
+    await page.evaluate('window.__hwfPilotReady');
+    await expect(page.locator('.safety-hep-waterfall canvas.sv-chart')).toBeVisible();
+    // The cohort the app plots for this study: 81 placebo, 151 on four pooled arms.
+    const cohort = await page.evaluate(() => {
+      const { waterfall, chartWrap } = window.__safetyHepWaterfallInstance;
+      return {
+        placebo: waterfall.placebo.length,
+        active: waterfall.active.length,
+        activeLabel: waterfall.activeLabel,
+        width: Math.round(chartWrap.getBoundingClientRect().width)
+      };
+    });
+    expect(cohort).toEqual({ placebo: 81, active: 151, activeLabel: POOLED, width: 912 });
+    await expect(page.locator('.safety-hep-waterfall .hwf-arm-caption:visible')).toHaveCount(2);
+
+    const titles = await measure(page);
+    const [leftPanel, rightPanel] = titles.filter((title) => title.kind === 'panel');
+    const [placebo, active] = titles.filter((title) => title.kind === 'caption');
+    expect(titles).toHaveLength(4);
+
+    // What each says, in full, to a screen reader and on hover.
+    expect(leftPanel.text).toBe('Placebo (n=81)');
+    expect(rightPanel.text).toBe(`${POOLED} (n=151)`);
+    expect(placebo.text).toBe('Placebo (n=81)');
+    expect(active.text).toBe(`${POOLED} (n=151)`);
+    titles.forEach((title) => expect(title.hover).toBe(title.text));
+
+    // The defect: the two captions printed on top of each other, and the
+    // right-hand panel's title was squeezed into its 110 pixels.
+    expect(apart(placebo.box, active.box)).toBe(true);
+    expect(apart(placebo.name, active.name)).toBe(true);
+    expect(apart(leftPanel.box, rightPanel.box)).toBe(true);
+    titles.forEach((title) => {
+      expect(inside(title.box, title.panel)).toBe(true);
+      // Nothing a title holds runs past the title's own box.
+      expect(inside(title.name, title.box)).toBe(true);
+      expect(inside(title.count, title.box)).toBe(true);
+      // The count is whole: never cut, never under the name.
+      expect(apart(title.name, title.count)).toBe(true);
+      expect(title.fontSize).toBeGreaterThanOrEqual(11);
+    });
+    // The short name is whole; the pooled one is cut short where it has to be.
+    expect(leftPanel.cut).toBe(false);
+    expect(placebo.cut).toBe(false);
+    expect(rightPanel.cut).toBe(true);
+    // A cut name still shows a readable run of its text, not a sliver.
+    expect(rightPanel.name.width).toBeGreaterThan(90);
+    expect(active.name.width).toBeGreaterThan(200);
+
+    // The captions sit over their own halves of the plot, either side of the seam.
+    expect(placebo.box.right).toBeLessThanOrEqual(active.box.left + 0.5);
+
+    await captureEvidence(
+      page.locator('.safety-hep-waterfall .sv-chart-wrap'),
+      'HWF-TITLE-001',
+      'pilot-study-titles'
+    );
+
+    // A phone: the panels narrow to 70 pixels and the plot's halves to less
+    // than a count is wide. The chart redraws a moment after the viewport
+    // changes, so the layout is polled until it has settled.
+    await page.setViewportSize({ width: 390, height: 800 });
+    const held = async () => {
+      const narrow = await measure(page);
+      const panels = narrow.filter((title) => title.kind === 'panel');
+      const captions = narrow.filter((title) => title.kind === 'caption');
+      return (
+        panels.length === 2 &&
+        narrow.every((title) => title.card === 340) &&
+        panels.every((title) => title.panel.width <= 70.5) &&
+        narrow.every(
+          (title) =>
+            inside(title.box, title.panel) &&
+            inside(title.name, title.box) &&
+            inside(title.count, title.box)
+        ) &&
+        (captions.length < 2 || apart(captions[0].box, captions[1].box))
+      );
+    };
+    await expect.poll(held).toBe(true);
+    // The panels still name their arms, the count under the name.
+    const narrowPanels = (await measure(page)).filter((title) => title.kind === 'panel');
+    expect(narrowPanels.map((title) => title.text)).toEqual([
+      'Placebo (n=81)',
+      `${POOLED} (n=151)`
+    ]);
+    narrowPanels.forEach((title) => expect(apart(title.name, title.count)).toBe(true));
+    expect(errors).toEqual([]);
   });
 });

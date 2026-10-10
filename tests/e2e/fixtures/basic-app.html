@@ -46,8 +46,9 @@
         if (record) {
           return {
             run(name, request) {
-              // The app's own call that starts R on the press is not a chart's.
-              if (name !== 'identity') {
+              // The app's own calls, the one that starts R on the press and the
+              // two that ask R its version (#276), are not a chart's.
+              if (name !== 'identity' && name !== 'do.call') {
                 window.__rCalls.push({ name, args: request.args, data: request.data });
               }
               return Promise.resolve({
@@ -62,7 +63,7 @@
         return {
           async run(name, request) {
             const answer = await connection.run(name, request);
-            if (name !== 'identity') {
+            if (name !== 'identity' && name !== 'do.call') {
               window.__rAnswers.push({
                 name,
                 args: request.args,
@@ -83,7 +84,8 @@
             createConnection: factory,
             browser: { sourceUrl: '/site/vendor/gsm.bio/statistics.R', packages: [] },
             megabytes: 13,
-            host: 'webr.r-wasm.org'
+            host: 'webr.r-wasm.org',
+            webr: BioViz.r.WEBR_VERSION
           })
         }
       ];
@@ -107,15 +109,25 @@
             if (name === 'Sys.time') {
               for (const stage of ['runtime', 'packages', 'files', 'source']) {
                 options.onStage(stage);
+                // R that cannot be fetched fails on its first step, as a blocked host does.
+                if (window.__rbqmFails === 'start') {
+                  return {
+                    status: 'unavailable',
+                    reason: 'load-failed',
+                    message: 'Failed to fetch'
+                  };
+                }
                 await gate();
-              }
-              if (window.__rbqmFails === 'start') {
-                return { status: 'unavailable', reason: 'load-failed', message: 'Failed to fetch' };
               }
               return { status: 'ok', value: '2026-10-07 12:00:00' };
             }
             await gate();
             if (name !== window.__rbqmTabOptions.r.call) return { status: 'ok', value: null };
+            // The study's files are in R: the tab is told, as the real connection tells it.
+            if (typeof request.onFiles === 'function') {
+              request.onFiles();
+              await gate();
+            }
             if (window.__rbqmFails === 'run') {
               return { status: 'error', message: 'Error in rbqm_run: something gave way' };
             }
@@ -135,7 +147,8 @@
             }
             const whole = fixture.whole;
             if (names.length === 9) return { status: 'ok', value: whole };
-            const scenario = names.length === 2 ? 'two-files' : 'no-labs';
+            // Two of its files alone, three of them alone (#282), or all but its labs file.
+            const scenario = { 2: 'two-files', 3: 'three-files' }[names.length] || 'no-labs';
             const partial = fixture.partial[scenario];
             const ran = new Set(partial.ran.metrics.map((id) => `Analysis_${id}`));
             const kept = (rows) => rows.filter((row) => ran.has(row.MetricID));
@@ -168,7 +181,9 @@
       libraries.push({ name: 'gsm.viz', view: window.__rbqmView });
       window.__safetyVizApp = SafetyVizApp.mount(
         '#app',
-        empty ? { libraries, pitch } : { demo: { base: '/site/data/', studies }, libraries, pitch }
+        empty
+          ? { libraries, pitch, tiers: window.__appTiers }
+          : { demo: { base: '/site/data/', studies }, libraries, pitch, tiers: window.__appTiers }
       );
     </script>
   </body>

@@ -214,7 +214,7 @@ For a rapid triage of which cases merit referral to a hepatic board, the manual'
 
 ## The Migration (Sankey) view — comparing arms before reviewing cases
 
-> **Experimental.** The Migration (Sankey) view ships while it is still being worked on; its behaviour and settings may change. The scatter and composite views are stable. The view carries an Experimental banner in the app to make this clear.
+> **Experimental.** The Migration (Sankey) view ships while it is still being worked on; its behaviour and settings may change, where the scatter and composite views' are settled. The chart carries no mark of its own for this view: the Hepatic Explorer as a whole is Exploratory, so confirm every result.
 
 The View control offers a third top-level view, **Migration (Sankey)**, which reproduces Figure 3 of Amirzadegan et al., _"Emerging Tools to Support DILI Assessment in Clinical Trials with Abnormal Baseline Serum Liver Tests or Pre-existing Liver Diseases"_, Drug Safety 2025;48(5):443–453. It answers a different question from the scatter: not _who_ is in the Hy's-Law quadrant, but _how the two arms moved_ between baseline and peak on-treatment.
 

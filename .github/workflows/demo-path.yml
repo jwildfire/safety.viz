@@ -1,0 +1,87 @@
+name: Demo path
+
+# The keynote's demo path (#287, tests/demo-path/): one walk through a
+# published demo app at 1,280 by 720 pixels, in the order it will be shown,
+# with real R. It fails on a console error, a page error, a failed request or
+# an answer of 400 or more, and keeps a screenshot of each step, which the run
+# uploads as the `demo-path` artifact.
+#
+# It walks a published site, not the commit it is checked out at: the commit
+# gives the test, and the address gives the app. So it is no part of the
+# required check, and a run says nothing of a pull request's own code. It runs:
+#
+# - from the Actions tab, against the dev demo or the address given;
+# - from a `demo-path` event, which the obot app can send (it cannot start a
+#   workflow_dispatch run; see evidence-update.yml). The payload's `url` is
+#   optional. A repository_dispatch run uses this file and the test as they
+#   are on the default branch, dev:
+#
+#     gh api repos/jwildfire/safety.viz/dispatches -f event_type=demo-path
+#     gh api repos/jwildfire/safety.viz/dispatches -f event_type=demo-path \
+#       -f 'client_payload[url]=https://jwildfire.github.io/safety.viz/demo/'
+#
+# - on a pull request that changes the walk itself, against the dev demo, so
+#   a change to the path is tried before it merges.
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'The demo app to walk. Leave empty for the dev demo.'
+        required: false
+        default: ''
+        type: string
+  repository_dispatch:
+    types: [demo-path]
+  pull_request:
+    paths:
+      - 'tests/demo-path/**'
+      - 'playwright.demo-path.config.js'
+      - '.github/workflows/demo-path.yml'
+
+permissions:
+  contents: read
+
+# The address reaches the test through the environment, never into script text.
+env:
+  DEMO_PATH_URL: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.url || inputs.url || 'https://jwildfire.github.io/safety.viz/dev/demo/' }}
+
+concurrency:
+  group: demo-path-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  demo-path:
+    name: Walk the demo path
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Walk the demo path
+        run: |
+          echo "Walking $DEMO_PATH_URL"
+          npm run demo-path
+
+      - name: Upload the screenshots of each step
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-path
+          path: |
+            docs/evidence/basic-app/demo-path/
+            test-results/
+          if-no-files-found: ignore

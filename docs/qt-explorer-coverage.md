@@ -35,6 +35,8 @@ blank them.
 | QT-CT-002, QT-CT-003, QT-CT-006       | —                                                     | #68   | central tendency draws per-arm lines, a CI band, the reference line and the peak marker            |
 | QT-CT-004, QT-CT-005                  | —                                                     | #68   | ΔΔ drops placebo and reports the ICH-E14 metric above the reference                                |
 | QT-CT-008                             | QT-CT-008                                             | #136  | central tendency prints the plotted values and CI bounds beneath the chart                         |
+| QT-CT-009                             | QT-CT-009                                             | #284  | scroll sideways inside their own box, which is named and takes focus                               |
+| QT-CT-009                             | QT-CT-009                                             | #284  | the page is as wide as the viewport and the table scrolls inside its own box to its last column    |
 | QT-OUT-002, QT-OUT-003, QT-OUT-004    | —                                                     | #68   | the outlier scatter draws absolute diagonals, the zero line, and per-arm marks                     |
 | QT-OUT-003                            | —                                                     | #68   | a specific visit adds the change-from-baseline lines                                               |
 | QT-CAT-001, QT-CAT-002, QT-CAT-003    | —                                                     | #68   | the categorical view hides the chart and tabulates by-arm exceedance                               |
@@ -54,6 +56,7 @@ blank them.
 | QT-DATA-003/004/006, QT-STAT-001/002 (cleaning, change derivation, stats) | —                                                  | #68   | `structureData.test.js`                 |
 | QT-CT-001/002/004/005/006 (central-tendency series, ΔΔ, ICH-E14, peaks)   | —                                                  | #68   | `structureData.test.js`                 |
 | QT-CT-008 (printed central-tendency values table)                         | QT-CT-008                                          | #136  | `central-table.test.js`                 |
+| QT-CT-009 (the table's box: a named region that takes focus)              | QT-CT-009                                          | #284  | `central-table.test.js`                 |
 | QT-OUT-001/002 (subject points, max post-baseline vs visit)               | —                                                  | #68   | `structureData.test.js`                 |
 | QT-CAT-001/002/003 (by-arm exceedance counts and percents)                | —                                                  | #68   | `structureData.test.js`                 |
 | QT-SCL-001..008 (correction suffix, axis titles, domains, arm marks)      | —                                                  | #68   | `getScales.test.js`                     |
