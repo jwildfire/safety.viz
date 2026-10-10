@@ -63,7 +63,9 @@ concurrency:
 jobs:
   update-evidence:
     name: Refresh baselines and evidence.json
-    runs-on: ubuntu-latest
+    # Named, not ubuntu-latest: the image the screenshots are written and compared
+    # on changes by a commit to this file and to ci.yml, and not by GitHub (#292).
+    runs-on: ubuntu-24.04
     steps:
       # Runs for both events, before anything is checked out or pushed.
       - name: Check the target branch
