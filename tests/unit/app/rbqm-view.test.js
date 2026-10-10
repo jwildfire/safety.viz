@@ -1166,7 +1166,7 @@ describe('the RBQM tab: the study the other charts use', () => {
       items: status.filter((line) => line.state !== 'ran').map((line) => line.message)
     });
     expect(card().note).toBe(
-      'Read from the files’ names and columns, before R is started. R says the same when it runs.'
+      'Read from the files’ names and columns. R says the same when it runs.'
     );
     // No raw file is loaded, so no card is one.
     expect($$('.sva-file.sva-raw')).toHaveLength(0);
@@ -2709,7 +2709,7 @@ describe('the Data tab: gsm raw files and the RBQM card', () => {
         items: [...not.map((line) => line.message), three.groups.message]
       },
       lines: [],
-      note: 'Read from the files’ names and columns, before R is started. R says the same when it runs.'
+      note: 'Read from the files’ names and columns. R says the same when it runs.'
     });
     // Each mark is the one the tab's own row gives the metric, with its abbreviation.
     expect(

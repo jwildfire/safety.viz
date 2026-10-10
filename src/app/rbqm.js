@@ -78,7 +78,7 @@ export function supportWords(can, of) {
       cannot: 'cannot run: missing data'
     },
     why: (count) => `Why ${count} cannot run`,
-    note: 'Read from the files’ names and columns, before R is started. R says the same when it runs.'
+    note: 'Read from the files’ names and columns. R says the same when it runs.'
   };
 }
 

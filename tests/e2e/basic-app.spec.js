@@ -4145,7 +4145,7 @@ test.describe('demo app: the RBQM tab', () => {
       'cannot run: missing data'
     ]);
     await expect(supportCard(page).locator('.sva-support-note')).toHaveText(
-      'Read from the files’ names and columns, before R is started. R says the same when it runs.'
+      'Read from the files’ names and columns. R says the same when it runs.'
     );
     await expect(rawTags(page)).toHaveText([
       'gsm raw file: Raw_SUBJ, by its name',
