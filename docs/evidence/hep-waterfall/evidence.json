@@ -1,6 +1,6 @@
 {
   "module": "hep-waterfall",
-  "generatedAt": "2026-10-10T12:57:17.212Z",
+  "generatedAt": "2026-10-10T13:12:00.367Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38053821482",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38053821482"
+    "id": "38054763695",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38054763695"
   },
   "records": [
     {
@@ -826,6 +826,30 @@
       "status": "pass",
       "requirementIds": ["APP-R-037"],
       "issueRefs": [231],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-051: the R control is at the right end of the chart-name row, outside the names that scroll; before a press it reads its reason, its cost and Start R; a press shows a spinner and a count of seconds, then a chip saying R is ready, and the chip opens R’s version, how long it took, the download and where R runs (#276)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-051"],
+      "issueRefs": [276],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-052: at a 390-pixel viewport the control is first in the chart-name row and stays in view while the names scroll under it; it starts R, becomes the chip, and its details open inside the window; the page is never wider than the window (#276)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-052"],
+      "issueRefs": [276],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-053: with R’s hosts blocked, the Biomarkers tab and the RBQM tab say the same thing: \"R did not start\", in the alarm colour, with Try again beside it, the reason one click away and what the browser said behind a disclosure; no raw error is in the first line (#277)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-053"],
+      "issueRefs": [277],
       "screenshots": []
     },
     {
@@ -5661,6 +5685,14 @@
       "screenshots": []
     },
     {
+      "test": "letting go of R (#258) APP-R-048: closing never waits on R: an R that stopped answering while it started is closed at once, the run that was waiting on it is left to itself, and the next run starts another; an R that was still being fetched is never made (#261)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-048"],
+      "issueRefs": [258, 261],
+      "screenshots": []
+    },
+    {
       "test": "letting go of R (#258) APP-RBQM-052: an R that was started and could not be made ready, a package not installed or a file not read, is closed before the connection answers that R did not start",
       "suite": "unit",
       "status": "pass",
@@ -6213,11 +6245,11 @@
       "screenshots": []
     },
     {
-      "test": "R on request APP-R-015: while R starts the waiting note says what it downloads; once R has answered there is no such note, and the control says R is running (#183)",
+      "test": "R on request APP-R-015: while R starts the chart’s line says so in one short sentence and the control counts from the press; once R has answered there is no such line, and the control is a chip whose details say R’s version, how long it took, the download and where R runs (#183, #276)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-R-015"],
-      "issueRefs": [183],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -6234,6 +6266,14 @@
       "status": "pass",
       "requirementIds": ["APP-R-016"],
       "issueRefs": [183],
+      "screenshots": []
+    },
+    {
+      "test": "R on request APP-R-043: the details say the version R itself gave, \"R 4.6.0, on webR 0.6.0\"; where R gives none they say what the page knew, and where nothing is known the line is left to the control to leave out (#276)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-043"],
+      "issueRefs": [276],
       "screenshots": []
     },
     {
@@ -8389,7 +8429,7 @@
       "screenshots": []
     },
     {
-      "test": "the page with a library’s settings and control APP-R-005: a library’s control is shown with its group’s charts, with what it costs in words beside it; pressing it asks once, hands the open chart its new settings without drawing it again, and the control follows what happened (#183)",
+      "test": "the page with a library’s settings and control APP-R-005: a library’s control is shown while its charts’ tab is open, with what it costs in words beside it; pressing it asks once, hands the open chart its new settings without drawing it again, and the control follows what happened (#183)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-R-005"],
@@ -8530,6 +8570,38 @@
       "status": "pass",
       "requirementIds": ["APP-R-028"],
       "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the R control APP-R-039: before a press the control is a few words for why R is needed, what starting it costs and one button, with the whole sentence on hover; once R is ready it is a quiet chip and no button is left behind (#276)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-039"],
+      "issueRefs": [276],
+      "screenshots": []
+    },
+    {
+      "test": "the R control APP-R-040: while R starts the control is a spinner, the words and a count of seconds that runs by itself, and no button; a tab whose start is long names the step it is on with a segment for each step (#276)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-040"],
+      "issueRefs": [276],
+      "screenshots": []
+    },
+    {
+      "test": "the R control APP-R-041: when R did not start the control says so in words, in the alarm colour, with Try again beside it and the reason one click away; what the browser said is behind a disclosure inside that, never in the first line (#276, #277)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-041"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the R control APP-R-042: a tab gives the control a contract: its phase, the step it is on when starting takes long, and what its details hold; a control written before it is drawn as it was, and one that cannot be read is no control (#276)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-042"],
+      "issueRefs": [276],
       "screenshots": []
     },
     {
@@ -8805,6 +8877,22 @@
       "screenshots": []
     },
     {
+      "test": "the RBQM tab: what it says APP-R-044: the RBQM tab says R is needed, starting, ready and did not start in the words the Biomarkers tab uses; only what needs R and what starting it downloads differ (#277)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-044"],
+      "issueRefs": [277],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: what it says APP-R-045: an R that gave no answer is said to have stopped answering, with how long it was waited on and what it was doing, and Try again; the limits are minutes, far above what each step was measured to take (#261)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-045"],
+      "issueRefs": [261],
+      "screenshots": []
+    },
+    {
       "test": "the RBQM tab: what it says APP-RBQM-018: before R is started the tab says what starting R downloads, how much and from where, and that the files stay in the browser (#235)",
       "suite": "unit",
       "status": "pass",
@@ -8829,11 +8917,11 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: what it says APP-RBQM-024: R that did not start, packages that did not load and a run that stopped each say which it was and why, in one sentence each (#235)",
+      "test": "the RBQM tab: what it says APP-RBQM-024: R that did not start, packages that did not load and a run that stopped each say which it was in a few words, with one plain reason and what was said kept for a reader who asks (#235, #277)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-024"],
-      "issueRefs": [235],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -9301,6 +9389,22 @@
       "screenshots": []
     },
     {
+      "test": "what is said wherever R is started (#277) APP-R-049: there is one set of sentences for R being off, starting, ready and not started; a tab brings only what needs R, what starting it downloads and what a failure leaves standing (#277)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-049"],
+      "issueRefs": [277, 277],
+      "screenshots": []
+    },
+    {
+      "test": "what is said wherever R is started (#277) APP-R-050: what the browser or R said is a sentence of its own, R’s version and the runtime’s are said together with what is not known left out, and times are said in words (#276, #277)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-050"],
+      "issueRefs": [277],
+      "screenshots": []
+    },
+    {
       "test": "what the loaded files support, said before R is started APP-RBQM-035: for the demo study whole, with its labs file left out, with a column taken out of its adverse events file, and for two of its files alone, what the tab says of each metric and of the Groups table before R starts is what desktop R said after running: the same metrics supported, and of each other the same sentence, word for word (#236)",
       "suite": "unit",
       "status": "pass",
@@ -9314,6 +9418,38 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-035"],
       "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-R-046: an R that never answers while attach is given up on at that step’s limit: the tab says R stopped answering, closes that R without waiting on it, and Try again starts a fresh one from the beginning (#261)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-046"],
+      "issueRefs": [258, 261],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-R-046: an R that never answers while run is given up on at that step’s limit: the tab says R stopped answering, closes that R without waiting on it, and Try again starts a fresh one from the beginning (#261)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-046"],
+      "issueRefs": [258, 261],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-R-046: an R that never answers while start is given up on at that step’s limit: the tab says R stopped answering, closes that R without waiting on it, and Try again starts a fresh one from the beginning (#261)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-046"],
+      "issueRefs": [258, 261],
+      "screenshots": []
+    },
+    {
+      "test": "what the review of the v1.10.0 release candidate found (#258) APP-R-047: an R that is only slow, answering within each step’s limit, is unaffected: nothing is closed and the run ends as it always did; a tab given no limit waits as long as R takes (#261)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-047"],
+      "issueRefs": [258, 261],
       "screenshots": []
     },
     {

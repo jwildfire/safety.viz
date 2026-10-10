@@ -4,7 +4,10 @@ import {
   NO_FILES,
   doneSentence,
   downloadsPhrase,
-  failureSentence,
+  R_LIMITS,
+  failureOf,
+  hostsSaid,
+  rbqmWords,
   isoDay,
   listed,
   metricInputs,
@@ -81,7 +84,7 @@ describe('the RBQM tab: what it says', () => {
       'Starting R: downloading R itself, about 13 MB from webr.r-wasm.org. 12 seconds so far.'
     );
     expect(stepSentence('packages', context)).toBe(
-      'Starting R: installing its packages, about 40 MB from repo.r-wasm.org and about 2 MB from this page. This is the longest step. 12 seconds so far.'
+      'Starting R: installing its packages, about 40 MB from repo.r-wasm.org and about 2 MB from this page. 12 seconds so far.'
     );
     expect(stepSentence('files', context)).toBe(
       'Starting R: fetching gsm’s workflow files from this page. 12 seconds so far.'
@@ -90,8 +93,11 @@ describe('the RBQM tab: what it says', () => {
       'Starting R: reading the pipeline’s R. 12 seconds so far.'
     );
     expect(stepSentence('attach', context)).toBe(
-      'R has started. Loading gsm’s packages in R; the database they query with takes the longest. 12 seconds so far.'
+      'R has started. Loading gsm’s packages in R: this is the longest step, and the database they query with is most of it. 12 seconds so far.'
     );
+    // One step is called the long one, and it is the one measured to be (#277).
+    const steps = ['runtime', 'packages', 'files', 'source', 'attach', 'run'];
+    expect(steps.filter((step) => /longest/.test(stepSentence(step, context)))).toEqual(['attach']);
     expect(stepSentence('run', { ...context, seconds: 1 })).toBe(
       'Running gsm’s workflows on the 9 loaded files: the mappings, then each metric, then the reporting tables. 1 second so far.'
     );
@@ -99,19 +105,112 @@ describe('the RBQM tab: what it says', () => {
     expect(stepSentence('something else', context)).toBe('Starting R. 12 seconds so far.');
   });
 
-  it('APP-RBQM-024: R that did not start, packages that did not load and a run that stopped each say which it was and why, in one sentence each (#235)', () => {
-    expect(failureSentence('start', 'Failed to fetch')).toBe(
-      'R did not start: Failed to fetch. Try again; if it fails again, reload the page.'
+  it('APP-RBQM-024: R that did not start, packages that did not load and a run that stopped each say which it was in a few words, with one plain reason and what was said kept for a reader who asks (#235, #277)', () => {
+    const context = { downloads: RBQM_DOWNLOADS };
+    // R itself could not be downloaded: the words every tab says, and the address it comes from.
+    expect(failureOf('start', 'Failed to fetch', { ...context, step: 'runtime' })).toEqual({
+      say: 'R did not start',
+      label: 'Try again',
+      why: 'Why',
+      details: {
+        heading: 'R did not start',
+        text: [
+          'The browser could not download R from webr.r-wasm.org. Check the connection, or whether this network blocks that address, and try again. No metric was run.'
+        ],
+        more: ['The browser said: Failed to fetch.'],
+        moreTitle: 'What the browser said'
+      }
+    });
+    // Its packages could not be: the same words, and the addresses they come from.
+    expect(failureOf('start', 'x', { ...context, step: 'packages' }).details.text).toEqual([
+      'The browser could not download R’s packages from repo.r-wasm.org and this page. Check the connection, or whether this network blocks that address, and try again. No metric was run.'
+    ]);
+    expect(failureOf('start', 'x', { ...context, step: 'files' }).details.text[0]).toMatch(
+      /^The browser could not download gsm’s workflow files from this page\. /
     );
-    expect(failureSentence('attach', 'there is no package called ‘duckdb’.')).toBe(
-      'R started, but gsm’s packages did not load: there is no package called ‘duckdb’. Try again; if it fails again, reload the page.'
+    // Nothing was being downloaded.
+    expect(failureOf('start', 'x', { ...context, step: 'source' }).details.text).toEqual([
+      'R could not be started on this page. Try again; if it fails again, reload the page. No metric was run.'
+    ]);
+    const attach = failureOf('attach', 'there is no package called ‘duckdb’.', context);
+    expect(attach).toMatchObject({ say: 'R did not start', label: 'Try again' });
+    expect(attach.details).toEqual({
+      heading: 'R did not start',
+      text: [
+        'R started, but gsm’s packages did not load in it. Try again; if it fails again, reload the page. No metric was run.'
+      ],
+      more: ['R said: there is no package called ‘duckdb’.'],
+      moreTitle: 'What R said'
+    });
+    expect(failureOf('run', 'Error in rbqm_run: something gave way', context)).toEqual({
+      say: 'R stopped',
+      label: 'Run again',
+      why: 'Why',
+      details: {
+        heading: 'R stopped',
+        text: [
+          'R stopped while it was running gsm’s workflows, so there are no results. Run again; if it stops again, reload the page.'
+        ],
+        more: ['R said: Error in rbqm_run: something gave way.'],
+        moreTitle: 'What R said'
+      }
+    });
+    // No reason given: the first line is the same, and the disclosure says so.
+    const silent = failureOf('start', null, { ...context, step: 'runtime' });
+    expect(silent.say).toBe('R did not start');
+    expect(silent.details.more).toEqual(['The browser gave no reason.']);
+    // Nothing R or the browser said is in the words a reader is shown first.
+    for (const failure of [attach, silent, failureOf('run', 'Error: boom', context)]) {
+      expect(failure.say).not.toMatch(/Error|fetch|package/);
+    }
+  });
+
+  it('APP-R-044: the RBQM tab says R is needed, starting, ready and did not start in the words the Biomarkers tab uses; only what needs R and what starting it downloads differ (#277)', () => {
+    const words = rbqmWords(RBQM_DOWNLOADS);
+    expect(hostsSaid(RBQM_DOWNLOADS)).toBe('webr.r-wasm.org, repo.r-wasm.org and this page');
+    expect(words.need).toBe('Site metrics need R');
+    expect(words.cost).toBe('55 MB, once');
+    expect(words.needTitle).toBe(
+      'Site metrics need R. Start R to run them: about 55 MB, downloaded once from webr.r-wasm.org, repo.r-wasm.org and this page. The study’s data stays in this browser.'
     );
-    expect(failureSentence('run', 'Error in rbqm_run: something gave way')).toBe(
-      'R stopped while running the workflows: Error in rbqm_run: something gave way.'
-    );
-    expect(failureSentence('start', null)).toBe(
-      'R did not start: No reason was given. Try again; if it fails again, reload the page.'
-    );
+    for (const [key, said] of Object.entries({
+      start: 'Start R',
+      starting: 'Starting R',
+      ready: 'R ready',
+      readyHeading: 'R is running in this browser',
+      failed: 'R did not start',
+      again: 'Try again',
+      why: 'Why',
+      stopped: 'R stopped answering'
+    })) {
+      expect(words[key], key).toBe(said);
+    }
+  });
+
+  it('APP-R-045: an R that gave no answer is said to have stopped answering, with how long it was waited on and what it was doing, and Try again; the limits are minutes, far above what each step was measured to take (#261)', () => {
+    expect(R_LIMITS).toEqual({ start: 600, attach: 180, run: 300 });
+    const doing = {
+      start: 'it was starting',
+      attach: 'it was loading gsm’s packages',
+      run: 'it was running the workflows'
+    };
+    for (const [when, what] of Object.entries(doing)) {
+      const failure = failureOf(when, null, { downloads: RBQM_DOWNLOADS, silent: R_LIMITS[when] });
+      expect(failure).toEqual({
+        say: 'R stopped answering',
+        label: 'Try again',
+        why: 'Why',
+        details: {
+          heading: 'R stopped answering',
+          text: [
+            `R gave no answer for ${R_LIMITS[when] / 60} minutes while ${what}, so it was closed. Try again; if it stops again, reload the page. No metric was run.`
+          ]
+        }
+      });
+    }
+    expect(
+      failureOf('run', null, { downloads: RBQM_DOWNLOADS, silent: 90 }).details.text[0]
+    ).toMatch(/^R gave no answer for 90 seconds while /);
   });
 
   it('APP-RBQM-020: once R has answered the tab says how many metrics ran, on how many files, how long R took and the versions R reports; the snapshot’s date is the reader’s own day (#235)', () => {

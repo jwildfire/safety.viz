@@ -46,8 +46,9 @@
         if (record) {
           return {
             run(name, request) {
-              // The app's own call that starts R on the press is not a chart's.
-              if (name !== 'identity') {
+              // The app's own calls, the one that starts R on the press and the
+              // two that ask R its version (#276), are not a chart's.
+              if (name !== 'identity' && name !== 'do.call') {
                 window.__rCalls.push({ name, args: request.args, data: request.data });
               }
               return Promise.resolve({
@@ -62,7 +63,7 @@
         return {
           async run(name, request) {
             const answer = await connection.run(name, request);
-            if (name !== 'identity') {
+            if (name !== 'identity' && name !== 'do.call') {
               window.__rAnswers.push({
                 name,
                 args: request.args,
@@ -83,7 +84,8 @@
             createConnection: factory,
             browser: { sourceUrl: '/site/vendor/gsm.bio/statistics.R', packages: [] },
             megabytes: 13,
-            host: 'webr.r-wasm.org'
+            host: 'webr.r-wasm.org',
+            webr: BioViz.r.WEBR_VERSION
           })
         }
       ];
@@ -107,10 +109,15 @@
             if (name === 'Sys.time') {
               for (const stage of ['runtime', 'packages', 'files', 'source']) {
                 options.onStage(stage);
+                // R that cannot be fetched fails on its first step, as a blocked host does.
+                if (window.__rbqmFails === 'start') {
+                  return {
+                    status: 'unavailable',
+                    reason: 'load-failed',
+                    message: 'Failed to fetch'
+                  };
+                }
                 await gate();
-              }
-              if (window.__rbqmFails === 'start') {
-                return { status: 'unavailable', reason: 'load-failed', message: 'Failed to fetch' };
               }
               return { status: 'ok', value: '2026-10-07 12:00:00' };
             }

@@ -279,7 +279,7 @@ describe('the RBQM tab on the page', () => {
     expect($('.sva-rbqm-status').textContent).toContain('7 seconds so far.');
     connection.options.onStage('packages');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'Starting R: installing its packages, about 40 MB from repo.r-wasm.org and about 2 MB from this page. This is the longest step. 7 seconds so far.'
+      'Starting R: installing its packages, about 40 MB from repo.r-wasm.org and about 2 MB from this page. 7 seconds so far.'
     );
     connection.options.onStage('files');
     expect($('.sva-rbqm-status').textContent).toContain('fetching gsm’s workflow files');
@@ -433,12 +433,29 @@ describe('the RBQM tab on the page', () => {
     $('.sva-rbqm-start').click();
     await r.made[0].letGo();
     expect(view.state().phase).toBe('failed');
-    expect($('.sva-rbqm-status').textContent).toBe(
-      'R did not start: Failed to fetch. Try again; if it fails again, reload the page.'
-    );
+    // The failure state every tab that starts R shows (#277): the words, in the
+    // alarm colour, Try again beside them, and no raw error in that line.
+    expect($('.sva-rbqm-run').classList.contains('sva-rbqm-failed')).toBe(true);
+    expect($('.sva-rbqm-run .sva-r').dataset.phase).toBe('failed');
+    expect($('.sva-rbqm-status').textContent).toBe('R did not start');
+    expect($('.sva-rbqm-status').classList.contains('sva-bad')).toBe(true);
     expect($('.sva-rbqm-status').classList.contains('sva-rbqm-problem')).toBe(true);
-    expect($('.sva-rbqm-start').textContent).toBe('Try R again');
+    expect($('.sva-rbqm-start').textContent).toBe('Try again');
     expect($('.sva-rbqm-start').disabled).toBe(false);
+    expect($('.sva-rbqm-run').textContent).not.toContain('Failed to fetch');
+    // The reason is one click away: a plain sentence, with what the browser
+    // said behind a disclosure inside it.
+    expect($('.sva-r-panel')).toBeNull();
+    $('.sva-rbqm-run .sva-r-why').click();
+    expect($('.sva-rbqm-run .sva-r-panel .sva-r-heading').textContent).toBe('R did not start');
+    expect($('.sva-rbqm-run .sva-r-panel > .sva-r-text').textContent).toBe(
+      'The browser could not download R from webr.r-wasm.org. Check the connection, or whether this network blocks that address, and try again. No metric was run.'
+    );
+    expect($('.sva-r-more summary').textContent).toBe('What the browser said');
+    expect($('.sva-r-more').open).toBe(false);
+    expect($('.sva-r-more .sva-r-text').textContent).toBe('The browser said: Failed to fetch.');
+    $('.sva-rbqm-run .sva-r-x').click();
+    expect($('.sva-r-panel')).toBeNull();
     expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('no R');
     $('.sva-rbqm-start').click();
     expect(r.createConnection).toHaveBeenCalledTimes(2);
@@ -462,8 +479,14 @@ describe('the RBQM tab on the page', () => {
     $('.sva-rbqm-start').click();
     for (let step = 0; step < 3; step += 1) await r.made[0].letGo();
     expect(view.state().phase).toBe('stopped');
-    expect($('.sva-rbqm-status').textContent).toBe(
-      'R stopped while running the workflows: Error in rbqm_run: something gave way.'
+    expect($('.sva-rbqm-status').textContent).toBe('R stopped');
+    $('.sva-rbqm-run .sva-r-why').click();
+    expect($('.sva-r-panel > .sva-r-text').textContent).toBe(
+      'R stopped while it was running gsm’s workflows, so there are no results. Run again; if it stops again, reload the page.'
+    );
+    expect($('.sva-r-more summary').textContent).toBe('What R said');
+    expect($('.sva-r-more .sva-r-text').textContent).toBe(
+      'R said: Error in rbqm_run: something gave way.'
     );
     expect($('.sva-rbqm-results')).toBeNull();
     expect($('.sva-rbqm-start').textContent).toBe('Run again');
@@ -1190,8 +1213,15 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
     for (let step = 0; step < 2; step += 1) await inner.made[0].letGo();
     expect(view.state().phase).toBe('failed');
     expect(view.state().up).toBe(false);
-    expect($('.sva-rbqm-start').textContent).toBe('Try R again');
-    expect($('.sva-rbqm-status').textContent).toContain('there is no package called ‘gsm.core’');
+    expect($('.sva-rbqm-start').textContent).toBe('Try again');
+    expect($('.sva-rbqm-status').textContent).toBe('R did not start');
+    $('.sva-rbqm-run .sva-r-why').click();
+    expect($('.sva-r-panel > .sva-r-text').textContent).toMatch(
+      /^R started, but gsm’s packages did not load in it\. /
+    );
+    expect($('.sva-r-more .sva-r-text').textContent).toBe(
+      'R said: there is no package called ‘gsm.core’.'
+    );
     expect(closed).toEqual([]);
     $('.sva-rbqm-start').click();
     await settle();
@@ -1265,5 +1295,110 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
     clock.now += 60000;
     vi.advanceTimersByTime(5000);
     expect($('.sva-rbqm-status').textContent).toBe(said);
+  });
+
+  // An R that stops answering (#261): the tab gives up after a stated time.
+  const LIMITS = { start: 600, attach: 180, run: 300 };
+  const silentAt = (stopsAt) => {
+    fakeViz();
+    const closed = [];
+    const inner = fakeR(RUN_OK);
+    const mounted = mount({
+      tab: {
+        limits: LIMITS,
+        createConnection: (options) => {
+          const connection = inner.createConnection(options);
+          connection.close = vi.fn(async () => closed.push(inner.made.indexOf(connection)));
+          return connection;
+        }
+      }
+    });
+    return { ...mounted, inner, closed, stopsAt };
+  };
+  const turns = async () => {
+    for (let turn = 0; turn < 30; turn += 1) await Promise.resolve();
+  };
+
+  it.each([
+    ['start', 0, 'it was starting', '10 minutes'],
+    ['attach', 1, 'it was loading gsm’s packages', '3 minutes'],
+    ['run', 2, 'it was running the workflows', '5 minutes']
+  ])(
+    'APP-R-046: an R that never answers while %s is given up on at that step’s limit: the tab says R stopped answering, closes that R without waiting on it, and Try again starts a fresh one from the beginning (#261)',
+    async (when, answered, doing, waited) => {
+      vi.useFakeTimers();
+      const { app, view, inner, closed, $ } = silentAt(when);
+      app.loadRaw(STUDY);
+      app.select('rbqm');
+      const idle = vi.getTimerCount();
+      $('.sva-rbqm-start').click();
+      // The steps before this one answer; this one never does.
+      for (let step = 0; step < answered; step += 1) await inner.made[0].letGo();
+      const busyAs = view.state().phase;
+      expect(['starting', 'attaching', 'running']).toContain(busyAs);
+      // One second short of the limit, the tab is still waiting.
+      await vi.advanceTimersByTimeAsync((LIMITS[when] - 1) * 1000);
+      expect(view.state().phase).toBe(busyAs);
+      expect(closed).toEqual([]);
+      await vi.advanceTimersByTimeAsync(1000);
+      await turns();
+      expect(view.state()).toMatchObject({ phase: 'failed', up: false });
+      // Nothing the press set going is left counting.
+      expect(vi.getTimerCount()).toBe(idle);
+      expect($('.sva-rbqm-status').textContent).toBe('R stopped answering');
+      expect($('.sva-rbqm-start').textContent).toBe('Try again');
+      expect($('.sva-rbqm-start').disabled).toBe(false);
+      expect($('.sva-rbqm-results')).toBeNull();
+      expect($('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent).toBe('no R');
+      $('.sva-rbqm-run .sva-r-why').click();
+      expect($('.sva-r-panel > .sva-r-text').textContent).toBe(
+        `R gave no answer for ${waited} while ${doing}, so it was closed. Try again; if it stops again, reload the page. No metric was run.`
+      );
+      // That R was closed, once, though it never answered.
+      expect(closed).toEqual([0]);
+      // Try again: one fresh R, started from the beginning, and the run it was asked for.
+      $('.sva-rbqm-start').click();
+      await turns();
+      expect(inner.made).toHaveLength(2);
+      for (let step = 0; step < 3; step += 1) await inner.made[1].letGo();
+      expect(inner.made[1].runs.map((run) => run.name)).toEqual([
+        'Sys.time',
+        'rbqm_attach',
+        'rbqm_run'
+      ]);
+      expect(view.state()).toMatchObject({ phase: 'done', up: true });
+      expect(closed).toEqual([0]);
+      // An answer the first R gives late changes nothing.
+      if (inner.made[0].waiting.length) await inner.made[0].letGo();
+      expect(view.state().phase).toBe('done');
+    }
+  );
+
+  it('APP-R-047: an R that is only slow, answering within each step’s limit, is unaffected: nothing is closed and the run ends as it always did; a tab given no limit waits as long as R takes (#261)', async () => {
+    vi.useFakeTimers();
+    const { app, view, inner, closed, $ } = silentAt(null);
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    for (const when of ['start', 'attach', 'run']) {
+      await vi.advanceTimersByTimeAsync((LIMITS[when] - 1) * 1000);
+      await inner.made[0].letGo();
+    }
+    expect(view.state()).toMatchObject({ phase: 'done', up: true });
+    expect(closed).toEqual([]);
+    // No limit is left running once R has answered.
+    await vi.advanceTimersByTimeAsync(3600 * 1000);
+    expect(view.state().phase).toBe('done');
+    expect($('.sva-rbqm-run .sva-r')).toBeNull();
+
+    fakeViz();
+    const unlimited = mount({ answers: RUN_OK, tab: { limits: {} } });
+    unlimited.app.loadRaw(STUDY);
+    unlimited.app.select('rbqm');
+    unlimited.$('.sva-rbqm-start').click();
+    await vi.advanceTimersByTimeAsync(3600 * 1000);
+    expect(unlimited.view.state().phase).toBe('starting');
+    for (let step = 0; step < 3; step += 1) await unlimited.r.made[0].letGo();
+    expect(unlimited.view.state().phase).toBe('done');
   });
 });

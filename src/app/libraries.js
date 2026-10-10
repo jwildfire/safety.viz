@@ -409,3 +409,82 @@ export function tabColours(libraries, taken = []) {
   }
   return colours;
 }
+
+// ---- A library's control (#183, #276) ----
+
+const CONTROL_PHASES = ['off', 'starting', 'ready', 'failed'];
+const textOr = (value, otherwise = null) => (isText(value) ? value : otherwise);
+
+/**
+ * What a library's control says of itself, read safely: the contract a tab
+ * gives the R control (#276, src/app/r-control.js).
+ *
+ * A control's `state()` answers with:
+ *
+ * - `phase`: `off`, `starting`, `ready` or `failed`. One that names none is
+ *   `off`, so a control that only names a button is drawn as a button.
+ * - `say`: the few words beside the button, or in the chip. `meta`: the cost,
+ *   in a word or two. `title`: the whole sentence, on hover.
+ * - `label`: the button's words, and `disabled`, when it cannot be pressed.
+ * - `since`: when it started, in milliseconds, for the count of seconds.
+ * - `step`: when starting takes long, the step it is on: `say`, its `index`
+ *   from 1 and how many there are, `of`.
+ * - `details`: what the panel behind the chip holds: a `heading`, `rows` of a
+ *   term and what is said of it, `text` in sentences, `more` sentences behind a
+ *   disclosure titled `moreTitle`, and `actions`, each a `label` and a `press`.
+ * - `why`: the word on the chip that opens the details of a failure.
+ *
+ * The control of #183 named `label`, `done`, `note` and `hint`; they are read
+ * as the button's words, whether it is disabled, the sentence on hover and the
+ * cost, so a library written for it is drawn as it was.
+ * @param {?{state: Function}} action The library's control.
+ * @returns {?Object} The state, every member present and of its kind; null when the control says nothing that can be read.
+ */
+export function controlState(action) {
+  let said;
+  try {
+    said = action && typeof action.state === 'function' ? action.state() : null;
+  } catch (error) {
+    console.warn('safety.viz app: a library’s control could not say its state.', error);
+    return null;
+  }
+  if (!isRecord(said)) return null;
+  const phase = CONTROL_PHASES.includes(said.phase) ? said.phase : 'off';
+  const step =
+    isRecord(said.step) &&
+    isText(said.step.say) &&
+    Number.isInteger(said.step.index) &&
+    Number.isInteger(said.step.of) &&
+    said.step.index >= 1 &&
+    said.step.index <= said.step.of
+      ? { say: said.step.say, index: said.step.index, of: said.step.of }
+      : null;
+  const list = (value) => (Array.isArray(value) ? value : []);
+  const details =
+    isRecord(said.details) && isText(said.details.heading)
+      ? {
+          heading: said.details.heading,
+          rows: list(said.details.rows).filter(
+            (row) => Array.isArray(row) && isText(row[0]) && isText(row[1])
+          ),
+          text: list(said.details.text).filter(isText),
+          more: list(said.details.more).filter(isText),
+          moreTitle: textOr(said.details.moreTitle, 'More'),
+          actions: list(said.details.actions).filter(
+            (item) => isRecord(item) && isText(item.label) && typeof item.press === 'function'
+          )
+        }
+      : null;
+  return {
+    phase,
+    say: textOr(said.say, ''),
+    meta: textOr(said.meta, textOr(said.hint)),
+    title: textOr(said.title, textOr(said.note)),
+    label: textOr(said.label),
+    disabled: Boolean(said.disabled || said.done),
+    since: Number.isFinite(said.since) ? said.since : null,
+    step,
+    details,
+    why: textOr(said.why, 'Why')
+  };
+}

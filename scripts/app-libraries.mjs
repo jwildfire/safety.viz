@@ -273,7 +273,9 @@ export function librariesExpression(
         `{ createConnection: ${factory}, browser: { sourceUrl: ${JSON.stringify(
           statisticsUrl ? statisticsUrl(library) : `./${library.r.statistics.file}`
         )}, packages: ${JSON.stringify(library.r.packages)} }, megabytes: ${library.r.megabytes}, ` +
-        `host: ${JSON.stringify(library.r.host)} }`;
+        // The runtime's version, where the library says it: the ready chip's
+        // details say it when R does not say its own (#276).
+        `host: ${JSON.stringify(library.r.host)}, webr: ${global}?.r?.WEBR_VERSION }`;
       statistics =
         r === 'request'
           ? `, ...(${global} ? (typeof (${factory}) === 'function' ? SafetyVizApp.rOnRequest(${options}) ` +
