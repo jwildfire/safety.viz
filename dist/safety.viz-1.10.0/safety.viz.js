@@ -23671,7 +23671,7 @@ Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
 .safety-hep-explorer .hep-composite-card h4{font-size:.82rem;margin:0 0 .4rem;color:#52616f;font-weight:600}
 .safety-hep-explorer .hep-composite-canvas{height:280px;position:relative}
 .safety-hep-explorer .hep-composite-panel-canvas{height:210px;position:relative}
-.safety-hep-explorer .hep-migration{margin-top:1.25rem}
+.safety-hep-explorer .hep-migration{margin-top:1.25rem;max-width:100%;overflow-x:auto}
 .safety-hep-explorer .hep-migration table{border-collapse:collapse;font-size:.82rem;background:#fff}
 .safety-hep-explorer .hep-migration th,.safety-hep-explorer .hep-migration td{border:1px solid #d8dee4;padding:.35rem .55rem;text-align:center}
 .safety-hep-explorer .hep-migration th{font-size:.72rem;text-transform:uppercase;letter-spacing:.02em;color:#52616f;font-weight:700}
@@ -29267,7 +29267,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
 .safety-qt-explorer .qt-table th.qt-num,.safety-qt-explorer .qt-table td.qt-num,.safety-qt-explorer .qt-ich td.qt-num{text-align:right;font-variant-numeric:tabular-nums}
 .safety-qt-explorer .qt-table th{border-bottom:2px solid #d8dee4;font-size:.75rem;text-transform:uppercase;letter-spacing:.03em;color:#52616f;white-space:nowrap}
 .safety-qt-explorer .qt-table caption,.safety-qt-explorer .qt-ich caption{caption-side:top;text-align:left;font-weight:600;margin-bottom:.35rem}
-.safety-qt-explorer .qt-table{margin:.7rem 0 0}
+.safety-qt-explorer .qt-table{margin:.7rem 0 0;max-width:100%;overflow-x:auto}
+.safety-qt-explorer .qt-table:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
 .safety-qt-explorer .qt-flag{color:#9a3412;font-weight:600}
 .safety-qt-explorer .qt-empty{display:none}
 .safety-qt-explorer .qt-caution{margin-top:.5rem;font-size:.8rem;color:#8a4b00}
@@ -29425,6 +29426,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.main.insertBefore(this.noteEl, this.chartWrap);
       this.main.insertBefore(this.legendEl, this.chartWrap);
       this.tableWrap = createElement("div", "qt-table qt-empty");
+      this.tableWrap.setAttribute("role", "region");
+      this.tableWrap.setAttribute("tabindex", "0");
       this.ichWrap = createElement("div", "qt-ich qt-empty");
       this.chartWrap.after(this.ichWrap);
       this.ichWrap.after(this.tableWrap);
@@ -29874,6 +29877,18 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.ichWrap.append(table);
     }
     /**
+     * Name the table's box after the table in it (QT-CT-009): a box that scrolls
+     * is a region a screen reader lists, and its name is the table's caption. A
+     * different table starts at its first column; the same table drawn again,
+     * after a filter say, stays where the reader had scrolled it.
+     * @private
+     */
+    labelTableBox(table) {
+      const label = table.querySelector("caption").textContent;
+      if (this.tableWrap.getAttribute("aria-label") !== label) this.tableWrap.scrollLeft = 0;
+      this.tableWrap.setAttribute("aria-label", label);
+    }
+    /**
      * Print the plotted central-tendency values beneath the chart (QT-CT-008):
      * one row per visit and arm carrying the number of participants (replicate
      * readings count once per participant and visit, #166), the plotted statistic,
@@ -29938,6 +29953,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       });
       table.append(tbody);
       this.tableWrap.append(table);
+      this.labelTableBox(table);
     }
     /** Central-tendency footnote: method + mode caveats. @private */
     setCentralFootnote(measure, isQtc) {
@@ -30123,6 +30139,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       });
       table.append(tbody);
       this.tableWrap.append(table);
+      this.labelTableBox(table);
       this.drawLegend(classification.arms);
       this.footnote.textContent = "Absolute rows use each participant\u2019s maximum post-baseline value; change rows use the maximum post-baseline change (they may fall at different visits).";
     }
@@ -30631,21 +30648,44 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     }
     return (right - left) / 2;
   }
+  function armHalves(chart, waterfall) {
+    const { placebo, active, placeboLabel, activeLabel } = waterfall;
+    const { left, right } = chart.chartArea;
+    const half = (side, label, subjects, from2, to2) => ({
+      side,
+      label,
+      count: subjects.length,
+      left: from2,
+      right: to2
+    });
+    if (placebo.length && active.length) {
+      const seam = (chart.scales.x.getPixelForValue(placebo.length - 1) + chart.scales.x.getPixelForValue(placebo.length)) / 2;
+      return {
+        seam,
+        halves: [
+          half("placebo", placeboLabel, placebo, left, seam),
+          half("active", activeLabel, active, seam, right)
+        ]
+      };
+    }
+    return {
+      seam: null,
+      halves: [
+        placebo.length ? half("placebo", placeboLabel, placebo, left, right) : half("active", activeLabel, active, left, right)
+      ]
+    };
+  }
   function armDividerPlugin(instance) {
     return {
       id: "hwf-arm-divider",
       afterDatasetsDraw(chart) {
         const waterfall = instance.waterfall;
         if (!waterfall || !waterfall.ordered.length) return;
-        const { placebo, active, placeboLabel, activeLabel } = waterfall;
-        const { top, bottom, left, right } = chart.chartArea;
-        const ctx = chart.ctx;
-        ctx.save();
-        ctx.font = "600 11px system-ui, -apple-system, sans-serif";
-        ctx.textBaseline = "top";
-        ctx.textAlign = "center";
-        if (placebo.length && active.length) {
-          const seam = (chart.scales.x.getPixelForValue(placebo.length - 1) + chart.scales.x.getPixelForValue(placebo.length)) / 2;
+        const { top, bottom } = chart.chartArea;
+        const { seam, halves } = armHalves(chart, waterfall);
+        if (seam !== null) {
+          const ctx = chart.ctx;
+          ctx.save();
           ctx.strokeStyle = DIVIDER_COLOR;
           ctx.lineWidth = 1;
           ctx.setLineDash([4, 3]);
@@ -30654,15 +30694,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
           ctx.lineTo(seam, bottom);
           ctx.stroke();
           ctx.setLineDash([]);
-          ctx.fillStyle = DIVIDER_COLOR;
-          ctx.fillText(`${placeboLabel} (n=${placebo.length})`, (left + seam) / 2, top + 4);
-          ctx.fillText(`${activeLabel} (n=${active.length})`, (seam + right) / 2, top + 4);
-        } else {
-          const only = placebo.length ? `${placeboLabel} (n=${placebo.length})` : `${activeLabel} (n=${active.length})`;
-          ctx.fillStyle = DIVIDER_COLOR;
-          ctx.fillText(only, (left + right) / 2, top + 4);
+          ctx.restore();
         }
-        ctx.restore();
+        if (instance.placeArmCaptions) instance.placeArmCaptions(halves, top);
       }
     };
   }
@@ -31029,6 +31063,8 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     plugin_tooltip,
     plugin_legend
   );
+  var PANEL_TITLE_HEIGHT = 33.2;
+  var CAPTION_INSET = 4;
   var STYLE_ID4 = "safety-viz-hep-waterfall-styles";
   var STYLES = `
 .safety-hep-waterfall .hwf-layout{display:grid;grid-template-columns:110px 1fr 110px;gap:.5rem;height:100%;align-items:stretch}
@@ -31040,6 +31076,12 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
 .safety-hep-waterfall .hwf-legend-box{display:inline-flex;align-items:center;gap:.3rem}
 .safety-hep-waterfall .hwf-legend-glyph{display:inline-block;width:1.6rem;height:.9rem;vertical-align:middle}
 .safety-hep-waterfall .hwf-box-canvas{outline-offset:2px}
+.safety-hep-waterfall .hwf-title{position:absolute;box-sizing:border-box;display:flex;justify-content:center;align-items:center;align-content:center;column-gap:.3em;margin:0;overflow:hidden;pointer-events:none;font:700 11px/1.2 'Helvetica Neue','Helvetica','Arial',sans-serif;color:#666;letter-spacing:normal;text-transform:none}
+.safety-hep-waterfall .hwf-title[hidden]{display:none}
+.safety-hep-waterfall .hwf-title-name{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:auto}
+.safety-hep-waterfall .hwf-title-n{flex:none;white-space:nowrap;pointer-events:auto}
+.safety-hep-waterfall .hwf-panel-title{top:0;left:0;right:0;height:${PANEL_TITLE_HEIGHT}px;flex-wrap:wrap}
+.safety-hep-waterfall .hwf-arm-caption{font:600 11px/1.2 system-ui,-apple-system,sans-serif;color:${DIVIDER_COLOR}}
 .safety-hep-waterfall .hwf-tip{position:absolute;left:0;top:0;display:none;width:max-content;max-width:220px;white-space:pre-line;pointer-events:none;z-index:3;background:rgba(17,24,39,.94);color:#fff;font-size:.72rem;line-height:1.35;border-radius:6px;padding:.35rem .5rem}
 .safety-hep-waterfall .hwf-tip.is-visible{display:block}
 .safety-hep-waterfall .hwf-tip.is-right{transform:translateX(-100%)}
@@ -31053,6 +31095,20 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
     style.id = STYLE_ID4;
     style.textContent = STYLES;
     document.head.append(style);
+  }
+  function createTitle2(className) {
+    const title = createElement("div", `hwf-title ${className}`);
+    title.append(
+      createElement("span", "hwf-title-name"),
+      document.createTextNode(" "),
+      createElement("span", "hwf-title-n")
+    );
+    return title;
+  }
+  function setTitle(title, label, count2) {
+    title.querySelector(".hwf-title-name").textContent = label;
+    title.querySelector(".hwf-title-n").textContent = `(n=${count2})`;
+    title.setAttribute("title", `${label} (n=${count2})`);
   }
   var SafetyHepWaterfall = class {
     constructor(element = "body", settings = {}) {
@@ -31074,6 +31130,9 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.flankChartsBySide = { left: null, right: null };
       this.boxTips = { left: null, right: null };
       this.boxHover = { side: null, index: -1 };
+      this.panelTitles = { left: null, right: null };
+      this.armCaptions = { placebo: null, active: null };
+      this.captionsPlaced = "";
       this.state = this.seedState();
       this.renderShellDom();
     }
@@ -31133,15 +31192,23 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.legendEl = createElement("div", "hwf-legend");
       this.main.insertBefore(this.legendEl, this.chartWrap);
       const layout = createElement("div", "hwf-layout");
+      this.panelTitles = {
+        left: createTitle2("hwf-panel-title"),
+        right: createTitle2("hwf-panel-title")
+      };
+      this.armCaptions = {
+        placebo: createTitle2("hwf-arm-caption"),
+        active: createTitle2("hwf-arm-caption")
+      };
       const leftPanel = createElement("div", "hwf-panel");
       this.boxCanvasLeft = createElement("canvas", "hwf-box-canvas hwf-box-left");
-      leftPanel.append(this.boxCanvasLeft);
+      leftPanel.append(this.boxCanvasLeft, this.panelTitles.left);
       const mainPanel = createElement("div", "hwf-panel hwf-main-panel");
       this.canvas.remove();
-      mainPanel.append(this.canvas);
+      mainPanel.append(this.canvas, this.armCaptions.placebo, this.armCaptions.active);
       const rightPanel = createElement("div", "hwf-panel");
       this.boxCanvasRight = createElement("canvas", "hwf-box-canvas hwf-box-right");
-      rightPanel.append(this.boxCanvasRight);
+      rightPanel.append(this.boxCanvasRight, this.panelTitles.right);
       layout.append(leftPanel, mainPanel, rightPanel);
       this.chartWrap.insertBefore(layout, this.mainAnnotation);
       this.bindBoxHover("left", this.boxCanvasLeft, leftPanel);
@@ -31666,6 +31733,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         ["left", this.boxCanvasLeft, waterfall.placeboLabel, waterfall.placebo],
         ["right", this.boxCanvasRight, waterfall.activeLabel, waterfall.active]
       ].map(([side, canvas, label, subjects]) => {
+        setTitle(this.panelTitles[side], label, (subjects || []).length);
         canvas.setAttribute(
           "aria-label",
           boxPanelDescription(this.boxSpecs[side], {
@@ -31681,14 +31749,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
             maintainAspectRatio: false,
             responsive: true,
             animation: false,
+            layout: { padding: { top: PANEL_TITLE_HEIGHT } },
             plugins: {
               legend: { display: false },
-              tooltip: { enabled: false },
-              title: {
-                display: true,
-                text: `${label} (n=${(subjects || []).length})`,
-                font: { size: 11 }
-              }
+              tooltip: { enabled: false }
             },
             scales: flankScales(domain, this.boxSpecs[side].length, { labels })
           },
@@ -31703,6 +31767,29 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
         this.charts.push(chart);
         this.flankChartsBySide[side] = chart;
         return chart;
+      });
+    }
+    /**
+     * Set the caption over each half of the plot (HWF-COLOR-003, HWF-TITLE-001):
+     * the arm divider calls this on every draw with where the halves are. Each
+     * caption is held inside its own half, so two cannot meet; a half too narrow
+     * for its count shows no caption, and the panel beside it still names the arm.
+     * @private
+     */
+    placeArmCaptions(halves, top) {
+      const placed = JSON.stringify([halves, top]);
+      if (placed === this.captionsPlaced) return;
+      this.captionsPlaced = placed;
+      Object.entries(this.armCaptions).forEach(([side, caption]) => {
+        const half = halves.find((entry) => entry.side === side);
+        caption.hidden = !half;
+        if (!half) return;
+        setTitle(caption, half.label, half.count);
+        const width = Math.max(half.right - half.left - 2 * CAPTION_INSET, 0);
+        caption.style.left = `${this.canvas.offsetLeft + half.left + CAPTION_INSET}px`;
+        caption.style.top = `${this.canvas.offsetTop + top + CAPTION_INSET}px`;
+        caption.style.width = `${width}px`;
+        caption.hidden = caption.querySelector(".hwf-title-n").offsetWidth > width;
       });
     }
     /**
@@ -31774,6 +31861,7 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
       this.flankChartsBySide = { left: null, right: null };
       this.chart = null;
       this.boxHover = { side: null, index: -1 };
+      this.captionsPlaced = "";
       Object.values(this.boxTips).forEach((tip) => {
         if (tip) tip.classList.remove("is-visible");
       });
