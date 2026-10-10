@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
+import { DEMO_STUDIES } from '../../../src/app/studies.js';
 import { WEBR_VERSION } from '../../../src/app/r-browser.js';
 import { rbqmTab } from '../../../src/app/rbqm-view.js';
 import { RBQM_DOWNLOADS, rbqmTabOptions } from '../../../scripts/app-libraries.mjs';
@@ -132,7 +133,7 @@ const RUN_OK = { rbqm_run: () => ({ status: 'ok', value: whole, form: 'browser' 
 const ABBREVIATIONS = ['AE', 'SAE', 'PD', 'IPD', 'LB', 'SDSC', 'TDSC', 'SF'];
 const NEED = 'Site metrics need R. Start R, at the top right.';
 const NO_FILES =
-  'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or drop gsm raw files here.';
+  'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.';
 const NONE_PLACED =
   'None of the loaded files is a subject-level or adverse events file, or a gsm raw file, so there is nothing for R to run.';
 const ONLY_LAST = 'R was already running, so only the last step ran again.';
@@ -150,6 +151,32 @@ const metricItems = () => [
 const item = (id) => document.querySelector(`.sva-view-items .sva-view-item[data-item="${id}"]`);
 const tabCount = () =>
   document.querySelector('.sva-tab[data-tab="rbqm"] .sva-tab-count').textContent;
+
+// The Data tab's card for the tab (#281), read from the page: its sentence,
+// each metric's id, state and full name, the key to the marks, the reasons
+// with their title and whether they are open, and the sentences said in the open.
+const card = () => {
+  const node = document.querySelector('.sva-data .sva-support[data-support="rbqm"]');
+  if (!node) return null;
+  const texts = (selector) => [...node.querySelectorAll(selector)].map((one) => one.textContent);
+  const why = node.querySelector('.sva-support-why');
+  return {
+    say: node.querySelector('.sva-support-say').textContent,
+    items: [...node.querySelectorAll('.sva-support-items li')].map((one) => [
+      one.dataset.item,
+      one.dataset.state,
+      one.getAttribute('aria-label')
+    ]),
+    key: texts('.sva-support-key span'),
+    why: why && {
+      title: why.querySelector('summary').textContent,
+      open: why.open,
+      items: [...why.querySelectorAll('li')].map((one) => one.textContent)
+    },
+    lines: texts('.sva-support-lines li'),
+    note: node.querySelector('.sva-support-note').textContent
+  };
+};
 
 // The control, at the right end of the row, and the panel under the row.
 const control = () => document.querySelector('.sva-charts > .sva-r');
@@ -320,7 +347,7 @@ describe('the RBQM tab on the page', () => {
     expect($('.sva-rbqm-status').textContent).toBe(NEED);
     expect($('.sva-rbqm-status').getAttribute('role')).toBe('status');
     expect($('.sva-rbqm-supports').textContent).toBe(
-      'The loaded files support 8 of 8 metrics. Change the data below.'
+      'The loaded files support 8 of 8 metrics. Change the data on the Data tab.'
     );
     expect($('.sva-rbqm-placeholder').textContent).toBe(
       'Risk-based quality monitoring: gsm’s metrics for every site of the loaded study, worked out by R in this browser. The site overview and each metric’s two charts appear here, usually 20 to 45 seconds after Start R the first time.'
@@ -417,7 +444,7 @@ describe('the RBQM tab on the page', () => {
     await connection.letGo();
     expect(view.state().phase).toBe('done');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R ran 8 of 8 metrics on the 9 loaded files in 4.6 seconds. To use other files, change the data below. Run details'
+      'R ran 8 of 8 metrics on the 9 loaded files in 4.6 seconds. To use other files, change the data on the Data tab. Run details'
     );
     // How long it was from the press, and the snapshot's date, are in Run details.
     $('.sva-rbqm-details').click();
@@ -559,7 +586,7 @@ describe('the RBQM tab on the page', () => {
     for (let step = 0; step < 3; step += 1) await r.made[0].letGo();
     expect(tabCount()).toBe('7 of 8');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R ran 7 of 8 metrics on the 8 loaded files in 0 seconds. The other 1 needs data it does not have: change the data below. Run details'
+      'R ran 7 of 8 metrics on the 8 loaded files in 0 seconds. The other 1 needs data it does not have: change the data on the Data tab. Run details'
     );
     const why = 'Grade 3+ Lab Abnormality Rate needs Raw_LB.csv, which is not loaded.';
     const lab = item('kri0005');
@@ -576,7 +603,7 @@ describe('the RBQM tab on the page', () => {
     // R's sentence, alone in its paragraph, and beside it the way to the data.
     expect($('p.sva-rbqm-why').textContent).toBe(why);
     expect($('.sva-rbqm-whybox > .sva-rbqm-data').textContent).toBe(
-      'Change the data on the Overview page.'
+      'Change the data on the Data tab.'
     );
     expect($('.sva-rbqm-figures')).toBeNull();
     expect($$('.sva-view canvas')).toHaveLength(0);
@@ -739,16 +766,24 @@ describe('the RBQM tab on the page', () => {
   it('APP-RBQM-025: on a page that cannot start R the tab says so in a sentence and offers no control; nothing is connected and no chart library is asked for (#235)', () => {
     const sentence =
       'The RBQM tab needs R, and this file loads nothing, so it cannot start R. The hosted demo app can start R in your browser.';
-    const { app, r, $ } = mount({ tab: { unavailable: sentence, createConnection: undefined } });
+    const { app, r, view, $ } = mount({
+      tab: { unavailable: sentence, createConnection: undefined }
+    });
     app.loadRaw(STUDY);
+    // With nothing R could run the tab asks nothing of the Data tab: no file is its own, and it has no card there.
+    expect(view.claims).toBeUndefined();
+    expect(view.supports).toBeUndefined();
+    expect($('.sva-support')).toBeNull();
+    expect($('.sva-drop .sva-drop-note').textContent).toBe(
+      'They are read in this browser and sent nowhere.'
+    );
     app.select('rbqm');
     expect($('.sva-rbqm-status').textContent).toBe(sentence);
     expect($('.sva-rbqm-start')).toBeNull();
     expect($('.sva-r')).toBeNull();
-    // With nothing R could run there is no row of metrics either, and nowhere to drop files.
+    // With nothing R could run there is no row of metrics either.
     expect($('.sva-view-items')).toBeNull();
     expect($('.sva-charts').hidden).toBe(true);
-    expect($('.sva-rbqm-files')).toBeNull();
     expect(tabCount()).toBe('needs R');
     expect(r.createConnection).not.toHaveBeenCalled();
     expect(document.querySelector('script[src]')).toBeNull();
@@ -830,9 +865,10 @@ describe('the RBQM tab on the page', () => {
   });
 });
 
-// A reader's own files (#236). The files here are the demo study's first rows
-// under other names, a file of no raw domain, and File stand-ins that are read
-// as the browser's file reader reads them.
+// A reader's own files (#236), which come in on the Data tab (#282). The files
+// here are the demo study's first rows under other names, a file of no raw
+// domain, and File stand-ins that are read as the browser's file reader reads
+// them.
 describe('the RBQM tab: a reader’s own raw files', () => {
   const named = (file, name) => ({ ...STUDY.find((entry) => entry.name === file), name });
   const NOTES = { name: 'site_notes.csv', text: 'SITE,NOTE\n01,Visited in March\n' };
@@ -854,35 +890,37 @@ describe('the RBQM tab: a reader’s own raw files', () => {
   };
   const TWO = { rbqm_run: () => ({ status: 'ok', value: twoFiles, form: 'browser' }) };
 
-  it('APP-RBQM-036: before R is started the tab lists each loaded file with the raw domain it was placed in and which metrics the files support, and makes no connection; with no file it shows where to drop them (#236)', () => {
+  it('APP-RBQM-036: before R is started the Data tab’s card says how many metrics the loaded raw files support and each file’s card names the raw domain it was placed in, and no connection is made; with no file there is no card, and the RBQM tab has nowhere to drop one (#236, #281, #282)', () => {
     const { app, r, $, $$ } = mount();
+    expect($('.sva-support')).toBeNull();
+    // The one drop zone says it takes both kinds of file.
+    expect($('.sva-drop .sva-drop-note').textContent).toBe(
+      'Study files or gsm raw files. They are read in this browser and sent nowhere.'
+    );
     app.select('rbqm');
-    expect($('.sva-rbqm-files').open).toBe(true);
-    expect($('.sva-rbqm-files-summary').textContent).toBe('No files are loaded.');
-    expect($('.sva-rbqm-drop p').textContent).toBe('Drop your own gsm raw files here, as CSV');
-    expect($('.sva-rbqm-drop .sva-drop-note').textContent).toBe(
-      'They are read in this browser and sent nowhere.'
-    );
-    expect($('.sva-rbqm-input').accept).toBe('.csv,text/csv');
-    expect($('.sva-rbqm-loaded')).toBeNull();
+    expect($('.sva-view .sva-drop')).toBeNull();
+    expect($('.sva-view input[type="file"]')).toBeNull();
+    app.select('data');
     app.loadRaw(STUDY);
-    expect($('.sva-rbqm-files-summary').textContent).toBe(
-      '9 files loaded, 9 placed in a gsm raw domain. They support 8 of 8 metrics.'
+    expect(card().say).toBe('This data supports 8 of 8 metrics.');
+    expect(card().items).toEqual(
+      whole.status.map((line) => [line.id, 'todo', `${line.metric}: not started`])
     );
-    expect($$('.sva-rbqm-file').map((item) => item.textContent)).toEqual(
-      STUDY.map((file) => `${file.name} is ${file.name.replace('.csv', '')}, by its name.`)
-    );
-    expect($$('.sva-rbqm-support .sva-rbqm-can')).toHaveLength(8);
-    expect($('.sva-rbqm-support li').textContent).toBe(
-      'AE Adverse Event Rate: the files and columns it needs are loaded.'
+    expect(card().key).toEqual(['not started']);
+    expect(card().why).toBeNull();
+    expect(card().lines).toEqual([]);
+    expect($$('.sva-file.sva-raw .sva-tag').map((tag) => [tag.textContent, tag.title])).toEqual(
+      STUDY.map((file) => {
+        const table = file.name.replace('.csv', '');
+        return [`gsm raw file: ${table}, by its name`, `${file.name} is ${table}, by its name.`];
+      })
     );
     expect(r.createConnection).not.toHaveBeenCalled();
     expect(document.querySelector('script[src]')).toBeNull();
   });
 
-  it('APP-RBQM-037: files dropped on the tab, or chosen there, are read with the browser’s file reader and kept as raw files: none is placed in a safety domain or given a mapping; a file that is not a CSV is named and not kept (#236)', async () => {
+  it('APP-RBQM-037: files dropped on the Data tab, or chosen there, are read with the browser’s file reader, and a gsm raw file among them is kept as a raw file: it is not placed in a safety domain or given a mapping; a raw file that is not a CSV, told by its name or by its columns, is named and not kept (#236, #282)', async () => {
     const { app, $, $$ } = mount();
-    app.select('rbqm');
     const reads = [];
     const files = [named('Raw_SUBJ.csv', 'Raw_SUBJ.csv'), named('Raw_AE.csv', 'Raw_AE.csv')].map(
       (file) => ({
@@ -893,13 +931,18 @@ describe('the RBQM tab: a reader’s own raw files', () => {
         }
       })
     );
+    // Two raw files as JSON: one raw by its name, one by its columns.
+    const deviations = OPTIONS.needs.raw.find((entry) => entry.table === 'Raw_PD').columns;
+    const asJson = JSON.stringify([Object.fromEntries(deviations.map((column) => [column, 'x']))]);
     const drop = new Event('drop');
-    drop.dataTransfer = { files: [...files, asFile({ name: 'study.json', text: '[{"a":1}]' })] };
-    const over = new Event('dragover', { cancelable: true });
-    $('.sva-rbqm-drop').dispatchEvent(over);
-    expect(over.defaultPrevented).toBe(true);
-    expect($('.sva-rbqm-drop').classList.contains('sva-over')).toBe(true);
-    $('.sva-rbqm-drop').dispatchEvent(drop);
+    drop.dataTransfer = {
+      files: [
+        ...files,
+        asFile({ name: 'Raw_LB.json', text: '[{"a":1}]' }),
+        asFile({ name: 'deviations.json', text: asJson })
+      ]
+    };
+    $('.sva-drop').dispatchEvent(drop);
     await settle();
     expect(reads).toEqual(['Raw_SUBJ.csv', 'Raw_AE.csv']);
     expect(app.state.raw.map((file) => file.name)).toEqual(['Raw_SUBJ.csv', 'Raw_AE.csv']);
@@ -908,15 +951,14 @@ describe('the RBQM tab: a reader’s own raw files', () => {
     expect(app.state.unplaced).toEqual([]);
     expect(app.state.study).toBeNull();
     expect($$('.sva-notes .sva-note').map((note) => note.textContent)).toEqual([
-      'study.json is not a CSV file: the RBQM tab reads gsm’s raw files as CSV.'
+      'Raw_LB.json is not a CSV file: the RBQM tab reads gsm’s raw files as CSV.',
+      'deviations.json is not a CSV file: the RBQM tab reads gsm’s raw files as CSV.'
     ]);
-    expect($('.sva-rbqm-files-summary').textContent).toBe(
-      '2 files loaded, 2 placed in a gsm raw domain. They support 2 of 8 metrics.'
-    );
+    expect(card().say).toBe('This data supports 2 of 8 metrics.');
     // Choosing files is the same reading: the button opens the browser's own chooser.
-    const input = $('.sva-rbqm-input');
+    const input = $('.sva-file-input');
     const opened = vi.spyOn(input, 'click').mockImplementation(() => {});
-    $('.sva-rbqm-choose').click();
+    $('.sva-side [data-action="choose-files"]').click();
     expect(opened).toHaveBeenCalledTimes(1);
     Object.defineProperty(input, 'files', { value: [asFile(named('Raw_PD.csv', 'Raw_PD.csv'))] });
     input.dispatchEvent(new Event('change'));
@@ -926,47 +968,49 @@ describe('the RBQM tab: a reader’s own raw files', () => {
       'Raw_AE.csv',
       'Raw_PD.csv'
     ]);
+    expect(card().say).toBe('This data supports 4 of 8 metrics.');
   });
 
-  it('APP-RBQM-038: R is handed the one file of each raw domain under gsm’s name for it, whatever the reader called it, and no file that was not placed; the tab says before the press which metrics the files support and of each other which file it needs, in the words R then says (#236)', async () => {
+  it('APP-RBQM-038: R is handed the one file of each raw domain under gsm’s name for it, whatever the reader called it, and no file that was not placed; the Data tab’s card and the RBQM tab’s row say before the press which metrics the files support and of each other which file it needs, in the words R then says (#236, #281)', async () => {
     fakeViz();
     const { app, r, $, $$ } = mount({ answers: TWO });
-    app.select('rbqm');
     const subjects = named('Raw_SUBJ.csv', 'subjects_export.csv');
     const events = named('Raw_AE.csv', 'ae.csv');
+    // Kept as raw files, as the loader that keeps a file as it is keeps them.
     app.loadRaw([subjects, NOTES, events]);
-    expect($$('.sva-rbqm-file').map((item) => item.textContent)).toEqual([
-      'subjects_export.csv is Raw_SUBJ, by its columns.',
-      'site_notes.csv is not recognised: its name and its columns match no gsm raw domain.',
-      'ae.csv is Raw_AE, by its name.'
+    expect($$('.sva-file.sva-raw .sva-tag').map((tag) => [tag.textContent, tag.title])).toEqual([
+      [
+        'gsm raw file: Raw_SUBJ, by its columns',
+        'subjects_export.csv is Raw_SUBJ, by its columns.'
+      ],
+      [
+        'gsm raw file: not recognised',
+        'site_notes.csv is not recognised: its name and its columns match no gsm raw domain.'
+      ],
+      ['gsm raw file: Raw_AE, by its name', 'ae.csv is Raw_AE, by its name.']
     ]);
-    expect($$('.sva-rbqm-unused').map((item) => item.textContent)).toEqual([
-      'site_notes.csv is not recognised: its name and its columns match no gsm raw domain.'
-    ]);
-    expect($('.sva-rbqm-files-summary').textContent).toBe(
-      '3 files loaded, 2 placed in a gsm raw domain. They support 2 of 8 metrics.'
-    );
     const said = partial['two-files'].status;
-    expect(
-      $$('.sva-rbqm-support li[data-metric]').map((item) => [
-        item.dataset.metric,
-        item.classList.contains('sva-rbqm-can'),
-        item.textContent
-      ])
-    ).toEqual(
+    const not = said.filter((line) => line.state !== 'ran');
+    expect(card().say).toBe('This data supports 2 of 8 metrics.');
+    expect(card().items).toEqual(
       said.map((line) => [
         line.id,
-        line.state === 'ran',
+        line.state === 'ran' ? 'todo' : 'cannot',
         line.state === 'ran'
-          ? `${line.abbreviation} ${line.metric}: the files and columns it needs are loaded.`
-          : `${line.abbreviation} ${line.message}`
+          ? `${line.metric}: not started`
+          : `${line.metric}: cannot run: missing data. ${line.message}`
       ])
     );
-    expect($('.sva-rbqm-support .sva-rbqm-groups').textContent).toBe(
-      partial['two-files'].groups.message
-    );
+    expect(card().key).toEqual(['not started', 'cannot run: missing data']);
+    // R's sentences, behind their title: the reader chose these files.
+    expect(card().why).toEqual({
+      title: 'Why 6 cannot run',
+      open: false,
+      items: [...not.map((line) => line.message), partial['two-files'].groups.message]
+    });
+    app.select('rbqm');
     expect($('.sva-rbqm-supports').textContent).toBe(
-      'The loaded files support 2 of 8 metrics. Change the data below.'
+      'The loaded files support 2 of 8 metrics. Change the data on the Data tab.'
     );
     // The row says the same of each metric before R has run.
     expect(
@@ -991,8 +1035,7 @@ describe('the RBQM tab: a reader’s own raw files', () => {
     expect($('.sva-rbqm-status').textContent).toMatch(
       /^R ran 2 of 8 metrics on the 2 loaded files/
     );
-    // R has answered: the list folds away, and the metrics say what R said.
-    expect($('.sva-rbqm-files').open).toBe(false);
+    // R has answered: the metrics say what R said.
     expect(
       metricItems().map((node) => [node.dataset.item, node.dataset.state, node.title])
     ).toEqual(
@@ -1002,31 +1045,35 @@ describe('the RBQM tab: a reader’s own raw files', () => {
         line.state === 'ran' ? line.metric : line.message
       ])
     );
-    // A file R is not handed changes nothing R ran on: it is listed, and R is not asked again.
+    // A file R is not handed changes nothing R ran on: it is kept, and R is not asked again.
     app.loadRaw([{ name: 'more_notes.csv', text: NOTES.text }]);
     await settle();
     expect(connection.runs).toHaveLength(3);
-    expect($$('.sva-rbqm-file')).toHaveLength(4);
+    expect(app.state.raw).toHaveLength(4);
     expect($('.sva-rbqm-table')).not.toBeNull();
     expect($('.sva-rbqm-outcome')).not.toBeNull();
+    // Back on the Data tab the card's marks are the row's: two ran.
+    app.select('data');
+    expect(card().items.map(([, state]) => state)).toEqual(
+      said.map((line) => (line.state === 'ran' ? 'ran' : 'cannot'))
+    );
+    expect(card().key).toEqual(['ran', 'cannot run: missing data']);
   });
 
-  it('APP-RBQM-038: when no loaded file is a gsm raw file the tab says there is nothing for R to run, and its control cannot be pressed (#236)', () => {
+  it('APP-RBQM-038: when no kept file is placed in a gsm raw domain the tab says there is nothing for R to run, and its control cannot be pressed (#236)', () => {
     const { app, r, $ } = mount();
     app.select('rbqm');
     app.loadRaw([NOTES]);
     expect($('.sva-rbqm-status').textContent).toBe(NONE_PLACED);
     expect($('.sva-rbqm-supports')).toBeNull();
     expect($('.sva-rbqm-start').disabled).toBe(true);
-    expect($('.sva-rbqm-files-summary').textContent).toBe(
-      '1 file loaded, 0 placed in a gsm raw domain. It supports 0 of 8 metrics.'
-    );
+    app.select('data');
+    expect(card().say).toBe('This data supports 0 of 8 metrics.');
     expect(r.createConnection).not.toHaveBeenCalled();
   });
 
-  it('APP-RBQM-034: a file that lacks a column its workflow names is listed with the column, and each metric that needs it says so before the press (#236)', () => {
-    const { app, $, $$ } = mount();
-    app.select('rbqm');
+  it('APP-RBQM-034: a file that lacks a column its workflow names says so on its card, and the Data tab’s card says of each metric that needs the column that it does, before the press (#236, #281)', () => {
+    const { app, $ } = mount();
     const events = STUDY.find((file) => file.name === 'Raw_AE.csv');
     const [header, ...rows] = events.text.split('\n');
     const at = header.split(',').findIndex((column) => column.replaceAll('"', '') === 'aeser');
@@ -1039,15 +1086,18 @@ describe('the RBQM tab: a reader’s own raw files', () => {
       named('Raw_SUBJ.csv', 'Raw_SUBJ.csv'),
       { name: 'Raw_AE.csv', text: [less(header), ...rows.map(less)].join('\n') }
     ]);
-    expect($$('.sva-rbqm-file')[1].textContent).toBe(
-      'Raw_AE.csv is Raw_AE, by its name. It lacks the column aeser.'
+    const tag = $('.sva-file.sva-raw[data-raw="Raw_AE.csv"] .sva-tag');
+    expect(tag.textContent).toBe('gsm raw file: Raw_AE, by its name');
+    expect(tag.title).toBe('Raw_AE.csv is Raw_AE, by its name. It lacks the column aeser.');
+    expect(card().say).toBe('This data supports 0 of 8 metrics.');
+    expect(card().why.items[0]).toBe(
+      'Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
     );
-    expect($('.sva-rbqm-support li[data-metric="kri0001"]').textContent).toBe(
-      'AE Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
-    );
-    expect($('.sva-rbqm-files-summary').textContent).toBe(
-      '2 files loaded, 2 placed in a gsm raw domain. They support 0 of 8 metrics.'
-    );
+    expect(card().items[0]).toEqual([
+      'kri0001',
+      'cannot',
+      'Adverse Event Rate: cannot run: missing data. Adverse Event Rate needs the column aeser, which Raw_AE.csv does not have.'
+    ]);
   });
 });
 
@@ -1086,49 +1136,46 @@ describe('the RBQM tab: the study the other charts use', () => {
     })
   };
 
-  it('APP-RBQM-045: with the study the other charts use loaded and nothing else, the tab says how many metrics it supports and that R will make gsm’s raw tables from its subject-level and adverse events files, lists what each gives and which metrics the study supports, and its control can be pressed; the list is closed, the study needing nothing more of the reader (#253, #279)', () => {
+  it('APP-RBQM-045: with the study the other charts use loaded and nothing else, the tab says how many metrics it supports and its control can be pressed; the Data tab’s card says the same, which raw tables R makes from the subject-level and the adverse events file, and of each other metric why it cannot run, in the open (#253, #279, #281)', () => {
     const { app, r, $, $$ } = mount();
     app.loadFiles([...PILOT, LABS]);
+    const status = pilot.answer.status;
+    expect(card().say).toBe('This data supports 3 of 8 metrics.');
+    expect(card().lines).toEqual([
+      'adsl.csv, the Subject-level file, gives Raw_SITE, Raw_STUDCOMP, Raw_STUDY and Raw_SUBJ.',
+      'adae.csv, the Adverse events file, gives Raw_AE.'
+    ]);
+    expect(card().items).toEqual(
+      status.map((line) => [
+        line.id,
+        line.state === 'ran' ? 'todo' : 'cannot',
+        line.state === 'ran'
+          ? `${line.metric}: not started`
+          : `${line.metric}: cannot run: missing data. ${line.message}`
+      ])
+    );
+    expect(
+      card()
+        .items.filter(([, state]) => state === 'todo')
+        .map(([id]) => id)
+    ).toEqual(RBQM_PILOT.metrics);
+    // The study runs as it is, so the reasons are said in the open, in R's words.
+    expect(card().why).toEqual({
+      title: 'Why 5 cannot run',
+      open: true,
+      items: status.filter((line) => line.state !== 'ran').map((line) => line.message)
+    });
+    expect(card().note).toBe(
+      'Read from the files’ names and columns. R says the same when it runs.'
+    );
+    // No raw file is loaded, so no card is one.
+    expect($$('.sva-file.sva-raw')).toHaveLength(0);
     app.select('rbqm');
     expect($('.sva-rbqm-status').textContent).toBe(NEED);
     expect($('.sva-rbqm-supports').textContent).toBe(
-      'The loaded study supports 3 of 8 metrics. Change the data below.'
+      'The loaded study supports 3 of 8 metrics. Change the data on the Data tab.'
     );
     expect($('.sva-rbqm-start').disabled).toBe(false);
-    expect($('.sva-rbqm-files').open).toBe(false);
-    expect($('.sva-rbqm-files-summary').textContent).toBe(
-      'The loaded study supports 3 of 8 metrics. R makes gsm’s raw tables from its adsl.csv and adae.csv.'
-    );
-    expect(
-      $$('.sva-rbqm-study-file').map((node) => [node.dataset.table, node.textContent])
-    ).toEqual([
-      [
-        'Standard_subject',
-        'adsl.csv, the Subject-level file, gives Raw_SITE, Raw_STUDCOMP, Raw_STUDY and Raw_SUBJ.'
-      ],
-      ['Standard_ae', 'adae.csv, the Adverse events file, gives Raw_AE.']
-    ]);
-    // No raw file is loaded, so none is listed; the place to drop one is still there.
-    expect($$('.sva-rbqm-file')).toHaveLength(0);
-    expect($('.sva-rbqm-drop')).not.toBeNull();
-    expect(
-      $$('.sva-rbqm-support li[data-metric]').map((node) => [
-        node.dataset.metric,
-        node.classList.contains('sva-rbqm-can'),
-        node.textContent
-      ])
-    ).toEqual(
-      pilot.answer.status.map((line) => [
-        line.id,
-        line.state === 'ran',
-        line.state === 'ran'
-          ? `${line.abbreviation} ${line.metric}: the files and columns it needs are loaded.`
-          : `${line.abbreviation} ${line.message}`
-      ])
-    );
-    expect($$('.sva-rbqm-support .sva-rbqm-can').map((node) => node.dataset.metric)).toEqual(
-      RBQM_PILOT.metrics
-    );
     expect(r.createConnection).not.toHaveBeenCalled();
     expect(document.querySelector('script[src]')).toBeNull();
   });
@@ -1165,7 +1212,6 @@ describe('the RBQM tab: the study the other charts use', () => {
       /^R ran 3 of 8 metrics on the loaded study’s adsl\.csv and adae\.csv in /
     );
     expect(tabCount()).toBe('3 of 8');
-    expect($('.sva-rbqm-files').open).toBe(false);
     expect(
       metricItems().map((node) => [node.dataset.item, node.dataset.state, node.title])
     ).toEqual(
@@ -1175,7 +1221,7 @@ describe('the RBQM tab: the study the other charts use', () => {
         line.state === 'ran' ? line.metric : line.message
       ])
     );
-    // Run details says what R was handed, as the list of files does.
+    // Run details says what R was handed, as the Data tab's card does.
     $('.sva-rbqm-details').click();
     expect(inPanel('What R was handed').items).toEqual([
       'adsl.csv, the Subject-level file, gives Raw_SITE, Raw_STUDCOMP, Raw_STUDY and Raw_SUBJ.',
@@ -1217,7 +1263,7 @@ describe('the RBQM tab: the study the other charts use', () => {
     app.select('rbqm');
     // Before R: a demo study is a study, and a reader's own files are files.
     expect($('.sva-rbqm-supports').textContent).toBe(
-      'The loaded study supports 3 of 8 metrics. Change the data below.'
+      'The loaded study supports 3 of 8 metrics. Change the data on the Data tab.'
     );
     $('.sva-rbqm-start').click();
     const [connection] = r.made;
@@ -1225,7 +1271,7 @@ describe('the RBQM tab: the study the other charts use', () => {
     const line = $('p.sva-rbqm-outcome.sva-rbqm-status');
     expect(line.getAttribute('role')).toBe('status');
     expect(line.textContent).toBe(
-      'R ran 3 of 8 metrics on the Pilot study in 2.5 seconds. The other 5 need data it does not have: change the data below. Run details'
+      'R ran 3 of 8 metrics on the Pilot study in 2.5 seconds. The other 5 need data it does not have: change the data on the Data tab. Run details'
     );
     // The two things a reader can do about it are a link and a button in the line.
     expect([...line.querySelectorAll('button')].map((node) => [node.className, node.type])).toEqual(
@@ -1276,12 +1322,13 @@ describe('the RBQM tab: the study the other charts use', () => {
     );
     expect(item('kri0001').getAttribute('aria-label')).toBe('Adverse Event Rate: did not run');
     expect(metricItems().map((node) => node.dataset.state)).toEqual(Array(8).fill('cannot'));
-    expect($$('.sva-rbqm-study-file')[0].textContent).toBe(
+    // Mapped again, it is the study it was, and R runs it a third time.
+    app.select('data');
+    expect(card().lines[0]).toBe(
       'adsl.csv, the Subject-level file, gives Raw_STUDY. It has no column mapped to SITEID, ' +
         'so Raw_SITE, Raw_STUDCOMP and Raw_SUBJ are not made. Map it on the Data tab.'
     );
-    // Mapped again, it is the study it was, and R runs it a third time.
-    app.select('data');
+    expect(card().say).toBe('This data supports 0 of 8 metrics.');
     app.setColumn('subject', 'SITEID', 'SITEID');
     app.select('rbqm');
     await settle();
@@ -1290,34 +1337,32 @@ describe('the RBQM tab: the study the other charts use', () => {
     expect(tabCount()).toBe('3 of 8');
   });
 
-  it('APP-RBQM-045: a study with no subject-level or adverse events file has nothing for R to run, and the tab says which files the metrics run on; gsm raw files loaded beside a study are used as they are, and the study’s files only for the raw tables that are not loaded (#253)', () => {
+  it('APP-RBQM-045: a study with no subject-level or adverse events file has nothing for R to run, and the tab says which files the metrics run on; gsm raw files loaded beside a study are used as they are, and the study’s files only for the raw tables that are not loaded, as the Data tab’s card says (#253, #281)', () => {
     const { app, $, $$ } = mount();
     app.loadFiles([LABS]);
     app.select('rbqm');
     expect($('.sva-rbqm-status').textContent).toBe(NONE_PLACED);
     expect($('.sva-rbqm-supports')).toBeNull();
     expect($('.sva-rbqm-start').disabled).toBe(true);
-    expect($('.sva-rbqm-files').open).toBe(true);
     app.reset();
     app.loadFiles(PILOT);
     app.loadRaw([STUDY.find((file) => file.name === 'Raw_AE.csv')]);
+    // The raw file is used as it is, and only the subject-level file stands in for raw tables.
+    expect(card().say).toBe('This data supports 3 of 8 metrics.');
+    expect(card().lines).toEqual([
+      'adsl.csv, the Subject-level file, gives Raw_SITE, Raw_STUDCOMP, Raw_STUDY and Raw_SUBJ.'
+    ]);
+    expect($$('.sva-file.sva-raw .sva-tag').map((node) => node.textContent)).toEqual([
+      'gsm raw file: Raw_AE, by its name'
+    ]);
+    // With raw files loaded the reasons wait behind their title.
+    expect(card().why.open).toBe(false);
     app.select('rbqm');
     expect($('.sva-rbqm-status').textContent).toBe(NEED);
     expect($('.sva-rbqm-supports').textContent).toBe(
-      'The loaded files support 3 of 8 metrics. Change the data below.'
+      'The loaded files support 3 of 8 metrics. Change the data on the Data tab.'
     );
     expect($('.sva-rbqm-start').disabled).toBe(false);
-    expect($('.sva-rbqm-files-summary').textContent).toBe(
-      '1 file loaded, 1 placed in a gsm raw domain. R makes gsm’s raw tables from the loaded study’s adsl.csv. Together they support 3 of 8 metrics.'
-    );
-    // With raw files to check, the list is open.
-    expect($('.sva-rbqm-files').open).toBe(true);
-    expect($$('.sva-rbqm-study-file').map((node) => node.dataset.table)).toEqual([
-      'Standard_subject'
-    ]);
-    expect($$('.sva-rbqm-file').map((node) => node.textContent)).toEqual([
-      'Raw_AE.csv is Raw_AE, by its name.'
-    ]);
   });
 });
 
@@ -1353,7 +1398,7 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
     expect(inPanel('Warnings from R').items).toEqual(['None.']);
   });
 
-  it('APP-RBQM-051: the tab’s count follows the loaded study while another tab is open: after the study is cleared or changed there it reads not run, not the last study’s count; opened with nothing loaded the control offers nothing to press and no run, and the list of files is open (#280)', async () => {
+  it('APP-RBQM-051: the tab’s count follows the loaded study while another tab is open: after the study is cleared or changed there it reads not run, not the last study’s count; opened with nothing loaded the control offers nothing to press and no run (#280)', async () => {
     fakeViz();
     const { app, r, $, $$ } = mount({ answers: RUN_OK });
     app.loadRaw(STUDY);
@@ -1378,7 +1423,6 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
     expect(panel().querySelector('.sva-r-actions')).toBeNull();
     expect($$('.sva-charts button.sva-action, .sva-r-under button.sva-action')).toEqual([]);
     expect($('.sva-rbqm-status').textContent).toBe(NO_FILES);
-    expect($('.sva-rbqm-files').open).toBe(true);
     expect($('.sva-rbqm-outcome')).toBeNull();
     expect($('.sva-rbqm-table')).toBeNull();
     // Nothing was run on nothing.
@@ -2076,79 +2120,68 @@ describe('the RBQM tab: a row of its own, one page at a time', () => {
     expect($('.sva-rbqm-count').textContent).toBe('13 sites, 12 shown here');
   });
 
-  it('APP-RBQM-060: the place to load files is at the foot of the Overview page and on no metric’s page, before, during and after a run; a link to change the data opens Overview with it open, in view, and the keyboard on Choose files (#279)', async () => {
+  it('APP-RBQM-060: the tab has no place to load a file, on the Overview page or on a metric’s, before, during and after a run; each of its lines that say to change the data opens the Data tab, where every file comes in (#279, #282)', async () => {
     fakeViz();
-    const scrolled = vi.fn();
-    Element.prototype.scrollIntoView = scrolled;
-    try {
-      const { app, r, view, $ } = mount({
-        answers: { rbqm_run: () => ({ status: 'ok', value: noLabs }) }
-      });
-      app.loadRaw(noLab);
+    const { app, r, view, $ } = mount({
+      answers: { rbqm_run: () => ({ status: 'ok', value: noLabs }) }
+    });
+    app.loadRaw(noLab);
+    app.select('rbqm');
+    const nowhere = () => {
+      for (const id of ['', 'kri0001', 'kri0005']) {
+        item(id).click();
+        expect($('.sva-rbqm-page').dataset.page).toBe(id ? 'metric' : 'overview');
+        expect($('.sva-view .sva-drop')).toBeNull();
+        expect($('.sva-view input[type="file"]')).toBeNull();
+        expect($('.sva-view details')).toBeNull();
+      }
+      item('').click();
+    };
+    // The link leads to the Data tab, with its drop zone and the tab's card.
+    const leads = (link) => {
+      expect(link.tagName).toBe('BUTTON');
+      link.click();
+      expect(app.state.selected).toBe('data');
+      expect(window.location.hash).toBe('#data');
+      expect($('.sva-data .sva-drop')).not.toBeNull();
+      expect($('.sva-data .sva-support[data-support="rbqm"]')).not.toBeNull();
       app.select('rbqm');
-      const box = () => $('.sva-view .sva-rbqm > details.sva-rbqm-files');
-      const onOverviewOnly = () => {
-        item('').click();
-        expect(box()).not.toBeNull();
-        expect($('.sva-rbqm').lastElementChild).toBe(box());
-        expect(box().querySelector('.sva-rbqm-drop .sva-rbqm-choose').textContent).toBe(
-          'Choose files'
-        );
-        for (const id of ['kri0001', 'kri0005']) {
-          item(id).click();
-          expect($('.sva-rbqm-page').dataset.page).toBe('metric');
-          expect($('.sva-rbqm-files')).toBeNull();
-          expect($('.sva-rbqm-drop')).toBeNull();
-        }
-        item('').click();
-      };
-      onOverviewOnly();
-      // Before a run, the line that counts the metrics leads to it.
-      box().open = false;
-      $('.sva-rbqm-supports .sva-rbqm-data').click();
-      expect(box().open).toBe(true);
-      await settle();
-      expect(document.activeElement).toBe($('.sva-rbqm-choose'));
-      expect(scrolled).toHaveBeenCalledTimes(1);
-      expect(scrolled.mock.contexts[0]).toBe(box());
-      expect(scrolled).toHaveBeenLastCalledWith({ block: 'start' });
+    };
+    nowhere();
+    // Before a run, the line that counts the metrics leads there.
+    expect($('.sva-rbqm-supports .sva-rbqm-data').textContent).toBe(
+      'Change the data on the Data tab.'
+    );
+    leads($('.sva-rbqm-supports .sva-rbqm-data'));
 
-      $('.sva-rbqm-start').click();
-      const [connection] = r.made;
-      expect(view.state().phase).toBe('starting');
-      onOverviewOnly();
-      for (let step = 0; step < 3; step += 1) await connection.letGo();
-      expect(view.state().phase).toBe('done');
-      onOverviewOnly();
-      // Once R has answered it is folded away, and the line above the table leads to it.
-      expect(box().open).toBe(false);
-      $('.sva-rbqm-outcome .sva-rbqm-data').click();
-      expect(box().open).toBe(true);
-      // It was asked for once: drawn again, the page is as it would be.
-      app.select('rbqm');
-      expect(box().open).toBe(false);
-      // From the page of a metric that did not run, the link goes to the Overview.
-      item('kri0005').click();
-      scrolled.mockClear();
-      $('.sva-rbqm-whybox .sva-rbqm-data').click();
-      expect(window.location.hash).toBe('#rbqm');
-      expect($('.sva-rbqm-page').dataset.page).toBe('overview');
-      expect(box().open).toBe(true);
-      await settle();
-      expect(document.activeElement).toBe($('.sva-rbqm-choose'));
-      expect(scrolled).toHaveBeenCalledTimes(1);
-      // A file dropped there is taken as it always was.
-      const drop = new Event('drop');
-      const lab = STUDY.find((file) => file.name === 'Raw_LB.csv');
-      drop.dataTransfer = {
-        files: [{ name: lab.name, size: lab.text.length, text: async () => lab.text }]
-      };
-      $('.sva-rbqm-drop').dispatchEvent(drop);
-      await settle();
-      expect(app.state.raw.map((file) => file.name)).toContain('Raw_LB.csv');
-    } finally {
-      delete Element.prototype.scrollIntoView;
-    }
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    expect(view.state().phase).toBe('starting');
+    nowhere();
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    expect(view.state().phase).toBe('done');
+    nowhere();
+    // Once R has answered, the line above the table leads there.
+    expect($('.sva-rbqm-outcome .sva-rbqm-data').textContent).toBe(
+      'change the data on the Data tab'
+    );
+    leads($('.sva-rbqm-outcome .sva-rbqm-data'));
+    // And so does the page of a metric that did not run.
+    item('kri0005').click();
+    leads($('.sva-rbqm-whybox .sva-rbqm-data'));
+    // A file loaded there is taken as it always was: R is up, so it is run at once.
+    app.select('data');
+    const drop = new Event('drop');
+    const lab = STUDY.find((file) => file.name === 'Raw_LB.csv');
+    drop.dataTransfer = {
+      files: [{ name: lab.name, size: lab.text.length, text: async () => lab.text }]
+    };
+    $('.sva-data .sva-drop').dispatchEvent(drop);
+    await settle();
+    expect(app.state.raw.map((file) => file.name)).toContain('Raw_LB.csv');
+    app.select('rbqm');
+    await settle();
+    expect(connection.runs.filter((run) => run.name === 'rbqm_run')).toHaveLength(2);
   });
 
   it('APP-RBQM-061: while R starts and runs the tab lists six steps, each marked done, under way or to come, and only the fourth is called the long one; the control names the same step; the last begins when the connection says the study’s files are written, and a run in which it never says so still ends in results (#280)', async () => {
@@ -2377,7 +2410,7 @@ describe('the RBQM tab: a row of its own, one page at a time', () => {
     const { app, r, view, connection, $ } = await started({ files: noLab, answers: byFiles });
     expect(tabCount()).toBe('7 of 8');
     expect(item('kri0005').dataset.state).toBe('cannot');
-    // The reader adds the labs file, on the Overview page.
+    // The labs file is loaded while the tab is open.
     app.loadRaw([STUDY.find((file) => file.name === 'Raw_LB.csv')]);
     await settle();
     expect(view.state().phase).toBe('running');
@@ -2525,5 +2558,246 @@ describe('the RBQM tab: a row of its own, one page at a time', () => {
     expect($('.sva-rbqm-steps')).toBeNull();
     expect($('.sva-rbqm-need')).toBeNull();
     expect($$('.sva-rbqm-metric .sva-rbqm-figures canvas')).toHaveLength(2);
+  });
+});
+
+// Every file comes in on the Data tab (#281, #282, obot.roadmap#406): the one
+// drop zone takes a study's files and gsm's raw files together, and one card
+// there says what the loaded data supports. The charts are stand-ins that
+// draw, so the workflow's third step has charts to count.
+describe('the Data tab: gsm raw files and the RBQM card', () => {
+  const charts = () => {
+    const made = { portfolio: manifest };
+    for (const entry of Object.values(manifest.modules)) {
+      made[entry.export] = vi.fn((element) => ({
+        init() {
+          element.innerHTML = '<canvas></canvas>';
+        },
+        destroy() {
+          element.innerHTML = '';
+        }
+      }));
+    }
+    return made;
+  };
+  const fixture = (directory) => (name) => ({
+    name,
+    text: readFileSync(path.join(root, directory, name), 'utf8')
+  });
+  const RENAMED = ['dm.csv', 'ae.csv', 'labs_final.csv', 'ecg.json'].map(
+    fixture('tests/e2e/fixtures/app')
+  );
+  const PILOT = ['adsl.csv', 'adae.csv'].map(fixture('site/data'));
+  const raw = (...names) => STUDY.filter((file) => names.includes(file.name));
+  const THREE = raw('Raw_SUBJ.csv', 'Raw_AE.csv', 'Raw_PD.csv');
+  const three = partial['three-files'];
+  const step = () => {
+    const node = document.querySelector('.sva-step[data-step="open"]');
+    return [
+      node.querySelector('.sva-step-title').textContent,
+      node.dataset.state,
+      node.querySelector('.sva-step-status').textContent,
+      [...node.querySelectorAll('button')].map((button) => button.textContent)
+    ];
+  };
+  const tags = () =>
+    [...document.querySelectorAll('.sva-file.sva-raw')].map((node) => [
+      node.dataset.raw,
+      node.querySelector('.sva-tag').textContent
+    ]);
+
+  it('APP-RBQM-075: a study’s files and gsm raw files dropped together each go where they belong: the raw files are kept as they are and named with their raw domain, the study’s files are placed and mapped as ever, a demo study gives way once and the page says so once, and a raw file that is not a CSV is refused with its sentence (#282)', async () => {
+    // The demo studies as the site serves them, read from where the repository keeps them.
+    const fetchText = vi.fn(async (url) => {
+      const relative = url.replace('./data/', '');
+      const study = DEMO_STUDIES.find((item) => item.dir && relative.startsWith(item.dir)) || {
+        dir: '',
+        source: 'site/data'
+      };
+      return readFileSync(path.join(root, study.source, relative.slice(study.dir.length)), 'utf8');
+    });
+    const { app, $, $$ } = mount({
+      page: { charts: charts(), demo: { base: './data/' }, fetchText }
+    });
+    await app.loadDemo('rbqm');
+    expect(app.state.study).toBe('rbqm');
+    expect(app.state.raw).toHaveLength(9);
+    const deviations = { ...raw('Raw_PD.csv')[0], name: 'deviations_export.csv' };
+    const asFile = ({ name, text }) => ({ name, size: text.length, text: async () => text });
+    const drop = new Event('drop');
+    drop.dataTransfer = {
+      files: [
+        ...RENAMED,
+        ...raw('Raw_SUBJ.csv', 'Raw_AE.csv'),
+        deviations,
+        { name: 'Raw_LB.json', text: '[{"subjid":"1"}]' }
+      ].map(asFile)
+    };
+    $('.sva-drop').dispatchEvent(drop);
+    await settle();
+    // The Renamed columns study is read as a study: `ae.csv` is its adverse events file, not Raw_AE.
+    expect(
+      Object.fromEntries(
+        Object.entries(app.state.files).map(([domain, file]) => [domain, file.name])
+      )
+    ).toEqual({ subject: 'dm.csv', ae: 'ae.csv', bds: 'labs_final.csv', eg: 'ecg.json' });
+    expect($$('.sva-file[data-domain] .sva-map')).toHaveLength(4);
+    expect(tags()).toEqual([
+      ['Raw_SUBJ.csv', 'gsm raw file: Raw_SUBJ, by its name'],
+      ['Raw_AE.csv', 'gsm raw file: Raw_AE, by its name'],
+      ['deviations_export.csv', 'gsm raw file: Raw_PD, by its columns']
+    ]);
+    expect(app.state.raw.map((file) => file.text)).toEqual([
+      ...raw('Raw_SUBJ.csv', 'Raw_AE.csv').map((file) => file.text),
+      deviations.text
+    ]);
+    expect(app.state.unplaced).toEqual([]);
+    expect(app.state.study).toBeNull();
+    expect($$('.sva-notes .sva-note').map((note) => note.textContent)).toEqual([
+      'The demo study (RBQM study) was cleared to load your files.',
+      'Raw_LB.json is not a CSV file: the RBQM tab reads gsm’s raw files as CSV.'
+    ]);
+    // The raw files are used as they are: what they support is what desktop R ran on the three.
+    expect(card().say).toBe('This data supports 4 of 8 metrics.');
+    expect(
+      card()
+        .items.filter(([, state]) => state === 'todo')
+        .map(([id]) => id)
+    ).toEqual(three.ran.metrics);
+    // Raw files alone take a demo study's place too, and files loaded after them join them.
+    await app.loadDemo('pilot');
+    expect(Object.keys(app.state.files)).toHaveLength(4);
+    app.loadFiles(raw('Raw_PD.csv'));
+    expect(app.state.files).toEqual({});
+    expect(app.state.raw.map((file) => file.name)).toEqual(['Raw_PD.csv']);
+    expect($$('.sva-notes .sva-note').map((note) => note.textContent)).toEqual([
+      'The demo study (Pilot study) was cleared to load your files.'
+    ]);
+    app.loadFiles(PILOT);
+    expect(app.state.raw.map((file) => file.name)).toEqual(['Raw_PD.csv']);
+    expect(Object.keys(app.state.files).sort()).toEqual(['ae', 'subject']);
+    // A demo study's own files are taken as the study says: the pilot study's are placed, the RBQM study's kept.
+    await app.loadDemo('renamed');
+    expect(app.state.raw).toEqual([]);
+    expect(Object.keys(app.state.files).sort()).toEqual(['ae', 'bds', 'eg', 'subject']);
+  });
+
+  it('APP-RBQM-076: on three raw files the Data tab’s card says what desktop R said after running them: four of the eight metrics, and of each other metric and of the Groups table R’s own sentence, behind "Why 4 cannot run"; on the whole RBQM study it says eight of eight and gives no reasons; its button opens the RBQM tab (#281)', () => {
+    const { app, r, $ } = mount({ page: { charts: charts() } });
+    app.loadFiles(THREE);
+    expect($('.sva-support-title').textContent).toBe('RBQM');
+    expect(three.status.filter((line) => line.state === 'ran').map((line) => line.id)).toEqual([
+      'kri0001',
+      'kri0002',
+      'kri0003',
+      'kri0004'
+    ]);
+    const not = three.status.filter((line) => line.state !== 'ran');
+    expect(card()).toEqual({
+      say: 'This data supports 4 of 8 metrics.',
+      items: three.status.map((line) => [
+        line.id,
+        line.state === 'ran' ? 'todo' : 'cannot',
+        line.state === 'ran'
+          ? `${line.metric}: not started`
+          : `${line.metric}: cannot run: missing data. ${line.message}`
+      ]),
+      key: ['not started', 'cannot run: missing data'],
+      why: {
+        title: 'Why 4 cannot run',
+        open: false,
+        items: [...not.map((line) => line.message), three.groups.message]
+      },
+      lines: [],
+      note: 'Read from the files’ names and columns. R says the same when it runs.'
+    });
+    // Each mark is the one the tab's own row gives the metric, with its abbreviation.
+    expect(
+      [...document.querySelectorAll('.sva-support-items li')].map((node) => [
+        node.textContent,
+        node.querySelector('svg').getAttribute('class')
+      ])
+    ).toEqual(
+      three.status.map((line) => [
+        line.abbreviation,
+        expect.stringContaining(line.state === 'ran' ? 'todo' : 'cannot')
+      ])
+    );
+    // The whole study: nothing cannot run, so there is nothing to explain.
+    app.loadFiles(STUDY);
+    expect(card().say).toBe('This data supports 8 of 8 metrics.');
+    expect(card().why).toBeNull();
+    expect(card().key).toEqual(['not started']);
+    expect(card().lines).toEqual([]);
+    // The card starts nothing; its one button leads to the tab, where R is started.
+    expect(r.createConnection).not.toHaveBeenCalled();
+    const open = $('.sva-support [data-action="open-view"]');
+    expect(open.textContent).toBe('Open RBQM');
+    open.click();
+    expect(app.state.selected).toBe('rbqm');
+    expect(window.location.hash).toBe('#rbqm');
+    expect($('.sva-rbqm-supports').textContent).toBe(
+      'The loaded files support 8 of 8 metrics. Change the data on the Data tab.'
+    );
+    expect(r.createConnection).not.toHaveBeenCalled();
+  });
+
+  it('APP-RBQM-076: the card’s marks follow the run while the Data tab is open: turning while R works, and what R said once it has answered, with the rest of the Data tab left as it is (#281)', async () => {
+    fakeViz();
+    const { app, r, $ } = mount({ answers: RUN_OK, page: { charts: charts() } });
+    app.loadFiles(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    app.select('data');
+    const main = $('.sva-data-main');
+    expect(card().items.map(([, state]) => state)).toEqual(Array(8).fill('running'));
+    expect(card().key).toEqual(['running']);
+    expect(card().items[0][2]).toBe('Adverse Event Rate: running');
+    for (let turn = 0; turn < 3; turn += 1) await connection.letGo();
+    expect(card().items.map(([, state]) => state)).toEqual(Array(8).fill('ran'));
+    expect(card().key).toEqual(['ran']);
+    expect(card().say).toBe('This data supports 8 of 8 metrics.');
+    expect($('.sva-data-main')).toBe(main);
+    // Other files loaded: what R ran on is no longer what is loaded, and no metric is marked as run.
+    app.loadFiles(THREE.slice(0, 1));
+    app.reset();
+    app.loadFiles(THREE);
+    expect(card().items.map(([, state]) => state)).not.toContain('ran');
+  });
+
+  it('APP-RBQM-077: with gsm raw files loaded and no chart ready, the workflow’s third step is "Open the RBQM tab": the current step, counting the metrics the files support before the charts, with a button that opens the tab; with a study whose charts are ready the step is "Open a chart" and counts the RBQM metrics beside them (#281)', () => {
+    const { app, $ } = mount({ page: { charts: charts() } });
+    expect(step()).toEqual(['Open a chart', 'todo', '0 of 13 charts ready', []]);
+    app.loadFiles(THREE);
+    expect(step()).toEqual([
+      'Open the RBQM tab',
+      'current',
+      '4 of 8 metrics supported · 0 of 13 charts ready',
+      ['Open RBQM']
+    ]);
+    expect($('.sva-step[data-step="open"]').getAttribute('aria-current')).toBe('step');
+    expect($('.sva-step[data-step="map"] .sva-step-status').textContent).toBe(
+      'Nothing to map: gsm’s raw files are kept as they are'
+    );
+    app.loadFiles(STUDY);
+    expect(step().slice(0, 3)).toEqual([
+      'Open the RBQM tab',
+      'current',
+      '8 of 8 metrics supported · 0 of 13 charts ready'
+    ]);
+    $('.sva-step[data-step="open"] [data-action="open-view"]').click();
+    expect(app.state.selected).toBe('rbqm');
+    // A study of standard files: its charts lead, and the metrics it supports are counted beside them.
+    app.reset();
+    app.select('data');
+    app.loadFiles(PILOT);
+    const [title, state, status, buttons] = step();
+    expect([title, state, buttons]).toEqual(['Open a chart', 'current', ['Open first chart']]);
+    expect(status).toMatch(/^[1-9]\d* of 13 charts ready · 3 of 8 RBQM metrics$/);
+    // Raw files beside it change the count, not where the step leads.
+    app.loadFiles(raw('Raw_PD.csv'));
+    expect(step()[0]).toBe('Open a chart');
+    expect(step()[2]).toMatch(/^[1-9]\d* of 13 charts ready · 5 of 8 RBQM metrics$/);
   });
 });

@@ -516,3 +516,109 @@ export function controlState(action) {
     className: textOr(said.className)
   };
 }
+
+// ---- A tab's own files, and what the loaded data supports (#281, #282) ----
+
+/**
+ * Whether a tab says a file is its own, read safely: the first of the two
+ * things a tab hands the Data tab (obot.roadmap#406). The page asks it of each
+ * file a reader loads, before the file is placed in a standard domain
+ * (src/app/page.js).
+ *
+ * A view's `claims(file)` is handed the file's `name` and its `columns`, and
+ * answers with nothing for a file that is not its own, `{ keep: true }` for
+ * one that is, which the app then keeps as it is and neither places nor maps,
+ * or `{ refuse: sentence }` for one that is its own and that it cannot read.
+ * A view with no such function, or one that throws, claims nothing.
+ * @param {?{claims?: Function}} view A library's view.
+ * @param {{name: string, columns: string[]}} file A file as it was read.
+ * @returns {?{keep: true}|{refuse: string}} What the tab said, or null.
+ */
+export function claimSaid(view, file) {
+  if (!isRecord(view) || typeof view.claims !== 'function') return null;
+  let said;
+  try {
+    said = view.claims(file);
+  } catch (error) {
+    console.warn('safety.viz app: a view could not say whether a file is its own.', error);
+    return null;
+  }
+  if (!isRecord(said)) return null;
+  if (isText(said.refuse)) return { refuse: said.refuse };
+  return said.keep === true ? { keep: true } : null;
+}
+
+/**
+ * What a tab says the loaded data supports, read safely: the second of the two
+ * things a tab hands the Data tab (obot.roadmap#406), which draws it as one
+ * card and knows nothing else of the tab (src/app/data-panel.js).
+ *
+ * A view's `supports(app)` answers with nothing when nothing it can read is
+ * loaded, or with:
+ *
+ * - `say`: the card's one sentence, "This data supports 4 of 8 metrics."
+ * - `items`: what the tab runs or draws, each an `id`, a short `label`, the
+ *   `icon` for its state (src/app/icons.js), the `state` in a word, and a
+ *   `name` that says both in full.
+ * - `key`: what each icon shown means, each an `icon` and what to `say` of it.
+ * - `why`: the reasons some items cannot run, a `title` over `items` in
+ *   sentences, and whether the list is `open` to begin with.
+ * - `lines`: further sentences, said in the open.
+ * - `note`: the small print under them.
+ * - `files`: what the tab says of each file kept as its own: the file's
+ *   `name`, the few words of its card's `tag`, and the `title` that says more.
+ * - `step`: how much the data supports as the workflow's third step says it,
+ *   `lead` when the tab is where the data leads and `also` beside the charts.
+ * @param {?{supports?: Function}} view A library's view.
+ * @param {Object} app The app handle.
+ * @returns {?Object} What the tab said, every member present and of its kind, with `files` as a Map by file name; null when it said nothing that can be read.
+ */
+export function supportSaid(view, app) {
+  if (!isRecord(view) || typeof view.supports !== 'function') return null;
+  let said;
+  try {
+    said = view.supports(app);
+  } catch (error) {
+    console.warn('safety.viz app: a view could not say what the loaded data supports.', error);
+    return null;
+  }
+  if (!isRecord(said) || !isText(said.say)) return null;
+  const list = (value) => (Array.isArray(value) ? value : []);
+  const why =
+    isRecord(said.why) && isText(said.why.title) && list(said.why.items).some(isText)
+      ? {
+          title: said.why.title,
+          items: list(said.why.items).filter(isText),
+          open: Boolean(said.why.open)
+        }
+      : null;
+  // By name in a Map: a file's name is the reader's, and may be any word.
+  const files = new Map(
+    list(said.files)
+      .filter((entry) => isRecord(entry) && isText(entry.name) && isText(entry.tag))
+      .map((entry) => [entry.name, { tag: entry.tag, title: textOr(entry.title) }])
+  );
+  return {
+    say: said.say,
+    items: list(said.items)
+      .filter((item) => isRecord(item) && isText(item.label))
+      .map((item) => ({
+        id: textOr(item.id, ''),
+        label: item.label,
+        icon: textOr(item.icon),
+        state: textOr(item.state),
+        name: textOr(item.name, item.label)
+      })),
+    key: list(said.key)
+      .filter((item) => isRecord(item) && isText(item.icon) && isText(item.say))
+      .map((item) => ({ icon: item.icon, say: item.say })),
+    why,
+    lines: list(said.lines).filter(isText),
+    note: textOr(said.note),
+    files,
+    step: {
+      lead: isRecord(said.step) ? textOr(said.step.lead) : null,
+      also: isRecord(said.step) ? textOr(said.step.also) : null
+    }
+  };
+}

@@ -11183,6 +11183,160 @@
     "Groups": 0,
     "Metrics": 2
    }
+  },
+  "three-files": {
+   "label": "the demo study’s subjects, adverse events and protocol deviations files alone",
+   "status": [
+    {
+     "id": "kri0001",
+     "metric": "Adverse Event Rate",
+     "abbreviation": "AE",
+     "state": "ran",
+     "files": [],
+     "columns": [],
+     "unmapped": [],
+     "message": ""
+    },
+    {
+     "id": "kri0002",
+     "metric": "Serious Adverse Event Rate",
+     "abbreviation": "SAE",
+     "state": "ran",
+     "files": [],
+     "columns": [],
+     "unmapped": [],
+     "message": ""
+    },
+    {
+     "id": "kri0003",
+     "metric": "Non-Important Protocol Deviation Rate",
+     "abbreviation": "PD",
+     "state": "ran",
+     "files": [],
+     "columns": [],
+     "unmapped": [],
+     "message": ""
+    },
+    {
+     "id": "kri0004",
+     "metric": "Important Protocol Deviation Rate",
+     "abbreviation": "IPD",
+     "state": "ran",
+     "files": [],
+     "columns": [],
+     "unmapped": [],
+     "message": ""
+    },
+    {
+     "id": "kri0005",
+     "metric": "Grade 3+ Lab Abnormality Rate",
+     "abbreviation": "LB",
+     "state": "no file",
+     "files": [
+      "Raw_LB.csv"
+     ],
+     "columns": [],
+     "unmapped": [],
+     "message": "Grade 3+ Lab Abnormality Rate needs Raw_LB.csv, which is not loaded."
+    },
+    {
+     "id": "kri0006",
+     "metric": "Study Discontinuation Rate",
+     "abbreviation": "SDSC",
+     "state": "no file",
+     "files": [
+      "Raw_STUDCOMP.csv"
+     ],
+     "columns": [],
+     "unmapped": [],
+     "message": "Study Discontinuation Rate needs Raw_STUDCOMP.csv, which is not loaded."
+    },
+    {
+     "id": "kri0007",
+     "metric": "Treatment Discontinuation Rate",
+     "abbreviation": "TDSC",
+     "state": "no file",
+     "files": [
+      "Raw_SDRGCOMP.csv"
+     ],
+     "columns": [],
+     "unmapped": [],
+     "message": "Treatment Discontinuation Rate needs Raw_SDRGCOMP.csv, which is not loaded."
+    },
+    {
+     "id": "kri0012",
+     "metric": "Screen Failure Rate",
+     "abbreviation": "SF",
+     "state": "no file",
+     "files": [
+      "Raw_ENROLL.csv"
+     ],
+     "columns": [],
+     "unmapped": [],
+     "message": "Screen Failure Rate needs Raw_ENROLL.csv, which is not loaded."
+    }
+   ],
+   "groups": {
+    "state": "no file",
+    "files": [
+     "Raw_STUDY.csv",
+     "Raw_SITE.csv"
+    ],
+    "columns": [],
+    "unmapped": [],
+    "message": "The Groups table needs Raw_STUDY.csv and Raw_SITE.csv, which are not loaded."
+   },
+   "notes": [
+    "No study table was made, so the study's ID, AA-AA-000-0000, is read from the study ID column of the loaded files."
+   ],
+   "thresholds": {
+    "Analysis_kri0001": [
+     -2,
+     -1,
+     2,
+     3
+    ],
+    "Analysis_kri0002": [
+     -2,
+     -1,
+     2,
+     3
+    ],
+    "Analysis_kri0003": [
+     -3,
+     -2,
+     2,
+     3
+    ],
+    "Analysis_kri0004": [
+     -3,
+     -2,
+     2,
+     3
+    ]
+   },
+   "ran": {
+    "standard": [],
+    "mappings": [
+     "Mapped_AE",
+     "Mapped_PD",
+     "Mapped_SUBJ",
+     "Mapped_COUNTRY"
+    ],
+    "metrics": [
+     "kri0001",
+     "kri0002",
+     "kri0003",
+     "kri0004"
+    ]
+   },
+   "warnings": [],
+   "rows": {
+    "Results": 592,
+    "Bounds": 4563,
+    "Groups": 0,
+    "Metrics": 4
+   }
   }
  }
 }

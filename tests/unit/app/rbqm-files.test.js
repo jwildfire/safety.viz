@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import {
   filesForR,
-  filesSentence,
+  isRawFile,
   placeRaw,
   rawStudy,
   standardCsv,
@@ -12,6 +12,7 @@ import {
 } from '../../../src/app/rbqm-files.js';
 import { parseFile } from '../../../src/app/parse.js';
 import { buildMapping, setColumn } from '../../../src/app/mapping.js';
+import { DEMO_STUDIES } from '../../../src/app/studies.js';
 import manifest from '../../../src/data/portfolio.json';
 import {
   RBQM_NEEDS,
@@ -24,12 +25,13 @@ import {
   standardFiles
 } from '../../../scripts/rbqm-lib.mjs';
 
-// A reader's own raw files on the RBQM tab (#236, obot.roadmap#374): each file
-// placed in a gsm raw domain by its name or its columns, and what the placed
-// files support said before R is started. What a domain's file holds and what
-// a metric needs is desktop R's reading of gsm's workflow specs
-// (site/rbqm/needs.json); what R then said of the same files is the fixture
-// the browser tests hold real R to.
+// A reader's own raw files (#236, obot.roadmap#374), which come in on the Data
+// tab (#282): which files are raw files at all, each raw file placed in a gsm
+// raw domain by its name or its columns, and what the placed files support,
+// said before R is started. What a domain's file holds and what a metric
+// needs is desktop R's reading of gsm's workflow specs (site/rbqm/needs.json);
+// what R then said of the same files is the fixture the browser tests hold
+// real R to.
 
 const read = (file) => readFileSync(new URL(`../../../${file}`, import.meta.url));
 const { derived_from: derivedFrom, needs } = JSON.parse(read(RBQM_NEEDS.file).toString('utf8'));
@@ -118,6 +120,42 @@ describe('placing a raw file in a gsm raw domain', () => {
     ]);
   });
 
+  it('APP-RBQM-074: among the files that come in on the Data tab, one is a gsm raw file only when its name starts with `Raw_`, in any case, or its columns are those of exactly one raw domain; a file named for a domain without `Raw_` is a study file, as every file of the three demo studies of standard domains is (#282)', () => {
+    expect(isRawFile(file('Raw_AE.csv', []), needs)).toBe(true);
+    expect(isRawFile(file('raw_ae.CSV', ['x']), needs)).toBe(true);
+    expect(isRawFile(file('study\\Raw_PD.csv', []), needs)).toBe(true);
+    expect(isRawFile(file('study/RAW_anything.json', []), needs)).toBe(true);
+    // Named for nothing gsm knows, but holding every column of the labs domain and one more.
+    expect(isRawFile(file('central_lab.csv', [...columnsOf('Raw_LB'), 'visit']), needs)).toBe(true);
+    // A name gsm would place is not enough here: `ae.csv` is a study's adverse events file.
+    expect(placeRaw(file('ae.csv', ['USUBJID', 'AETERM']), needs).table).toBe('Raw_AE');
+    expect(isRawFile(file('ae.csv', ['USUBJID', 'AETERM']), needs)).toBe(false);
+    expect(isRawFile(file('subj.csv', ['x']), needs)).toBe(false);
+    expect(isRawFile(file('draw_ae.csv', []), needs)).toBe(false);
+    // Columns of two raw domains say which of neither; columns of none say nothing.
+    const both = [...columnsOf('Raw_LB'), ...columnsOf('Raw_PD')];
+    expect(isRawFile(file('export.csv', both), needs)).toBe(false);
+    expect(isRawFile(file('site_notes.csv', ['SITE', 'NOTE']), needs)).toBe(false);
+    expect(isRawFile(file('empty.csv', []), needs)).toBe(false);
+    expect(isRawFile(file('Raw_AE.csv', []), undefined)).toBe(true);
+    expect(isRawFile(file('export.csv', columnsOf('Raw_AE')), undefined)).toBe(false);
+    // Every demo study file: the RBQM study's nine are raw files, by name and by columns, and no other study's is.
+    for (const study of DEMO_STUDIES) {
+      for (const name of study.files) {
+        const text = read(`${study.source}/${name}`).toString('utf8');
+        const head = name.endsWith('.csv') ? text.split('\n').slice(0, 3).join('\n') : text;
+        const { columns } = parseFile(name, head);
+        expect(columns.length, name).toBeGreaterThan(0);
+        expect(isRawFile({ name, columns }, needs), `${study.id}: ${name}`).toBe(
+          Boolean(study.raw)
+        );
+        expect(isRawFile({ name: 'export.csv', columns }, needs), `${study.id}: ${name}`).toBe(
+          Boolean(study.raw)
+        );
+      }
+    }
+  });
+
   it('APP-RBQM-034: a file placed by its name that lacks a column its domain’s workflow names is listed with the column (#236)', () => {
     const [ae] = rawStudy(loaded(scenario('no-column')), needs).files.filter(
       (entry) => entry.table === 'Raw_AE'
@@ -132,7 +170,7 @@ describe('placing a raw file in a gsm raw domain', () => {
 });
 
 describe('what the loaded files support, said before R is started', () => {
-  it('APP-RBQM-035: for the demo study whole, with its labs file left out, with a column taken out of its adverse events file, and for two of its files alone, what the tab says of each metric and of the Groups table before R starts is what desktop R said after running: the same metrics supported, and of each other the same sentence, word for word (#236)', () => {
+  it('APP-RBQM-035: for the demo study whole, with its labs file left out, with a column taken out of its adverse events file, for two of its files alone and for three, what the tab says of each metric and of the Groups table before R starts is what desktop R said after running: the same metrics supported, and of each other the same sentence, word for word (#236)', () => {
     for (const entry of RBQM_TAB.scenarios) {
       const said =
         entry.id === 'whole'
@@ -311,9 +349,6 @@ describe('the loaded study’s standard domains, as gsm’s raw tables', () => {
     expect(pilot.answer.groups.state).toBe('ran');
     // The raw tables R made are the ones the tab said it would.
     expect([...support.made.keys()]).toEqual(pilot.answer.ran.standard);
-    expect(filesSentence(NO_RAW, support, standard)).toBe(
-      'The loaded study supports 3 of 8 metrics. R makes gsm’s raw tables from its adsl.csv and adae.csv.'
-    );
     expect(standardSentence(standard.get('Standard_subject'), 'Subject-level', support)).toBe(
       'adsl.csv, the Subject-level file, gives Raw_SITE, Raw_STUDCOMP, Raw_STUDY and Raw_SUBJ.'
     );
@@ -332,9 +367,6 @@ describe('the loaded study’s standard domains, as gsm’s raw tables', () => {
     expect(less.groups).toEqual({ supported: false, message: pilot.no_site.groups.message });
     expect([...less.made.keys()]).toEqual(pilot.no_site.ran.standard);
     expect(pilot.no_site.rows).toBe(0);
-    expect(filesSentence(NO_RAW, less, lacking)).toBe(
-      'The loaded study supports 0 of 8 metrics. R makes gsm’s raw tables from its adsl.csv and adae.csv.'
-    );
     expect(standardSentence(lacking.get('Standard_subject'), 'Subject-level', less)).toBe(
       'adsl.csv, the Subject-level file, gives Raw_STUDY. It has no column mapped to SITEID, ' +
         'so Raw_SITE, Raw_STUDCOMP and Raw_SUBJ are not made. Map it on the Data tab.'
@@ -352,9 +384,6 @@ describe('the loaded study’s standard domains, as gsm’s raw tables', () => {
     const mixed = supportOf(raw.tables, needs, standard);
     expect([...mixed.made.keys()]).toEqual(['Raw_SITE', 'Raw_STUDCOMP', 'Raw_STUDY', 'Raw_SUBJ']);
     expect([...mixed.reads]).toEqual(['Standard_subject']);
-    expect(filesSentence(raw, mixed, standard)).toBe(
-      '1 file loaded, 1 placed in a gsm raw domain. R makes gsm’s raw tables from the loaded study’s adsl.csv. Together they support 3 of 8 metrics.'
-    );
     // With every raw table loaded nothing of the study is read.
     const whole = rawStudy(loaded(scenario('whole')), needs);
     const all = supportOf(whole.tables, needs, standard);
@@ -366,9 +395,6 @@ describe('the loaded study’s standard domains, as gsm’s raw tables', () => {
     const none = standardStudy(labs.files, labs.mappings, needs);
     expect(none.size).toBe(0);
     expect(spoken(supportOf(new Map(), needs, none))).toEqual(spoken(supportOf(new Map(), needs)));
-    expect(filesSentence(NO_RAW, supportOf(new Map(), needs, none), none)).toBe(
-      'No files are loaded.'
-    );
   });
 });
 

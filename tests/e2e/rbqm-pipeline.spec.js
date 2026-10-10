@@ -58,11 +58,11 @@ function expectRows(browser, desktop, label) {
 }
 
 test.describe('the RBQM tab’s run in R in the browser', () => {
-  test('APP-RBQM-012: rbqm tab pipeline: R in the browser runs every mapping, metric and reporting workflow in scope through workr on the demo study’s nine raw files, and every one of the eight metrics’ Results rows is desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; with the labs file left out seven metrics run and the lab metric says it needs the labs file; with a column taken out of the adverse events file the two adverse event metrics name the column; with two files alone the two metrics they support run; R asks no host but webR’s, the public index and the page’s own (#234)', async ({
+  test('APP-RBQM-012: rbqm tab pipeline: R in the browser runs every mapping, metric and reporting workflow in scope through workr on the demo study’s nine raw files, and every one of the eight metrics’ Results rows is desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; with the labs file left out seven metrics run and the lab metric says it needs the labs file; with a column taken out of the adverse events file the two adverse event metrics name the column; with two files alone the two metrics they support run, and with three files the four; R asks no host but webR’s, the public index and the page’s own (#234)', async ({
     page,
     context
   }, testInfo) => {
-    // It downloads R and some forty packages, then runs the pipeline three times.
+    // It downloads R and some forty packages, then runs the pipeline five times.
     test.setTimeout(480_000);
     const requests = [];
     const finished = [];
@@ -90,7 +90,7 @@ test.describe('the RBQM tab’s run in R in the browser', () => {
         )
       };
     });
-    expect(studies.map((study) => study.files.length)).toEqual([9, 8, 9, 2]);
+    expect(studies.map((study) => study.files.length)).toEqual([9, 8, 9, 2, 3]);
 
     const outcome = await page.evaluate((run) => window.__rbqm.runTab(run), {
       packages: RBQM_TAB.packages,
@@ -140,7 +140,7 @@ test.describe('the RBQM tab’s run in R in the browser', () => {
 
     // ---- Something missing: what ran is desktop R's, and so is each sentence ----
     const wholeRows = keyed(desktop.Results);
-    for (const id of ['no-labs', 'no-column', 'two-files']) {
+    for (const id of ['no-labs', 'no-column', 'two-files', 'three-files']) {
       const answer = outcome.answers[id].value;
       const wanted = expected.partial[id];
       expect(answer.status, id).toEqual(wanted.status);

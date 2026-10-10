@@ -17,7 +17,9 @@
 // drawn and destroyed exactly as its own are (libraries.js). A library whose
 // charts take something other than a study's standard domains brings one view
 // instead, a tab of its own (#235): the page gives it the main area and the
-// app handle, and the view draws itself.
+// app handle, and the view draws itself. Such a tab may take files of its own
+// (#282): every file comes in on the Data tab, and the page asks the tab of
+// each one before it places it in a standard domain.
 
 import { parseFile } from './parse.js';
 import { placeFile } from './detect.js';
@@ -33,7 +35,9 @@ import {
 import { chartStatus, supportedCount } from './status.js';
 import { chartData, chartSettings, isDestination } from './charts.js';
 import {
+  claimSaid,
   controlState,
+  supportSaid,
   OTHER_GROUP,
   DOMAIN_COLOURS,
   OWN_LIBRARY,
@@ -166,7 +170,7 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options Mount options.
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
- * @param {Array<{name: string, colour?: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}, view?: {id: string, title: string, tag: function(): string, render: function(Element, Object): ?{destroy: Function}}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name, on a tab of the library's `colour`, a six-digit hex colour, or of the first colour no other tab uses when it names none (#268); a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183). A library that brings a `view` (#235) brings a tab of its own in place of charts: its `id` is the tab's address, `title` its name, `tag()` what the tab's count says, and `render(container, app)` draws it and returns what tears it down. A view whose id is the data view's, a chart's or another view's is left out with a console warning.
+ * @param {Array<{name: string, colour?: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}, view?: {id: string, title: string, tag: function(): string, render: function(Element, Object): ?{destroy: Function}}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name, on a tab of the library's `colour`, a six-digit hex colour, or of the first colour no other tab uses when it names none (#268); a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183). A library that brings a `view` (#235) brings a tab of its own in place of charts: its `id` is the tab's address, `title` its name, `tag()` what the tab's count says, and `render(container, app)` draws it and returns what tears it down. A view whose id is the data view's, a chart's or another view's is left out with a console warning. A view may also bring `claims(file)`, which says a file a reader loads is the tab's own, so the app keeps it as it is, and `supports(app)`, which says what the loaded data supports, for a card on the data view (#281, #282; libraries.js::claimSaid, supportSaid).
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out. The wordmark is a link to `docs` too (#270).
  * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages, keyed by module name: its clinical guide and its test evidence. A chart's view carries a footnote linking those it was given an address for (#246).
@@ -175,7 +179,7 @@ function sentenceFor(module, status, manifest) {
  * @param {string} [options.title] The app's name in the browser tab's title, which names the open view before it: "RBQM · safety.viz demo" (#270).
  * @param {string} [options.pitch] What the footer says the app does with a study; the page that mounts it says what is true there (#183).
  * @param {(url: string) => Promise<string>} [options.fetchText] Fetches the demo extracts' text; defaults to `fetch`, refusing an answer that is not a success.
- * @param {(container: Element, app: Object) => void} [options.dataView] Renders the data view; defaults to the data panel.
+ * @param {(container: Element, app: Object) => ?{refresh?: Function}} [options.dataView] Renders the data view; defaults to the data panel. It may return a `refresh`, which the page calls when a tab's state changes while the data view is open (#281).
  * @returns {{ready: Promise<void>, loadFiles: Function, loadRaw: Function, loadDemo: Function, reset: Function, select: Function, state: Object, destroy: Function}} The app handle.
  */
 export function mountApp(
@@ -250,6 +254,16 @@ export function mountApp(
     views.set(id, view);
     viewLibrary.set(id, name);
   }
+  // The tabs that take files of their own (#282): every file a reader loads is
+  // asked of each, in the tabs' order, and the first to claim it has it.
+  const claimants = [...views.values()].filter((view) => typeof view.claims === 'function');
+  const claimOf = (file) => {
+    for (const view of claimants) {
+      const said = claimSaid(view, file);
+      if (said) return said;
+    }
+    return null;
+  };
   // The rung of the status ladder a chart or a view stands on (#272): what the
   // page was told, or what the chart's own entry says, or Exploratory.
   const rungOf = (id) => {
@@ -291,6 +305,7 @@ export function mountApp(
     busy: ''
   };
   let instance = null;
+  let dataShown = null; // what the data view returned, while it is the view on the page
   const studies = demo ? demo.studies || DEMO_STUDIES : [];
   let demoRun = 0; // the latest demo study asked for; an earlier one still loading is dropped
 
@@ -829,6 +844,7 @@ export function mountApp(
 
   function renderMain(current) {
     destroyChart();
+    dataShown = null;
     content.innerHTML = '';
     if (state.busy) content.append(el('p', 'sva-message sva-busy', state.busy));
     if (state.selected === 'data') {
@@ -836,7 +852,7 @@ export function mountApp(
       renderNotes(content);
       const container = el('div', 'sva-data');
       content.append(container);
-      dataView(container, handle);
+      dataShown = dataView(container, handle) || null;
       return;
     }
     if (isView(state.selected)) {
@@ -966,6 +982,17 @@ export function mountApp(
     }
   }
 
+  /**
+   * Keep one of gsm's raw files as it is: its text, its column names and its
+   * count of rows. A file of a name already kept replaces it.
+   */
+  function keepRaw(name, text, file) {
+    const kept = { name, text, columns: file.columns, rows: file.rows.length };
+    const at = state.raw.findIndex((item) => item.name === name);
+    if (at === -1) state.raw.push(kept);
+    else state.raw[at] = kept;
+  }
+
   /** Forget the loaded files and their mappings, placed or set aside. */
   function clearFiles() {
     state.files = {};
@@ -1044,6 +1071,24 @@ export function mountApp(
     /** The current status of every chart, including any that did not draw. */
     status,
 
+    /** Whether a tab takes files of its own, which the app then keeps as they are (#282). */
+    ownFiles: claimants.length > 0,
+
+    /**
+     * What each tab says the loaded data supports, for the data view's cards
+     * (#281): the tab's id, its name and its colour, with what it said
+     * (libraries.js::supportSaid). A tab that says nothing is left out.
+     * @returns {Object[]} One entry per tab that has something to say.
+     */
+    support() {
+      return [...views].flatMap(([id, view]) => {
+        const said = supportSaid(view, handle);
+        return said
+          ? [{ id, title: view.title, colour: colours.get(viewLibrary.get(id)) || null, ...said }]
+          : [];
+      });
+    },
+
     /** The rung of the status ladder every chart and every view stands on, with its reason where it has one (#272). */
     tiers: () =>
       Object.fromEntries(
@@ -1054,6 +1099,12 @@ export function mountApp(
      * Load parsed-or-not files: each `{ name, text }` is read, placed in a
      * domain and given its pre-filled mapping. A file that cannot be read or
      * placed is reported in a sentence and changes nothing.
+     *
+     * A reader's own file is first asked of the tabs that take files of their
+     * own (#282): one a tab claims is kept as it is, as `loadRaw` keeps it,
+     * and is neither placed nor mapped; one a tab claims and cannot read is
+     * refused in the tab's sentence. A demo study's files are not asked: the
+     * study says which loader is its own.
      * @param {{name: string, text: string}[]} list The files' names and text.
      * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
      * @returns {void}
@@ -1091,6 +1142,12 @@ export function mountApp(
           file = parseFile(name, text);
         } catch (error) {
           state.notes.push(error.message);
+          continue;
+        }
+        const claim = study ? null : claimOf({ name, columns: file.columns });
+        if (claim) {
+          if (claim.refuse) state.notes.push(claim.refuse);
+          else keepRaw(name, text, file);
           continue;
         }
         const placement = place(file);
@@ -1149,10 +1206,7 @@ export function mountApp(
           state.notes.push(error.message);
           continue;
         }
-        const kept = { name, text, columns: file.columns, rows: file.rows.length };
-        const at = state.raw.findIndex((item) => item.name === name);
-        if (at === -1) state.raw.push(kept);
-        else state.raw[at] = kept;
+        keepRaw(name, text, file);
       }
       state.failed = {};
       render();
@@ -1393,13 +1447,18 @@ export function mountApp(
     /**
      * A library's view changed (#235): its tab says what it now says, and the
      * view is drawn again if it is the one open. Any other open view is left
-     * as it is.
+     * as it is, but for the data view's cards that say what a tab supports.
      * @param {string} id The view's id.
      * @returns {void}
      */
     redrawView(id) {
-      if (state.selected === id && isView(id)) render();
-      else handle.retag();
+      if (state.selected === id && isView(id)) {
+        render();
+        return;
+      }
+      handle.retag();
+      // On the data view, what the tab says the loaded data supports follows it (#281).
+      if (dataShown && typeof dataShown.refresh === 'function') dataShown.refresh();
     },
 
     /** Tear the page down: destroy the mounted chart, stop following the address and empty the target. */

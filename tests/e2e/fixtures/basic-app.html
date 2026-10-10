@@ -147,7 +147,8 @@
             }
             const whole = fixture.whole;
             if (names.length === 9) return { status: 'ok', value: whole };
-            const scenario = names.length === 2 ? 'two-files' : 'no-labs';
+            // Two of its files alone, three of them alone (#282), or all but its labs file.
+            const scenario = { 2: 'two-files', 3: 'three-files' }[names.length] || 'no-labs';
             const partial = fixture.partial[scenario];
             const ran = new Set(partial.ran.metrics.map((id) => `Analysis_${id}`));
             const kept = (rows) => rows.filter((row) => ran.has(row.MetricID));
