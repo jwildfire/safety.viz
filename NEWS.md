@@ -36,7 +36,7 @@ The demo app made ready to show: clearer on first open, and the defects found in
 
 ## Tests and provenance
 
-2,515 unit and 448 browser tests pass. No file of R's changed since v1.10.0. The browser tests that hold every RBQM metric's site rows to desktop R's, to eight decimal places, pass unchanged, as do the tests of what the tabs request. `dist/safety.viz-1.11.0/` is the release bundle. [#300](https://github.com/jwildfire/safety.viz/issues/300), PR [#305](https://github.com/jwildfire/safety.viz/pull/305), [#307](https://github.com/jwildfire/safety.viz/issues/307), PR [#308](https://github.com/jwildfire/safety.viz/pull/308), [#309](https://github.com/jwildfire/safety.viz/issues/309)
+2,515 unit and 448 browser tests pass. No file of R's changed since v1.10.0. The browser tests that hold every RBQM metric's site rows to desktop R's, to eight decimal places, pass unchanged, as do the tests of what the tabs request. `dist/safety.viz-1.11.0/` is the release bundle. [#300](https://github.com/jwildfire/safety.viz/issues/300), PR [#305](https://github.com/jwildfire/safety.viz/pull/305), [#307](https://github.com/jwildfire/safety.viz/issues/307), PR [#308](https://github.com/jwildfire/safety.viz/pull/308), [#309](https://github.com/jwildfire/safety.viz/issues/309), PR [#318](https://github.com/jwildfire/safety.viz/pull/318)
 
 # safety.viz v1.10.0
 
