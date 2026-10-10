@@ -1,8 +1,14 @@
-// Demo app: a reader's own raw files on the RBQM tab (#236, obot.roadmap#374).
-// Each loaded file is placed in one of gsm's raw domains by its name, or by its
-// columns when its name says nothing, and the tab says, before R is started,
+// Demo app: a reader's own raw files for the RBQM tab (#236, obot.roadmap#374).
+// Each kept file is placed in one of gsm's raw domains by its name, or by its
+// columns when its name says nothing, and the app says, before R is started,
 // which metrics the placed files support. This module is that with no document
 // in it.
+//
+// The files come in on the Data tab, where a study's standard files come in
+// too (#282, obot.roadmap#406), so the first question is whether a file is a
+// raw file at all (`isRawFile`). That path is interim: every study is to be
+// read as RAW, then SDTM, then ADaM in a later release, so only what moving the
+// loading needs is here.
 //
 // What a domain's file must hold, and what each metric needs, is not written
 // here: it is `needs`, which desktop R reads from gsm's own workflow specs
@@ -37,6 +43,29 @@ const domainNamed = (name) =>
     .replace(/^raw_/i, '')
     .toUpperCase();
 
+/** The raw domains every column of which a file has, by table. */
+function matching(columns, raw) {
+  const has = new Set(list(columns));
+  return raw
+    .filter((entry) => list(entry.columns).every((column) => has.has(column)))
+    .map((entry) => entry.table);
+}
+
+/**
+ * Whether a file is one of gsm's raw files, where a study's standard files are
+ * loaded too (#282): only when its name starts with `Raw_`, or its columns
+ * match exactly one raw domain. `placeRaw` goes by a name alone, which is
+ * right among files already known to be raw and wrong here: by it the `ae.csv`
+ * of a study of standard files would be the adverse events raw file.
+ * @param {{name: string, columns: string[]}} file A loaded file.
+ * @param {Object} needs What the workflows need, as R reads it.
+ * @returns {boolean} Whether it is kept as a raw file.
+ */
+export function isRawFile(file, needs) {
+  if (/^raw_/i.test(String(file.name).replace(/^.*[\\/]/, ''))) return true;
+  return matching(file.columns, list(needs && needs.raw)).length === 1;
+}
+
 /**
  * Place one file in a raw domain.
  *
@@ -52,10 +81,7 @@ export function placeRaw(file, needs) {
   const raw = list(needs && needs.raw);
   const named = raw.find((entry) => domainNamed(entry.table) === domainNamed(file.name));
   if (named) return { table: named.table, by: 'name', candidates: [] };
-  const has = new Set(list(file.columns));
-  const candidates = raw
-    .filter((entry) => list(entry.columns).every((column) => has.has(column)))
-    .map((entry) => entry.table);
+  const candidates = matching(file.columns, raw);
   if (candidates.length === 1) return { table: candidates[0], by: 'columns', candidates: [] };
   return { table: null, by: null, candidates };
 }
@@ -332,37 +358,12 @@ export function supportOf(tables, needs, standard = new Map()) {
 export const filesForR = (tables) =>
   [...tables].map(([table, file]) => ({ name: `${table}.csv`, text: file.text }));
 
-const counted = (count, noun) => `${count} ${noun}${count === 1 ? '' : 's'}`;
-
-/** A file the tab does not read: gsm's raw files are CSV, and R is handed their text as CSV. */
+/**
+ * A raw file the app does not read: gsm's raw files are CSV, and R is handed
+ * their text as CSV. The Data tab takes JSON too, so the rule is said there.
+ */
 export const NOT_CSV = (name) =>
   `${name} is not a CSV file: the RBQM tab reads gsm’s raw files as CSV.`;
-
-/**
- * What is loaded in a sentence, said before R is started: how many raw files
- * are loaded and placed, which of the loaded study's files stand in for raw
- * tables, and how many metrics all of it supports.
- * @param {{files: Object[], tables: Map}} study The loaded raw files as a study (rawStudy's).
- * @param {{metrics: Array<{supported: boolean}>, reads?: Set<string>}} support What they support (supportOf's).
- * @param {Map<string, {name: string}>} [standard] The loaded study's standard domains (standardStudy's).
- * @returns {string} The sentence.
- */
-export function filesSentence(study, support, standard = new Map()) {
-  const loaded = study.files.length;
-  const reads = support.reads || new Set();
-  const read = [...standard.values()]
-    .filter((entry) => reads.has(entry.table))
-    .map((entry) => entry.name);
-  if (!loaded && !read.length) return 'No files are loaded.';
-  const supported = support.metrics.filter((metric) => metric.supported).length;
-  const of = `${supported} of ${counted(support.metrics.length, 'metric')}`;
-  const raw = `${counted(loaded, 'file')} loaded, ${study.tables.size} placed in a gsm raw domain.`;
-  if (!read.length) return `${raw} ${loaded === 1 ? 'It supports' : 'They support'} ${of}.`;
-  const from = `R makes gsm’s raw tables from ${loaded ? 'the loaded study’s' : 'its'} ${listed(read)}`;
-  return loaded
-    ? `${raw} ${from}. Together they support ${of}.`
-    : `The loaded study supports ${of}. ${from}.`;
-}
 
 /**
  * What one file of the loaded study gives the metrics, in a sentence: the raw

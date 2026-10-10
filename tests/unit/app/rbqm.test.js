@@ -15,11 +15,13 @@ import {
   outcomeSaid,
   overviewInputs,
   ranOnSaid,
+  rawTag,
   runDetails,
   sameFiles,
   stepLines,
   stepNumber,
   stepSaid,
+  supportWords,
   totalMegabytes,
   warningsSaid
 } from '../../../src/app/rbqm.js';
@@ -72,7 +74,7 @@ describe('the RBQM tab: what it says', () => {
     );
     // With nothing loaded there is nothing to run, and it says where a study is.
     expect(NO_FILES).toBe(
-      'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or drop gsm raw files here.'
+      'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.'
     );
     expect(listed([])).toBe('');
     expect(listed(['a'])).toBe('a');
@@ -584,5 +586,30 @@ describe('the RBQM tab: what R warned of (#258)', () => {
     expect(warningsSaid({})).toEqual([]);
     expect(warningsSaid(null)).toEqual([]);
     expect(warningsSaid(whole)).toEqual([]);
+  });
+});
+
+describe('the Data tab’s card, in the tab’s words (#281)', () => {
+  it('APP-RBQM-076: the card counts the metrics the loaded data supports in a sentence, and the workflow’s third step counts them in a few words; each state a metric’s mark shows has its words; a kept raw file’s tag names its raw domain and how it was told', () => {
+    const words = supportWords(4, 8);
+    expect(words.say).toBe('This data supports 4 of 8 metrics.');
+    expect(words.lead).toBe('4 of 8 metrics supported');
+    expect(words.also).toBe('4 of 8 RBQM metrics');
+    expect(words.why(4)).toBe('Why 4 cannot run');
+    expect(words.states).toEqual({
+      ran: 'ran',
+      running: 'running',
+      todo: 'not started',
+      cannot: 'cannot run: missing data'
+    });
+    expect(supportWords(0, 8).say).toBe('This data supports 0 of 8 metrics.');
+    expect(supportWords(1, 1)).toMatchObject({
+      say: 'This data supports 1 of 1 metric.',
+      lead: '1 of 1 metric supported',
+      also: '1 of 1 RBQM metric'
+    });
+    expect(rawTag({ table: 'Raw_AE', by: 'name' })).toBe('gsm raw file: Raw_AE, by its name');
+    expect(rawTag({ table: 'Raw_LB', by: 'columns' })).toBe('gsm raw file: Raw_LB, by its columns');
+    expect(rawTag({ table: null, by: null })).toBe('gsm raw file: not recognised');
   });
 });

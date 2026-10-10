@@ -8,12 +8,19 @@
 // live status, each carrying its own actions, and the loaded files, each
 // flagged only where a row wants a look.
 //
+// Every file comes in here (#282, obot.roadmap#406), a tab's own files too. A
+// tab that takes files of its own says so through the seam (libraries.js): the
+// page asks it of each file loaded, and this panel draws what the tab says the
+// loaded data supports as one card (#281). The panel knows nothing else of
+// such a tab: no name of anything the tab runs, and no name of a file it takes.
+//
 // Nothing here fetches, posts or stores anything: files are read with the File
 // API and the mapping is saved by offering a file to download.
 
 import { MEASURES, distinctValues, measureColumn } from './mapping.js';
 import { neededBy, supportedCount } from './status.js';
 import { el, plural } from './dom.js';
+import { icon } from './icons.js';
 
 /** Files larger than this are refused: they are parsed in memory. */
 export const MAX_FILE_BYTES = 100 * 1024 * 1024;
@@ -249,17 +256,23 @@ function unplacedCard(item, index, app) {
   return card;
 }
 
-/** One of gsm's raw files (#233): named, with its rows and columns, kept as it is. */
-function rawCard(file) {
+/**
+ * One of gsm's raw files (#233): named, with its rows and columns, kept as it
+ * is. Its tag is what the tab that took it says of it (#281), which names the
+ * raw domain it was read as; with no such tab, that it is kept as it is.
+ */
+function rawCard(file, said) {
   const card = el('section', 'sva-file sva-raw');
   card.dataset.raw = file.name;
   card.tabIndex = -1;
   card.setAttribute('aria-label', `${file.name}, a gsm raw file`);
   const head = el('div', 'sva-file-head');
+  const tag = el('span', 'sva-tag', said ? said.tag : 'gsm raw file, kept as it is');
+  if (said && said.title) tag.title = said.title;
   head.append(
     el('span', 'sva-hex sva-hollow'),
     el('span', 'sva-file-name', file.name),
-    el('span', 'sva-tag', 'gsm raw file, kept as it is'),
+    tag,
     el('span', 'sva-file-rows', `${rowCount(file.rows)}, ${plural(file.columns.length, 'column')}`)
   );
   card.append(head);
@@ -273,6 +286,69 @@ function actionButton(name, label, onClick) {
   button.dataset.action = name;
   button.onclick = onClick;
   return button;
+}
+
+/** A list of sentences, one to a line. */
+function sentences(className, items) {
+  const list = el('ul', className);
+  for (const item of items) list.append(el('li', null, item));
+  return list;
+}
+
+/**
+ * What one tab says the loaded data supports (#281), as a card: the tab's
+ * name in its colour, its one sentence and a button that opens it; what it
+ * runs, each with the mark for its state and a name that says both in full;
+ * the key to the marks; why some cannot run, behind their title; any further
+ * sentences; and the small print. Every word of it is the tab's
+ * (libraries.js::supportSaid).
+ * @private
+ */
+function supportCard(said, app) {
+  const card = el('section', 'sva-support');
+  card.dataset.support = said.id;
+  card.setAttribute('aria-label', `${said.title}: ${said.say}`);
+  if (said.colour) card.style.setProperty('--hue', said.colour);
+  const head = el('div', 'sva-support-head');
+  head.append(
+    el('span', 'sva-hex'),
+    el('h2', 'sva-support-title', said.title),
+    el('p', 'sva-support-say', said.say),
+    actionButton('open-view', `Open ${said.title}`, () => app.select(said.id))
+  );
+  card.append(head);
+  if (said.items.length) {
+    const items = el('ul', 'sva-support-items');
+    for (const item of said.items) {
+      const entry = el('li');
+      entry.dataset.item = item.id;
+      if (item.state) entry.dataset.state = item.state;
+      entry.title = item.name;
+      entry.setAttribute('aria-label', item.name);
+      if (item.icon) entry.append(icon(item.icon));
+      entry.append(el('span', null, item.label));
+      items.append(entry);
+    }
+    card.append(items);
+  }
+  if (said.key.length) {
+    const key = el('p', 'sva-support-key');
+    for (const { icon: mark, say } of said.key) {
+      const one = el('span');
+      one.append(icon(mark), say);
+      key.append(one);
+    }
+    card.append(key);
+  }
+  if (said.why) {
+    const why = el('details', 'sva-support-why');
+    why.open = said.why.open;
+    why.append(el('summary', null, said.why.title), sentences('sva-support-list', said.why.items));
+    card.append(why);
+  }
+  if (said.lines.length) card.append(sentences('sva-support-list sva-support-lines', said.lines));
+  if (said.note) card.append(el('p', 'sva-support-note', said.note));
+  return card;
 }
 
 /** One step of the workflow: its number, its name, where it stands, and its actions. */
@@ -323,7 +399,7 @@ function loadedEntry(name, detail, flags, find) {
  * the loaded files.
  * @private
  */
-function sidebar(container, app, { input, domains, rows }) {
+function sidebar(container, app, { input, domains, rows, support }) {
   const { state, manifest } = app;
   const side = el('aside', 'sva-side');
   side.setAttribute('aria-label', 'Workflow and loaded data');
@@ -339,6 +415,13 @@ function sidebar(container, app, { input, domains, rows }) {
   // gsm's raw files (#233) are loaded files too, with nothing to map.
   const files = domains.length + state.raw.length;
   const anything = files || state.unplaced.length || state.saved !== null || state.notes.length;
+  // Step three points where the data leads (#281). With gsm's raw files loaded
+  // and no chart ready, that is the tab that says what they support; with a
+  // chart ready, what that tab supports is counted beside the charts. One step
+  // is the current one: a file whose mapping a chart still waits on comes first.
+  const [tab] = support;
+  const leads = Boolean(tab) && state.raw.length > 0 && !ready;
+  const chartsReady = `${ready} of ${charts} charts ready`;
 
   // Step one: load. The demo studies, where the page is served with any; the
   // file picker; and Reset, once there is something to clear.
@@ -394,13 +477,17 @@ function sidebar(container, app, { input, domains, rows }) {
     workflowStep(
       'open',
       2,
-      settled ? 'current' : 'todo',
-      'Open a chart',
-      `${ready} of ${charts} charts ready`,
+      settled || (leads && !domains.length) ? 'current' : 'todo',
+      leads ? `Open the ${tab.title} tab` : 'Open a chart',
+      (leads ? [tab.step.lead, chartsReady] : [chartsReady, tab && tab.step.also])
+        .filter(Boolean)
+        .join(' · '),
       [],
-      app.firstReady()
-        ? [actionButton('open-chart', 'Open first chart', () => app.select(app.firstReady()))]
-        : []
+      leads
+        ? [actionButton('open-view', `Open ${tab.title}`, () => app.select(tab.id))]
+        : app.firstReady()
+          ? [actionButton('open-chart', 'Open first chart', () => app.select(app.firstReady()))]
+          : []
     )
   );
   const workflow = el('section', 'sva-side-section');
@@ -461,11 +548,13 @@ function sidebar(container, app, { input, domains, rows }) {
 }
 
 /**
- * Render the data view: the sidebar, and beside it the drop zone, a card per
- * loaded file with its mapping table, and a card per file that was not placed.
+ * Render the data view: the sidebar, and beside it the drop zone, a card for
+ * what each tab that takes files of its own says the loaded data supports, a
+ * card per loaded file with its mapping table, and a card per file that was
+ * not placed.
  * @param {Element} container The element to render into.
  * @param {Object} app The app handle from mountApp.
- * @returns {void}
+ * @returns {{refresh: function(): void}} `refresh` draws again the cards that say what a tab supports, and nothing else: a tab's state may change while this view is open.
  */
 export function renderDataPanel(container, app) {
   const { state, manifest } = app;
@@ -495,10 +584,36 @@ export function renderDataPanel(container, app) {
   };
   drop.append(
     el('p', null, 'Drop CSV or JSON files here'),
-    el('p', 'sva-drop-note', 'They are read in this browser and sent nowhere.'),
+    el(
+      'p',
+      'sva-drop-note',
+      // Where a tab takes gsm's raw files, the one drop zone says it takes both kinds (#282).
+      app.ownFiles
+        ? 'Study files or gsm raw files. They are read in this browser and sent nowhere.'
+        : 'They are read in this browser and sent nowhere.'
+    ),
     input
   );
   main.append(drop);
+
+  // What each tab says the loaded data supports (#281), between the drop zone
+  // and the files. A reader who opened or closed the reasons finds them so
+  // when the cards are drawn again.
+  const support = app.support();
+  const cards = el('div', 'sva-support-cards');
+  const drawSupport = (said) => {
+    const reasons = (card) => card.querySelector('.sva-support-why');
+    const was = new Map(
+      [...cards.children].map((card) => [card.dataset.support, reasons(card)?.open])
+    );
+    cards.replaceChildren(...said.map((one) => supportCard(one, app)));
+    for (const card of cards.children) {
+      const open = was.get(card.dataset.support);
+      if (reasons(card) && typeof open === 'boolean') reasons(card).open = open;
+    }
+  };
+  drawSupport(support);
+  main.append(cards);
 
   const domains = Object.keys(manifest.domains).filter((domain) => state.files[domain]);
   const needed = neededBy(manifest, app.problems);
@@ -507,9 +622,11 @@ export function renderDataPanel(container, app) {
   );
   for (const domain of domains) main.append(fileCard(domain, app, rows[domain]));
   state.unplaced.forEach((item, index) => main.append(unplacedCard(item, index, app)));
-  for (const file of state.raw) main.append(rawCard(file));
+  // A raw file's card says what the tab that took it says of it.
+  const saidOf = (file) => support.map((tab) => tab.files.get(file.name)).find(Boolean) || null;
+  for (const file of state.raw) main.append(rawCard(file, saidOf(file)));
 
-  container.append(sidebar(container, app, { input, domains, rows }), main);
+  container.append(sidebar(container, app, { input, domains, rows, support }), main);
 
   // A mapping edit re-renders the panel; put the keyboard back where it was.
   if (state.focus) {
@@ -520,4 +637,5 @@ export function renderDataPanel(container, app) {
     );
     if (target) target.focus();
   }
+  return { refresh: () => drawSupport(app.support()) };
 }

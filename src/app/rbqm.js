@@ -47,11 +47,51 @@ export function ranOn(files, study = [], word = 'loaded file') {
 
 /** What the tab says when nothing the metrics can run on is loaded. */
 export const NO_FILES =
-  'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or drop gsm raw files here.';
+  'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.';
 
 /** What the tab says when files are loaded and none is one the metrics can run on. */
 export const NONE_PLACED =
   'None of the loaded files is a subject-level or adverse events file, or a gsm raw file, so there is nothing for R to run.';
+
+/**
+ * What the Data tab's card says of the loaded data (#281, obot.roadmap#406):
+ * how many metrics it supports, as the card's sentence and as the workflow's
+ * third step counts them; what the card says of a metric's state, under the
+ * key to its marks and in the metric's full name; the title over the reasons;
+ * and the small print. Nothing here says why a metric cannot run: those
+ * sentences are R's (rbqm-files.js).
+ * @param {number} can How many metrics the loaded data supports.
+ * @param {number} of How many metrics there are.
+ * @returns {{say: string, lead: string, also: string, states: Object<string, string>, why: function(number): string, note: string}} The words.
+ */
+export function supportWords(can, of) {
+  const count = `${can} of ${counted(of, 'metric')}`;
+  return {
+    say: `This data supports ${count}.`,
+    lead: `${count} supported`,
+    also: `${can} of ${of} RBQM ${of === 1 ? 'metric' : 'metrics'}`,
+    // In the order the key lists them.
+    states: {
+      ran: 'ran',
+      running: 'running',
+      todo: 'not started',
+      cannot: 'cannot run: missing data'
+    },
+    why: (count) => `Why ${count} cannot run`,
+    note: 'Read from the files’ names and columns, before R is started. R says the same when it runs.'
+  };
+}
+
+/**
+ * What a kept raw file's card says of it on the Data tab (#281): the raw
+ * domain it was placed in and how that was told, or that it was placed in none.
+ * @param {{table: ?string, by: ?string}} entry One file of rawStudy's (rbqm-files.js).
+ * @returns {string} The few words of the card's tag.
+ */
+export const rawTag = (entry) =>
+  entry.table
+    ? `gsm raw file: ${entry.table}, by its ${entry.by === 'name' ? 'name' : 'columns'}`
+    : 'gsm raw file: not recognised';
 
 /** Every address starting R downloads from, in words: "webr.r-wasm.org, repo.r-wasm.org and this page". */
 export const hostsSaid = (downloads) =>

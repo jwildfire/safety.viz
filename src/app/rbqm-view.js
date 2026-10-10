@@ -22,19 +22,21 @@
 // tables from them before gsm's own workflows run. There is no second study to
 // load. gsm raw files are the other way in, and run every metric:
 //
-// The files are the RBQM study's, or the reader's own (#236): CSV files dropped
-// on the tab are read with the browser's file reader and kept as raw files, not
-// passed through the mapping table. Each is placed in a gsm raw domain by its
-// name or its columns, and the tab lists, before R is started, which domains
-// are loaded and which metrics they support (rbqm-files.js). R is handed the
-// one file of each domain under gsm's name for it; a file not placed is named
-// and stays out of R.
+// The files are the RBQM study's, or the reader's own (#236). Every file comes
+// in on the Data tab (#282, obot.roadmap#406), and the tab hands that tab two
+// functions through the seam (libraries.js): `claims`, which says a file is a
+// gsm raw file, so the app keeps it as it is and does not pass it through the
+// mapping table; and `supports`, which says, before R is started, which
+// metrics the loaded data supports, for the Data tab's card (rbqm-files.js).
+// Each kept file is placed in a gsm raw domain by its name or its columns. R
+// is handed the one file of each domain under gsm's name for it; a file not
+// placed stays out of R. The tab itself has no place to load a file: its
+// lines that say to change the data lead to the Data tab.
 //
 // R computes every rate, score and flag shown. This module decides when R is
 // asked, hands R's tables to gsm.viz (rbqm.js says which rows), and writes the
 // sentences. gsm.viz counts each site's red and amber flags for its overview.
 
-import { readFiles } from './data-panel.js';
 import { el } from './dom.js';
 import { icon } from './icons.js';
 import { WEBR_VERSION } from './r-browser.js';
@@ -42,7 +44,7 @@ import { whereSaid } from './r-words.js';
 import {
   NOT_CSV,
   filesForR,
-  filesSentence,
+  isRawFile,
   rawStudy,
   standardCsv,
   standardSentence,
@@ -60,12 +62,14 @@ import {
   metricList,
   outcomeSaid,
   overviewInputs,
+  rawTag,
   rbqmWords,
   runDetails,
   sameFiles,
   stepLines,
   stepNumber,
-  stepSaid
+  stepSaid,
+  supportWords
 } from './rbqm.js';
 
 /** What waiting on R comes to when R gave no answer in time (#261). */
@@ -93,7 +97,7 @@ const messageOf = (error) =>
  * @param {{start: number, attach: number, run: number}} [options.limits] How long R is waited on at each step before the tab gives up, in seconds (#261).
  * @param {?string} [options.webr] The version of the runtime R runs on, for Run details.
  * @param {() => Date} [options.now] The clock; used by the tests.
- * @returns {{id: string, title: string, tag: Function, render: Function, state: Function}} The view, as page.js takes one.
+ * @returns {{id: string, title: string, tag: Function, render: Function, state: Function, claims?: Function, supports?: Function}} The view, as page.js takes one. On a page that can start R and knows what the workflows need, it also brings the two functions the Data tab asks (libraries.js::claimSaid, supportSaid).
  */
 export function rbqmTab({
   createConnection,
@@ -119,7 +123,6 @@ export function rbqmTab({
   const words = rbqmWords(downloads);
   let result = null; // { answer, files, study, name, used, support, said, seconds, sinceStart, snapshotDate }
   let runStep = 'read'; // while a run is going: reading the study, then running the workflows
-  let wantFiles = false; // the file box is to be opened and brought into view when next drawn
   let runs = 0;
   let kept = null; // the folder of R's file system the last run's files are in
   let library = null; // the promise of gsm.viz
@@ -216,13 +219,15 @@ export function rbqmTab({
    * and columns say each can expect.
    */
   function metricsNow(app) {
-    if (phase === 'done' && result) {
+    const given = handed(app);
+    // Results of a study that is no longer the one loaded are not this study's.
+    if (phase === 'done' && result && sameFiles(given.sources, result.loaded)) {
       return metricList(result.answer).map((metric) => ({
         ...metric,
         state: metric.ran ? 'ran' : 'cannot'
       }));
     }
-    const { support } = handed(app);
+    const { support } = given;
     if (!support) return [];
     return support.metrics.map((metric) => ({
       id: metric.id,
@@ -585,17 +590,11 @@ export function rbqmTab({
     return drawn;
   }
 
-  /** Go to where the data is changed: for now the file box at the foot of the Overview page (#279). */
-  function toFiles(app) {
-    wantFiles = true;
-    app.select(view.id);
-  }
-
-  /** A link that leads to where the data is changed. */
+  /** A link that leads to where the data is changed: the Data tab, where every file comes in (#282). */
   function dataLink(app, text) {
     const link = el('button', 'sva-link sva-rbqm-data', text);
     link.type = 'button';
-    link.onclick = () => toFiles(app);
+    link.onclick = () => app.select('data');
     return link;
   }
 
@@ -649,7 +648,7 @@ export function rbqmTab({
     details.onclick = () => app.openControl();
     outcome.append(
       `${said.ran} ${said.rest}`,
-      dataLink(app, 'change the data below'),
+      dataLink(app, 'change the data on the Data tab'),
       '. ',
       details
     );
@@ -714,7 +713,7 @@ export function rbqmTab({
       why.append(
         el('p', 'sva-rbqm-why', metric.message),
         ' ',
-        dataLink(app, 'Change the data on the Overview page.')
+        dataLink(app, 'Change the data on the Data tab.')
       );
       card.append(why);
       return;
@@ -737,113 +736,71 @@ export function rbqmTab({
   }
 
   /**
-   * What the metrics run on: which metrics the loaded study and the loaded raw
-   * files support, each file of the study that stands in for raw tables, each
-   * raw file with the domain it was placed in, and where to drop raw files.
-   * All of it is said from the files' names and columns, before R is started.
+   * Whether a file loaded on the Data tab is one of gsm's raw files (#282),
+   * by the stricter of the two rules (rbqm-files.js::isRawFile). The app then
+   * keeps it as it is. A raw file that is not CSV is refused with a sentence:
+   * the Data tab takes JSON too, and R is handed a raw file's text as CSV.
    */
-  function filesSection(app) {
-    const { raw: study, support, standard, used } = handed(app);
-    const section = el('details', 'sva-rbqm-files');
-    // Once R has answered, the metrics below say the same with R's own words.
-    // And a study that runs as it is needs nothing of the reader here: the
-    // list opens when raw files are loaded, or when there is nothing to run.
-    section.open = !(phase === 'done' && result) && (study.files.length > 0 || !used.length);
-    section.append(
-      el('summary', 'sva-rbqm-files-summary', filesSentence(study, support, standard))
-    );
+  function claims(file) {
+    if (!isRawFile(file, needs)) return null;
+    return /\.csv$/i.test(file.name) ? { keep: true } : { refuse: NOT_CSV(file.name) };
+  }
 
-    const drop = el('div', 'sva-drop sva-rbqm-drop');
-    const input = el('input');
-    input.type = 'file';
-    input.multiple = true;
-    input.accept = '.csv,text/csv';
-    input.hidden = true;
-    input.className = 'sva-rbqm-input';
-    const take = async (fileList) => {
-      const { loaded: read, refused } = await readFiles(fileList);
-      const isCsv = (file) => /\.csv$/i.test(file.name);
-      app.loadRaw(read.filter(isCsv), {
-        notes: [
-          ...refused,
-          ...read.filter((file) => !isCsv(file)).map((file) => NOT_CSV(file.name))
-        ]
-      });
+  /**
+   * What the loaded data supports, for the Data tab's one card (#281): how
+   * many metrics, each metric with the mark the tab's own row gives it, R's
+   * sentence for each that cannot run, which raw tables R makes from which
+   * file of a study, and the raw domain each kept file was placed in. All of
+   * it but the marks is said from the files' names and columns, before R is
+   * started. Nothing when nothing is loaded.
+   */
+  function supports(app) {
+    const { raw, support, used } = handed(app);
+    if (!raw.files.length && !Object.keys((app && app.state.files) || {}).length) return null;
+    const cannot = support.metrics.filter((metric) => !metric.supported);
+    const words = supportWords(support.metrics.length - cannot.length, support.metrics.length);
+    const metrics = metricsNow(app);
+    const groups = support.groups.supported ? [] : [support.groups.message];
+    return {
+      say: words.say,
+      items: metrics.map((metric) => ({
+        id: metric.id,
+        label: metric.abbreviation,
+        icon: metric.state,
+        state: metric.state,
+        name:
+          `${metric.name}: ${words.states[metric.state]}` +
+          (metric.state === 'cannot' && metric.message ? `. ${metric.message}` : '')
+      })),
+      key: Object.keys(words.states)
+        .filter((state) => metrics.some((metric) => metric.state === state))
+        .map((state) => ({ icon: state, say: words.states[state] })),
+      // A study of standard files runs as it is, so why some metrics cannot is
+      // said in the open; with raw files loaded the reader chose them, and the
+      // reasons wait behind their title.
+      why: cannot.length
+        ? {
+            title: words.why(cannot.length),
+            items: [...cannot.map((metric) => metric.message), ...groups],
+            open: !raw.files.length
+          }
+        : null,
+      lines: [
+        ...(cannot.length ? [] : groups),
+        ...used
+          .map((entry) =>
+            standardSentence(entry, app.manifest.domains[entry.domain].label, support)
+          )
+          .filter(Boolean)
+      ],
+      note: words.note,
+      files: raw.files.map((entry) => ({
+        name: entry.file.name,
+        tag: rawTag(entry),
+        title: entry.sentence
+      })),
+      step: { lead: words.lead, also: words.also }
     };
-    input.onchange = () => take(input.files);
-    drop.ondragover = (event) => {
-      event.preventDefault();
-      drop.classList.add('sva-over');
-    };
-    drop.ondragleave = () => drop.classList.remove('sva-over');
-    drop.ondrop = (event) => {
-      event.preventDefault();
-      drop.classList.remove('sva-over');
-      if (event.dataTransfer && event.dataTransfer.files.length) take(event.dataTransfer.files);
-    };
-    const choose = el('button', 'sva-button sva-rbqm-choose', 'Choose files');
-    choose.type = 'button';
-    choose.onclick = () => input.click();
-    drop.append(
-      el('p', null, 'Drop your own gsm raw files here, as CSV'),
-      choose,
-      el('p', 'sva-drop-note', 'They are read in this browser and sent nowhere.'),
-      input
-    );
-    section.append(drop);
-
-    if (used.length) {
-      const fromStudy = el('ul', 'sva-rbqm-loaded sva-rbqm-standard');
-      for (const entry of used) {
-        const label = app.manifest.domains[entry.domain].label;
-        const item = el('li', 'sva-rbqm-study-file', standardSentence(entry, label, support));
-        item.dataset.table = entry.table;
-        fromStudy.append(item);
-      }
-      section.append(el('h3', 'sva-rbqm-subheading', 'From the loaded study'), fromStudy);
-    }
-    if (study.files.length) {
-      const files = el('ul', 'sva-rbqm-loaded');
-      for (const entry of study.files) {
-        const item = el(
-          'li',
-          entry.used ? 'sva-rbqm-file' : 'sva-rbqm-file sva-rbqm-unused',
-          entry.sentence
-        );
-        if (entry.table) item.dataset.table = entry.table;
-        files.append(item);
-      }
-      section.append(el('h3', 'sva-rbqm-subheading', 'Loaded files'), files);
-    }
-    if (study.files.length || used.length) {
-      section.append(
-        el('h3', 'sva-rbqm-subheading', 'What they support'),
-        el(
-          'p',
-          'sva-rbqm-aside',
-          'Read from the files’ names and columns, before R is started. R says the same when it runs.'
-        )
-      );
-      const list = el('ul', 'sva-rbqm-support');
-      for (const metric of support.metrics) {
-        const item = el('li', metric.supported ? 'sva-rbqm-can' : 'sva-rbqm-cannot');
-        item.dataset.metric = metric.id;
-        item.append(
-          el('span', metric.supported ? 'sva-tag' : 'sva-tag sva-missing', metric.abbreviation),
-          ' ',
-          metric.supported
-            ? `${metric.name}: the files and columns it needs are loaded.`
-            : metric.message
-        );
-        list.append(item);
-      }
-      if (!support.groups.supported) {
-        const item = el('li', 'sva-rbqm-cannot sva-rbqm-groups', support.groups.message);
-        list.append(item);
-      }
-      section.append(list);
-    }
-    return section;
   }
 
   const view = {
@@ -903,6 +860,11 @@ export function rbqmTab({
     /** What the tab holds now, for the tests: the phase, and what R returned. */
     state: () => ({ phase, step: moment() || step, up, result, failure }),
 
+    // The two things the Data tab asks of the tab (#281, #282), where the tab
+    // can run a reader's own files: on a page that can start R, built with
+    // what the workflows need.
+    ...(needs && !unavailable ? { claims, supports } : {}),
+
     /**
      * Draw the tab into a container, as it stands now: the Overview page, or
      * the page of the metric the app's address names.
@@ -915,7 +877,7 @@ export function rbqmTab({
       let live = true;
       // A study loaded since the last run is run at once when R is up; until
       // R is up its results are simply not there. Settled before anything is
-      // drawn, so the row and the list of files say what is true now.
+      // drawn, so the row says what is true now.
       const files = handed(app);
       const changed = phase === 'done' && result && !sameFiles(files.sources, result.loaded);
       if (changed) {
@@ -975,7 +937,7 @@ export function rbqmTab({
             supports.append(
               // A demo study is a study, and so are a study's own files; gsm raw files a reader loaded are files.
               `The loaded ${app.state.study || !files.raw.files.length ? 'study supports' : 'files support'} ${can} of ${support.metrics.length} metrics. `,
-              dataLink(app, 'Change the data below.')
+              dataLink(app, 'Change the data on the Data tab.')
             );
             card.append(supports);
           }
@@ -986,24 +948,6 @@ export function rbqmTab({
               'Risk-based quality monitoring: gsm’s metrics for every site of the loaded study, worked out by R in this browser. The site overview and each metric’s two charts appear here, usually 20 to 45 seconds after Start R the first time.'
             )
           );
-        }
-      }
-
-      // Until the Data tab takes raw files (#282) the file box is here, at
-      // the foot of the Overview page and of no other.
-      if (!open && needs && !unavailable) {
-        const box = filesSection(app);
-        root.append(box);
-        if (wantFiles) {
-          wantFiles = false;
-          box.open = true;
-          queueMicrotask(() => {
-            if (box.isConnected && typeof box.scrollIntoView === 'function') {
-              box.scrollIntoView({ block: 'start' });
-            }
-            const choose = box.querySelector('.sva-rbqm-choose');
-            if (choose) choose.focus({ preventScroll: true });
-          });
         }
       }
 
