@@ -5104,11 +5104,11 @@ test.describe('demo app: the label on a chart or a tab below Exploratory', () =>
       window.location.hash = '#rbqm';
     });
     await expect(corner(page).locator('.sv-status-word')).toHaveText('Experimental');
-    // A tab's view has no card to carry it: its label has a line of its own,
-    // above the tab's first words and not over them.
+    // On a tab's view the label has a line of its own at this width, above
+    // the tab's card and not over its first words.
     const own = await pill(corner(page)).boundingBox();
-    const lede = await page.locator('.sva-rbqm-lede').boundingBox();
-    expect(own.y + own.height).toBeLessThanOrEqual(lede.y);
+    const card = await page.locator('.sva-rbqm-page').boundingBox();
+    expect(own.y + own.height).toBeLessThanOrEqual(card.y);
     await pill(corner(page)).click();
     const tabBox = await panelOf(corner(page)).boundingBox();
     expect(tabBox.x).toBeGreaterThanOrEqual(0);
