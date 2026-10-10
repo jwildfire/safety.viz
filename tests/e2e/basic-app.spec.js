@@ -2058,12 +2058,21 @@ test.describe('demo app with R on request', () => {
     // The line inside the chart is one short sentence, which points at the control.
     await expect(page.locator('.sva-chart .bv-statistic').first()).toHaveText(NO_R);
     await captureEvidence(page.locator('.sva-header'), 'APP-R-051', 'r-control-off');
+    // R can be up before the page is looked at again. Its first file is held
+    // back for a moment, so the starting state is always there to see (#309).
+    let held = false;
+    await page.route('https://webr.r-wasm.org/**', async (route) => {
+      if (!held) {
+        held = true;
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+      }
+      await route.continue();
+    });
     await control.locator('.sva-action').click();
-    // A spinner and seconds while it starts; R is quick, so either is seen.
-    await expect(control).toHaveAttribute('data-phase', /starting|ready/);
-    if ((await control.getAttribute('data-phase')) === 'starting') {
-      await expect(control.locator('.sva-r-meta')).toHaveText(/^13 MB · \d+ s$/);
-    }
+    // A spinner and a count of seconds while it starts.
+    await expect(control).toHaveAttribute('data-phase', 'starting');
+    await expect(control.locator('.sva-spin')).toBeVisible();
+    await expect(control.locator('.sva-r-meta')).toHaveText(/^13 MB · \d+ s$/);
     await expect(rChip(page)).toHaveText('R ready▾', { timeout: 150000 });
     await expect(rChip(page)).toHaveAttribute('aria-expanded', 'false');
     await expect(page.locator('.sva-charts .sva-action')).toHaveCount(0);
@@ -3780,6 +3789,52 @@ test.describe('demo app: the RBQM tab', () => {
       'rbqm_run',
       'rbqm_run'
     ]);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-R-054: Run details left open is closed when the reader comes back to the tab: on the keynote’s path, with the panel open on the pilot study’s result, choosing the RBQM study on the Data tab and coming back shows the new result with nothing over it; while it is open the panel covers the tab’s status label whole (#309)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
+    await page.evaluate(`${APP}.ready`);
+    // With the welcome line closed the tab's card, and the label on its corner,
+    // are as high on the page as they get.
+    await page.locator('.sva-welcome').getByRole('button', { name: 'Dismiss' }).click();
+    await rbqmTab(page).click();
+    await rbqmStart(page).click();
+    await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
+    await page.locator('.sva-rbqm-details').click();
+    await expect(rbqmPanel(page)).toBeVisible();
+    // No edge of the tab's Experimental label shows above the open panel.
+    const [pill, open] = await Promise.all([
+      page.locator('.sva-corner .sv-status-label').boundingBox(),
+      rbqmPanel(page).boundingBox()
+    ]);
+    expect(pill.x).toBeGreaterThan(open.x);
+    expect(pill.x + pill.width).toBeLessThan(open.x + open.width);
+    expect(pill.y).toBeGreaterThanOrEqual(open.y);
+    // Left open, and the tab left.
+    await item(page, 'data').click();
+    await expect(rbqmPanel(page)).toHaveCount(0);
+    await page.locator('.sva-side select.sva-study').selectOption('rbqm');
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
+    await rbqmTab(page).click();
+    // The new study is run with no press, and its result has nothing over it.
+    await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    await expect(rbqmStatus(page)).toHaveText(/^R ran 8 of 8 metrics on the 9 loaded files in /);
+    await expect(rbqmPanel(page)).toHaveCount(0);
+    await expect(rbqmChip(page)).toHaveAttribute('aria-expanded', 'false');
+    await captureEvidence(page, 'APP-R-054', 'rbqm-back-with-no-panel-1280');
+    // The same from a chart's tab, and the panel still opens when asked.
+    await rbqmChip(page).click();
+    await expect(rbqmPanel(page)).toBeVisible();
+    await openChart(page, 'histogram');
+    await rbqmTab(page).click();
+    await expect(rbqmPanel(page)).toHaveCount(0);
+    await rbqmChip(page).click();
+    await expect(rbqmPanel(page)).toBeVisible();
     expect(errors).toEqual([]);
   });
 

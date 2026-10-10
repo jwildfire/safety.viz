@@ -258,14 +258,19 @@ export const stepLines = () =>
 
 /**
  * What a run was on, as the line above the table names it: the loaded demo
- * study by its name, or the files as `ranOn` says them.
+ * study by its name ("the Pilot study", "the “Renamed columns” study"), or the
+ * files as `ranOn` says them.
  * @param {number} files How many raw files R was handed.
  * @param {string[]} study The loaded study's files R was handed, by name.
  * @param {?string} [name] The loaded demo study's name ("Pilot study"), when what is loaded is one.
  * @returns {string} The phrase.
  */
-export const ranOnSaid = (files, study = [], name = null) =>
-  name && study.length && !files ? `the ${name}` : ranOn(files, study);
+export const ranOnSaid = (files, study = [], name = null) => {
+  if (!(name && study.length && !files)) return ranOn(files, study);
+  // A name that does not end in "study" is said as one (#309): "the Renamed
+  // columns" reads as columns, not as a study.
+  return /\bstudy$/i.test(name) ? `the ${name}` : `the “${name}” study`;
+};
 
 /** Seconds, as a result line says them: "3.1 seconds", "1 second". */
 const secondsSaid = (seconds) => counted(seconds, 'second');

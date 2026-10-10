@@ -259,6 +259,14 @@ describe('the RBQM tab: the steps of a run and what is said of it', () => {
     expect(ranOnSaid(1)).toBe('the 1 loaded file');
     expect(ranOnSaid(0, ['adsl.csv', 'adae.csv'])).toBe('the loaded study’s adsl.csv and adae.csv');
     expect(ranOnSaid(0, ['adsl.csv', 'adae.csv'], 'Pilot study')).toBe('the Pilot study');
+    // A demo study whose name does not end in "study" is said as one (#309).
+    expect(ranOnSaid(0, ['adsl.csv', 'adae.csv'], 'Renamed columns')).toBe(
+      'the “Renamed columns” study'
+    );
+    expect(ranOnSaid(0, ['adlb.csv'], 'Liver cohort, labs only')).toBe(
+      'the “Liver cohort, labs only” study'
+    );
+    expect(ranOnSaid(0, ['adsl.csv'], 'RBQM study')).toBe('the RBQM study');
     // With raw files beside the study the name alone would leave them out.
     expect(ranOnSaid(1, ['adsl.csv'], 'Pilot study')).toBe(
       'the 1 loaded file and the loaded study’s adsl.csv'

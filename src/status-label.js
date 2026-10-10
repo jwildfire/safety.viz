@@ -223,18 +223,34 @@ export function wireStatusLabel(root) {
   const button = root.querySelector('.sv-status-label');
   const panel = root.querySelector('.sv-status-panel');
   const cross = root.querySelector('.sv-status-close');
-  // Keep the open panel inside the window, whichever side it hangs from.
-  const place = () => {
-    panel.style.removeProperty('transform');
+  const tip = root.querySelector('.sv-status-tip');
+  // Keep the open panel, and the hover line, inside the window, whichever side
+  // they hang from.
+  // The room is the page's own width: on a phone the window's inner width
+  // grows with whatever overflows, and with a classic scrollbar it counts the
+  // bar, so either would let the element stay over the edge (#309). The
+  // element is moved by the side it hangs from, not by a transform: a phone
+  // sizes its page by where an element is laid out, wherever it is drawn.
+  const keepInside = (element) => {
+    const side = root.classList.contains('sv-status-left') ? 'left' : 'right';
+    element.style.removeProperty(side);
     const view = doc.defaultView;
-    const width = (view && view.innerWidth) || 0;
-    const box = panel.getBoundingClientRect();
+    const width =
+      (doc.documentElement && doc.documentElement.clientWidth) || (view && view.innerWidth) || 0;
+    const box = element.getBoundingClientRect();
     if (!width || !box.width) return;
     const edge = 8;
     let shift = 0;
     if (box.left < edge) shift = edge - box.left;
     else if (box.right > width - edge) shift = width - edge - box.right;
-    if (shift) panel.style.transform = `translateX(${Math.round(shift)}px)`;
+    if (shift) element.style[side] = `${Math.round(side === 'left' ? shift : -shift)}px`;
+  };
+  const place = () => keepInside(panel);
+  // The line shows on hover and on keyboard focus, by the stylesheet alone; it
+  // is placed as it appears (#309). A label on the right of a page that hangs
+  // its line rightwards would otherwise run off the window and widen the page.
+  const placeTip = () => {
+    if (tip) keepInside(tip);
   };
   const isOpen = () => !panel.hidden;
   const onKey = (event) => {
@@ -249,6 +265,8 @@ export function wireStatusLabel(root) {
     panel.hidden = !open;
     button.setAttribute('aria-expanded', String(open));
     root.classList.toggle('sv-status-open', open);
+    // Closed under a pointer or with the keyboard, the line shows again.
+    if (!open) placeTip();
     if (open) {
       place();
       doc.addEventListener('keydown', onKey);
@@ -262,6 +280,9 @@ export function wireStatusLabel(root) {
   }
   button.addEventListener('click', () => set(!isOpen()));
   cross.addEventListener('click', () => set(false, { focus: true }));
+  for (const shown of ['pointerenter', 'mouseenter', 'focus']) {
+    button.addEventListener(shown, placeTip);
+  }
   return { open: () => set(true), close: () => set(false), isOpen };
 }
 

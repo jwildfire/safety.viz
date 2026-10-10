@@ -108,7 +108,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-segs i.sva-done{background:var(--accent)}
 .sva-segs i.sva-now{background:var(--accent);opacity:.45}
 .sva-r-under{position:relative;height:0}
-.sva-r-panel{position:absolute;top:8px;right:var(--gutter);z-index:25;width:20.5rem;max-width:calc(100vw - 1rem);padding:1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(31,35,40,.16);font-size:.84rem;line-height:1.45;color:var(--ink)}
+.sva-r-panel{position:absolute;top:4px;right:var(--gutter);z-index:25;width:20.5rem;max-width:calc(100vw - 1rem);padding:1rem 1.1rem .8rem;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px rgba(31,35,40,.16);font-size:.84rem;line-height:1.45;color:var(--ink)}
 .sva-app .sva-r-heading{margin:0 1.6rem .55rem 0;font-family:var(--serif);font-weight:normal;font-size:1.25rem;line-height:1.2}
 .sva-app .sva-r-text{margin:0 0 .6rem;max-width:none}
 .sva-app .sva-r-list{display:grid;grid-template-columns:auto 1fr;gap:.25rem .8rem;margin:0 0 .3rem;font-size:.8rem}

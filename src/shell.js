@@ -163,6 +163,11 @@ export function multiSelect({ values, selected, onChange }) {
 
 const SHELL_STYLE_ID = 'safety-viz-shell-styles';
 
+// The three `.sv-prototype` rules style the status banner the shell drew until
+// v1.11.0. No chart of safety.viz draws one now: each shows the status label.
+// The rules stay because a chart built on the kit outside this repository may
+// still draw a banner with these classes and no styles of its own, as
+// bio.viz's Stratified Survival does (#309).
 const SHELL_STYLES = `
 .sv-root{display:flex;align-items:flex-start;gap:1.25rem;width:100%;position:relative;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#1f2933;--sv-rail-width:520px}
 .sv-sidebar{position:sticky;top:1rem;flex:0 0 250px;max-height:calc(100vh - 2rem);overflow-y:auto;border:1px solid #d8dee4;border-radius:10px;background:#f6f8fa;padding:.8rem .9rem 1rem}
@@ -242,6 +247,9 @@ const SHELL_STYLES = `
 .sv-ms-option{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:400;margin:.15rem 0;cursor:pointer}
 .sv-ms-option input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4;flex:0 0 auto}
 .sv-ms-option.sv-ms-all{font-weight:600;border-bottom:1px solid #e3e8ee;padding-bottom:.25rem;margin-bottom:.25rem}
+.sv-prototype,.sv-experimental{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
+.sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
+.sv-prototype-text{flex:1 1 auto}
 .sv-status-row{display:flex;justify-content:flex-end;margin:0 0 .5rem}
 @media (max-width:900px){
 .sv-root{flex-direction:column;align-items:stretch}

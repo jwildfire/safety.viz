@@ -1,6 +1,6 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
-import { test, expect } from '@playwright/test';
+import { test, expect, devices } from '@playwright/test';
 import { CANONICAL } from './evidence.js';
 import {
   APP_LIBRARIES,
@@ -764,6 +764,93 @@ test.describe('docs site', () => {
       await panel.getByRole('button', { name: 'Close' }).click();
       await expect(panel, where).toBeHidden();
     }
+  });
+
+  test('APP-TIER-028: a status label’s hover line stays inside the window and never widens the page: on every gallery card at 1,280, 1,024 and 390 pixels, and on a page title’s label at 390 pixels after its panel is closed under the pointer or with Escape (#309)', async ({
+    page
+  }) => {
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const inside = async (pill, width, where) => {
+      const tip = pill.locator('.sv-status-tip');
+      await expect(tip, where).toBeVisible();
+      const box = await tip.boundingBox();
+      expect(box.x, where).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, where).toBeLessThanOrEqual(width);
+      expect(await overflow(), where).toBeLessThanOrEqual(0);
+    };
+    for (const width of [1280, 1024, 390]) {
+      await page.setViewportSize({ width, height: 844 });
+      await page.goto('/_site/index.html');
+      const pills = page.locator('.card .sv-status-label');
+      const count = await pills.count();
+      expect(count).toBe(available.length);
+      for (let index = 0; index < count; index += 1) {
+        const pill = pills.nth(index);
+        await pill.scrollIntoViewIfNeeded();
+        await pill.hover();
+        await inside(pill, width, `card ${index + 1} at ${width}`);
+        // The last card of the first row is the one nearest the right edge.
+        if (width === 1280 && index === 2) {
+          await page.screenshot({
+            path: 'test-results/evidence-preview/site/APP-TIER-028-hover-line-inside.png'
+          });
+        }
+      }
+    }
+    // A page title's label at 390 pixels: its panel opened and closed with the
+    // pointer still on it, and then closed with Escape, which leaves the
+    // keyboard on it. Either way the line shows again.
+    await page.goto('/_site/time-to-event/index.html');
+    const pill = statusOf(page.locator('h1')).locator('.sv-status-label');
+    await pill.click();
+    await pill.click();
+    await inside(pill, 390, 'title, closed under the pointer');
+    await pill.click();
+    await page.mouse.move(0, 800);
+    await page.keyboard.press('Escape');
+    await expect(pill).toBeFocused();
+    await inside(pill, 390, 'title, closed with Escape');
+  });
+
+  test('APP-TIER-028: on a phone’s screen, where the window grows with what overflows it, a label’s panel and its hover line are inside the screen on a gallery card and on a page title, and the page is no wider than the screen (#309)', async ({
+    browser,
+    baseURL
+  }) => {
+    // A phone as the browser emulates one: touch, and a window whose inner
+    // width is not the screen's once something runs past the edge.
+    const context = await browser.newContext({ ...devices['Pixel 5'], baseURL });
+    const page = await context.newPage();
+    const screen = () => page.evaluate(() => document.documentElement.clientWidth);
+    const overflow = () =>
+      page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+      );
+    const inside = async (part, where) => {
+      await expect(part, where).toBeVisible();
+      const box = await part.boundingBox();
+      expect(box.x, where).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, where).toBeLessThanOrEqual(await screen());
+      expect(await overflow(), where).toBeLessThanOrEqual(0);
+    };
+    for (const [where, scope] of [
+      ['index.html', '.card:has(a[href="time-to-event/index.html"])'],
+      ['index.html', '.card:has(a[href="histogram/index.html"])'],
+      ['time-to-event/index.html', 'h1'],
+      ['hep-explorer/guide.html', 'h1']
+    ]) {
+      await page.goto(`/_site/${where}`);
+      const label = statusOf(page.locator(scope));
+      const pill = label.locator('.sv-status-label');
+      await pill.scrollIntoViewIfNeeded();
+      await pill.tap();
+      await inside(label.locator('.sv-status-panel'), `${where} ${scope}: the panel`);
+      // Tapped closed, the line shows: the tap's hover stays on the label.
+      await pill.tap();
+      await expect(label.locator('.sv-status-panel')).toBeHidden();
+      await inside(pill.locator('.sv-status-tip'), `${where} ${scope}: the hover line`);
+    }
+    await context.close();
   });
 
   test('gallery shows one card per available renderer (#7)', async ({ page }) => {

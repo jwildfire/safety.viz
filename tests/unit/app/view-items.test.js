@@ -290,6 +290,14 @@ describe('the page: a view that brings links for a footnote (#271)', () => {
         { label: '', href: 'https://example.org/empty-words' },
         { label: 'A script', href: 'javascript:alert(1)' },
         { label: 'Data', href: 'data:text/html,<p>x' },
+        // The browser drops a space or a control character before an address,
+        // and a tab or a line break inside one: these are scripts too (#309).
+        { label: 'A script after a space', href: ' javascript:alert(1)' },
+        { label: 'A script after a tab', href: '\tjavascript:alert(1)' },
+        { label: 'A script with a tab in it', href: 'java\tscript:alert(1)' },
+        { label: 'A script with a line break in it', href: 'java\nscript:alert(1)' },
+        { label: 'A script after a control character', href: '\u0001javascript:alert(1)' },
+        { label: 'Data after a space', href: ' data:text/html,<p>x' },
         { label: 'Kept', href: 'https://example.org/kept' },
         { key: 7, label: 'Kept too', href: 'http://example.org/too' }
       ]
@@ -301,5 +309,124 @@ describe('the page: a view that brings links for a footnote (#271)', () => {
       ['link', 'https://example.org/kept'],
       ['link', 'http://example.org/too']
     ]);
+  });
+});
+
+describe('the page: what a view hands it is read safely, and its details are left with its tab (#309)', () => {
+  it('APP-PAGE-043: a view whose tag throws, or that has none, still gets its tab and its page, with no words where the tag would be; one whose ownsNotes throws is drawn with the page’s notes; and an item whose icon is named for something every object has draws an empty mark (#309)', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const thrown = mount({
+      tag() {
+        throw new Error('tag broke');
+      }
+    });
+    expect($$('.sva-view-tab')).toHaveLength(1);
+    expect($('.sva-view-tab .sva-tab-count').textContent).toBe('');
+    expect(warn.mock.calls.map(([first]) => first)).toContain(
+      'safety.viz app: a view could not say its tag.'
+    );
+    thrown.app.select('own');
+    expect($('.sva-view').textContent).toBe('drawn: first page');
+    // The other tabs are as they were.
+    thrown.app.select('data');
+    expect(thrown.app.state.selected).toBe('data');
+
+    const none = mount({ tag: undefined });
+    expect($('.sva-view-tab .sva-tab-count').textContent).toBe('');
+    none.app.select('own');
+    expect($('.sva-view').textContent).toBe('drawn: first page');
+    const empty = mount({ tag: () => null });
+    expect($('.sva-view-tab .sva-tab-count').textContent).toBe('');
+    empty.app.select('own');
+    expect($('.sva-view').textContent).toBe('drawn: first page');
+
+    warn.mockClear();
+    const notes = mount({
+      ownsNotes() {
+        throw new Error('notes broke');
+      }
+    });
+    notes.app.select('own');
+    expect($('.sva-view').textContent).toBe('drawn: first page');
+    expect(warn.mock.calls.map(([first]) => first)).toContain(
+      'safety.viz app: a view could not say whether it shows the load’s notes.'
+    );
+
+    const marked = mount({
+      items: () => [
+        { id: '', label: 'Home', icon: 'constructor' },
+        { id: 'a', label: 'A', icon: 'toString' },
+        { id: 'b', label: 'B', icon: 'ran' }
+      ]
+    });
+    marked.app.select('own');
+    const marks = $$('.sva-view-item svg');
+    expect(marks.map((svg) => svg.childNodes.length)).toEqual([0, 0, marks[2].childNodes.length]);
+    expect(marks[2].childNodes.length).toBeGreaterThan(0);
+    expect($('.sva-view').textContent).toBe('drawn: first page');
+  });
+
+  it('APP-R-054: a control’s details panel is left with its tab: opened on a view, it is closed when the reader comes back from another tab, by the chip or by openControl; it stays open while the reader moves among the view’s own items; and a run that starts while it is open closes it for good (#309)', () => {
+    const control = () => ({
+      state: () => ({
+        phase: 'ready',
+        say: 'R ready',
+        details: { heading: 'Ready', text: ['It ran.'] }
+      }),
+      press() {}
+    });
+    const { app } = mount({
+      control,
+      items: () => [
+        { id: '', label: 'Home' },
+        { id: 'a', label: 'A' }
+      ]
+    });
+    app.select('own');
+    // Opened by the chip.
+    $('.sva-chip').click();
+    expect($('.sva-r-panel .sva-r-heading').textContent).toBe('Ready');
+    // Still open on another page of the same tab.
+    app.select('own', 'a');
+    expect($('.sva-r-panel')).not.toBeNull();
+    // Left, and come back to: closed, and the chip says so.
+    app.select('data');
+    expect($('.sva-r-panel')).toBeNull();
+    app.select('own');
+    expect($('.sva-r-panel')).toBeNull();
+    expect($('.sva-r-under').hidden).toBe(true);
+    expect($('.sva-chip').getAttribute('aria-expanded')).toBe('false');
+    // The same when Run details’ way in opened it, and the tab left was a chart’s.
+    app.openControl();
+    expect($('.sva-r-panel')).not.toBeNull();
+    app.select('histogram');
+    app.select('own');
+    expect($('.sva-r-panel')).toBeNull();
+    // It opens again when asked.
+    $('.sva-chip').click();
+    expect($('.sva-r-panel')).not.toBeNull();
+
+    // A run that starts while the panel is open closes it for good: when the
+    // control is a chip again, the panel does not come back by itself.
+    let phase = 'ready';
+    const moving = mount({
+      control: () => ({
+        state: () =>
+          phase === 'ready'
+            ? { phase: 'ready', say: 'R ready', details: { heading: 'Ready', text: ['It ran.'] } }
+            : { phase: 'starting', say: 'Running' },
+        press() {}
+      })
+    });
+    moving.app.select('own');
+    $('.sva-chip').click();
+    expect($('.sva-r-panel')).not.toBeNull();
+    phase = 'starting';
+    moving.app.retag();
+    expect($('.sva-r-panel')).toBeNull();
+    phase = 'ready';
+    moving.app.retag();
+    expect($('.sva-r-panel')).toBeNull();
+    expect($('.sva-chip').getAttribute('aria-expanded')).toBe('false');
   });
 });

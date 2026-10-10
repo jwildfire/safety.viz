@@ -654,9 +654,24 @@ export function mountApp(
       tab.dataset.tab = id;
       tab.setAttribute('aria-pressed', String(state.selected === id));
       tab.append(el('span', 'sva-hex'), el('span', 'sva-tab-title', view.title));
-      tab.append(el('span', 'sva-tab-count', String(view.tag(handle))));
+      tab.append(el('span', 'sva-tab-count', tagOf(view)));
       tab.onclick = () => handle.select(id);
       tabs.append(tab);
+    }
+  }
+
+  /**
+   * What a view says of itself on its tab, read safely (#309): the tag is the
+   * library's code, called on every draw of the header, so one that throws, or
+   * a view that has none, leaves the tab with no words there and the page up.
+   */
+  function tagOf(view) {
+    try {
+      const said = typeof view.tag === 'function' ? view.tag(handle) : '';
+      return said === null || said === undefined ? '' : String(said);
+    } catch (error) {
+      console.warn('safety.viz app: a view could not say its tag.', error);
+      return '';
     }
   }
 
@@ -733,9 +748,16 @@ export function mountApp(
   function placeControl(wanted) {
     if (control) control.destroy();
     control = null;
+    // A reader who leaves a tab leaves its details too (#309): the panel is
+    // open only while its own control is in the row, so it does not open by
+    // itself, over a new result, when they come back.
+    if (controlOpen !== null && (!wanted || wanted[0] !== controlOpen)) controlOpen = null;
     controlPanel.innerHTML = '';
     controlPanel.hidden = true;
     const said = wanted ? controlState(wanted[1]) : null;
+    // Nor does it open by itself when its control has details again: a run
+    // that starts while the panel is open closes it for good (#309).
+    if (controlOpen !== null && !(said && said.details)) controlOpen = null;
     if (!said) return;
     const [name, action] = wanted;
     // An action in the panel, as Run again, closes the panel: what it sets
@@ -830,13 +852,19 @@ export function mountApp(
    * the links the view brings, each `{ key, label, href }`, by the words the
    * view gave. They are read safely: a list that is not a list is none; a link
    * with no words or no address is left out, and so is an address that is not
-   * a page (a `javascript:` or `data:` address); a link that names no key is
-   * given the plain one.
+   * a page (a `javascript:` or `data:` address, however it is spaced); a link
+   * that names no key is given the plain one.
    */
   function viewFootnote(view) {
     const given = Array.isArray(view.links) ? view.links : [];
     const text = (value) => typeof value === 'string' && value.trim() !== '';
-    const isPage = (href) => !/^[a-z][a-z0-9+.-]*:/i.test(href) || /^https?:\/\//i.test(href);
+    // The scheme is read as the browser reads it (#309): it drops spaces and
+    // control characters before an address, and tabs and line breaks inside
+    // one, so " javascript:" and "java\tscript:" are scripts too.
+    const isPage = (href) => {
+      const read = href.replace(/[\t\n\r]/g, '').replace(/^[\u0000-\u0020]+/, '');
+      return !/^[a-z][a-z0-9+.-]*:/i.test(read) || /^https?:\/\//i.test(read);
+    };
     return footnoteOf(
       view.title,
       given
@@ -895,7 +923,17 @@ export function mountApp(
       const view = views.get(state.selected);
       title.textContent = view.title;
       // A view that says the load's notes itself is left to (#280).
-      if (!(typeof view.ownsNotes === 'function' && view.ownsNotes(handle))) renderNotes(content);
+      // Asked safely (#309): a view that throws here is one that does not say them.
+      let ownsNotes = false;
+      try {
+        ownsNotes = typeof view.ownsNotes === 'function' && Boolean(view.ownsNotes(handle));
+      } catch (error) {
+        console.warn(
+          'safety.viz app: a view could not say whether it shows the load’s notes.',
+          error
+        );
+      }
+      if (!ownsNotes) renderNotes(content);
       cornerLabel(state.selected, `The ${view.title} tab`, 'tab');
       const container = paint(el('div', 'sva-view'), viewLibrary.get(state.selected));
       content.append(container);

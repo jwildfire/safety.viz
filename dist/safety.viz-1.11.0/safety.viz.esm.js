@@ -12602,17 +12602,23 @@ function wireStatusLabel(root) {
   const button = root.querySelector(".sv-status-label");
   const panel = root.querySelector(".sv-status-panel");
   const cross = root.querySelector(".sv-status-close");
-  const place = () => {
-    panel.style.removeProperty("transform");
+  const tip = root.querySelector(".sv-status-tip");
+  const keepInside = (element) => {
+    const side = root.classList.contains("sv-status-left") ? "left" : "right";
+    element.style.removeProperty(side);
     const view = doc.defaultView;
-    const width = view && view.innerWidth || 0;
-    const box = panel.getBoundingClientRect();
+    const width = doc.documentElement && doc.documentElement.clientWidth || view && view.innerWidth || 0;
+    const box = element.getBoundingClientRect();
     if (!width || !box.width) return;
     const edge = 8;
     let shift = 0;
     if (box.left < edge) shift = edge - box.left;
     else if (box.right > width - edge) shift = width - edge - box.right;
-    if (shift) panel.style.transform = `translateX(${Math.round(shift)}px)`;
+    if (shift) element.style[side] = `${Math.round(side === "left" ? shift : -shift)}px`;
+  };
+  const place = () => keepInside(panel);
+  const placeTip = () => {
+    if (tip) keepInside(tip);
   };
   const isOpen = () => !panel.hidden;
   const onKey = (event) => {
@@ -12627,6 +12633,7 @@ function wireStatusLabel(root) {
     panel.hidden = !open;
     button.setAttribute("aria-expanded", String(open));
     root.classList.toggle("sv-status-open", open);
+    if (!open) placeTip();
     if (open) {
       place();
       doc.addEventListener("keydown", onKey);
@@ -12640,6 +12647,9 @@ function wireStatusLabel(root) {
   }
   button.addEventListener("click", () => set2(!isOpen()));
   cross.addEventListener("click", () => set2(false, { focus: true }));
+  for (const shown of ["pointerenter", "mouseenter", "focus"]) {
+    button.addEventListener(shown, placeTip);
+  }
   return { open: () => set2(true), close: () => set2(false), isOpen };
 }
 function statusLabel(options) {
@@ -12845,6 +12855,9 @@ var SHELL_STYLES = `
 .sv-ms-option{display:flex;align-items:center;gap:.4rem;font-size:.8rem;font-weight:400;margin:.15rem 0;cursor:pointer}
 .sv-ms-option input[type=checkbox]{width:auto;margin:0;accent-color:#0b62a4;flex:0 0 auto}
 .sv-ms-option.sv-ms-all{font-weight:600;border-bottom:1px solid #e3e8ee;padding-bottom:.25rem;margin-bottom:.25rem}
+.sv-prototype,.sv-experimental{display:flex;align-items:baseline;gap:.5rem;margin:0 0 .6rem;padding:.4rem .6rem;border:1px solid #e6c98a;border-left:4px solid #d99a2b;border-radius:6px;background:#fdf6e6;color:#6b4e12;font-size:.8rem;line-height:1.35}
+.sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;letter-spacing:.05em;font-weight:700;font-size:.68rem;padding:.08rem .4rem;border-radius:999px;background:#d99a2b;color:#fff}
+.sv-prototype-text{flex:1 1 auto}
 .sv-status-row{display:flex;justify-content:flex-end;margin:0 0 .5rem}
 @media (max-width:900px){
 .sv-root{flex-direction:column;align-items:stretch}
