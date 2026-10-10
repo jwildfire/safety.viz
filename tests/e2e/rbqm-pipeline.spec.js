@@ -58,7 +58,10 @@ function expectRows(browser, desktop, label) {
 }
 
 test.describe('the RBQM tab’s run in R in the browser', () => {
-  test('APP-RBQM-012: rbqm tab pipeline: R in the browser runs every mapping, metric and reporting workflow in scope through workr on the demo study’s nine raw files, and every one of the eight metrics’ Results rows is desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; with the labs file left out seven metrics run and the lab metric says it needs the labs file; with a column taken out of the adverse events file the two adverse event metrics name the column; with two files alone the two metrics they support run; R asks no host but webR’s, the public index and the page’s own (#234)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-RBQM-012: rbqm tab pipeline: R in the browser runs every mapping, metric and reporting workflow in scope through workr on the demo study’s nine raw files, and every one of the eight metrics’ Results rows is desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; with the labs file left out seven metrics run and the lab metric says it needs the labs file; with a column taken out of the adverse events file the two adverse event metrics name the column; with two files alone the two metrics they support run; R asks no host but webR’s, the public index and the page’s own (#234)', { tag: '@real-r' }, async ({
     page,
     context
   }, testInfo) => {

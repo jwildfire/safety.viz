@@ -363,7 +363,10 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-031: the built demo page carries the RBQM tab with its Experimental badge and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-RBQM-031: the built demo page carries the RBQM tab with its Experimental badge and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)', { tag: '@real-r' }, async ({
     page
   }) => {
     // It downloads R and some forty packages, then runs every workflow.

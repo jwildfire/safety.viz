@@ -44,6 +44,39 @@ From v1.9.0 a change to any kit member is a breaking change: its name, its signa
 
 Branch rulesets run the merge. An increment pull request targets `dev`, opens non-draft with auto-merge enabled, and GitHub lands it once CI is green — nobody is asked to review it. A release candidate targets `main` and merges only on @jwildfire's approving review, which `main`'s ruleset requires. The rules themselves are the obot program's GitHub-flows standard, applied from the hub's `scripts/github-flows.sh`.
 
+## How the check is laid out
+
+`dev` requires one check, "Build, format, and test". It is the last of four jobs in `.github/workflows/ci.yml`:
+
+| Job                                | What it runs                                                                                                                                  |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Static checks and unit tests       | Formatting, the build, the fresh-build check, the six vendored-source checks, the unit tests, the docs site build, the requirement-text guard |
+| Browser tests without real R       | Every browser test that does not carry the tag `@real-r`                                                                                      |
+| Browser tests with real R          | Every browser test that carries it                                                                                                            |
+| Build, format, and test (the gate) | Fails unless the three jobs above succeeded, then merges the two browser reports and runs the evidence guard on every result                  |
+
+The first three run side by side, so each test runs once and the check takes about as long as its longest job. What keeps it honest:
+
+- The gate always runs, and its first step fails unless each of the three jobs ended in success. GitHub counts a required job that was skipped as passed, so a gate that could be skipped, or that left a job out of its `needs`, would report green without every test having run.
+- The two browser jobs take their tests from one value, `REAL_R_TAG`: one runs the tests that carry the tag and the other the rest, so every browser test runs in exactly one job.
+- The evidence guard reads the unit results and the merged browser results. A test that ran in neither browser job is missing from them and the guard names it; a test that ran in both appears twice and the guard refuses the results.
+- Results pass between jobs as artifacts of the same run, under fixed names, and are unpacked in the runner's temporary directory, never in the checkout.
+- Every job names the `ubuntu-24.04` image and has a time limit, and the browser is installed with its system packages. The screenshots are compared on that image, so it changes by a commit to the workflow and not when GitHub moves `ubuntu-latest`.
+- The check runs on `pull_request` and `push` with a read-only token. It never moves to `pull_request_target` or `workflow_run`, and nothing in it continues on error.
+
+`tests/unit/ci-workflow.test.js` reads the workflow file and fails unless all of this is true, so a change to the layout is a change to that test, made in the same pull request.
+
+To tag a browser test that starts real R, give `test` the tag as its second argument and leave the name as it is, because the evidence files are keyed on the name:
+
+```js
+// prettier-ignore
+test('APP-R-032: R in the browser installs …', { tag: '@real-r' }, async ({ page }) => {
+```
+
+- Tag a test when it starts R with gsm's packages; those take about a minute each. The `// prettier-ignore` line keeps Prettier from re-indenting the whole test to fit the tag.
+- A real-R test left untagged still runs, in the other browser job. That job gets slower; no test is skipped.
+- When a browser test fails, the merged HTML report is the `playwright-report` artifact of the run.
+
 ## Traceability convention
 
 Test names are keyed to requirement IDs from the
@@ -151,7 +184,8 @@ record set and pass/fail statuses, keyed by test title — so don't rename tests
 without regenerating evidence.
 
 Run by hand, `npm run evidence:check` runs both suites itself. CI runs each
-suite once, as its own step, and hands the guard the two JSON reports:
+suite once, in jobs of their own (see "How the check is laid out"), and its
+gate hands the guard the two JSON reports:
 `npm run evidence:check -- --vitest-json=<file> --playwright-json=<file>`.
 Given the reports it runs no suite, and it exits with an error, naming the
 file, on a report that is missing, empty or not a clean run of every test.
