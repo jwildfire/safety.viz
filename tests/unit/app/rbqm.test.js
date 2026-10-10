@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { controlState } from '../../../src/app/libraries.js';
 import {
   NO_FILES,
-  doneSentence,
-  downloadsPhrase,
+  RUN_STEPS,
   R_LIMITS,
   failureOf,
   hostsSaid,
@@ -12,10 +12,14 @@ import {
   listed,
   metricInputs,
   metricList,
-  needSentence,
+  outcomeSaid,
   overviewInputs,
+  ranOnSaid,
+  runDetails,
   sameFiles,
-  stepSentence,
+  stepLines,
+  stepNumber,
+  stepSaid,
   totalMegabytes,
   warningsSaid
 } from '../../../src/app/rbqm.js';
@@ -59,15 +63,13 @@ describe('the RBQM tab: what it says', () => {
       { what: 'gsm’s packages', host: null, megabytes: 2 }
     ]);
     expect(totalMegabytes(RBQM_DOWNLOADS)).toBe(55);
-    expect(downloadsPhrase(RBQM_DOWNLOADS)).toBe(
-      'R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) and gsm’s packages from this page (about 2 MB)'
+    // The body's one line, what the control says beside Start R, and what it says on hover (#280).
+    const words = rbqmWords(RBQM_DOWNLOADS);
+    expect(words.viewNeed()).toBe('Site metrics need R. Start R, at the top right.');
+    expect([words.need, words.cost]).toEqual(['Site metrics need R', '55 MB, once']);
+    expect(words.needTitle).toBe(
+      'Site metrics need R. Start R to run them: about 55 MB, downloaded once from webr.r-wasm.org, repo.r-wasm.org and this page. The study’s data stays in this browser.'
     );
-    expect(needSentence(9, RBQM_DOWNLOADS)).toBe(
-      'Start R to run gsm’s workflows on the 9 loaded raw files. It downloads about 55 MB, once: ' +
-        'R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) ' +
-        'and gsm’s packages from this page (about 2 MB). The files stay in this browser, and R runs here.'
-    );
-    expect(needSentence(1, RBQM_DOWNLOADS)).toContain('on the 1 loaded raw file.');
     // With nothing loaded there is nothing to run, and it says where a study is.
     expect(NO_FILES).toBe(
       'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or drop gsm raw files here.'
@@ -76,33 +78,6 @@ describe('the RBQM tab: what it says', () => {
     expect(listed(['a'])).toBe('a');
     expect(listed(['a', 'b'])).toBe('a and b');
     expect(listed(['a', 'b', 'c'])).toBe('a, b and c');
-  });
-
-  it('APP-RBQM-019: from the press to the first result the tab says what R is doing at every step, with where each download comes from and how long it has been (#235)', () => {
-    const context = { seconds: 12, files: 9, downloads: RBQM_DOWNLOADS };
-    expect(stepSentence('runtime', context)).toBe(
-      'Starting R: downloading R itself, about 13 MB from webr.r-wasm.org. 12 seconds so far.'
-    );
-    expect(stepSentence('packages', context)).toBe(
-      'Starting R: installing its packages, about 40 MB from repo.r-wasm.org and about 2 MB from this page. 12 seconds so far.'
-    );
-    expect(stepSentence('files', context)).toBe(
-      'Starting R: fetching gsm’s workflow files from this page. 12 seconds so far.'
-    );
-    expect(stepSentence('source', context)).toBe(
-      'Starting R: reading the pipeline’s R. 12 seconds so far.'
-    );
-    expect(stepSentence('attach', context)).toBe(
-      'R has started. Loading gsm’s packages in R: this is the longest step, and the database they query with is most of it. 12 seconds so far.'
-    );
-    // One step is called the long one, and it is the one measured to be (#277).
-    const steps = ['runtime', 'packages', 'files', 'source', 'attach', 'run'];
-    expect(steps.filter((step) => /longest/.test(stepSentence(step, context)))).toEqual(['attach']);
-    expect(stepSentence('run', { ...context, seconds: 1 })).toBe(
-      'Running gsm’s workflows on the 9 loaded files: the mappings, then each metric, then the reporting tables. 1 second so far.'
-    );
-    // A step it was not told of still says R is starting, and for how long.
-    expect(stepSentence('something else', context)).toBe('Starting R. 12 seconds so far.');
   });
 
   it('APP-RBQM-024: R that did not start, packages that did not load and a run that stopped each say which it was in a few words, with one plain reason and what was said kept for a reader who asks (#235, #277)', () => {
@@ -213,40 +188,264 @@ describe('the RBQM tab: what it says', () => {
     ).toMatch(/^R gave no answer for 90 seconds while /);
   });
 
-  it('APP-RBQM-020: once R has answered the tab says how many metrics ran, on how many files, how long R took and the versions R reports; the snapshot’s date is the reader’s own day (#235)', () => {
-    expect(
-      doneSentence(whole, { files: 9, seconds: 4.6, sinceStart: 68, snapshotDate: '2026-10-07' })
-    ).toBe(
-      `R ran 8 of 8 metrics on the 9 loaded files in 4.6 seconds, 68 seconds after Start R was pressed. ` +
-        `The snapshot is dated 2026-10-07. R ${whole.versions.R}, gsm.core ${whole.versions['gsm.core']}, ` +
-        `gsm.mapping ${whole.versions['gsm.mapping']}, gsm.reporting ${whole.versions['gsm.reporting']} and workr ${whole.versions.workr}.`
-    );
-    // A later run was not started by the press: it says only how long it took.
-    expect(
-      doneSentence(answerFor('two-files'), {
-        files: 2,
-        seconds: 1,
-        sinceStart: null,
-        snapshotDate: '2026-10-07'
-      })
-    ).toMatch(/^R ran 2 of 8 metrics on the 2 loaded files in 1 second\. The snapshot is dated/);
+  it('APP-RBQM-020: once R has answered the tab says in one line how many metrics ran, on what and how long R took; the snapshot’s date is the reader’s own day (#235, #280)', () => {
+    expect(outcomeSaid(whole, { files: 9, seconds: 4.6 })).toEqual({
+      ran: 'R ran 8 of 8 metrics on the 9 loaded files in 4.6 seconds.',
+      rest: 'To use other files, '
+    });
+    expect(outcomeSaid(answerFor('two-files'), { files: 2, seconds: 1 })).toEqual({
+      ran: 'R ran 2 of 8 metrics on the 2 loaded files in 1 second.',
+      rest: 'The other 6 need data it does not have: '
+    });
     expect(isoDay(new Date(2026, 9, 7, 23, 59))).toBe('2026-10-07');
     expect(isoDay(new Date(2027, 0, 3, 0, 0))).toBe('2027-01-03');
   });
+});
 
-  it('APP-RBQM-048: beside the versions R reports the tab names what is copied in and not installed in R, which R cannot report: whose the metric workflows are and whose the charts are, each with its version (#255)', () => {
-    const run = { files: 9, seconds: 4.6, sinceStart: null, snapshotDate: '2026-10-07' };
-    const copies = {
-      workflows: { name: 'gsm.kri', version: '1.7.0' },
-      charts: { name: 'gsm.viz', version: '2.4.1' }
-    };
-    const plain = doneSentence(whole, run);
-    // R's own versions name no gsm.kri: the package is not installed in the browser.
-    expect(Object.keys(whole.versions)).not.toContain('gsm.kri');
-    expect(plain).not.toMatch(/gsm\.kri|gsm\.viz/);
-    expect(doneSentence(whole, { ...run, copies })).toBe(
-      `${plain} The metric workflows are gsm.kri 1.7.0’s and the charts gsm.viz 2.4.1’s.`
+// The six steps, the line above the site table and Run details (#280,
+// obot.roadmap#405): what the control, the body and the chip's panel say of a
+// run. The tab draws them; these are the words.
+describe('the RBQM tab: the steps of a run and what is said of it', () => {
+  const copies = {
+    workflows: { name: 'gsm.kri', version: '1.7.0' },
+    charts: { name: 'gsm.viz', version: '2.4.1' }
+  };
+
+  it('APP-RBQM-061: from a press to the first result there are six steps, each with what the control says while it runs and what Run details says once it is done; the control numbers the step it is on, and only loading gsm’s packages is called the long one (#280)', () => {
+    expect(RUN_STEPS.map(({ id, say, done }) => [id, say, done])).toEqual([
+      ['runtime', 'Downloading R', 'Downloaded R'],
+      ['packages', 'Installing R packages', 'Installed R packages'],
+      ['files', 'Fetching gsm’s workflow files', 'Fetched gsm’s workflow files'],
+      ['attach', 'Loading gsm’s packages', 'Loaded gsm’s packages'],
+      ['read', 'Reading the study', 'Read the study'],
+      ['run', 'Running the workflows', 'Ran the workflows']
+    ]);
+    expect(Object.isFrozen(RUN_STEPS)).toBe(true);
+    // One step is called the long one, and it is the one measured to be (#277).
+    expect(RUN_STEPS.filter((step) => step.long).map((step) => step.id)).toEqual(['attach']);
+    // Every moment the connection and the tab name belongs to one step, and to no other.
+    const moments = ['runtime', 'packages', 'files', 'source', 'attach', 'read', 'run'];
+    expect(RUN_STEPS.flatMap((step) => step.from)).toEqual(moments);
+    expect(moments.map(stepNumber)).toEqual([1, 2, 3, 3, 4, 5, 6]);
+    // A moment it was not told of is the first step, not a step past the end.
+    for (const unknown of ['something else', '', null, undefined]) {
+      expect(stepNumber(unknown)).toBe(1);
+      expect(stepSaid(unknown)).toBe('1 of 6 · Downloading R');
+    }
+    expect(moments.map(stepSaid)).toEqual([
+      '1 of 6 · Downloading R',
+      '2 of 6 · Installing R packages',
+      '3 of 6 · Fetching gsm’s workflow files',
+      '3 of 6 · Fetching gsm’s workflow files',
+      '4 of 6 · Loading gsm’s packages',
+      '5 of 6 · Reading the study',
+      '6 of 6 · Running the workflows'
+    ]);
+    expect(stepLines()).toEqual([
+      'Downloading R',
+      'Installing R packages',
+      'Fetching gsm’s workflow files',
+      'Loading gsm’s packages, the long one',
+      'Reading the study',
+      'Running the workflows'
+    ]);
+    expect(stepLines().filter((line) => /long/.test(line))).toHaveLength(1);
+  });
+
+  it('APP-RBQM-062: the line above the site table says how many metrics ran, on what and in how long, and then how many need data the study does not have, or how to use other files; a loaded demo study is named by its name, and raw files or a reader’s own study by what they are (#280)', () => {
+    expect(ranOnSaid(9)).toBe('the 9 loaded files');
+    expect(ranOnSaid(1)).toBe('the 1 loaded file');
+    expect(ranOnSaid(0, ['adsl.csv', 'adae.csv'])).toBe('the loaded study’s adsl.csv and adae.csv');
+    expect(ranOnSaid(0, ['adsl.csv', 'adae.csv'], 'Pilot study')).toBe('the Pilot study');
+    // With raw files beside the study the name alone would leave them out.
+    expect(ranOnSaid(1, ['adsl.csv'], 'Pilot study')).toBe(
+      'the 1 loaded file and the loaded study’s adsl.csv'
     );
+    // A name is for a study whose own files R was handed.
+    expect(ranOnSaid(9, [], 'RBQM study')).toBe('the 9 loaded files');
+    expect(ranOnSaid(0, ['adsl.csv'], null)).toBe('the loaded study’s adsl.csv');
+
+    expect(outcomeSaid(whole, { files: 9, seconds: 4.6 })).toEqual({
+      ran: 'R ran 8 of 8 metrics on the 9 loaded files in 4.6 seconds.',
+      rest: 'To use other files, '
+    });
+    expect(outcomeSaid(answerFor('no-labs'), { files: 8, seconds: 1 })).toEqual({
+      ran: 'R ran 7 of 8 metrics on the 8 loaded files in 1 second.',
+      rest: 'The other 1 needs data it does not have: '
+    });
+    expect(
+      outcomeSaid(answerFor('two-files'), {
+        files: 0,
+        study: ['adsl.csv', 'adae.csv'],
+        seconds: 3.1,
+        name: 'Pilot study'
+      })
+    ).toEqual({
+      ran: 'R ran 2 of 8 metrics on the Pilot study in 3.1 seconds.',
+      rest: 'The other 6 need data it does not have: '
+    });
+    // It is one line: the versions, the date and how long since the press are in Run details.
+    const line = outcomeSaid(whole, {
+      files: 9,
+      seconds: 4.6,
+      sinceStart: 68,
+      snapshotDate: '2026-10-07',
+      copies
+    });
+    expect(`${line.ran} ${line.rest}`).not.toMatch(/gsm\.|2026|68|Start R/);
+  });
+
+  it('APP-RBQM-063: Run details says in one sentence what ran and what was downloaded, then the steps with what each cost, what R was handed, what did not run and why, the versions with what is copied in, and R’s warnings (#280)', () => {
+    const run = {
+      files: 9,
+      study: [],
+      name: null,
+      webr: '0.6.0',
+      seconds: 4.6,
+      sinceStart: 68,
+      snapshotDate: '2026-10-07',
+      handed: ['The 9 loaded gsm raw files, each as it is.'],
+      notes: [],
+      copies
+    };
+    const { versions } = whole;
+    expect(runDetails(whole, run, RBQM_DOWNLOADS)).toEqual({
+      text: [
+        'It ran 8 of 8 metrics on the 9 loaded files. About 55 MB was downloaded, once; the study’s data stays here.'
+      ],
+      columns: [
+        [
+          {
+            title: 'Steps',
+            // Reading the study is part of the run's own time, and has no line of its own.
+            steps: [
+              { say: 'Downloaded R', note: '13 MB', state: 'done' },
+              { say: 'Installed R packages', note: '42 MB', state: 'done' },
+              { say: 'Fetched gsm’s workflow files', note: null, state: 'done' },
+              { say: 'Loaded gsm’s packages', note: null, state: 'done' },
+              { say: 'Ran the workflows', note: '4.6 s', state: 'done' }
+            ],
+            text: ['68 seconds from the press to the charts.']
+          }
+        ],
+        [
+          { title: 'What R was handed', items: ['The 9 loaded gsm raw files, each as it is.'] },
+          { title: 'Did not run', items: ['Nothing: all 8 ran.'] }
+        ],
+        [
+          {
+            title: 'Versions',
+            rows: [
+              ['R', `${versions.R}, on webR 0.6.0`],
+              [
+                'gsm',
+                `gsm.core ${versions['gsm.core']}, gsm.mapping ${versions['gsm.mapping']}, ` +
+                  `gsm.reporting ${versions['gsm.reporting']}, workr ${versions.workr}`
+              ],
+              ['Metric workflows', 'gsm.kri 1.7.0'],
+              ['Charts', 'gsm.viz 2.4.1'],
+              ['Snapshot', '2026-10-07']
+            ]
+          },
+          { title: 'Warnings from R', items: ['None.'] }
+        ]
+      ]
+    });
+    // The megabytes are the downloads': R itself, and its packages with gsm's.
+    expect(RBQM_DOWNLOADS.map((one) => one.megabytes)).toEqual([13, 40, 2]);
+    // A demo study is named by its name, as in the line above the table.
+    expect(
+      runDetails(
+        answerFor('two-files'),
+        { ...run, files: 0, study: ['adsl.csv', 'adae.csv'], name: 'Pilot study' },
+        RBQM_DOWNLOADS
+      ).text
+    ).toEqual([
+      'It ran 2 of 8 metrics on the Pilot study. About 55 MB was downloaded, once; the study’s data stays here.'
+    ]);
+    expect(runDetails(whole, { ...run, sinceStart: 1 }, RBQM_DOWNLOADS).columns[0][0].text).toEqual(
+      ['1 second from the press to the charts.']
+    );
+  });
+
+  it('APP-RBQM-063: Run details of a later run, which started nothing, lists only the last step and says R was already running; what did not run is listed in R’s own sentences, and R’s notes, a missing Groups table, the notes of the load and R’s warnings are each said (#280)', () => {
+    const answer = {
+      ...answerFor('two-files'),
+      warnings: ['NA’s in GroupID, cases are removed in output']
+    };
+    const later = runDetails(
+      answer,
+      {
+        files: 2,
+        study: [],
+        seconds: 1,
+        sinceStart: null,
+        snapshotDate: '2026-10-08',
+        handed: ['The 2 loaded gsm raw files, each as it is.'],
+        notes: ['study.json is not a CSV file.']
+      },
+      RBQM_DOWNLOADS
+    );
+    expect(later.text).toEqual([
+      'It ran 2 of 8 metrics on the 2 loaded files. About 55 MB was downloaded, once; the study’s data stays here.'
+    ]);
+    const [[steps], middle, [versions, warnings]] = later.columns;
+    expect(steps).toEqual({
+      title: 'Steps',
+      steps: [{ say: 'Ran the workflows', note: '1 s', state: 'done' }],
+      text: ['R was already running, so only the last step ran again.']
+    });
+    const said = partial['two-files'];
+    expect(middle.map((section) => section.title)).toEqual([
+      'What R was handed',
+      'Did not run',
+      'Notes'
+    ]);
+    expect(middle[1].items).toEqual(
+      said.status.filter((line) => line.state !== 'ran').map((line) => line.message)
+    );
+    expect(middle[1].items).toHaveLength(6);
+    expect(said.notes).toHaveLength(1);
+    expect(said.groups.state).not.toBe('ran');
+    expect(middle[2].items).toEqual([
+      ...said.notes,
+      said.groups.message,
+      'study.json is not a CSV file.'
+    ]);
+    expect(warnings).toEqual({
+      title: 'Warnings from R',
+      items: ['R warned: NA’s in GroupID, cases are removed in output.']
+    });
+    // What is not known is left for the control to pass over: no runtime's version, no copies.
+    expect(versions.rows).toEqual([
+      ['R', whole.versions.R],
+      ['gsm', expect.stringMatching(/^gsm\.core /)],
+      ['Metric workflows', null],
+      ['Charts', null],
+      ['Snapshot', '2026-10-08']
+    ]);
+    const drawn = controlState({
+      state: () => ({
+        phase: 'ready',
+        details: { heading: 'R is running in this browser', ...later }
+      })
+    }).details;
+    expect(drawn.columns[2][0].rows.map(([term]) => term)).toEqual(['R', 'gsm', 'Snapshot']);
+    expect(drawn.columns[0][0].steps).toEqual(steps.steps);
+    // A press that started R and found the charts at once still counts as the one that started it.
+    expect(
+      runDetails(whole, { files: 9, seconds: 0, sinceStart: 0 }, RBQM_DOWNLOADS).columns[0][0]
+    ).toMatchObject({
+      steps: expect.objectContaining({ length: 5 }),
+      text: ['0 seconds from the press to the charts.']
+    });
+    // An answer with nothing in it still gives the panel its three columns, and does not throw.
+    const empty = runDetails({}, { files: 0, seconds: 0, sinceStart: null }, RBQM_DOWNLOADS);
+    expect(empty.columns.map((column) => column.map((section) => section.title))).toEqual([
+      ['Steps'],
+      ['What R was handed', 'Did not run'],
+      ['Versions', 'Warnings from R']
+    ]);
   });
 });
 

@@ -55,6 +55,7 @@ import {
   tabCount,
   welcomeSentence
 } from './header.js';
+import { icon } from './icons.js';
 import { el, plural } from './dom.js';
 import { isBelow, tierNoteOf, tierOf } from '../tiers.js';
 import { statusHeading, statusLabel } from '../status-label.js';
@@ -286,6 +287,7 @@ export function mountApp(
     focus: null, // the mapping row to return the keyboard focus to after a re-render
     welcome: false, // whether the welcome line is still to be read: set as the app opens on a study, never stored
     selected: 'data',
+    item: null, // the open item of the open view, when the view brings a row of its own (#279)
     busy: ''
   };
   let instance = null;
@@ -481,6 +483,40 @@ export function mountApp(
     return button;
   }
 
+  /**
+   * The items a view brings for the chart-name row (#279), read safely: each
+   * an `id` (the first, the view's opening page, has none), a `label`, and
+   * optionally a `title` for the pointer, a `name` for a screen reader, the
+   * `icon` that stands where a chart has its hex, and its `state` in a word.
+   */
+  const itemsOf = (view) => {
+    if (typeof view.items !== 'function') return [];
+    let given;
+    try {
+      given = view.items(handle);
+    } catch (error) {
+      console.warn('safety.viz app: a view could not list its items.', error);
+      return [];
+    }
+    return (Array.isArray(given) ? given : [])
+      .filter((item) => isRecord(item) && typeof item.label === 'string' && item.label)
+      .map((item) => ({ ...item, id: typeof item.id === 'string' ? item.id : '' }));
+  };
+  /** The item of a view an address or a click names, or null for the view's opening page. */
+  const itemIn = (id, item) =>
+    isView(id) &&
+    typeof item === 'string' &&
+    item &&
+    itemsOf(views.get(id)).some((one) => one.id === item)
+      ? item
+      : null;
+  /** A view and an item of it, as an address names them: `rbqm`, `rbqm/kri0001`. */
+  const addressOf = (id, item) => (item ? `${id}/${item}` : id);
+  const parseAddress = (hash) => {
+    const [id, ...rest] = String(hash).split('/');
+    return { id, item: rest.length ? rest.join('/') : null };
+  };
+
   /** The charts of each group, in the order their tabs come (libraries.js). */
   const chartGroups = () => new Map(groupCharts(manifest));
 
@@ -546,6 +582,49 @@ export function mountApp(
           wanted = [name, library.action];
           break;
         }
+      }
+    }
+    // A view that brings its own row (#279): its items where a domain's tab has
+    // its charts, each with its own mark, and its control at the row's end.
+    const openView = isView(state.selected) ? views.get(state.selected) : null;
+    const items = openView ? itemsOf(openView) : [];
+    if (items.length) {
+      chartRow.hidden = false;
+      const section = paint(
+        el('div', 'sva-group sva-view-items sva-library-group'),
+        viewLibrary.get(state.selected)
+      );
+      section.dataset.group = state.selected;
+      section.append(el('h2', 'sva-group-title', openView.title));
+      for (const item of items) {
+        const button = el('button', 'sva-item sva-view-item');
+        button.type = 'button';
+        button.dataset.view = state.selected;
+        button.dataset.item = item.id;
+        if (item.state) button.dataset.state = item.state;
+        if (item.title) button.title = item.title;
+        if (item.name) button.setAttribute('aria-label', item.name);
+        if ((state.item || '') === item.id) button.setAttribute('aria-current', 'page');
+        button.append(
+          item.icon ? icon(item.icon) : el('span', 'sva-hex'),
+          el('span', 'sva-item-title', item.label)
+        );
+        button.onclick = () => handle.select(state.selected, item.id);
+        section.append(button);
+      }
+      chartRow.append(section);
+    }
+    if (openView && typeof openView.control === 'function') {
+      // A view's control is its library's code, as its items are: one that throws leaves no control.
+      let action = null;
+      try {
+        action = openView.control(handle);
+      } catch (error) {
+        console.warn('safety.viz app: a view’s control could not be read.', error);
+      }
+      if (action) {
+        chartRow.hidden = false;
+        wanted = [state.selected, action];
       }
     }
     placeControl(wanted);
@@ -644,6 +723,20 @@ export function mountApp(
     const said = wanted ? controlState(wanted[1]) : null;
     if (!said) return;
     const [name, action] = wanted;
+    // An action in the panel, as Run again, closes the panel: what it sets
+    // going is said in the row.
+    if (said.details) {
+      said.details = {
+        ...said.details,
+        actions: said.details.actions.map((one) => ({
+          ...one,
+          press: () => {
+            controlOpen = null;
+            return one.press();
+          }
+        }))
+      };
+    }
     const again = () => {
       const current = status();
       renderNav(current);
@@ -749,7 +842,8 @@ export function mountApp(
     if (isView(state.selected)) {
       const view = views.get(state.selected);
       title.textContent = view.title;
-      renderNotes(content);
+      // A view that says the load's notes itself is left to (#280).
+      if (!(typeof view.ownsNotes === 'function' && view.ownsNotes(handle))) renderNotes(content);
       cornerLabel(state.selected, `The ${view.title} tab`, 'tab');
       const container = paint(el('div', 'sva-view'), viewLibrary.get(state.selected));
       content.append(container);
@@ -928,9 +1022,12 @@ export function mountApp(
     if (study.raw) handle.loadRaw(list, { study: study.id });
     else handle.loadFiles(list, { study: study.id });
     if (!open) return;
-    const wanted = window.location.hash.slice(1);
+    const wanted = parseAddress(window.location.hash.slice(1));
     handle.select(
-      isChart(wanted) || isView(wanted) || wanted === 'data' ? wanted : firstReady() || 'data'
+      isChart(wanted.id) || isView(wanted.id) || wanted.id === 'data'
+        ? wanted.id
+        : firstReady() || 'data',
+      wanted.item
     );
   }
 
@@ -1255,14 +1352,28 @@ export function mountApp(
     /**
      * Show the data view or one chart.
      * @param {string} id `'data'`, a module name from the manifest, or the id of a library's view.
+     * @param {?string} [item] An item of that view's own row (#279); one the view does not list opens the view's first page.
      * @returns {void}
      */
-    select(id) {
+    select(id, item = null) {
       state.selected = id === 'data' || isChart(id) || isView(id) ? id : 'data';
+      state.item = itemIn(state.selected, item);
       if (window.history && window.history.replaceState) {
-        window.history.replaceState(null, '', `#${state.selected}`);
+        window.history.replaceState(null, '', `#${addressOf(state.selected, state.item)}`);
       }
       render();
+    },
+
+    /**
+     * Open the details of the open view's control (#280), as its chip does.
+     * @returns {void}
+     */
+    openControl() {
+      if (!isView(state.selected)) return;
+      controlOpen = state.selected;
+      handle.retag();
+      const cross = controlPanel.querySelector('.sva-r-x');
+      if (cross) cross.focus();
     },
 
     /** Re-render after a change the caller made to the state (a mapping edit). */
@@ -1306,9 +1417,11 @@ export function mountApp(
   // names. A hash that names no view is ignored. select() writes the address
   // with replaceState, which raises no hashchange, so this cannot loop.
   function followAddress() {
-    const wanted = window.location.hash.slice(1);
-    if (wanted === state.selected) return;
-    if (wanted === 'data' || isChart(wanted) || isView(wanted)) handle.select(wanted);
+    const wanted = parseAddress(window.location.hash.slice(1));
+    if (wanted.id === state.selected && itemIn(wanted.id, wanted.item) === state.item) return;
+    if (wanted.id === 'data' || isChart(wanted.id) || isView(wanted.id)) {
+      handle.select(wanted.id, wanted.item);
+    }
   }
   window.addEventListener('hashchange', followAddress);
 

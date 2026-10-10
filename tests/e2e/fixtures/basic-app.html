@@ -123,6 +123,11 @@
             }
             await gate();
             if (name !== window.__rbqmTabOptions.r.call) return { status: 'ok', value: null };
+            // The study's files are in R: the tab is told, as the real connection tells it.
+            if (typeof request.onFiles === 'function') {
+              request.onFiles();
+              await gate();
+            }
             if (window.__rbqmFails === 'run') {
               return { status: 'error', message: 'Error in rbqm_run: something gave way' };
             }

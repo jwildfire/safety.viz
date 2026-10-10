@@ -110,6 +110,14 @@ describe('the R control', () => {
     document.body.innerHTML = '';
     vi.advanceTimersByTime(1000);
     expect(vi.getTimerCount()).toBe(0);
+    // A tab that says which clock its start was read from is counted on that clock.
+    draw(
+      { phase: 'starting', say: 'Starting R', since: 1000, now: () => 8000 },
+      { now: () => clock }
+    );
+    expect($('.sva-r-meta').textContent).toBe('7 s');
+    document.body.innerHTML = '';
+    vi.advanceTimersByTime(1000);
     // With no moment to count from there is no count, and nothing ticks.
     draw({ phase: 'starting', say: 'Starting R', meta: '13 MB' });
     expect($('.sva-r-meta').textContent).toBe('13 MB');
@@ -237,9 +245,11 @@ describe('the R control', () => {
       label: null,
       disabled: false,
       since: null,
+      now: null,
       step: null,
       details: null,
-      why: 'Why'
+      why: 'Why',
+      className: null
     });
     expect(stateOf({ phase: 'melting' }).phase).toBe('off');
     for (const phase of R_PHASES) expect(stateOf({ phase }).phase).toBe(phase);
@@ -257,6 +267,10 @@ describe('the R control', () => {
       expect(stateOf({ phase: 'starting', step: broken }).step, JSON.stringify(broken)).toBeNull();
     }
     expect(stateOf({ since: 'yesterday' }).since).toBeNull();
+    // The clock the start was read from: kept when it is one, and passed over when it is not.
+    const tabClock = () => 9000;
+    expect(stateOf({ since: 12, now: tabClock }).now).toBe(tabClock);
+    expect(stateOf({ since: 12, now: 9000 }).now).toBeNull();
     // The details: kept only with a heading, and each part only where it can be drawn.
     expect(stateOf({ details: { rows: [['a', 'b']] } }).details).toBeNull();
     const press = () => {};
@@ -276,7 +290,8 @@ describe('the R control', () => {
       text: ['One sentence.'],
       more: ['Said.'],
       moreTitle: 'More',
-      actions: [{ label: 'Run again', press }]
+      actions: [{ label: 'Run again', press }],
+      columns: []
     });
     // The control of #183: a label, whether it is done, a note and a hint.
     expect(
@@ -308,6 +323,240 @@ describe('the R control', () => {
     ).toBeNull();
     expect(warn).toHaveBeenCalledTimes(1);
     warn.mockRestore();
+  });
+});
+
+// What the RBQM tab added to the control (#280, obot.roadmap#405): a class of
+// the tab's own on the button, and details with more to say, in columns.
+describe('the R control: a tab with more to say (#280)', () => {
+  const columns = [
+    [
+      {
+        title: 'Steps',
+        steps: [
+          { say: 'Downloaded R', note: '13 MB', state: 'done' },
+          { say: 'Loading packages', state: 'now' },
+          { say: 'Running', note: '', state: 'todo' }
+        ],
+        text: ['12 seconds from the press.']
+      }
+    ],
+    [
+      { title: 'What R was handed', items: ['adsl.csv, the Subject-level file.', 'adae.csv.'] },
+      { title: 'Did not run', items: ['Nothing: all 8 ran.'] }
+    ],
+    [
+      {
+        title: 'Versions',
+        rows: [
+          ['R', '4.3.3, on webR 0.6.0'],
+          ['Snapshot', '2026-10-07']
+        ]
+      }
+    ]
+  ];
+
+  it('APP-R-042: a tab with more to say gives its details columns of sections, each a title with steps, a list of sentences, terms and text; a section with no title, a step with no words, a term with nothing said of it and a column left empty are passed over, and a step whose state is not one the control knows is taken as done (#280)', () => {
+    const read = (given) =>
+      stateOf({ phase: 'ready', details: { heading: 'Run', columns: given } });
+    // What is whole comes through as it was given, with every member of a section present.
+    expect(read(columns).details.columns).toEqual([
+      [
+        {
+          title: 'Steps',
+          steps: [
+            { say: 'Downloaded R', note: '13 MB', state: 'done' },
+            { say: 'Loading packages', note: null, state: 'now' },
+            { say: 'Running', note: null, state: 'todo' }
+          ],
+          items: [],
+          rows: [],
+          text: ['12 seconds from the press.']
+        }
+      ],
+      [
+        {
+          title: 'What R was handed',
+          steps: [],
+          items: ['adsl.csv, the Subject-level file.', 'adae.csv.'],
+          rows: [],
+          text: []
+        },
+        { title: 'Did not run', steps: [], items: ['Nothing: all 8 ran.'], rows: [], text: [] }
+      ],
+      [
+        {
+          title: 'Versions',
+          steps: [],
+          items: [],
+          rows: [
+            ['R', '4.3.3, on webR 0.6.0'],
+            ['Snapshot', '2026-10-07']
+          ],
+          text: []
+        }
+      ]
+    ]);
+    // What cannot be drawn is passed over, part by part.
+    expect(
+      read([
+        [
+          {
+            title: 'Steps',
+            steps: [{ say: 'Odd', state: 'melting' }, { say: '' }, { note: 'x' }, null, 'step'],
+            items: ['One.', '', null, 4, 'Two.'],
+            rows: [['R', '4.3.3'], ['gsm', null], ['', 'x'], 'no', ['Charts']],
+            text: ['Said.', '', 3]
+          },
+          { items: ['A section with no title.'] },
+          { title: '' },
+          null,
+          'section'
+        ],
+        // A column with no section left in it is no column.
+        [{ items: ['no title'] }],
+        [],
+        'not a column',
+        null,
+        [{ title: 'Kept' }]
+      ]).details.columns
+    ).toEqual([
+      [
+        {
+          title: 'Steps',
+          steps: [{ say: 'Odd', note: null, state: 'done' }],
+          items: ['One.', 'Two.'],
+          rows: [['R', '4.3.3']],
+          text: ['Said.']
+        }
+      ],
+      [{ title: 'Kept', steps: [], items: [], rows: [], text: [] }]
+    ]);
+    // Columns that are not a list are none, and the details are kept.
+    for (const rubbish of ['three', 3, null, { title: 'Steps' }]) {
+      expect(read(rubbish).details).toMatchObject({ heading: 'Run', columns: [] });
+    }
+  });
+
+  it('APP-R-041: details with columns are drawn as a wide panel with its sections side by side: each a title, then its steps with a mark for done, under way and to come and what each cost, its sentences as a list, its terms and its text; details with no columns are the narrow panel they were (#280)', () => {
+    const press = vi.fn();
+    const wide = draw(
+      {
+        phase: 'ready',
+        say: 'R ready',
+        details: {
+          heading: 'R is running in this browser',
+          text: ['It ran 8 of 8 metrics.'],
+          columns,
+          actions: [{ label: 'Run again', press }]
+        }
+      },
+      { open: true }
+    );
+    expect(wide.panel.className).toBe('sva-r-panel sva-r-wide');
+    // The cross and the heading, the opening sentence, the columns, then the buttons.
+    expect([...wide.panel.children].map((part) => part.className)).toEqual([
+      'sva-close sva-r-x',
+      'sva-r-heading',
+      'sva-r-text',
+      'sva-r-cols',
+      'sva-r-actions'
+    ]);
+    expect($('.sva-r-panel > .sva-r-text').textContent).toBe('It ran 8 of 8 metrics.');
+    const drawn = $$('.sva-r-cols > .sva-r-col');
+    expect(
+      drawn.map((column) => [...column.children].map((part) => `${part.tagName}.${part.className}`))
+    ).toEqual([
+      ['H4.sva-r-title', 'OL.sva-r-steps', 'P.sva-r-text'],
+      ['H4.sva-r-title', 'UL.sva-r-items', 'H4.sva-r-title', 'UL.sva-r-items'],
+      ['H4.sva-r-title', 'DL.sva-r-list']
+    ]);
+    expect($$('.sva-r-title').map((title) => title.textContent)).toEqual([
+      'Steps',
+      'What R was handed',
+      'Did not run',
+      'Versions'
+    ]);
+    // A step: its state, a mark that a screen reader passes over, its words and what it cost.
+    expect(
+      $$('.sva-r-steps > li').map((step) => [
+        step.dataset.state,
+        step.querySelector('svg').getAttribute('class'),
+        step.querySelector('svg').getAttribute('aria-hidden'),
+        step.querySelector('.sva-r-step').textContent,
+        step.querySelector('.sva-r-note') ? step.querySelector('.sva-r-note').textContent : null
+      ])
+    ).toEqual([
+      ['done', 'sva-ico sva-ico-ran', 'true', 'Downloaded R', '13 MB'],
+      ['now', 'sva-ico sva-ico-running', 'true', 'Loading packages', null],
+      ['todo', 'sva-ico sva-ico-todo', 'true', 'Running', null]
+    ]);
+    expect(drawn[0].querySelector('p.sva-r-text').textContent).toBe('12 seconds from the press.');
+    expect(
+      [...drawn[1].querySelectorAll('.sva-r-items')].map((list) =>
+        [...list.children].map((entry) => entry.textContent)
+      )
+    ).toEqual([['adsl.csv, the Subject-level file.', 'adae.csv.'], ['Nothing: all 8 ran.']]);
+    expect(
+      [...drawn[2].querySelectorAll('dt')].map((term) => [
+        term.textContent,
+        term.nextElementSibling.tagName,
+        term.nextElementSibling.textContent
+      ])
+    ).toEqual([
+      ['R', 'DD', '4.3.3, on webR 0.6.0'],
+      ['Snapshot', 'DD', '2026-10-07']
+    ]);
+    // A button of the panel does what the tab said it does.
+    $('.sva-r-actions .sva-action').click();
+    expect(press).toHaveBeenCalledTimes(1);
+
+    // With no columns the panel is as narrow as it was, and has none.
+    const narrow = draw(
+      {
+        phase: 'ready',
+        say: 'R ready',
+        details: { heading: 'R is running in this browser', rows: [['Version', 'R 4.6.0']] }
+      },
+      { open: true }
+    );
+    expect(narrow.panel.className).toBe('sva-r-panel');
+    expect($('.sva-r-cols')).toBeNull();
+    expect($$('.sva-r-list dt').map((term) => term.textContent)).toEqual(['Version']);
+  });
+
+  it('APP-R-039: a class a tab names for its button is on the button beside the control’s own, before a press and when R did not start; a tab that names none adds none, and the chips carry none (#280)', () => {
+    expect(stateOf({ className: 'sva-rbqm-start' }).className).toBe('sva-rbqm-start');
+    for (const none of [undefined, null, '', 7, ['sva-rbqm-start']]) {
+      expect(stateOf({ className: none }).className).toBeNull();
+    }
+    const onPress = vi.fn();
+    draw({ phase: 'off', label: 'Start R', className: 'sva-rbqm-start' }, { onPress });
+    expect($('.sva-r button').className).toBe('sva-action sva-rbqm-start');
+    $('.sva-rbqm-start').click();
+    expect(onPress).toHaveBeenCalledTimes(1);
+    // More than one class, however they are spaced.
+    draw({ phase: 'off', label: 'Start R', className: '  one   two ' });
+    expect([...$('.sva-r button').classList]).toEqual(['sva-action', 'one', 'two']);
+    // When R did not start it is on Try again, and not on the chip that says why.
+    draw({
+      phase: 'failed',
+      say: 'R did not start',
+      label: 'Try again',
+      className: 'sva-rbqm-start',
+      details: { heading: 'R did not start', text: ['Why.'] }
+    });
+    expect($$('.sva-r button').map((button) => [button.textContent, button.className])).toEqual([
+      ['Try again', 'sva-action sva-rbqm-start'],
+      ['Why▾', 'sva-chip sva-r-why']
+    ]);
+    // A ready chip is no button of the tab's.
+    draw({ phase: 'ready', say: 'R ready', className: 'sva-rbqm-start' });
+    expect($('.sva-rbqm-start')).toBeNull();
+    expect($('.sva-chip').className).toBe('sva-chip sva-r-ready');
+    // A tab that names none: the button is the control's own.
+    draw({ phase: 'off', label: 'Start R' });
+    expect($('.sva-r button').className).toBe('sva-action');
   });
 });
 

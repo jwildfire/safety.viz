@@ -397,8 +397,13 @@ test.describe('docs site', () => {
       'Experimental: new in 1.10. R runs in the browser, and what the tab shows may still change.',
       { useInnerText: false }
     );
-    await expect(page.locator('.sva-rbqm-status')).toContainText(
-      'It downloads about 55 MB, once: R itself from webr.r-wasm.org (about 13 MB), its packages from repo.r-wasm.org (about 40 MB) and gsm’s packages from this page (about 2 MB).'
+    await expect(page.locator('.sva-rbqm-status')).toHaveText(
+      'Site metrics need R. Start R, at the top right.'
+    );
+    // What starting R downloads, and from where, is on the control (#280).
+    await expect(page.locator('.sva-charts > .sva-r .sva-r-row')).toHaveAttribute(
+      'title',
+      'Site metrics need R. Start R to run them: about 55 MB, downloaded once from webr.r-wasm.org, repo.r-wasm.org and this page. The study’s data stays in this browser.'
     );
     // Shown, not pressed: nothing is asked of R's hosts, nor of the page for R's files or the charts.
     expect(requests.filter((url) => /r-wasm|pipeline\.R|\.yaml$|gsm\.viz\.js/.test(url))).toEqual(
@@ -409,6 +414,9 @@ test.describe('docs site', () => {
       timeout: 360000
     });
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
+    // A metric's page, from its item in the tab's row (#279).
+    await page.locator('.sva-view-item[data-item="kri0001"]').click();
+    await expect(page).toHaveURL(/#rbqm\/kri0001$/);
     await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
     await expect(tab.locator('.sva-tab-count')).toHaveText('8 of 8');
     // Each came from where the page as built serves it.
