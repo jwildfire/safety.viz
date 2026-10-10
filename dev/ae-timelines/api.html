@@ -50,13 +50,13 @@
 control shell renders immediately; pass one-record-per-adverse-event data
 to setData (or init) on the returned instance to validate the data and
 draw the timelines.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>AETimelinesSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>AETimelinesSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>AETimelines</code> — The live timelines instance.</p>
 <h2 id="methods">Methods</h2>
 <h3 id="init"><code>init(data)</code></h3>
 <p>Load data and render: an alias for setData that keeps the original
 renderer&#39;s create-then-init call shape working (AET-DATA-004).</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Adverse-event records matching the ae-timelines data contract.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Adverse-event records matching the ae-timelines data contract.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>AETimelines</code> — The instance, for chaining.</p>
 <h3 id="setData"><code>setData(data)</code></h3>
 <p>Replace the bound data and re-render. The data is validated against the
@@ -65,12 +65,12 @@ element, when required columns are missing); records with blank terms
 or non-integer start days are removed with console warnings while
 AE-free placeholder rows still count toward the population; and the
 filter controls are rebuilt from the new data&#39;s values.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Adverse-event records matching the ae-timelines data contract.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Adverse-event records matching the ae-timelines data contract.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>AETimelines</code> — The instance, for chaining.</p>
 <h3 id="setSettings"><code>setSettings(settings)</code></h3>
 <p>Merge setting overrides onto the current settings, re-normalize them
 (same rules as the factory), rebuild the controls, and re-render.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>AETimelinesSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>AETimelinesSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>AETimelines</code> — The instance, for chaining.</p>
 <h3 id="render"><code>render()</code></h3>
 <p>Redraw everything from the current data, settings, and control state:
@@ -85,7 +85,7 @@ the main chart&#39;s study-day domain (one row per sequence number), the
 raw-record listing with search/sort/CSV export, and the Back button —
 hiding the timelines and controls, and dispatching the
 participantsSelected event with the selected ID.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>participant</code></td><td><code>string</code></td><td>—</td><td>Participant ID to detail.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>participant</code></td><td><code>string</code></td><td>—</td><td>Participant ID to detail.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
 <h3 id="backToTimelines"><code>backToTimelines()</code></h3>
 <p>Return from the participant detail view to the timelines (AET-FUNC-010):

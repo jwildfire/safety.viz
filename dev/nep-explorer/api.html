@@ -49,25 +49,25 @@
 <p>Create a KDIGO nephrotoxicity explorer inside a container element. The
 control shell renders immediately; pass long-format lab records to setData
 (or init) on the returned instance to validate the data and draw the scatter.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>NepExplorerSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>NepExplorerSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyNepExplorer</code> — The live nep-explorer instance.</p>
 <h2 id="methods">Methods</h2>
 <h3 id="init"><code>init(data)</code></h3>
 <p>Load data and render: an alias for setData that keeps the two-step
 create-then-init call shape working.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the nep-explorer data contract.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the nep-explorer data contract.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyNepExplorer</code> — The instance, for chaining.</p>
 <h3 id="setData"><code>setData(data)</code></h3>
 <p>Replace the bound data and re-render. The data is validated against the
 settings mapping (throwing, and rendering the message into the target
 element, when required columns are missing), reduced to one staged point
 per participant, and the controls are rebuilt from the new data.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the nep-explorer data contract.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the nep-explorer data contract.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyNepExplorer</code> — The instance, for chaining.</p>
 <h3 id="setSettings"><code>setSettings(settings)</code></h3>
 <p>Merge setting overrides onto the current settings, re-normalize, rebuild
 the controls, and re-render.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>NepExplorerSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>NepExplorerSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyNepExplorer</code> — The instance, for chaining.</p>
 <h3 id="render"><code>render()</code></h3>
 <p>Redraw everything from the current data, settings and control state.</p>

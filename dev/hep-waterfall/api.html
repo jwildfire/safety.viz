@@ -49,7 +49,7 @@
 <p>Create a modified ALT waterfall inside a container element. The control shell
 renders immediately; pass long-format liver-chemistry records to setData (or
 init) on the returned instance to validate the data and draw the chart.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>HepWaterfallSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>HepWaterfallSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyHepWaterfall</code> — The live hep-waterfall instance.</p>
 <h2 id="methods">Methods</h2>
 <h3 id="moveBoxHover"><code>moveBoxHover()</code></h3>
@@ -61,19 +61,19 @@ init) on the returned instance to validate the data and draw the chart.</p>
 <h3 id="init"><code>init(data)</code></h3>
 <p>Load data and render — an alias for setData keeping the two-step
 create-then-init call shape (HWF-API-002).</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format liver-chemistry records matching the hep-waterfall data contract.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format liver-chemistry records matching the hep-waterfall data contract.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyHepWaterfall</code> — The instance, for chaining.</p>
 <h3 id="setData"><code>setData(data)</code></h3>
 <p>Replace the bound data and re-render: validate against the settings mapping
 (throwing, and rendering the message into the target, when a required
 column is missing), clean, rebuild the controls, and draw.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format liver-chemistry records matching the hep-waterfall data contract.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format liver-chemistry records matching the hep-waterfall data contract.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyHepWaterfall</code> — The instance, for chaining.</p>
 <h3 id="setSettings"><code>setSettings(settings)</code></h3>
 <p>Merge setting overrides, re-normalize them (same rules as the factory),
 re-seed every control from the merged settings, rebuild the controls, and
 re-render.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>HepWaterfallSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>HepWaterfallSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyHepWaterfall</code> — The instance, for chaining.</p>
 <h3 id="render"><code>render()</code></h3>
 <p>Redraw everything from the current data, settings, and control state: the
@@ -85,7 +85,7 @@ panels. Called automatically by the controls and the data/settings setters.</p>
 <p>Select (or, when already selected, deselect) a participant: highlight their
 bar, open the linked listing of their records, and dispatch the
 participantsSelected event (HWF-SELECT-002, HWF-SELECT-003).</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td><code>string | number</code></td><td>—</td><td>The participant identifier.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>id</code></td><td><code>string | number</code></td><td>—</td><td>The participant identifier.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>void</code> — </p>
 <h3 id="resize"><code>resize()</code></h3>
 <p>Resize every live chart — the waterfall and both flanking panels — to their

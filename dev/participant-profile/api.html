@@ -50,14 +50,14 @@
 The control shell renders immediately and the module starts listening for
 `participantsSelected` on the configured target; pass long-format lab
 records here (or to setData/init on the returned instance) to bind the data.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>data</code> <em>(optional)</em></td><td><code>Array.&lt;Object&gt;</code></td><td><code>null</code></td><td>Optional long-format lab records; when omitted, call setData/init later.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>Object</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>data</code> <em>(optional)</em></td><td><code>Array.&lt;Object&gt;</code></td><td><code>null</code></td><td>Optional long-format lab records; when omitted, call setData/init later.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>Object</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyParticipantProfile</code> — The live profile instance.</p>
 <h2 id="methods">Methods</h2>
 <h3 id="setAeData"><code>setAeData(records)</code></h3>
 <p>Ingest adverse-event records once (PPRF-AE-002). Hosts that already hold
 cleaned AE rows may pass them here instead of through settings.ae.data;
 either way the cleaning runs once per call, never per gesture.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>records</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Raw adverse-event records.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>records</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Raw adverse-event records.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyParticipantProfile</code> — The instance, for chaining.</p>
 <h3 id="setExpanded"><code>setExpanded(expanded)</code></h3>
 <p>Expand the rail to fill the host renderer&#39;s own container, or collapse it
@@ -65,43 +65,43 @@ back (decision D3). Deliberately NOT a viewport overlay or the native
 Fullscreen API: the same module has to behave identically inside a
 gsm.safety htmlwidget and an open.gismo panel, where escaping the container
 is either impossible or rude.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>expanded</code></td><td><code>boolean</code></td><td>—</td><td>The target state.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>expanded</code></td><td><code>boolean</code></td><td>—</td><td>The target state.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyParticipantProfile</code> — The instance, for chaining.</p>
 <h3 id="init"><code>init(data)</code></h3>
 <p>Load data and render: an alias for setData that keeps the two-step
 create-then-init call shape working.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the profile data contract.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the profile data contract.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyParticipantProfile</code> — The instance, for chaining.</p>
 <h3 id="setData"><code>setData(data)</code></h3>
 <p>Replace the bound data and re-render (standalone ingest path). The data is
 validated against the settings mapping (throwing, and rendering the message
 into the target element, when required columns are missing), then cleaned
 and baseline-derived through the shared hep-core reducers.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the profile data contract.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Long-format lab records matching the profile data contract.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyParticipantProfile</code> — The instance, for chaining.</p>
 <h3 id="applySettings"><code>applySettings(settings)</code></h3>
 <p>Merge setting overrides onto the current settings without re-rendering:
 the merge half of setSettings, also used by a docked host to refresh
 live pass-through settings (cuts, axis type, display) before its own
 selection re-dispatch re-renders the block (PPRF-7).</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>Object</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>Object</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyParticipantProfile</code> — The instance, for chaining.</p>
 <h3 id="setSettings"><code>setSettings(settings)</code></h3>
 <p>Merge setting overrides onto the current settings, adopt a provided display
 mode into the live state, re-clean any bound data, and re-render.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>Object</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>Object</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyParticipantProfile</code> — The instance, for chaining.</p>
 <h3 id="setSelected"><code>setSelected(ids)</code></h3>
 <p>Programmatic selection: the same path the participantsSelected listener
 takes (PPRF-6). A non-empty list ranks and shows the cohort; an empty list
 clears.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>ids</code></td><td><code>Array.&lt;(string|number)&gt;</code></td><td>—</td><td>The selected participant ids.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>ids</code></td><td><code>Array.&lt;(string|number)&gt;</code></td><td>—</td><td>The selected participant ids.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyParticipantProfile</code> — The instance, for chaining.</p>
 <h3 id="show"><code>show(ids, [cleanRows])</code></h3>
 <p>Show a selection: rank the ids worst-first (PPRF-5) and render the profile
 for the first. The docked mount passes the host&#39;s pre-cleaned rows, which
 are consumed verbatim — no checkInputs, no cleanData (PPRF-1).</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>ids</code></td><td><code>Array.&lt;(string|number)&gt;</code></td><td>—</td><td>The selected participant ids.</td></tr><tr><td><code>cleanRows</code> <em>(optional)</em></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Pre-cleaned rows carrying the __hep_* columns (dock contract).</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>ids</code></td><td><code>Array.&lt;(string|number)&gt;</code></td><td>—</td><td>The selected participant ids.</td></tr><tr><td><code>cleanRows</code> <em>(optional)</em></td><td><code>Array.&lt;Object&gt;</code></td><td>—</td><td>Pre-cleaned rows carrying the __hep_* columns (dock contract).</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyParticipantProfile</code> — The instance, for chaining.</p>
 <h3 id="clear"><code>clear()</code></h3>
 <p>Clear the profile block: destroy the live charts, empty the slot (the

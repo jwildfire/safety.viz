@@ -50,13 +50,13 @@
 shell renders immediately; pass the per-domain records (or one merged array
 with a domain column) to setData (or init) on the returned instance to
 validate the data and draw the lanes.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>PatientJourneyExplorerSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>element</code> <em>(optional)</em></td><td><code>string | HTMLElement</code></td><td><code>&#39;body&#39;</code></td><td>Container node, or a CSS selector for it.</td></tr><tr><td><code>settings</code> <em>(optional)</em></td><td><code>PatientJourneyExplorerSettings</code></td><td><code>{}</code></td><td>Setting overrides, merged onto DEFAULT_SETTINGS and normalized.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The live patient-journey instance.</p>
 <h2 id="methods">Methods</h2>
 <h3 id="init"><code>init(data)</code></h3>
 <p>Load data and render: an alias for setData that keeps the two-step
 create-then-init call shape working.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Object | Array.&lt;Object&gt;</code></td><td>—</td><td>Per-domain arrays under `{ ex, ae, lb, cm, mh, ds }` keys (any case), or one merged array whose rows carry the domain column.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Object | Array.&lt;Object&gt;</code></td><td>—</td><td>Per-domain arrays under `{ ex, ae, lb, cm, mh, ds }` keys (any case), or one merged array whose rows carry the domain column.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="setData"><code>setData(data)</code></h3>
 <p>Replace the bound data and re-render. The input is split into the six
@@ -64,14 +64,14 @@ domains (either form), validated against the data contract (throwing, and
 rendering the message into the target element, when a present domain is
 missing a required column or no domain has rows), then the controls are
 rebuilt from the data and the journey drawn for the opening subject.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Object | Array.&lt;Object&gt;</code></td><td>—</td><td>Per-domain arrays under `{ ex, ae, lb, cm, mh, ds }` keys (any case), or one merged array whose rows carry the domain column.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>data</code></td><td><code>Object | Array.&lt;Object&gt;</code></td><td>—</td><td>Per-domain arrays under `{ ex, ae, lb, cm, mh, ds }` keys (any case), or one merged array whose rows carry the domain column.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="setSettings"><code>setSettings(settings)</code></h3>
 <p>Merge setting overrides onto the current settings, re-normalize, re-adopt
 the state keys that mirror settings (the window width, lane enablement,
 time mode, filter start values, the configured subject), rebuild the
 controls, and re-render.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>PatientJourneyExplorerSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>settings</code></td><td><code>PatientJourneyExplorerSettings</code></td><td>—</td><td>Setting overrides to merge.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="render"><code>render()</code></h3>
 <p>Redraw everything from the current data, settings and control state:
@@ -84,7 +84,7 @@ the axis strip, the keyboard overlay, the panel and the source drawer.</p>
 and warns. Any anchor is cleared first (with the null anchor and context
 events), then the journey is redrawn and pjeSubjectSelected plus the
 library&#39;s shared participantsSelected event are dispatched.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>subjectId</code></td><td><code>string | number</code></td><td>—</td><td>The participant id to select.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>subjectId</code></td><td><code>string | number</code></td><td>—</td><td>The participant id to select.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="anchor"><code>anchor(eventId)</code></h3>
 <p>Anchor time on an event by its normalized id (`&#39;AE-7&#39;`): rebuild the
@@ -92,25 +92,25 @@ context bundle, redraw the highlight, the axis labels and the panel, and
 emit pjeEventAnchored and pjeContextChanged. `anchor(null)` clears the
 anchor and emits both with null. An id that is not a placeable event of
 the current subject warns and changes nothing.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>eventId</code></td><td><code>string</code></td><td>—</td><td>The event id to anchor on, or null to clear.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>eventId</code></td><td><code>string</code></td><td>—</td><td>The event id to anchor on, or null to clear.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="setLaneEnabled"><code>setLaneEnabled(laneKey, enabled)</code></h3>
 <p>Toggle one lane. An unknown key warns and is a no-op. Emits
 pjeLaneToggled, and pjeContextChanged when anchored (the window&#39;s
 contents depend on the enabled lanes).</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>laneKey</code></td><td><code>string</code></td><td>—</td><td>The lane key (`exposure`, `doseChanges`, `adverseEvents`, `labs`, `conMeds`, `medicalHistory`, `disposition`).</td></tr><tr><td><code>enabled</code></td><td><code>boolean</code></td><td>—</td><td>Whether the lane is shown.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>laneKey</code></td><td><code>string</code></td><td>—</td><td>The lane key (`exposure`, `doseChanges`, `adverseEvents`, `labs`, `conMeds`, `medicalHistory`, `disposition`).</td></tr><tr><td><code>enabled</code></td><td><code>boolean</code></td><td>—</td><td>Whether the lane is shown.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="setTimeMode"><code>setTimeMode(mode)</code></h3>
 <p>Switch the time axis between study days and calendar dates. `&#39;date&#39;` is
 refused (with a warning) when no reference date resolves for the subject
 or date mode is not allowed. Emits pjeTimeModeChanged.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>mode</code></td><td><code>string</code></td><td>—</td><td>`&#39;day&#39;` or `&#39;date&#39;`.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>mode</code></td><td><code>string</code></td><td>—</td><td>`&#39;day&#39;` or `&#39;date&#39;`.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="setContextWindowDays"><code>setContextWindowDays(days)</code></h3>
 <p>Set the context-window half-width in elapsed days (coerced as in
 syncSettings; 0 means the anchor day only) and re-derive the bundle when
 anchored.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>days</code></td><td><code>number | string</code></td><td>—</td><td>The half-width in days.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>days</code></td><td><code>number | string</code></td><td>—</td><td>The half-width in days.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="setFilter"><code>setFilter(valueCol, selection)</code></h3>
 <p>Set one filter programmatically, using the same grammar filterMatches
@@ -118,7 +118,7 @@ accepts (null = no restriction, an array = membership, a scalar =
 equality; for a flag filter, its `flag_value` or null). An unknown column
 warns and is a no-op. Re-renders, re-derives the bundle when anchored and
 emits pjeFilterChanged.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>valueCol</code></td><td><code>string</code></td><td>—</td><td>The filter&#39;s `value_col`.</td></tr><tr><td><code>selection</code></td><td><code>*</code></td><td>—</td><td>The next selection.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>valueCol</code></td><td><code>string</code></td><td>—</td><td>The filter&#39;s `value_col`.</td></tr><tr><td><code>selection</code></td><td><code>*</code></td><td>—</td><td>The next selection.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="getContext"><code>getContext()</code></h3>
 <p>The current context bundle, or null when nothing is anchored. A read
@@ -132,12 +132,12 @@ model: consumers must not mutate it.</p>
 pjeEventAnchored, pjeContextChanged, pjeLaneToggled, pjeFilterChanged,
 pjeTimeModeChanged, participantsSelected); the handler receives the
 event&#39;s detail.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td><td>—</td><td>The event name.</td></tr><tr><td><code>handler</code></td><td><code>function</code></td><td>—</td><td>The listener.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td><td>—</td><td>The event name.</td></tr><tr><td><code>handler</code></td><td><code>function</code></td><td>—</td><td>The listener.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="off"><code>off(name, [handler])</code></h3>
 <p>Remove a listener, or every listener for the event when no handler is
 given.</p>
-<table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td><td>—</td><td>The event name.</td></tr><tr><td><code>handler</code> <em>(optional)</em></td><td><code>function</code></td><td>—</td><td>The listener to remove.</td></tr></tbody></table>
+<div class="table-scroll api-params"><table class="api"><thead><tr><th>Param</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody><tr><td><code>name</code></td><td><code>string</code></td><td>—</td><td>The event name.</td></tr><tr><td><code>handler</code> <em>(optional)</em></td><td><code>function</code></td><td>—</td><td>The listener to remove.</td></tr></tbody></table></div>
 <p class="returns"><strong>Returns:</strong> <code>SafetyPatientJourneyExplorer</code> — The instance, for chaining.</p>
 <h3 id="resize"><code>resize()</code></h3>
 <p>Resize every live lane chart and re-sync the keyboard overlay geometry.
