@@ -394,20 +394,28 @@ test.describe('safety.viz qt-explorer module at a 390-pixel viewport', () => {
     expect(central.caption).toContain('change by visit and arm');
     // The keyboard reaches the columns too: focus the box and press an arrow key.
     const wrap = page.locator('.safety-qt-explorer .qt-table');
-    await wrap.evaluate((element) => {
-      element.scrollLeft = 0;
-    });
+    // Going back to the start ends a scroll of its own: wait for that end here,
+    // so it is not taken for the key's below (#307).
+    await wrap.evaluate(
+      (element) =>
+        new Promise((resolve) => {
+          element.addEventListener('scrollend', resolve, { once: true });
+          element.scrollLeft = 0;
+        })
+    );
+    expect((await tableBox(page)).scrollLeft).toBe(0);
     await wrap.focus();
     await expect(wrap).toBeFocused();
-    // A key press scrolls smoothly: wait for the scroll to end before reading it.
+    // A key press scrolls smoothly: read the box until it has moved, then wait
+    // for that scroll to end before the view changes.
     await wrap.evaluate((element) => {
       window.__qtScrollEnded = new Promise((resolve) => {
         element.addEventListener('scrollend', resolve, { once: true });
       });
     });
     await page.keyboard.press('ArrowRight');
+    await expect.poll(async () => (await tableBox(page)).scrollLeft).toBeGreaterThan(0);
     await page.evaluate(() => window.__qtScrollEnded);
-    expect((await tableBox(page)).scrollLeft).toBeGreaterThan(0);
 
     // The categorical view's table is in the same box, renamed for it, and
     // starts at its first column though the box had been scrolled.
