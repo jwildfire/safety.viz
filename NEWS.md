@@ -8,7 +8,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.11.0 (Upcoming)
 
-**See it move:** the [demo app on `dev`](https://jwildfire.github.io/safety.viz/dev/demo/) is the release as it stands; the annotated demo page comes with the release candidate.
+**See it move:** [annotated v1.11.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.11-demo/)
 
 The demo app made ready to show: clearer on first open, and the defects found in the review of release 1.10 fixed. No chart and no metric is added, and nothing the app computes changes.
 
