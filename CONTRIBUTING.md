@@ -150,6 +150,12 @@ the GitHub Actions run, `null` for local runs). The freshness guard
 record set and pass/fail statuses, keyed by test title — so don't rename tests
 without regenerating evidence.
 
+Run by hand, `npm run evidence:check` runs both suites itself. CI runs each
+suite once, as its own step, and hands the guard the two JSON reports:
+`npm run evidence:check -- --vitest-json=<file> --playwright-json=<file>`.
+Given the reports it runs no suite, and it exits with an error, naming the
+file, on a report that is missing, empty or not a clean run of every test.
+
 ## Renderer definition of done
 
 Per [obot.roadmap#21](https://github.com/jwildfire/obot.roadmap/issues/21), a

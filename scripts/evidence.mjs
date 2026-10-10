@@ -9,6 +9,17 @@
 //                                        run's test IDs + statuses against
 //                                        every committed evidence.json; exit 1
 //                                        on drift (provenance keys ignored)
+//   node scripts/evidence.mjs --check --vitest-json=<file> --playwright-json=<file>
+//                                        the same guard on a run that has
+//                                        already happened: runs no suite and
+//                                        reads the two JSON reports (#291).
+//                                        This is how CI calls it, after its
+//                                        own unit and browser steps. Both
+//                                        flags or neither, and only with
+//                                        --check. Exit 1, naming the file, on
+//                                        a report that is missing, empty or
+//                                        not the reporter's, or that is not a
+//                                        clean run of every test
 //   node scripts/evidence.mjs --update   canonical-environment baseline
 //                                        refresh: also reruns Playwright with
 //                                        --update-snapshots (Linux only unless
@@ -37,7 +48,14 @@ import { createRequire } from 'node:module';
 import os, { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildEvidenceSets, buildRun, compareEvidence } from './evidence-lib.mjs';
+import {
+  buildEvidenceSets,
+  buildRun,
+  compareEvidence,
+  handedResultsProblems,
+  parseResults,
+  resultsArgs
+} from './evidence-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const evidenceRoot = path.join(rootDir, 'docs', 'evidence');
@@ -48,6 +66,16 @@ const mode = process.argv.includes('--check')
   : process.argv.includes('--update')
     ? 'update'
     : 'run';
+
+// Results handed over by the check (#291); both null when the guard is to run
+// the suites itself. Settled before anything runs.
+let handed;
+try {
+  handed = resultsArgs(process.argv.slice(2), mode);
+} catch (error) {
+  console.error(`✗ ${error.message}`);
+  process.exit(1);
+}
 
 if (mode === 'update' && process.platform !== 'linux' && !process.env.FORCE_EVIDENCE_UPDATE) {
   console.error(
@@ -99,13 +127,49 @@ function run(command, args, env = {}) {
   return result.status;
 }
 
-console.log('▸ Vitest (json reporter)…');
-run('npx', ['vitest', 'run', '--reporter=default', '--reporter=json', `--outputFile=${vitestOut}`]);
+let vitestResults;
+let playwrightResults;
+if (handed.vitest) {
+  // The suites have run already: read their reports, and refuse any that is
+  // not the reporter's JSON or not a clean run before comparing anything.
+  const read = (kind, given) => {
+    const file = path.resolve(given);
+    console.log(`▸ ${kind === 'vitest' ? 'Vitest' : 'Playwright'} results from ${file}`);
+    try {
+      return parseResults(kind, file, existsSync(file) ? readFileSync(file, 'utf8') : null);
+    } catch (error) {
+      console.error(`✗ ${error.message}`);
+      process.exit(1);
+    }
+  };
+  vitestResults = read('vitest', handed.vitest);
+  playwrightResults = read('playwright', handed.playwright);
+  const problems = handedResultsProblems({ vitest: vitestResults, playwright: playwrightResults });
+  if (problems.length) {
+    console.error(
+      `✗ ${path.resolve(handed.vitest)} and ${path.resolve(handed.playwright)} are not a clean run of every test:`
+    );
+    problems.forEach((problem) => console.error(`  - ${problem}`));
+    process.exit(1);
+  }
+} else {
+  console.log('▸ Vitest (json reporter)…');
+  run('npx', [
+    'vitest',
+    'run',
+    '--reporter=default',
+    '--reporter=json',
+    `--outputFile=${vitestOut}`
+  ]);
 
-console.log('▸ Playwright (json reporter)…');
-const playwrightArgs = ['playwright', 'test', '--reporter=json'];
-if (mode === 'update') playwrightArgs.push('--update-snapshots');
-run('npx', playwrightArgs, { PLAYWRIGHT_JSON_OUTPUT_NAME: playwrightOut });
+  console.log('▸ Playwright (json reporter)…');
+  const playwrightArgs = ['playwright', 'test', '--reporter=json'];
+  if (mode === 'update') playwrightArgs.push('--update-snapshots');
+  run('npx', playwrightArgs, { PLAYWRIGHT_JSON_OUTPUT_NAME: playwrightOut });
+
+  vitestResults = JSON.parse(readFileSync(vitestOut, 'utf8'));
+  playwrightResults = JSON.parse(readFileSync(playwrightOut, 'utf8'));
+}
 
 const screenshotsByModule = {};
 for (const module of modules) {
@@ -119,8 +183,8 @@ for (const module of modules) {
 
 const sets = buildEvidenceSets({
   modules,
-  vitest: JSON.parse(readFileSync(vitestOut, 'utf8')),
-  playwright: JSON.parse(readFileSync(playwrightOut, 'utf8')),
+  vitest: vitestResults,
+  playwright: playwrightResults,
   screenshotsByModule,
   provenance
 });
