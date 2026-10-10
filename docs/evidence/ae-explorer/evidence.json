@@ -1,6 +1,6 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-10-09T15:40:27.446Z",
+  "generatedAt": "2026-10-10T12:28:11.831Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37952267155",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37952267155"
+    "id": "38052025665",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38052025665"
   },
   "records": [
     {
@@ -4853,6 +4853,110 @@
       "screenshots": []
     },
     {
+      "test": "evidence guard on handed results handedResultsProblems finds nothing wrong with a clean run (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results handedResultsProblems refuses a browser test that failed and then passed on a retry (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results handedResultsProblems refuses a test name that appears twice in the results (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results handedResultsProblems refuses browser results that carry errors (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results handedResultsProblems refuses browser results with an unexpected result (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results handedResultsProblems refuses unit results whose success is not true (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results handedResultsProblems refuses unit results with a test file that failed to load (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results parseResults refuses a missing, empty or cut-off file and names it (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results parseResults refuses JSON that is not the reporter's and names the file (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results resultsArgs refuses a results flag with no file, or given twice (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results resultsArgs refuses one results flag without the other (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results resultsArgs refuses the results flags outside --check (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence guard on handed results resultsArgs returns both paths under --check, and neither when no flag is given (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
       "test": "evidence normalizer buildEvidenceSets splits records per module and duplicates shared scaffold records (#20)",
       "suite": "unit",
       "status": "pass",
@@ -4930,6 +5034,38 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [20],
+      "screenshots": []
+    },
+    {
+      "test": "evidence.mjs --check with handed results exits with an error naming each test that is absent from clean handed results (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence.mjs --check with handed results exits with an error on handed results that are not a clean run (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence.mjs --check with handed results exits with an error that names a handed file that is missing, empty or not the reporter’s JSON (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
+      "screenshots": []
+    },
+    {
+      "test": "evidence.mjs --check with handed results refuses one flag without the other, and either flag outside --check, and runs no suite (#291)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [291],
       "screenshots": []
     },
     {
