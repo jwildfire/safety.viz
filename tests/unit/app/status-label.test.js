@@ -89,6 +89,36 @@ describe('the status label', () => {
     );
   });
 
+  it('APP-TIER-028: the hover line is kept inside the window as it appears, under the pointer or the keyboard and when the panel closes: moved left when it would run off the right edge, right when off the left, and left alone when it fits (#309)', () => {
+    const label = statusLabel(CHART);
+    document.body.append(label);
+    const { pill } = parts(label);
+    const tip = pill.querySelector('.sv-status-tip');
+    const width = window.innerWidth;
+    let box = { left: width - 100, right: width + 110, width: 210 };
+    tip.getBoundingClientRect = () => box;
+    // Off the right edge: brought back to 8 pixels inside it.
+    pill.dispatchEvent(new Event('mouseenter'));
+    expect(tip.style.transform).toBe('translateX(-118px)');
+    // Off the left edge.
+    box = { left: -20, right: 190, width: 210 };
+    pill.dispatchEvent(new Event('pointerenter'));
+    expect(tip.style.transform).toBe('translateX(28px)');
+    // Inside: where the stylesheet put it.
+    box = { left: 40, right: 250, width: 210 };
+    pill.dispatchEvent(new Event('focus'));
+    expect(tip.style.transform).toBe('');
+    // Not showing, it has no box, and nothing is done to it.
+    box = { left: 0, right: 0, width: 0 };
+    pill.dispatchEvent(new Event('mouseenter'));
+    expect(tip.style.transform).toBe('');
+    // The panel closed under the pointer shows the line again: it is placed then too.
+    pill.click();
+    box = { left: width - 100, right: width + 110, width: 210 };
+    pill.click();
+    expect(tip.style.transform).toBe('translateX(-118px)');
+  });
+
   it('APP-TIER-008: hovering shows one line; a click opens the panel and it stays open; a second click, the cross or Escape closes it, and the pill says which it is (#273)', () => {
     const label = statusLabel(CHART);
     document.body.append(label);

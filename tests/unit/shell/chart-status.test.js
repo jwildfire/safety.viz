@@ -111,6 +111,18 @@ describe('shell: a chart’s own status label', () => {
     expect(element.querySelectorAll('.sv-status')).toHaveLength(1);
   });
 
+  it('APP-TIER-027: the shell’s stylesheet still styles a status banner, for a chart outside this repository that draws one with the shell’s classes, though no chart here draws one (#309)', () => {
+    const element = document.createElement('div');
+    document.body.append(element);
+    renderShell(element, { moduleClass: 'other-chart' });
+    const styles = document.getElementById('safety-viz-shell-styles').textContent;
+    expect(styles).toContain('.sv-prototype,.sv-experimental{display:flex;');
+    expect(styles).toContain('border-left:4px solid #d99a2b;');
+    expect(styles).toContain('.sv-prototype-tag{flex:0 0 auto;text-transform:uppercase;');
+    expect(styles).toContain('.sv-prototype-text{flex:1 1 auto}');
+    expect(element.querySelector('.sv-experimental, .sv-prototype')).toBeNull();
+  });
+
   it('APP-TIER-019: a host that shows the label itself says so on the chart’s element or on anything around it, and the chart draws none (#274)', () => {
     document.body.innerHTML =
       '<div data-sv-status-host><div><div id="inside"></div></div></div><div id="own" data-sv-status-host></div><div id="alone"></div>';

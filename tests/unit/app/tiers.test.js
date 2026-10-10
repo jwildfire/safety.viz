@@ -78,7 +78,7 @@ describe('the status ladder: the rung an entry stands on', () => {
     expect(tierProblems(config)).toEqual([]);
   });
 
-  it('APP-TIER-003: an entry that says "qualified" stops the build with a sentence naming it, and so do a retired flag, a word that is no rung and an Experimental entry with no reason (#272)', () => {
+  it('APP-TIER-003: an entry that says "qualified" stops the build with a sentence naming it, in the site’s configuration or in a library’s own list, and so do a retired flag, a word that is no rung and an Experimental entry with no reason (#272, #309)', () => {
     const qualified = copy(config);
     renderer('histogram', qualified).tier = 'qualified';
     expect(tierProblems(qualified)).toEqual([
@@ -88,6 +88,17 @@ describe('the status ladder: the rung an entry stands on', () => {
     ]);
     expect(() => checkTiers(qualified)).toThrow(/Safety Histogram says tier "qualified"/);
     expect(() => chartTiers({ config: qualified })).toThrow(/Nothing in safety\.viz is qualified/);
+    // A further library's own entry is refused the word as well (#309).
+    const script = path.join(mkdtempSync(path.join(os.tmpdir(), 'sv-tiers-')), 'claims.js');
+    writeFileSync(
+      script,
+      'var Claims = { portfolio: { modules: { sure: { tier: "qualified" } } } };'
+    );
+    expect(() =>
+      chartTiers({
+        libraries: [{ name: 'claims', global: 'Claims', path: path.relative(rootDir, script) }]
+      })
+    ).toThrow('claims: sure says tier "qualified". Nothing in safety.viz is qualified');
     // A tab is named as a tab.
     const tab = copy(config);
     tab.appTabs[0].tier = 'qualified';

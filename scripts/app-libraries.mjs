@@ -353,7 +353,7 @@ export function chartLinks({ site = SITE, libraries = APP_LIBRARIES, config, man
  * @param {Object} [options.config] The site's configuration; by default site/config.json.
  * @param {Object} [options.manifest] safety.viz's portfolio manifest; by default src/data/portfolio.json.
  * @returns {Object<string, {tier: string, note?: string}>} Module name or tab id → its rung, and its reason where it has one.
- * @throws {Error} When the configuration names a rung it may not, as `qualified` (scripts/tiers.mjs).
+ * @throws {Error} When the configuration, or a library's own entry, names a rung it may not, as `qualified` (scripts/tiers.mjs).
  */
 export function chartTiers({ libraries = APP_LIBRARIES, config, manifest } = {}) {
   const read = (file) => JSON.parse(readFileSync(path.join(rootDir, file), 'utf8'));
@@ -370,6 +370,15 @@ export function chartTiers({ libraries = APP_LIBRARIES, config, manifest } = {})
   }
   for (const library of libraries) {
     for (const [module, entry] of Object.entries(libraryManifest(library).modules)) {
+      // A library's own entry may not say it either (#309): the word is refused
+      // wherever a rung is read, not only in the site's configuration.
+      if (tierOf(entry) === 'qualified') {
+        throw new Error(
+          `${library.name}: ${module} says tier "qualified". Nothing in safety.viz is qualified: ` +
+            'no chart and no tab has been through qualification, and there is no record for the word ' +
+            'to point at. Say "exploratory", "experimental" or "prototype".'
+        );
+      }
       tiers[module] = rung(entry);
     }
   }

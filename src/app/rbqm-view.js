@@ -126,6 +126,7 @@ export function rbqmTab({
   let runStep = 'read'; // while a run is going: reading the study, then running the workflows
   let runs = 0;
   let kept = null; // the folder of R's file system the last run's files are in
+  let stoppedOn = null; // the sources of the run that is going or that stopped, as `result.loaded` holds a finished run's
   let library = null; // the promise of gsm.viz
   let libraryProblem = '';
   let shown = null; // { app, steps } of the view as it is on the page now
@@ -342,6 +343,8 @@ export function rbqmTab({
     }
     phase = 'running';
     runStep = 'read';
+    // Should this run stop, this is what it was run on.
+    stoppedOn = sources;
     redraw();
     runs += 1;
     // Each run's files go in a folder of their own: a file of an earlier study
@@ -826,7 +829,11 @@ export function rbqmTab({
         return `${metrics.filter((metric) => metric.ran).length} of ${metrics.length}`;
       }
       if (phase === 'failed') return 'no R';
-      if (phase === 'stopped') return 'stopped';
+      // Nor did R stop on a study loaded since the run that stopped (#309).
+      if (phase === 'stopped') {
+        const since = stoppedOn && app && !sameFiles(handed(app).sources, stoppedOn);
+        return since ? 'not run' : 'stopped';
+      }
       if (busy()) return phase === 'running' ? 'running' : 'starting';
       return 'not run';
     },
@@ -883,9 +890,15 @@ export function rbqmTab({
       // R is up its results are simply not there. Settled before anything is
       // drawn, so the row says what is true now.
       const files = handed(app);
-      const changed = phase === 'done' && result && !sameFiles(files.sources, result.loaded);
+      // The same holds after a run that stopped (#309): "R stopped" is said of
+      // the study that was run, and not of one loaded since.
+      const ranOn =
+        phase === 'done' && result ? result.loaded : phase === 'stopped' ? stoppedOn : null;
+      const changed = Boolean(ranOn) && !sameFiles(files.sources, ranOn);
       if (changed) {
         result = null;
+        stoppedOn = null;
+        failure = null;
         phase = 'idle';
       }
       const root = el('div', 'sva-rbqm');

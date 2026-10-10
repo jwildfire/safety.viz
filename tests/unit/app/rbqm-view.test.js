@@ -716,6 +716,61 @@ describe('the RBQM tab on the page', () => {
     expect(r.made[0].runs.at(-1).request.args.data).toBe('/rbqm/runs/2');
   });
 
+  it('APP-RBQM-081: after a run that stopped, a study loaded since is not said to have stopped: with R up it is run at once with no press, and the tab, its row and the control say what is true of it; the same study, opened again, still says R stopped (#309)', async () => {
+    fakeViz();
+    let attempt = 0;
+    const { app, r, view, $ } = mount({
+      answers: {
+        rbqm_run: () =>
+          (attempt += 1) === 1
+            ? { status: 'error', message: 'Error in rbqm_run: something gave way' }
+            : { status: 'ok', value: noLabs }
+      }
+    });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    const [connection] = r.made;
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    expect(view.state().phase).toBe('stopped');
+    // Left and come back to with the same study: it did stop.
+    app.select('data');
+    app.select('rbqm');
+    await settle();
+    expect(view.state().phase).toBe('stopped');
+    expect($('.sva-rbqm-status').textContent).toBe(
+      'R stopped, so there are no results. Run again, at the top right.'
+    );
+    expect(connection.runs).toHaveLength(3);
+    // Another study, loaded on the Data tab.
+    app.select('data');
+    app.reset();
+    app.loadRaw(STUDY.filter((file) => file.name !== 'Raw_LB.csv'));
+    expect(tabCount()).not.toBe('stopped');
+    app.select('rbqm');
+    expect($('.sva-rbqm-status').textContent).not.toContain('R stopped');
+    expect($('.sva-rbqm-status').classList.contains('sva-rbqm-problem')).toBe(false);
+    await settle();
+    // R is up, so the new study is run with no press, and R is not started again.
+    expect(view.state().phase).toBe('running');
+    expect(control().dataset.phase).toBe('starting');
+    expect(tabCount()).toBe('running');
+    await connection.letGo();
+    expect(r.createConnection).toHaveBeenCalledTimes(1);
+    expect(connection.runs.map((run) => run.name)).toEqual([
+      'Sys.time',
+      'rbqm_attach',
+      'rbqm_run',
+      'rbqm_run'
+    ]);
+    expect(Object.keys(connection.runs.at(-1).request.files)).toHaveLength(8);
+    expect(view.state().phase).toBe('done');
+    expect(tabCount()).toBe('7 of 8');
+    expect($('.sva-rbqm-status').textContent).toMatch(
+      /^R ran 7 of 8 metrics on the 8 loaded files in /
+    );
+  });
+
   it('APP-RBQM-028: once R is up, a study loaded afterwards is run at once without starting R again, and the results of the study before it are not shown as its own (#235)', async () => {
     fakeViz();
     const { app, r, view, $ } = mount({
