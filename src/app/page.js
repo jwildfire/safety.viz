@@ -615,7 +615,13 @@ export function mountApp(
       chartRow.append(section);
     }
     if (openView && typeof openView.control === 'function') {
-      const action = openView.control(handle);
+      // A view's control is its library's code, as its items are: one that throws leaves no control.
+      let action = null;
+      try {
+        action = openView.control(handle);
+      } catch (error) {
+        console.warn('safety.viz app: a view’s control could not be read.', error);
+      }
       if (action) {
         chartRow.hidden = false;
         wanted = [state.selected, action];
@@ -717,6 +723,20 @@ export function mountApp(
     const said = wanted ? controlState(wanted[1]) : null;
     if (!said) return;
     const [name, action] = wanted;
+    // An action in the panel, as Run again, closes the panel: what it sets
+    // going is said in the row.
+    if (said.details) {
+      said.details = {
+        ...said.details,
+        actions: said.details.actions.map((one) => ({
+          ...one,
+          press: () => {
+            controlOpen = null;
+            return one.press();
+          }
+        }))
+      };
+    }
     const again = () => {
       const current = status();
       renderNav(current);

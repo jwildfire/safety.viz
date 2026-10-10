@@ -26,20 +26,6 @@ export function listed(items) {
   return `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 }
 
-/**
- * Where starting R downloads from, and about how much from each, in words:
- * "R itself from webr.r-wasm.org (about 13 MB), ...".
- * @param {Array<{what: string, host: ?string, megabytes: number}>} downloads Each download; a null host is the page's own address.
- * @returns {string} The phrase.
- */
-export function downloadsPhrase(downloads) {
-  return listed(
-    downloads.map(
-      ({ what, host, megabytes }) => `${what} from ${host || 'this page'} (about ${megabytes} MB)`
-    )
-  );
-}
-
 /** The megabytes of every download together. */
 export const totalMegabytes = (downloads) =>
   downloads.reduce((sum, { megabytes }) => sum + megabytes, 0);
@@ -59,22 +45,6 @@ export function ranOn(files, study = [], word = 'loaded file') {
   return parts.join(' and ');
 }
 
-/**
- * What the tab says before R is started: what starting it downloads, and from
- * where, and that the files stay here.
- * @param {number} files How many raw files are loaded.
- * @param {Array<{what: string, host: ?string, megabytes: number}>} downloads The downloads.
- * @param {string[]} [study] The loaded study's files that stand in for raw tables, by name.
- * @returns {string} The sentences.
- */
-export function needSentence(files, downloads, study = []) {
-  return (
-    `Start R to run gsm’s workflows on ${ranOn(files, study, 'loaded raw file')}. ` +
-    `It downloads about ${totalMegabytes(downloads)} MB, once: ${downloadsPhrase(downloads)}. ` +
-    'The files stay in this browser, and R runs here.'
-  );
-}
-
 /** What the tab says when nothing the metrics can run on is loaded. */
 export const NO_FILES =
   'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or drop gsm raw files here.';
@@ -82,29 +52,6 @@ export const NO_FILES =
 /** What the tab says when files are loaded and none is one the metrics can run on. */
 export const NONE_PLACED =
   'None of the loaded files is a subject-level or adverse events file, or a gsm raw file, so there is nothing for R to run.';
-
-/**
- * What the tab says R is doing, for every step from the press to the first
- * result, with how long it has been since the press.
- * @param {string} step `runtime`, `packages`, `files`, `source`, `attach` or `run`.
- * @param {{seconds: number, files: number, study?: string[], downloads: Array<{what: string, host: ?string, megabytes: number}>}} context Whole seconds since the press, how many raw files are loaded, the loaded study's files that stand in for raw tables, and the downloads.
- * @returns {string} The sentence.
- */
-export function stepSentence(step, { seconds, files, study = [], downloads }) {
-  const from = (index) =>
-    `about ${downloads[index].megabytes} MB from ${downloads[index].host || 'this page'}`;
-  const packages = downloads.slice(1).map((_, index) => from(index + 1));
-  const doing = {
-    runtime: `Starting R: downloading R itself, ${from(0)}.`,
-    packages: `Starting R: installing its packages, ${listed(packages)}.`,
-    files: 'Starting R: fetching gsm’s workflow files from this page.',
-    source: 'Starting R: reading the pipeline’s R.',
-    attach:
-      'R has started. Loading gsm’s packages in R: this is the longest step, and the database they query with is most of it.',
-    run: `Running gsm’s workflows on ${ranOn(files, study)}: the mappings, then each metric, then the reporting tables.`
-  }[step];
-  return `${doing || 'Starting R.'} ${counted(seconds, 'second')} so far.`;
-}
 
 /** Every address starting R downloads from, in words: "webr.r-wasm.org, repo.r-wasm.org and this page". */
 export const hostsSaid = (downloads) =>
@@ -342,7 +289,7 @@ export function runDetails(answer, run, downloads) {
           text: [
             started
               ? `${secondsSaid(run.sinceStart)} from the press to the charts.`
-              : 'R was already running from an earlier run, so only the last step ran again.'
+              : 'R was already running, so only the last step ran again.'
           ]
         }
       ],
@@ -475,44 +422,6 @@ export function metricInputs(answer, metricId) {
 }
 
 /**
- * What the tab says once R has answered: how many metrics ran, on how many
- * files, how long R took, and the versions R reports.
- * @param {Object} answer What `rbqm_run` returned.
- * @param {{files: number, study?: string[], seconds: number, sinceStart: ?number, snapshotDate: string, copies?: ?{workflows: {name: string, version: string}, charts: {name: string, version: string}}}} run The raw files the run was given, the loaded study's files that stood in for raw tables, how long the run took, how long it was from the press that started R to this result (null for a later run), the snapshot's date, and what is copied in and not installed in R: the metric workflows and the charts, each with its version.
- * @returns {string} The sentences.
- */
-export function doneSentence(
-  answer,
-  { files, study = [], seconds, sinceStart, snapshotDate, copies = null }
-) {
-  const metrics = metricList(answer);
-  const ran = metrics.filter((metric) => metric.ran).length;
-  const versions = isRecord(answer.versions) ? answer.versions : {};
-  const named = ['R', 'gsm.core', 'gsm.mapping', 'gsm.reporting', 'workr']
-    .filter((name) => versions[name])
-    .map((name) => `${name} ${versions[name]}`);
-  return (
-    `R ran ${ran} of ${counted(metrics.length, 'metric')} on ${ranOn(files, study)} ` +
-    `in ${counted(seconds, 'second')}` +
-    (sinceStart === null || sinceStart === undefined
-      ? '.'
-      : `, ${counted(sinceStart, 'second')} after Start R was pressed.`) +
-    ` The snapshot is dated ${snapshotDate}.` +
-    (named.length ? ` ${listed(named)}.` : '') +
-    // gsm.kri is not installed in R, and gsm.viz is not R's: R reports neither.
-    (copies
-      ? ` The metric workflows are ${copies.workflows.name} ${copies.workflows.version}’s ` +
-        `and the charts ${copies.charts.name} ${copies.charts.version}’s.`
-      : '')
-  );
-}
-
-/**
- * A date as R reads one: the reader's own calendar day, `2026-10-07`.
- * @param {Date} date The moment.
- * @returns {string} The day.
- */
-/**
  * What R warned of along the way, each as a sentence the tab shows beside the
  * run's notes: gsm says in a warning when it leaves a participant or a site
  * out of a metric, and the reader is owed that. The words are R's.
@@ -528,6 +437,11 @@ export function warningsSaid(answer) {
     .map((warning) => `R warned: ${warning.replace(/[.]*$/, '.')}`);
 }
 
+/**
+ * A date as R reads one: the reader's own calendar day, `2026-10-07`.
+ * @param {Date} date The moment.
+ * @returns {string} The day.
+ */
 export function isoDay(date) {
   const two = (value) => String(value).padStart(2, '0');
   return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}`;

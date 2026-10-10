@@ -73,6 +73,9 @@ const SILENT = Symbol('R gave no answer');
 
 /** A metric's state, in the words its item's accessible name and its page's heading say. */
 const STATE_WORDS = { ran: 'ran', cannot: 'did not run', running: 'running', todo: 'not started' };
+/** A metric's state in words: one the files cannot support has not "not run" until there has been a run. */
+const stateSaid = (metric, ran) =>
+  metric.state === 'cannot' && !ran ? 'cannot run' : STATE_WORDS[metric.state];
 
 const messageOf = (error) =>
   (error && typeof error.message === 'string' && error.message) || String(error);
@@ -394,6 +397,8 @@ export function rbqmTab({
             ]
           : [],
       loaded: sources,
+      // What the page said of the load when R ran: Run details lists these with R's own.
+      notes: [...(app.state.notes || [])],
       seconds: took,
       // Said only of the press that started R: a later press started nothing.
       sinceStart: startedR ? seconds() : null,
@@ -496,7 +501,7 @@ export function rbqmTab({
                     ]
                   : [])
               ].filter(Boolean),
-              notes: [...result.said, ...(app.state.notes || [])]
+              notes: [...result.said, ...result.notes]
             },
             downloads
           );
@@ -698,13 +703,18 @@ export function rbqmTab({
     card.append(
       headRow(
         metric.name,
-        `${metric.abbreviation}, ${STATE_WORDS[metric.state]}`,
+        `${metric.abbreviation}, ${stateSaid(metric, phase === 'done' && Boolean(result))}`,
         'sva-rbqm-metric-name'
       )
     );
     if (metric.state === 'cannot') {
-      const why = el('p', 'sva-rbqm-why');
-      why.append(`${metric.message} `, dataLink(app, 'Change the data on the Overview page.'));
+      // R's own sentence, and the way to the data.
+      const why = el('div', 'sva-rbqm-whybox');
+      why.append(
+        el('p', 'sva-rbqm-why', metric.message),
+        ' ',
+        dataLink(app, 'Change the data on the Overview page.')
+      );
       card.append(why);
       return;
     }
@@ -871,7 +881,7 @@ export function rbqmTab({
           id: metric.id,
           label: metric.abbreviation,
           title: metric.state === 'cannot' && metric.message ? metric.message : metric.name,
-          name: `${metric.name}: ${STATE_WORDS[metric.state]}`,
+          name: `${metric.name}: ${stateSaid(metric, phase === 'done' && Boolean(result))}`,
           icon: metric.state,
           state: metric.state
         }))
@@ -882,7 +892,12 @@ export function rbqmTab({
     control: (app) => action(app),
 
     /** Once a run is done the notes about a load are in Run details, with R's own. */
-    ownsNotes: () => phase === 'done' && Boolean(result),
+    ownsNotes: (app) =>
+      phase === 'done' &&
+      Boolean(result) &&
+      sameFiles(handed(app).sources, result.loaded) &&
+      // A note made since the run, as of a file refused, is the page's to show.
+      (app.state.notes || []).every((note) => result.notes.includes(note)),
 
     /** What the tab holds now, for the tests: the phase, and what R returned. */
     state: () => ({ phase, step: moment() || step, up, result, failure }),
@@ -915,14 +930,13 @@ export function rbqmTab({
         ? metricsNow(app).find((metric) => metric.id === app.state.item)
         : null;
       card.dataset.page = open ? 'metric' : 'overview';
+      card.classList.add(open ? 'sva-rbqm-metric' : 'sva-rbqm-overview');
       const done = phase === 'done' && result;
 
       const withCharts = (draw) => {
         const ready = charts && globalThis[charts.global] && globalThis[charts.global].default;
         const go = (viz) => {
           if (!live) return;
-          if (!viz && libraryProblem)
-            card.append(el('p', 'sva-message sva-problem', libraryProblem));
           try {
             draw(viz);
           } catch (error) {
@@ -930,6 +944,9 @@ export function rbqmTab({
               el('p', 'sva-message sva-problem', `The charts did not draw: ${messageOf(error)}`)
             );
           }
+          // Under the page's heading, where the charts would be.
+          if (!viz && libraryProblem)
+            card.append(el('p', 'sva-message sva-problem', libraryProblem));
         };
         if (ready) go(ready);
         else loadLibrary().then(go);
@@ -955,7 +972,8 @@ export function rbqmTab({
             const can = support.metrics.filter((metric) => metric.supported).length;
             const supports = el('p', 'sva-rbqm-supports');
             supports.append(
-              `The loaded ${app.state.study ? 'study supports' : 'files support'} ${can} of ${support.metrics.length} metrics. `,
+              // A demo study is a study, and so are a study's own files; gsm raw files a reader loaded are files.
+              `The loaded ${app.state.study || !files.raw.files.length ? 'study supports' : 'files support'} ${can} of ${support.metrics.length} metrics. `,
               dataLink(app, 'Change the data below.')
             );
             card.append(supports);

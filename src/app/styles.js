@@ -188,7 +188,8 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-rbqm-key li{display:flex;gap:.45rem;align-items:center;margin:0;padding:.12rem 0}
 .sva-app .sva-rbqm-key p{margin:0}
 .sva-flag-green{color:#3daf06}.sva-flag-amber{color:#feaa02}.sva-flag-red{color:#ff5859}.sva-flag-none{color:#828282}
-.sva-app .sva-rbqm-why{margin:0;padding:.8rem 1.1rem;border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:8px}
+.sva-rbqm-whybox{padding:.8rem 1.1rem;border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:8px;color:var(--ink)}
+.sva-app .sva-rbqm-why{display:inline;margin:0}
 .sva-ico{width:.95rem;height:.95rem;flex:none}
 .sva-view-item .sva-ico{width:.92rem;height:.92rem}
 .sva-ico-ran{color:#5f9e45}.sva-ico-cannot,.sva-ico-todo{color:#8b939d}
