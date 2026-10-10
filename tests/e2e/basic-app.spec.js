@@ -2027,7 +2027,10 @@ test.describe('demo app with R on request', () => {
     await expect(page.locator('.sva-action')).toHaveText('Try again', { timeout: 150000 });
   });
 
-  test('APP-R-051: the R control is at the right end of the chart-name row, outside the names that scroll; before a press it reads its reason, its cost and Start R; a press shows a spinner and a count of seconds, then a chip saying R is ready, and the chip opens R’s version, how long it took, the download and where R runs (#276)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-R-051: the R control is at the right end of the chart-name row, outside the names that scroll; before a press it reads its reason, its cost and Start R; a press shows a spinner and a count of seconds, then a chip saying R is ready, and the chip opens R’s version, how long it took, the download and where R runs (#276)', { tag: '@real-r' }, async ({
     page
   }) => {
     test.setTimeout(240000);
@@ -2263,7 +2266,10 @@ test.describe('gsm packages for R in the browser', () => {
     readFileSync(new URL('../../site/vendor/r-wasm/pins.json', import.meta.url), 'utf8')
   );
 
-  test('APP-R-032: R in the browser installs workr, gsm.core, gsm.mapping and gsm.reporting from the page’s own address and their dependencies from repo.r-wasm.org, at the pinned versions; they attach with duckdb, and a query runs through workr (#229)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-R-032: R in the browser installs workr, gsm.core, gsm.mapping and gsm.reporting from the page’s own address and their dependencies from repo.r-wasm.org, at the pinned versions; they attach with duckdb, and a query runs through workr (#229)', { tag: '@real-r' }, async ({
     page,
     context
   }) => {
@@ -2326,7 +2332,10 @@ test.describe('rbqm pipeline in R in the browser', () => {
       )
       .sort();
 
-  test('APP-R-037: rbqm pipeline: R in the browser runs the mapping, metric and reporting workflows for adverse event rate by site through workr on the demo study’s raw files, and its Results rows are desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; before R is asked for, nothing is asked of R’s hosts, and R asks no host but webR’s, the public index and the page’s own (#231)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-R-037: rbqm pipeline: R in the browser runs the mapping, metric and reporting workflows for adverse event rate by site through workr on the demo study’s raw files, and its Results rows are desktop R’s: the same sites, and for each the same numerator, denominator, metric, score and flag to eight decimal places; before R is asked for, nothing is asked of R’s hosts, and R asks no host but webR’s, the public index and the page’s own (#231)', { tag: '@real-r' }, async ({
     page,
     context
   }, testInfo) => {
@@ -3829,7 +3838,10 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-030: choosing the RBQM study and starting R send nothing beyond what R needs: from the study’s choice until five quiet seconds after the charts are drawn, every request the page and its workers make is a GET or HEAD with no body, no query and no header the browser did not set itself, to three addresses and no other: the page’s own, for the study’s files, gsm.viz’s bundle, the files R is given and gsm’s four packages; webr.r-wasm.org, for R; and repo.r-wasm.org, for packages. No address names a participant, and neither the page nor its workers open a socket (#235)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-RBQM-030: choosing the RBQM study and starting R send nothing beyond what R needs: from the study’s choice until five quiet seconds after the charts are drawn, every request the page and its workers make is a GET or HEAD with no body, no query and no header the browser did not set itself, to three addresses and no other: the page’s own, for the study’s files, gsm.viz’s bundle, the files R is given and gsm’s four packages; webr.r-wasm.org, for R; and repo.r-wasm.org, for packages. No address names a participant, and neither the page nor its workers open a socket (#235)', { tag: '@real-r' }, async ({
     page,
     context
   }) => {
@@ -4359,7 +4371,10 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-078: three raw files dropped on the Data tab, in real R: the subjects, adverse events and protocol deviations files are dropped on the drop zone, the RBQM tab is opened from the card and Start R pressed; R runs the four metrics the card said the files support, every Results row of each is desktop R’s to eight decimal places, and what R says of each other metric is what the card said before R was started (#282)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-RBQM-078: three raw files dropped on the Data tab, in real R: the subjects, adverse events and protocol deviations files are dropped on the drop zone, the RBQM tab is opened from the card and Start R pressed; R runs the four metrics the card said the files support, every Results row of each is desktop R’s to eight decimal places, and what R says of each other metric is what the card said before R was started (#282)', { tag: '@real-r' }, async ({
     page
   }) => {
     test.setTimeout(480000);
@@ -4633,7 +4648,10 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-039: a reader’s own files in real R, and what leaves the browser: with no demo study, the subjects and adverse events files chosen from disk and Start R pressed, R draws the two adverse event metrics and says of each other metric what the tab said before R started; the same adverse events file with a column taken out is run at once and R names the column. From the first file chosen until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and for nothing of the reader’s; no address names a file of theirs or a participant in them (#236)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-RBQM-039: a reader’s own files in real R, and what leaves the browser: with no demo study, the subjects and adverse events files chosen from disk and Start R pressed, R draws the two adverse event metrics and says of each other metric what the tab said before R started; the same adverse events file with a column taken out is run at once and R names the column. From the first file chosen until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and for nothing of the reader’s; no address names a file of theirs or a participant in them (#236)', { tag: '@real-r' }, async ({
     page,
     context
   }, testInfo) => {
@@ -4752,7 +4770,10 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-047: the study the other charts use in real R, and what leaves the browser: on the app as it opens, Start R runs gsm’s workflows on the study’s subject-level and adverse events files and draws three metrics at 17 sites; every Results row is desktop R’s to eight decimal places, and what R says of each metric is what the tab said before R started; with the site’s mapping cleared on the Data tab R runs at once and names the column. From the tab’s opening until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and no address names a participant (#253)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-RBQM-047: the study the other charts use in real R, and what leaves the browser: on the app as it opens, Start R runs gsm’s workflows on the study’s subject-level and adverse events files and draws three metrics at 17 sites; every Results row is desktop R’s to eight decimal places, and what R says of each metric is what the tab said before R started; with the site’s mapping cleared on the Data tab R runs at once and names the column. From the tab’s opening until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and no address names a participant (#253)', { tag: '@real-r' }, async ({
     page,
     context
   }) => {
@@ -4894,7 +4915,10 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-021: rbqm tab in real R: on the RBQM study, pressing Start R starts R in the browser, says what it is doing meanwhile, and draws the overview, the scatter plot and the bar chart; every number in the overview table is R’s: each cell prints the score, metric, numerator and denominator of the Results row R returned for that site and metric, the enrolment is the Groups table’s, and the red and amber counts are R’s flags counted; R’s rows are desktop R’s to eight decimal places; each of the eight metrics draws; what the tab says R downloads is what was downloaded (#235)', async ({
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-RBQM-021: rbqm tab in real R: on the RBQM study, pressing Start R starts R in the browser, says what it is doing meanwhile, and draws the overview, the scatter plot and the bar chart; every number in the overview table is R’s: each cell prints the score, metric, numerator and denominator of the Results row R returned for that site and metric, the enrolment is the Groups table’s, and the red and amber counts are R’s flags counted; R’s rows are desktop R’s to eight decimal places; each of the eight metrics draws; what the tab says R downloads is what was downloaded (#235)', { tag: '@real-r' }, async ({
     page,
     context
   }, testInfo) => {
