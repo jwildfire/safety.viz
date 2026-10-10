@@ -593,7 +593,8 @@ describe('evidence.mjs --check with handed results', () => {
       cwd: root,
       encoding: 'utf8',
       env: { ...process.env, PATH: '' },
-      timeout: 60_000
+      timeout: 60_000,
+      maxBuffer: 64 * 1024 * 1024
     });
     return { status: result.status, out: `${result.stdout}\n${result.stderr}` };
   };
@@ -687,5 +688,12 @@ describe('evidence.mjs --check with handed results', () => {
     expect(out).toMatch(
       /docs\/evidence\/shift-plot\/evidence\.json is committed but the fresh run produced no records/
     );
+    // Every difference is printed before the command ends, the last file's
+    // included, however long the list: the first run of this on the Linux
+    // runner lost all but the first 64 kB.
+    expect(out).toMatch(
+      /docs\/evidence\/time-to-event\/evidence\.json is committed but the fresh run produced no records/
+    );
+    expect(out.length).toBeGreaterThan(150_000);
   });
 });

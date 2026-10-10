@@ -221,7 +221,10 @@ if (mode === 'check') {
       console.log(`✓ ${rel} fresh: ${sets[module].records.length} records match.`);
     }
   }
-  if (stale) process.exit(1);
+  // Not process.exit(1): on Linux a write to a pipe is not finished when the
+  // call returns, and exiting at once cut a long list of differences short at
+  // the pipe's 64 kB, in the check's log as anywhere else (#291).
+  if (stale) process.exitCode = 1;
 } else {
   const written = [];
   for (const module of Object.keys(sets).sort()) {
