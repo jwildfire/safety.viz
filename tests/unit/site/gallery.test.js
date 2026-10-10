@@ -144,7 +144,7 @@ describe('site generator: gallery', () => {
     const chart = (module, more = {}) => ({ module, title: module, status: 'available', ...more });
     const longer = {
       ...config,
-      renderers: [...config.renderers, chart('second'), chart('third', { prototype: true })]
+      renderers: [...config.renderers, chart('second'), chart('third', { tier: 'prototype' })]
     };
     // A second available chart is counted; a Prototype is not, and nor is a queued one.
     expect(homeDescription(longer)).toMatch(/^Two classic clinical-safety graphics from /);
@@ -158,8 +158,9 @@ describe('site generator: gallery', () => {
     const site = JSON.parse(
       readFileSync(new URL('../../../site/config.json', import.meta.url), 'utf8')
     );
+    // A Prototype is named by the status ladder's one field, `tier` (#272).
     const listed = site.renderers.filter(
-      (renderer) => renderer.status === 'available' && !renderer.prototype
+      (renderer) => renderer.status === 'available' && renderer.tier !== 'prototype'
     ).length;
     expect(listed).toBeGreaterThan(9);
     const words = { 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen', 16: 'Sixteen' };

@@ -895,9 +895,11 @@ export const countWord = (count) => COUNT_WORDS[count] || String(count);
 // Its count is the charts site/config.json lists as available and not
 // Prototype (a Prototype is not counted among the library's charts), so the
 // sentence cannot fall behind the gallery again: it read "Nine" at fourteen.
+// A Prototype is one whose rung of the status ladder says so (#272): the count
+// read the flag that field replaced, and so counted the Prototype for a while.
 export function homeDescription(config) {
   const count = config.renderers.filter(
-    (renderer) => renderer.status === 'available' && !renderer.prototype
+    (renderer) => renderer.status === 'available' && tierOf(renderer) !== 'prototype'
   ).length;
   const word = countWord(count);
   return (

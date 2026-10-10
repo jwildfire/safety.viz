@@ -14,7 +14,7 @@ This skill holds what is specific to a port. The rest is already written down, a
 documents win where they disagree with this one:
 
 - [`CONTRIBUTING.md`](../../../CONTRIBUTING.md): the traceability convention, the evidence
-  pipeline, and the renderer definition of done.
+  pipeline, the demo app's conventions, and the renderer definition of done.
 - [`requirements/README.md`](../../../requirements/README.md): how a matrix is read and
   how to change one.
 - The hub's [developer guidelines](https://github.com/jwildfire/obot.roadmap/blob/main/docs/developer-guidelines.md):
@@ -37,6 +37,13 @@ documents win where they disagree with this one:
 7. Flip the `site/config.json` entry to `available` only when the definition of done in
    `CONTRIBUTING.md` holds, with the matrix, the coverage table and the evidence set in
    the same pull request as the code.
+8. Set the chart's rung of the status ladder in that same entry, as `tier`. The ladder is
+   Qualified, Exploratory, Experimental, Prototype. `exploratory` is the default and
+   needs no field. A chart whose settings or layout may still change, or that waits on a
+   clinical review, is `experimental`, and carries `tierNote`: one sentence saying why,
+   which the status label shows in the app and on the docs site. Ask @jwildfire which
+   rung a new chart stands on. Then run `npm run tiers` and commit the file it writes.
+   The chart draws no status banner of its own: the shared shell shows the label.
 
 Development is red-green: matrix row, failing test, minimal implementation.
 
@@ -49,6 +56,9 @@ Development is red-green: matrix row, failing test, minimal implementation.
 - Invent behavior for an ambiguous row. Mark it `needs-jeremy-review` and ask.
 - Claim validation. The words are "GxP-oriented" and "qualification-ready evidence",
   never "validated".
+- Set `tier` to `qualified`, or call a chart qualified, validated or stable. Nothing in
+  safety.viz has been through qualification, and the build stops on an entry that says
+  so.
 
 ## Does Chart.js fit this display?
 

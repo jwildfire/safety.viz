@@ -774,7 +774,8 @@ test.describe('docs site', () => {
   test('the built home page describes itself with the number of charts the configuration lists as available and not Prototype (#286)', async ({
     page
   }) => {
-    const listed = available.filter((renderer) => !renderer.prototype).length;
+    // A Prototype is named by the status ladder's one field, `tier` (#272).
+    const listed = available.filter((renderer) => renderer.tier !== 'prototype').length;
     const words = { 13: 'Thirteen', 14: 'Fourteen', 15: 'Fifteen', 16: 'Sixteen' };
     await page.goto('/_site/index.html');
     const description = await page.locator('meta[name="description"]').getAttribute('content');
