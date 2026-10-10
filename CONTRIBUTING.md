@@ -65,7 +65,12 @@ The first three run side by side, so each test runs once and the check takes abo
 - Every job names the `ubuntu-24.04` image and has a time limit, and the browser is installed with its system packages. The screenshots are compared on that image, so it changes by a commit to the workflow and not when GitHub moves `ubuntu-latest`.
 - The check runs on `pull_request` and `push` with a read-only token. It never moves to `pull_request_target` or `workflow_run`, and nothing in it continues on error.
 
-`tests/unit/ci-workflow.test.js` reads the workflow file and fails unless all of this is true, so a change to the layout is a change to that test, made in the same pull request.
+Two things hold this, and they hold different parts of it:
+
+- `tests/unit/ci-workflow.test.js` reads the workflow file and holds the layout. It fails when the gate could be skipped or leaves a job out, when a command the check rests on is missing, reworded, narrowed, given a condition or written so that it cannot fail (the format check, the build, the unit tests, each browser job's test command, the evidence guard and the rest of the list at the top of the test), when the tag is set anywhere but once for the whole workflow, when a step is given its own shell, and when an artifact, a runner image, a trigger or a permission moves. A change to the layout is a change to that test, made in the same pull request.
+- The evidence guard holds the results, each time the check runs. The test cannot see which tests ran. The guard can: it fails when a test in the evidence is missing from the results, failed, or appears twice.
+
+The test also holds a list of the ten tagged tests, by ID. It does not find a new test that starts real R and was left untagged. That test still runs once, in the job without real R, and still has to pass. The cost is time: that job gets longer.
 
 To tag a browser test that starts real R, give `test` the tag as its second argument and leave the name as it is, because the evidence files are keyed on the name:
 

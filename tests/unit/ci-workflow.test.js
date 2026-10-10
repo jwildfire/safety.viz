@@ -17,6 +17,50 @@ const read = (file) =>
 const GATE_NAME = 'Build, format, and test';
 const RESULTS_EXPRESSION = "${{ join(needs.*.result, ',') }}";
 
+// The commands the check rests on, each the whole of one step of its job
+// (#316). A step that is removed, reworded, narrowed or made unable to fail no
+// longer matches. Adding a check adds a line here.
+const E2E = 'npm run test:e2e -- --project=chromium';
+const REQUIRED = {
+  static: [
+    'npm ci',
+    'npm run format:check',
+    'npm run build',
+    'npm run build:check-dist',
+    'npm run bio-viz:check-source',
+    'npm run statistics:check-source',
+    'npm run r-wasm:check-source',
+    'npm run gsm-workflows:check-source',
+    'npm run gsm-viz:check-source',
+    'npm run rbqm-study:check-source',
+    'npm test -- --reporter=default --reporter=json --outputFile="$RUNNER_TEMP/vitest.json"',
+    'npm run site',
+    'npm run requirements:check'
+  ],
+  browser: [
+    'npm ci',
+    'npm run build',
+    'npx playwright install --with-deps chromium',
+    `${E2E} --grep-invert "$REAL_R_TAG" --reporter=list,blob`
+  ],
+  'browser-real-r': [
+    'npm ci',
+    'npm run build',
+    'npx playwright install --with-deps chromium',
+    `${E2E} --grep "$REAL_R_TAG" --reporter=list,blob`
+  ],
+  gate: [
+    'npm ci',
+    'npx playwright merge-reports --reporter=json,html "$RUNNER_TEMP/blob-reports"',
+    'npm run evidence:check -- --vitest-json="$RUNNER_TEMP/results/vitest.json" --playwright-json="$RUNNER_TEMP/results/playwright.json"'
+  ]
+};
+// In the gate, these two also run after a failure, so that a failed browser
+// test still gets its merged report. No other command may carry a condition.
+const MAY_RUN_AFTER_A_FAILURE = [REQUIRED.gate[0], REQUIRED.gate[1]];
+const AFTER_A_FAILURE = '${{ !cancelled() }}';
+const CANNOT_FAIL = /\|\|\s*(true|:|exit 0)|;\s*true\s*$|set \+e/;
+
 const asList = (value) => (value === undefined ? [] : Array.isArray(value) ? value : [value]);
 const steps = (workflow) =>
   Object.entries(workflow.jobs || {}).flatMap(([job, body]) =>
@@ -114,6 +158,40 @@ function problems(workflow) {
   }
   if (browserRuns.some((run) => (run.match(/--grep(-invert)?[ =]/g) || []).length !== 1)) {
     found.push('a browser step filters its tests by more than the one tag.');
+  }
+
+  // Every command the check rests on is there, whole, and can fail (#316).
+  for (const [id, commands] of Object.entries(REQUIRED)) {
+    const runs = (jobs[id]?.steps || []).map((step) => String(step.run || '').trim());
+    for (const command of commands) {
+      if (runs.filter((run) => run === command).length !== 1) {
+        found.push(`job ${id} no longer runs \`${command}\` as the whole of one step.`);
+      }
+    }
+  }
+  for (const step of steps(workflow)) {
+    const said = `the step "${step.name}" in ${step.job}`;
+    if (CANNOT_FAIL.test(step.run || '')) found.push(`${said} is written so that it cannot fail.`);
+    if ('REAL_R_TAG' in (step.env || {})) {
+      found.push(`REAL_R_TAG is set again in the step "${step.name}" of ${step.job}.`);
+    }
+    if (step.if === undefined) continue;
+    const allowed =
+      step.if === AFTER_A_FAILURE &&
+      (step.uses !== undefined ||
+        (step.job === gateId && MAY_RUN_AFTER_A_FAILURE.includes(String(step.run).trim())));
+    if (!allowed) {
+      found.push(`${said} has a condition, ${JSON.stringify(step.if)}: it could be skipped.`);
+    }
+  }
+  for (const [id, job] of Object.entries(jobs)) {
+    if (id !== gateId && job.if !== undefined) {
+      found.push(`job ${id} has a condition, ${JSON.stringify(job.if)}: it could be skipped.`);
+    }
+    if ('REAL_R_TAG' in (job.env || {})) found.push(`REAL_R_TAG is set again in job ${id}.`);
+  }
+  if (keysAtAnyDepth(workflow).some((key) => key === 'shell' || key === 'defaults')) {
+    found.push('a shell or defaults setting appears in the workflow: each step runs as written.');
   }
 
   // Artifacts: fixed, distinct names; an error when a file is missing; taken
@@ -326,13 +404,115 @@ describe('the required check’s workflow', () => {
         step.with.repository = 'someone/else';
       },
       /sets repository/
+    ],
+    // Found by the review of the v1.11.0 release candidate (#316): the checker
+    // passed each of these.
+    [
+      'the evidence guard is removed from the gate',
+      (w) =>
+        (w.jobs.gate.steps = w.jobs.gate.steps.filter((s) => !/evidence:check/.test(s.run || ''))),
+      /job gate no longer runs `npm run evidence:check/
+    ],
+    [
+      'the evidence guard is switched off',
+      (w) =>
+        (w.jobs.gate.steps.find((s) => /evidence:check/.test(s.run || '')).if = '${{ false }}'),
+      /"Evidence freshness guard" in gate has a condition/
+    ],
+    [
+      'the evidence guard cannot fail',
+      (w) => (w.jobs.gate.steps.find((s) => /evidence:check/.test(s.run || '')).run += ' || true'),
+      /job gate no longer runs `npm run evidence:check/
+    ],
+    [
+      'the evidence guard is handed other files',
+      (w) => {
+        const step = w.jobs.gate.steps.find((s) => /evidence:check/.test(s.run || ''));
+        step.run = step.run.replace('results/playwright.json', 'results/other.json');
+      },
+      /job gate no longer runs `npm run evidence:check/
+    ],
+    [
+      'the real-R job runs one file only',
+      (w) =>
+        (w.jobs['browser-real-r'].steps.find((s) => /test:e2e/.test(s.run || '')).run +=
+          ' tests/e2e/site.spec.js'),
+      /job browser-real-r no longer runs `npm run test:e2e/
+    ],
+    [
+      'a browser job runs half its tests',
+      (w) => (w.jobs.browser.steps.find((s) => /test:e2e/.test(s.run || '')).run += ' --shard=1/2'),
+      /job browser no longer runs `npm run test:e2e/
+    ],
+    [
+      'a browser job runs another project',
+      (w) => {
+        const step = w.jobs.browser.steps.find((s) => /test:e2e/.test(s.run || ''));
+        step.run = step.run.replace('--project=chromium', '--project=none');
+      },
+      /job browser no longer runs `npm run test:e2e/
+    ],
+    [
+      'a browser job’s tests cannot fail',
+      (w) => (w.jobs.browser.steps.find((s) => /test:e2e/.test(s.run || '')).run += ' || true'),
+      /"Run browser tests" in browser is written so that it cannot fail/
+    ],
+    [
+      'a browser job’s tests are switched off',
+      (w) => (w.jobs.browser.steps.find((s) => /test:e2e/.test(s.run || '')).if = 'false'),
+      /"Run browser tests" in browser has a condition/
+    ],
+    [
+      'a job sets the tag again',
+      (w) => (w.jobs.browser.env = { REAL_R_TAG: '@real-r|APP-R-032' }),
+      /REAL_R_TAG is set again in job browser/
+    ],
+    [
+      'a step sets the tag again',
+      (w) =>
+        (w.jobs.browser.steps.find((s) => /test:e2e/.test(s.run || '')).env.REAL_R_TAG = '@none'),
+      /REAL_R_TAG is set again in the step "Run browser tests" of browser/
+    ],
+    [
+      'the format check is removed',
+      (w) =>
+        (w.jobs.static.steps = w.jobs.static.steps.filter((s) => s.run !== 'npm run format:check')),
+      /job static no longer runs `npm run format:check`/
+    ],
+    [
+      'the format check cannot fail',
+      (w) => (w.jobs.static.steps.find((s) => s.run === 'npm run format:check').run += ' || true'),
+      /"Check formatting" in static is written so that it cannot fail/
+    ],
+    [
+      'the unit tests are removed',
+      (w) =>
+        (w.jobs.static.steps = w.jobs.static.steps.filter((s) => !/^npm test/.test(s.run || ''))),
+      /job static no longer runs `npm test/
+    ],
+    [
+      'the unit tests are given a condition',
+      (w) =>
+        (w.jobs.static.steps.find((s) => /^npm test/.test(s.run || '')).if =
+          "github.event_name == 'push'"),
+      /"Run unit tests" in static has a condition/
+    ],
+    [
+      'the result check runs under another shell',
+      (w) => (w.jobs.gate.steps[0].shell = 'bash --noprofile --norc {0}'),
+      /shell or defaults/
+    ],
+    [
+      'a job other than the gate is given a condition',
+      (w) => (w.jobs['browser-real-r'].if = "github.event_name == 'push'"),
+      /job browser-real-r has a condition/
     ]
   ];
 
   // The name carries no count: the evidence files are keyed on it, and the list
   // above grows.
   it('the checker reports every way of breaking the gate in its list, each made to a copy of ci.yml (#292)', () => {
-    expect(broken.length).toBeGreaterThanOrEqual(27);
+    expect(broken.length).toBeGreaterThanOrEqual(44);
     for (const [what, change, message] of broken) {
       const copy = read('ci.yml');
       change(copy);
@@ -352,11 +532,11 @@ describe('the required check’s workflow', () => {
     const tagged = [];
     for (const spec of ['basic-app', 'rbqm-pipeline', 'site']) {
       const source = readFileSync(new URL(`../e2e/${spec}.spec.js`, import.meta.url), 'utf8');
+      // Any test that carries the real-R tag, alone or among other tags.
       for (const match of source.matchAll(
-        /^\s*test\('([A-Z]+-[A-Z]+-\d+):.*', \{ tag: '([^']+)' \}, async/gm
+        /^\s*test\('([A-Z]+-[A-Z]+-\d+):.*', \{ tag: (\[[^\]]*\]|'[^']+') \}, async/gm
       )) {
-        expect(match[2]).toBe(workflow.env.REAL_R_TAG);
-        tagged.push(match[1]);
+        if (match[2].includes(`'${workflow.env.REAL_R_TAG}'`)) tagged.push(match[1]);
       }
     }
     for (const id of [
