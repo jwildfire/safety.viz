@@ -22,6 +22,7 @@ contract, the cohort rules, the baseline/on-treatment split, units),
 (the floating bars and the baseline trace), `HWF-AXIS-*` (the absolute-unit
 mirrored axes and the reference range), `HWF-COLOR-*` (the semantic arm palette
 and the jaundice override), `HWF-BOX-*` (the flanking summary panels, their hover and their labelling),
+`HWF-TITLE-*` (titles and captions that fit when an arm's name is long),
 `HWF-CTRL-*` (controls), `HWF-SELECT-*` (tooltip, selection, event),
 `HWF-API-*` (factory and lifecycle), and `HWF-COHORT-*` (the invariants the
 synthetic demo cohort must keep for the figure to be demonstrable at all).
@@ -38,6 +39,7 @@ synthetic demo cohort must keep for the figure to be demonstrable at all).
 | HWF-BOX-006, HWF-BOX-007                       | HWF-BOX-006, HWF-BOX-007                    | #83   | the panels name their marks, their slots and their arms                                                   |
 | HWF-BOX-005                                    | HWF-BOX-005                                 | #83   | hovering a summary box reads out every statistic it draws                                                 |
 | HWF-BOX-005                                    | HWF-BOX-005                                 | #83   | the summary boxes are reachable from the keyboard                                                         |
+| HWF-TITLE-001                                  | HWF-TITLE-001                               | #283  | on the pilot study at 1,280 pixels the two panel titles and the two captions over the plot stay apart     |
 | HWF-DATA-003, HWF-DATA-005, HWF-DATA-008       | HWF-DATA-003, HWF-DATA-005, HWF-DATA-008    | #93   | both cohort exclusions and the dropped records are reported separately in the notes                       |
 | HWF-DATA-003                                   | HWF-DATA-003                                | #93   | turning the Table-1 cohort rule off admits the excluded participants and says so                          |
 | HWF-DATA-007                                   | HWF-DATA-007                                | #93   | two units for the plotted measure suppress the chart with a warning naming them                           |
@@ -64,6 +66,8 @@ synthetic demo cohort must keep for the figure to be demonstrable at all).
 | HWF-BOX-005/006/007 (the hit test, the tooltip text, the anatomy key, the description) | HWF-BOX-005..007                                       | #83   | `getPlugins.test.js`                |
 | HWF-API-002, HWF-API-003, HWF-BOX-001, HWF-CTRL-001..004, HWF-SELECT-002/003           | HWF-API-002, -003                                      | #93   | `render.test.js`                    |
 | HWF-BOX-005/006/007 (hover wiring, slot labels, panel titles, the accessible label)    | HWF-BOX-005..007                                       | #83   | `render.test.js`                    |
+| HWF-TITLE-001 (the halves the divider reports, and no caption drawn on the canvas)     | HWF-TITLE-001                                          | #283  | `getPlugins.test.js`                |
+| HWF-TITLE-001 (a title's two parts, its text and hover, a caption held to its half)    | HWF-TITLE-001                                          | #283  | `render.test.js`                    |
 | HWF-API-001 (module export)                                                            | HWF-API-001                                            | #93   | `export.test.js`                    |
 | HWF-COHORT-001..011 (the synthetic demo cohort's invariants)                           | HWF-COHORT-001..011                                    | #93   | `abnbl.test.js`                     |
 | HWF-FILT-001..004 (shared filter contract)                                             | HWF-FILT-001, HWF-FILT-002, HWF-FILT-003, HWF-FILT-004 | #166  | `../shared/filter-contract.test.js` |

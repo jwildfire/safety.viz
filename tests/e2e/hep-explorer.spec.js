@@ -1248,6 +1248,56 @@ test.describe('safety.viz hep-explorer composite plot', () => {
     await captureEvidence(page, 'HEP-COMP-004', 'migration-table');
   });
 
+  test('HEP-COMP-008: at a 390-pixel viewport the composite view’s two tables scroll sideways inside their own boxes and the page stays as wide as the viewport (#285)', async ({
+    page
+  }) => {
+    // Opened at phone width, as a phone opens it.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.reload();
+    await expect(page.locator('.hep-composite-panels canvas')).toHaveCount(4);
+    const boxes = page.locator('.hep-composite .hep-migration');
+    await expect(boxes).toHaveCount(2);
+    const measure = () =>
+      page.evaluate(() => ({
+        page: document.documentElement.scrollWidth,
+        boxes: [...document.querySelectorAll('.hep-composite .hep-migration')].map((box) => {
+          const table = box.querySelector('table');
+          const last = table.querySelector('thead tr:first-child th:last-child');
+          return {
+            overflow: getComputedStyle(box).overflowX,
+            left: box.getBoundingClientRect().left,
+            right: box.getBoundingClientRect().right,
+            scrollWidth: box.scrollWidth,
+            clientWidth: box.clientWidth,
+            scrollLeft: box.scrollLeft,
+            tableWidth: table.getBoundingClientRect().width,
+            lastRight: last.getBoundingClientRect().right
+          };
+        })
+      }));
+    const before = await measure();
+    expect(before.page).toBe(390);
+    before.boxes.forEach((box) => {
+      expect(box.overflow).toBe('auto');
+      expect(box.left).toBeGreaterThanOrEqual(0);
+      expect(box.right).toBeLessThanOrEqual(390);
+    });
+    // Not vacuous: the migration table is wider than its box, and its last
+    // column starts out past the box's right edge.
+    const [migration] = before.boxes;
+    expect(migration.tableWidth).toBeGreaterThan(migration.clientWidth);
+    expect(migration.lastRight).toBeGreaterThan(migration.right);
+
+    await boxes.first().evaluate((box) => {
+      box.scrollLeft = box.scrollWidth;
+    });
+    const after = await measure();
+    expect(after.boxes[0].scrollLeft).toBeGreaterThan(0);
+    expect(after.boxes[0].lastRight).toBeLessThanOrEqual(after.boxes[0].right + 0.5);
+    expect(after.page).toBe(390);
+    expect(await page.evaluate(() => window.scrollX)).toBe(0);
+  });
+
   test('HEP-COMP-006: the View control toggles between the composite and scatter views (#67)', async ({
     page
   }) => {

@@ -5,6 +5,7 @@ import {
   BOX_PANEL_NOTE,
   JAUNDICE_PRECEDENCE,
   armDividerPlugin,
+  armHalves,
   barColor,
   barColors,
   boxHitTest,
@@ -134,16 +135,37 @@ describe('hep-waterfall getPlugins.armDividerPlugin', () => {
     }
   };
 
+  // The renderer's side of the captions: the plugin hands it the halves.
+  const captioned = (waterfall) => {
+    const placed = [];
+    return {
+      state: { ulnDisplay: 'band' },
+      waterfall,
+      placed,
+      placeArmCaptions: (halves, top) => placed.push({ halves, top })
+    };
+  };
+
   it('HWF-COLOR-003: a vertical rule marks the seam and each half is labelled with its n (#93)', () => {
     const ctx = recorder();
     const chart = fakeChart(ctx, { count: 6 });
-    armDividerPlugin(instance).afterDatasetsDraw(chart);
-    const texts = ctx.calls.filter(([name]) => name === 'fillText').map(([, text]) => text);
-    expect(texts.some((text) => text === 'Placebo (n=3)')).toBe(true);
-    expect(texts.some((text) => text === 'Study Drug (n=3)')).toBe(true);
+    const renderer = captioned(instance.waterfall);
+    armDividerPlugin(renderer).afterDatasetsDraw(chart);
     // The rule is a full-height vertical line at the boundary between the last
     // placebo bar and the first active bar.
     const seam = (chart.scales.x.getPixelForValue(2) + chart.scales.x.getPixelForValue(3)) / 2;
+    // Each half's caption is the renderer's to set, from its arm, its n and
+    // where the half lies: placebo from the plot's left edge to the seam,
+    // active from the seam to its right edge.
+    expect(renderer.placed).toEqual([
+      {
+        top: chart.chartArea.top,
+        halves: [
+          { side: 'placebo', label: 'Placebo', count: 3, left: 100, right: seam },
+          { side: 'active', label: 'Study Drug', count: 3, left: seam, right: 700 }
+        ]
+      }
+    ]);
     const moves = ctx.calls.filter(([name]) => name === 'moveTo');
     const lines = ctx.calls.filter(([name]) => name === 'lineTo');
     expect(moves.some(([, x, y]) => x === seam && y === chart.chartArea.top)).toBe(true);
@@ -156,11 +178,37 @@ describe('hep-waterfall getPlugins.armDividerPlugin', () => {
       state: { ulnDisplay: 'band' },
       waterfall: { ...instance.waterfall, ordered: [1, 2, 3], placebo: [1, 2, 3], active: [] }
     };
-    armDividerPlugin(oneSided).afterDatasetsDraw(fakeChart(ctx, { count: 3 }));
-    const texts = ctx.calls.filter(([name]) => name === 'fillText').map(([, text]) => text);
-    expect(texts).toContain('Placebo (n=3)');
-    expect(texts.some((text) => /Study Drug/.test(text))).toBe(false);
+    const renderer = captioned(oneSided.waterfall);
+    armDividerPlugin(renderer).afterDatasetsDraw(fakeChart(ctx, { count: 3 }));
+    expect(renderer.placed).toHaveLength(1);
+    expect(renderer.placed[0].halves).toEqual([
+      { side: 'placebo', label: 'Placebo', count: 3, left: 100, right: 700 }
+    ]);
     expect(ctx.calls.some(([name]) => name === 'lineTo')).toBe(false);
+  });
+
+  it('HWF-TITLE-001: the captions are never drawn on the canvas, where a long arm name cannot be held to its half (#283)', () => {
+    const ctx = recorder();
+    const pooled = 'CLD: Study Drug, CLD: Placebo, Xanomeline Low Dose, Xanomeline High Dose';
+    const waterfall = { ...instance.waterfall, activeLabel: pooled };
+    const chart = fakeChart(ctx, { count: 6 });
+    armDividerPlugin(captioned(waterfall)).afterDatasetsDraw(chart);
+    expect(ctx.calls.some(([name]) => name === 'fillText')).toBe(false);
+    // The halves meet at the seam and do not cross it, whatever the names are.
+    const { seam, halves } = armHalves(chart, waterfall);
+    expect(halves.map((half) => half.label)).toEqual(['Placebo', pooled]);
+    expect(halves[0].right).toBe(seam);
+    expect(halves[1].left).toBe(seam);
+    // An active-only cohort has one half and no seam.
+    const activeOnly = armHalves(chart, { ...waterfall, placebo: [] });
+    expect(activeOnly.seam).toBeNull();
+    expect(activeOnly.halves).toEqual([
+      { side: 'active', label: pooled, count: 3, left: 100, right: 700 }
+    ]);
+    // A renderer with no captions to set is left alone.
+    expect(() =>
+      armDividerPlugin({ waterfall }).afterDatasetsDraw(fakeChart(recorder(), { count: 6 }))
+    ).not.toThrow();
   });
 });
 

@@ -1,6 +1,6 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-10-09T14:28:56.478Z",
+  "generatedAt": "2026-10-09T15:40:27.446Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "37944381175",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37944381175"
+    "id": "37952267155",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/37952267155"
   },
   "records": [
     {
@@ -1077,6 +1077,14 @@
       "screenshots": []
     },
     {
+      "test": "every chart’s API reference page holds at a 390px viewport: the page is no wider than the viewport, and nothing in its main content runs past it without a scrolling box of its own around it (#162)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [162],
+      "screenshots": []
+    },
+    {
       "test": "gallery shows one card per available renderer (#7)",
       "suite": "browser",
       "status": "pass",
@@ -1266,6 +1274,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [286],
+      "screenshots": []
+    },
+    {
+      "test": "the Hepatic Explorer demo page holds at a 390px viewport: in each of its views nothing in the main content runs past the viewport without a scrolling box of its own around it, and the composite view’s tables scroll to their last column (#285)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [285],
       "screenshots": []
     },
     {
@@ -7538,6 +7554,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [21],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: API page puts every table in a box that scrolls sideways, a method’s parameter table included, so none can widen the page on a phone (#162)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [162],
       "screenshots": []
     },
     {

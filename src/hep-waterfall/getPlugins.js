@@ -113,10 +113,57 @@ function halfSlot(chart, count) {
 }
 
 /**
+ * The halves of the plot and what captions each (HWF-COLOR-003): the seam
+ * between the last placebo bar and the first active one, and for each arm that
+ * drew a bar its name, its count and the horizontal extent of its half. A
+ * one-sided cohort has no seam and one half, the whole plot.
+ * @param {Object} chart The live main chart: its `chartArea` and x scale are read.
+ * @param {Object} waterfall The staged cohort (`buildWaterfall`'s result).
+ * @returns {{seam: ?number, halves: Array<{side: string, label: string, count: number, left: number, right: number}>}} The seam's x, null when there is none, and the halves left to right.
+ */
+export function armHalves(chart, waterfall) {
+  const { placebo, active, placeboLabel, activeLabel } = waterfall;
+  const { left, right } = chart.chartArea;
+  const half = (side, label, subjects, from, to) => ({
+    side,
+    label,
+    count: subjects.length,
+    left: from,
+    right: to
+  });
+  if (placebo.length && active.length) {
+    const seam =
+      (chart.scales.x.getPixelForValue(placebo.length - 1) +
+        chart.scales.x.getPixelForValue(placebo.length)) /
+      2;
+    return {
+      seam,
+      halves: [
+        half('placebo', placeboLabel, placebo, left, seam),
+        half('active', activeLabel, active, seam, right)
+      ]
+    };
+  }
+  return {
+    seam: null,
+    halves: [
+      placebo.length
+        ? half('placebo', placeboLabel, placebo, left, right)
+        : half('active', activeLabel, active, left, right)
+    ]
+  };
+}
+
+/**
  * The arm divider (HWF-COLOR-003): a vertical rule at the placebo/active seam
  * with each half captioned by its arm name and participant count. A one-sided
  * cohort draws no rule — there is no seam — but still names the arm it drew, so
  * the reader is never left to infer which half they are looking at.
+ *
+ * The rule is drawn on the canvas. The captions are not (HWF-TITLE-001): text
+ * drawn on a canvas cannot be cut to its half, so two long arm names printed
+ * across each other. The plugin hands the halves to the renderer's
+ * `placeArmCaptions`, which sets an element over each.
  * @param {Object} instance The live renderer, whose `waterfall` the plugin reads.
  * @returns {Object} A Chart.js plugin object.
  */
@@ -126,19 +173,11 @@ export function armDividerPlugin(instance) {
     afterDatasetsDraw(chart) {
       const waterfall = instance.waterfall;
       if (!waterfall || !waterfall.ordered.length) return;
-      const { placebo, active, placeboLabel, activeLabel } = waterfall;
-      const { top, bottom, left, right } = chart.chartArea;
-      const ctx = chart.ctx;
-      ctx.save();
-      ctx.font = '600 11px system-ui, -apple-system, sans-serif';
-      ctx.textBaseline = 'top';
-      ctx.textAlign = 'center';
-
-      if (placebo.length && active.length) {
-        const seam =
-          (chart.scales.x.getPixelForValue(placebo.length - 1) +
-            chart.scales.x.getPixelForValue(placebo.length)) /
-          2;
+      const { top, bottom } = chart.chartArea;
+      const { seam, halves } = armHalves(chart, waterfall);
+      if (seam !== null) {
+        const ctx = chart.ctx;
+        ctx.save();
         ctx.strokeStyle = DIVIDER_COLOR;
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 3]);
@@ -147,17 +186,9 @@ export function armDividerPlugin(instance) {
         ctx.lineTo(seam, bottom);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = DIVIDER_COLOR;
-        ctx.fillText(`${placeboLabel} (n=${placebo.length})`, (left + seam) / 2, top + 4);
-        ctx.fillText(`${activeLabel} (n=${active.length})`, (seam + right) / 2, top + 4);
-      } else {
-        const only = placebo.length
-          ? `${placeboLabel} (n=${placebo.length})`
-          : `${activeLabel} (n=${active.length})`;
-        ctx.fillStyle = DIVIDER_COLOR;
-        ctx.fillText(only, (left + right) / 2, top + 4);
+        ctx.restore();
       }
-      ctx.restore();
+      if (instance.placeArmCaptions) instance.placeArmCaptions(halves, top);
     }
   };
 }
