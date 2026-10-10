@@ -1,6 +1,6 @@
 {
   "module": "hep-waterfall",
-  "generatedAt": "2026-10-10T15:36:19.612Z",
+  "generatedAt": "2026-10-10T17:19:11.894Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38064245773",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38064245773"
+    "id": "38069676666",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38069676666"
   },
   "records": [
     {
@@ -853,6 +853,14 @@
       "screenshots": []
     },
     {
+      "test": "APP-R-054: Run details left open is closed when the reader comes back to the tab: on the keynote’s path, with the panel open on the pilot study’s result, choosing the RBQM study on the Data tab and coming back shows the new result with nothing over it; while it is open the panel covers the tab’s status label whole (#309)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-054"],
+      "issueRefs": [309],
+      "screenshots": []
+    },
+    {
       "test": "APP-RBQM-007: choosing the RBQM study loads gsm’s nine raw files and keeps them as they are: each is listed with its rows, none is placed in a domain or mapped, no safety chart reads them, and the view fits a 390-pixel screen (#233)",
       "suite": "browser",
       "status": "pass",
@@ -1114,6 +1122,14 @@
       "status": "pass",
       "requirementIds": ["APP-TIER-026"],
       "issueRefs": [275],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-028: a status label’s hover line stays inside the window and never widens the page: on every gallery card at 1,280, 1,024 and 390 pixels, and on a page title’s label at 390 pixels after its panel is closed under the pointer or with Escape (#309)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-028"],
+      "issueRefs": [309],
       "screenshots": []
     },
     {
@@ -7317,6 +7333,14 @@
       "screenshots": []
     },
     {
+      "test": "shell: a chart’s own status label APP-TIER-027: the shell’s stylesheet still styles a status banner, for a chart outside this repository that draws one with the shell’s classes, though no chart here draws one (#309)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-027"],
+      "issueRefs": [309],
+      "screenshots": []
+    },
+    {
       "test": "shell: addReset RESET-001: activating it calls the handler once (#136)",
       "suite": "unit",
       "status": "pass",
@@ -8765,6 +8789,22 @@
       "screenshots": []
     },
     {
+      "test": "the page: what a view hands it is read safely, and its details are left with its tab (#309) APP-PAGE-043: a view whose tag throws, or that has none, still gets its tab and its page, with no words where the tag would be; one whose ownsNotes throws is drawn with the page’s notes; and an item whose icon is named for something every object has draws an empty mark (#309)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-043"],
+      "issueRefs": [309, 309],
+      "screenshots": []
+    },
+    {
+      "test": "the page: what a view hands it is read safely, and its details are left with its tab (#309) APP-R-054: a control’s details panel is left with its tab: opened on a view, it is closed when the reader comes back from another tab, by the chip or by openControl, and it stays open while the reader moves among the view’s own items (#309)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-054"],
+      "issueRefs": [309, 309],
+      "screenshots": []
+    },
+    {
       "test": "the pages APP-LOAD-027: the hosted footer, the single file’s footer and the hosted page’s description say what happens to the data a reader loads, in plain words (#196)",
       "suite": "unit",
       "status": "pass",
@@ -9042,6 +9082,14 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-048"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab on the page APP-RBQM-081: after a run that stopped, a study loaded since is not said to have stopped: with R up it is run at once with no press, and the tab, its row and the control say what is true of it; the same study, opened again, still says R stopped (#309)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-081"],
+      "issueRefs": [309],
       "screenshots": []
     },
     {
@@ -9525,6 +9573,14 @@
       "screenshots": []
     },
     {
+      "test": "the status label APP-TIER-028: the hover line is kept inside the window as it appears, under the pointer or the keyboard and when the panel closes: moved left when it would run off the right edge, right when off the left, and left alone when it fits (#309)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-028"],
+      "issueRefs": [309],
+      "screenshots": []
+    },
+    {
       "test": "the status ladder: the rung an entry stands on APP-TIER-001: there are four rungs in order, and an entry that names none is Exploratory (#272)",
       "suite": "unit",
       "status": "pass",
@@ -9541,11 +9597,11 @@
       "screenshots": []
     },
     {
-      "test": "the status ladder: the rung an entry stands on APP-TIER-003: an entry that says \"qualified\" stops the build with a sentence naming it, and so do a retired flag, a word that is no rung and an Experimental entry with no reason (#272)",
+      "test": "the status ladder: the rung an entry stands on APP-TIER-003: an entry that says \"qualified\" stops the build with a sentence naming it, in the site’s configuration or in a library’s own list, and so do a retired flag, a word that is no rung and an Experimental entry with no reason (#272, #309)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-TIER-003"],
-      "issueRefs": [272],
+      "issueRefs": [],
       "screenshots": []
     },
     {
