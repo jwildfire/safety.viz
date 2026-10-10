@@ -329,7 +329,10 @@ describe('the required check’s workflow', () => {
     ]
   ];
 
-  it(`the checker reports each of ${broken.length} ways of breaking the gate, made to a copy of ci.yml (#292)`, () => {
+  // The name carries no count: the evidence files are keyed on it, and the list
+  // above grows.
+  it('the checker reports every way of breaking the gate in its list, each made to a copy of ci.yml (#292)', () => {
+    expect(broken.length).toBeGreaterThanOrEqual(27);
     for (const [what, change, message] of broken) {
       const copy = read('ci.yml');
       change(copy);
