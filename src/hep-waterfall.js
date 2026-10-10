@@ -46,13 +46,7 @@ import {
   Legend
 } from 'chart.js';
 
-import {
-  controlBuilders,
-  createElement,
-  experimentalBanner,
-  option,
-  renderShell
-} from './shell.js';
+import { controlBuilders, createElement, option, renderShell } from './shell.js';
 import { boxWhiskerPlugin } from './box-whisker.js';
 import { ARM_SIDE_COLORS } from './hep-core/arms.js';
 import { checkInputs } from './hep-waterfall/checkInputs.js';
@@ -276,14 +270,11 @@ class SafetyHepWaterfall {
       this,
       renderShell(this.element, {
         moduleClass: 'safety-hep-waterfall',
+        module: 'hep-waterfall',
         onToggle: () => this.resize()
       })
     );
     applyWaterfallStyles();
-    // Experimental marking: a notice at the top of the chart so the status
-    // travels with the widget wherever it renders, not only on the gallery
-    // pages (which also carry the config's Experimental badge).
-    this.main.insertBefore(experimentalBanner(), this.main.firstChild);
     this.legendEl = createElement('div', 'hwf-legend');
     this.main.insertBefore(this.legendEl, this.chartWrap);
 

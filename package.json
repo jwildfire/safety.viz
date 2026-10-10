@@ -21,6 +21,8 @@
     "evidence:update": "node scripts/evidence.mjs --update",
     "requirements": "node scripts/requirements.mjs",
     "requirements:check": "node scripts/requirements.mjs --check",
+    "tiers": "node scripts/tiers.mjs",
+    "tiers:check": "node scripts/tiers.mjs --check",
     "demo-data:check": "node scripts/check-demo-data.mjs",
     "bio-viz:check": "node scripts/vendor-bio-viz.mjs --check",
     "bio-viz:check-source": "node scripts/vendor-bio-viz.mjs --check-source",

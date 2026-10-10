@@ -18,6 +18,8 @@ import {
 import { RBQM_NEEDS, RBQM_TAB, pipelineFiles, tabArgs } from './rbqm-lib.mjs';
 import { SERVED_AS } from './r-wasm-lib.mjs';
 import { SITE } from '../src/app/site.js';
+import { tierNoteOf, tierOf } from '../src/tiers.js';
+import { checkTiers } from './tiers.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -123,25 +125,10 @@ export const RBQM_DOWNLOADS = [
 /** What the tab is in the app: its place in site/config.json's `appTabs`. */
 export const RBQM_TAB_ID = 'rbqm';
 
-/** What the Experimental pill means, for whoever hovers it; the docs site says the same. */
-export const EXPERIMENTAL_MEANING =
-  'Still being worked on, and fine to use: its behaviour and settings may change.';
-
 /** What the RBQM tab says in the single file, which cannot start R. */
 export const FILE_NO_RBQM =
   'The RBQM tab needs R, and this file loads nothing, so it cannot start R. ' +
   'The hosted demo app can start R in your browser.';
-
-/**
- * The tab's status badge, from site/config.json: the tab ships Experimental
- * while its entry there says so.
- * @returns {?{text: string, title: string}} The badge, or null for a stable tab.
- */
-export function rbqmBadge() {
-  const config = JSON.parse(readFileSync(path.join(rootDir, 'site/config.json'), 'utf8'));
-  const entry = (config.appTabs || []).find((tab) => tab.id === RBQM_TAB_ID);
-  return entry && entry.experimental ? { text: 'Experimental', title: EXPERIMENTAL_MEANING } : null;
-}
 
 /**
  * Where the demo app's directory serves a file R is given: under the path R
@@ -153,7 +140,7 @@ export const servedBesideTheApp = (entry) => `.${entry.path}`;
 
 /**
  * The options the RBQM tab is mounted with, as plain values: what R is given
- * and from where, gsm.viz's bundle, what starting R downloads, and the badge.
+ * and from where, gsm.viz's bundle, and what starting R downloads.
  * The connection factory is the app's own and is added by the page.
  * @param {Object} [where] Where the page serves each thing; the demo app's directory by default.
  * @param {(entry: {file: string, path: string}) => string} [where.fileUrl] The address of one file R is given.
@@ -192,8 +179,7 @@ export function rbqmTabOptions({
     },
     // What each workflow needs, as desktop R read it from gsm's specs: the tab
     // places a reader's own files and says what they support with it (#236).
-    needs: JSON.parse(readFileSync(path.join(rootDir, RBQM_NEEDS.file), 'utf8')).needs,
-    badge: rbqmBadge()
+    needs: JSON.parse(readFileSync(path.join(rootDir, RBQM_NEEDS.file), 'utf8')).needs
   };
 }
 
@@ -214,7 +200,7 @@ export function rbqmTabExpression({ r = 'request', where, colour = RBQM_CHARTS.c
   const options =
     r === 'request'
       ? `{ createConnection: SafetyVizApp.createRConnection, ...${JSON.stringify(rbqmTabOptions(where))} }`
-      : JSON.stringify({ unavailable: FILE_NO_RBQM, badge: rbqmBadge() });
+      : JSON.stringify({ unavailable: FILE_NO_RBQM });
   return (
     `{ name: ${JSON.stringify(RBQM_CHARTS.name)}, ` +
     (colour ? `colour: ${JSON.stringify(colour)}, ` : '') +
@@ -348,4 +334,43 @@ export function chartLinks({ site = SITE, libraries = APP_LIBRARIES, config, man
     }
   }
   return links;
+}
+
+/**
+ * The rung of the status ladder each chart and each tab of the app stands on
+ * (#272, obot.roadmap#403), for the page to be handed: every safety.viz chart
+ * in the manifest, every chart of a further library, and every tab the site's
+ * configuration lists under `appTabs`.
+ *
+ * A safety.viz chart's rung is its entry's `tier` in site/config.json, and a
+ * tab's likewise; a further library's chart says its own by the same field on
+ * its entry in that library's manifest. One that names none is Exploratory.
+ * The sentence that says why, `tierNote`, goes with the rung where there is one.
+ * @param {Object} [options] Options.
+ * @param {Object[]} [options.libraries] Entries of APP_LIBRARIES.
+ * @param {Object} [options.config] The site's configuration; by default site/config.json.
+ * @param {Object} [options.manifest] safety.viz's portfolio manifest; by default src/data/portfolio.json.
+ * @returns {Object<string, {tier: string, note?: string}>} Module name or tab id → its rung, and its reason where it has one.
+ * @throws {Error} When the configuration names a rung it may not, as `qualified` (scripts/tiers.mjs).
+ */
+export function chartTiers({ libraries = APP_LIBRARIES, config, manifest } = {}) {
+  const read = (file) => JSON.parse(readFileSync(path.join(rootDir, file), 'utf8'));
+  const site = config || read('site/config.json');
+  checkTiers(site);
+  const { modules } = manifest || read('src/data/portfolio.json');
+  const rung = (entry) => {
+    const note = tierNoteOf(entry);
+    return { tier: tierOf(entry), ...(note ? { note } : {}) };
+  };
+  const tiers = {};
+  for (const module of Object.keys(modules)) {
+    tiers[module] = rung((site.renderers || []).find((entry) => entry.module === module));
+  }
+  for (const library of libraries) {
+    for (const [module, entry] of Object.entries(libraryManifest(library).modules)) {
+      tiers[module] = rung(entry);
+    }
+  }
+  for (const tab of site.appTabs || []) tiers[tab.id] = rung(tab);
+  return tiers;
 }

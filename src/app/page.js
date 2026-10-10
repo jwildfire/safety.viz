@@ -46,8 +46,17 @@ import {
 } from './libraries.js';
 import { renderDataPanel } from './data-panel.js';
 import { DEMO_STUDIES, studyUrls } from './studies.js';
-import { dataTag, tabCount, welcomeSentence } from './header.js';
+import {
+  APP_STATUS_LINE,
+  APP_STATUS_TEXT,
+  dataTag,
+  statusCount,
+  tabCount,
+  welcomeSentence
+} from './header.js';
 import { el, plural } from './dom.js';
+import { isBelow, tierNoteOf, tierOf } from '../tiers.js';
+import { statusHeading, statusLabel } from '../status-label.js';
 import { LOGO_SVG, STYLES } from './styles.js';
 
 const STYLE_ID = 'safety-viz-app-styles';
@@ -154,10 +163,11 @@ function sentenceFor(module, status, manifest) {
  * @param {Object} options Mount options.
  * @param {Object} options.charts The chart factories, keyed by export name (the safety.viz module collection).
  * @param {Object} options.manifest The portfolio manifest.
- * @param {Array<{name: string, colour?: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}, view?: {id: string, title: string, badge?: ?{text: string, title: string}, tag: function(): string, render: function(Element, Object): ?{destroy: Function}}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name, on a tab of the library's `colour`, a six-digit hex colour, or of the first colour no other tab uses when it names none (#268); a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183). A library that brings a `view` (#235) brings a tab of its own in place of charts: its `id` is the tab's address, `title` its name, `badge` a status shown beside the name, `tag()` what the tab's count says, and `render(container, app)` draws it and returns what tears it down. A view whose id is the data view's, a chart's or another view's is left out with a console warning.
+ * @param {Array<{name: string, colour?: string, charts: ?Object, manifest: ?Object, file?: string, settings?: (Object|function(string): Object), action?: {state: function(): {label: string, done: boolean, note: string}, press: function(): void}, view?: {id: string, title: string, tag: function(): string, render: function(Element, Object): ?{destroy: Function}}}>} [options.libraries] Further chart libraries, each its name, its chart factories keyed by export name, and its chart list in the portfolio manifest's format (version 2). Their charts are listed after safety.viz's, under the groups their entries name, on a tab of the library's `colour`, a six-digit hex colour, or of the first colour no other tab uses when it names none (#268); a chart whose library or factory is missing, or whose entry cannot be read, reads "not loaded". A library handed in with no chart list the app can read is named on the page in every view, with `file`, the script the page loaded it from, when given (#193). A library may also bring `settings` added to each of its charts' settings when the chart is drawn (an object, or a function of the module name), and one `action`, a control shown with its charts that redraws the open chart when pressed (#183). A library that brings a `view` (#235) brings a tab of its own in place of charts: its `id` is the tab's address, `title` its name, `tag()` what the tab's count says, and `render(container, app)` draws it and returns what tears it down. A view whose id is the data view's, a chart's or another view's is left out with a console warning.
  * @param {{base: string, studies?: Object[]}} [options.demo] Where the demo studies are served from, and which (default: {@link DEMO_STUDIES}); when given, the first study is loaded on mount and the data view offers each by name.
  * @param {{docs?: string, domains?: string, download?: string, github?: string}} [options.links] Where the footer's links go; a link with no address is left out. The wordmark is a link to `docs` too (#270).
  * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages, keyed by module name: its clinical guide and its test evidence. A chart's view carries a footnote linking those it was given an address for (#246).
+ * @param {Object<string, {tier: string, note?: string}>} [options.tiers] The rung of the status ladder each chart and each view stands on, keyed by module name or view id, with the sentence that says why where there is one (#272). A chart the page is told nothing of stands where its own entry says, by `tier` and `tierNote`, and on Exploratory when that names none.
  * @param {string} [options.version] The safety.viz version, shown in the footer.
  * @param {string} [options.title] The app's name in the browser tab's title, which names the open view before it: "RBQM · safety.viz demo" (#270).
  * @param {string} [options.pitch] What the footer says the app does with a study; the page that mounts it says what is true there (#183).
@@ -174,6 +184,7 @@ export function mountApp(
     demo = null,
     links = {},
     chartLinks = {},
+    tiers = {},
     version = '',
     title: appName = 'safety.viz demo',
     pitch = 'Everything runs in this browser. Nothing is sent anywhere.',
@@ -236,6 +247,14 @@ export function mountApp(
     views.set(id, view);
     viewLibrary.set(id, name);
   }
+  // The rung of the status ladder a chart or a view stands on (#272): what the
+  // page was told, or what the chart's own entry says, or Exploratory.
+  const rungOf = (id) => {
+    const told = has(tiers, id) && isRecord(tiers[id]) ? tiers[id] : null;
+    const entry = told ? { tier: told.tier, tierNote: told.note } : manifest.modules[id];
+    const note = tierNoteOf(entry);
+    return { tier: tierOf(entry), ...(note ? { note } : {}) };
+  };
   // What a library brings besides its charts (#183): settings for each of its
   // charts, and one control. Looked up by the library a chart's entry names,
   // among the libraries the merge used, so a second library of the same name
@@ -313,7 +332,25 @@ export function mountApp(
   tabs.setAttribute('aria-label', 'Data and domains');
   const count = el('div', 'sva-count');
   count.setAttribute('aria-live', 'polite');
-  bar.append(brand, tabs);
+  // The app's own rung, at the right end of the header (#273): everything here
+  // is exploratory, and the label says so on hover and in full on a click.
+  const onRung = (tier, ids) => ids.filter((id) => rungOf(id).tier === tier);
+  const appStatus = el('div', 'sva-appstatus');
+  appStatus.append(
+    statusLabel({
+      tier: 'exploratory',
+      heading: 'This app is exploratory',
+      line: APP_STATUS_LINE,
+      text: [APP_STATUS_TEXT],
+      count: statusCount({
+        exploratory: onRung('exploratory', Object.keys(manifest.modules)).length,
+        experimental: onRung('experimental', Object.keys(manifest.modules)).length,
+        tabs: onRung('experimental', [...views.keys()]).map((id) => views.get(id).title)
+      }),
+      marks: { exploratory: ['This app'] }
+    })
+  );
+  bar.append(brand, tabs, appStatus);
   const chartRow = el('nav', 'sva-charts');
   chartRow.setAttribute('aria-label', 'Charts');
   header.append(bar, chartRow);
@@ -325,6 +362,9 @@ export function mountApp(
   const title = el('h1', 'sva-title');
   head.append(title, count);
   const content = el('div', 'sva-content');
+  // The page shows a chart's status label itself, on the corner of its card,
+  // so a chart drawn here draws none of its own (#274, src/shell.js).
+  content.dataset.svStatusHost = '';
   // The welcome line (#269): whose data, how much, and where to load your own.
   // On first open only, above whatever is drawn; closed with its cross, and
   // held nowhere but in this page's memory.
@@ -510,14 +550,6 @@ export function mountApp(
       tab.dataset.tab = id;
       tab.setAttribute('aria-pressed', String(state.selected === id));
       tab.append(el('span', 'sva-hex'), el('span', 'sva-tab-title', view.title));
-      if (view.badge) {
-        // Shown where the header has room for it on one line (styles.js); the
-        // tab says it on hover at any width, and the view carries it too.
-        const pill = el('span', 'sva-badge', view.badge.text);
-        pill.title = view.badge.title;
-        tab.title = `${view.badge.text}: ${view.badge.title}`;
-        tab.append(pill);
-      }
       tab.append(el('span', 'sva-tab-count', String(view.tag(handle))));
       tab.onclick = () => handle.select(id);
       tabs.append(tab);
@@ -630,6 +662,26 @@ export function mountApp(
     container.append(list);
   }
 
+  // The label on the corner of the open card (#274): a chart or a tab that
+  // stands below the app's rung says so there, with its reason. One that is
+  // Exploratory, as the app is, shows no second label.
+  function cornerLabel(id, name, what) {
+    const { tier, note } = rungOf(id);
+    if (!isBelow(tier)) return;
+    // A chart's label sits on its card's top edge. A tab's view has no card,
+    // so at phone width its label takes a line of its own (styles.js).
+    const corner = el('div', what === 'tab' ? 'sva-corner sva-corner-view' : 'sva-corner');
+    corner.append(
+      statusLabel({
+        tier,
+        heading: statusHeading(name, tier),
+        text: note ? [note] : [],
+        marks: { exploratory: ['This app'], [tier]: [`This ${what}`] }
+      })
+    );
+    content.append(corner);
+  }
+
   function renderMain(current) {
     destroyChart();
     content.innerHTML = '';
@@ -646,6 +698,7 @@ export function mountApp(
       const view = views.get(state.selected);
       title.textContent = view.title;
       renderNotes(content);
+      cornerLabel(state.selected, `The ${view.title} tab`, 'tab');
       const container = paint(el('div', 'sva-view'), viewLibrary.get(state.selected));
       content.append(container);
       try {
@@ -666,6 +719,7 @@ export function mountApp(
     const module = state.selected;
     const entry = manifest.modules[module];
     title.textContent = titleOf(entry, module);
+    cornerLabel(module, titleOf(entry, module), 'chart');
     // A chart that threw is drawn again as one that did not draw, footnote and all.
     if (!renderChart(current, module, entry)) {
       render();
@@ -840,6 +894,12 @@ export function mountApp(
 
     /** The current status of every chart, including any that did not draw. */
     status,
+
+    /** The rung of the status ladder every chart and every view stands on, with its reason where it has one (#272). */
+    tiers: () =>
+      Object.fromEntries(
+        [...Object.keys(manifest.modules), ...views.keys()].map((id) => [id, rungOf(id)])
+      ),
 
     /**
      * Load parsed-or-not files: each `{ name, text }` is read, placed in a

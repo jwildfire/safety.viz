@@ -2684,7 +2684,7 @@ test.describe('demo app: the RBQM tab', () => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
 
-  test('APP-RBQM-018: the RBQM tab follows the domains’ tabs with its Experimental badge; before Start R is pressed it says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235)', async ({
+  test('APP-RBQM-018: the RBQM tab follows the domains’ tabs and carries no pill of its own; before Start R is pressed it says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -2699,34 +2699,16 @@ test.describe('demo app: the RBQM tab', () => {
       'Biomarkers',
       'RBQM'
     ]);
-    await expect(rbqmTab(page).locator('.sva-badge')).toHaveText('Experimental');
-    await expect(rbqmTab(page).locator('.sva-badge')).toHaveAttribute(
-      'title',
-      'Still being worked on, and fine to use: its behaviour and settings may change.'
-    );
-    // At this width the header has no room for the word on one line, so the tab
-    // says it on hover and its view carries the badge; from 1,340 pixels the
-    // tab shows it, and on a phone, where the tabs scroll.
-    await expect(rbqmTab(page).locator('.sva-badge')).toBeHidden();
-    await expect(rbqmTab(page)).toHaveAttribute(
-      'title',
-      'Experimental: Still being worked on, and fine to use: its behaviour and settings may change.'
-    );
-    for (const [width, shown] of [
-      [1440, true],
-      [390, true],
-      [1280, false]
-    ]) {
+    // The tab says its status once, on the corner of its view (#274): no pill
+    // in the tab, and no word that only a hover shows.
+    await expect(rbqmTab(page).locator('.sva-badge')).toHaveCount(0);
+    await expect(rbqmTab(page)).not.toHaveAttribute('title', /.+/);
+    // The header's bar is one line at a desktop's width, with the tab in it.
+    for (const width of [1440, 1280]) {
       await page.setViewportSize({ width, height: 800 });
-      await expect(rbqmTab(page).locator('.sva-badge')).toBeVisible({ visible: shown });
-      // The header's bar is one line at a desktop's width, with the tab in it.
-      if (width > 760) {
-        expect(
-          await page.evaluate(
-            () => document.querySelector('.sva-bar').getBoundingClientRect().height
-          )
-        ).toBeLessThan(60);
-      }
+      expect(
+        await page.evaluate(() => document.querySelector('.sva-bar').getBoundingClientRect().height)
+      ).toBeLessThan(60);
     }
     await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('not run');
     // On the study the page opens with, the tab says what the press costs and
@@ -2745,8 +2727,8 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
     await expect(rbqmStart(page)).toHaveText('Start R');
     await expect(rbqmStart(page)).toBeEnabled();
-    await expect(page.locator('.sva-rbqm-lede .sva-badge')).toBeVisible();
-    await expect(page.locator('.sva-rbqm-lede .sva-badge')).toHaveText('Experimental');
+    await expect(page.locator('.sva-rbqm-lede .sva-badge')).toHaveCount(0);
+    await expect(page.locator('.sva-corner .sv-status-word')).toHaveText('Experimental');
     await expect(page.locator('.sva-rbqm-results')).toHaveCount(0);
     // Nothing has been asked of R's hosts, and nothing of R's has been fetched from the page.
     await page.waitForLoadState('networkidle');
@@ -3927,9 +3909,11 @@ test.describe('demo app as one file, offline', () => {
     page.on('request', (request) => requests.push(request.url()));
     const tabOfIts = page.locator('.sva-tab[data-tab="rbqm"]');
     await expect(tabOfIts.locator('.sva-tab-title')).toHaveText('RBQM');
-    await expect(tabOfIts.locator('.sva-badge')).toHaveText('Experimental');
+    await expect(tabOfIts.locator('.sva-badge')).toHaveCount(0);
     await expect(tabOfIts.locator('.sva-tab-count')).toHaveText('needs R');
     await tabOfIts.click();
+    // The file is handed the tab's rung with the charts', so the tab says it is Experimental.
+    await expect(page.locator('.sva-corner .sv-status-word')).toHaveText('Experimental');
     await expect(page.locator('.sva-rbqm-status')).toHaveText(FILE_NO_RBQM);
     await expect(page.locator('.sva-rbqm-status')).toHaveText(
       'The RBQM tab needs R, and this file loads nothing, so it cannot start R. The hosted demo app can start R in your browser.'
@@ -3963,5 +3947,352 @@ test.describe('demo app as one file, offline', () => {
         .replace(/<\/script/gi, '<\\/script')
         .trim()
     );
+  });
+});
+
+// ---- The status ladder (obot.roadmap#403) ----
+
+const appLabel = (page) => page.locator('.sva-appstatus .sv-status');
+const pill = (label) => label.locator('.sv-status-label');
+const panelOf = (label) => label.locator('.sv-status-panel');
+const APP_LINE = 'Nothing in this app is qualified. Confirm every result.';
+const APP_TEXT =
+  'Nothing here is qualified. The charts, statistics and site metrics are tested and documented, ' +
+  'but none has been through qualification. Confirm every result in a qualified system before ' +
+  'you rely on it.';
+const RUNG_MEANINGS = [
+  ['Qualified', 'Validated for regulated use. Nothing in safety.viz is, yet.'],
+  ['Exploratory', 'Tested and documented. Confirm every result.'],
+  ['Experimental', 'Tested and documented, but what it shows or how it behaves may still change.'],
+  ['Prototype', 'An early look, on the docs site only. Not in this app.']
+];
+// Whether a box is wholly inside the window.
+const insideWindow = async (page, locator) => {
+  const box = await locator.boundingBox();
+  const { width, height } = page.viewportSize();
+  return box.x >= 0 && box.y >= 0 && box.x + box.width <= width && box.y + box.height <= height;
+};
+
+test.describe('demo app: the status label', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+
+  test('APP-TIER-014: at 1,280 pixels the header shows one label reading Exploratory on the tabs’ row; hovering it shows one line, a click opens the disclaimer and the four rungs with the app’s marked, and Escape, a second click or the cross closes it (#273)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openOnDemo(page);
+    const label = appLabel(page);
+    await expect(page.locator('.sva-header .sv-status')).toHaveCount(1);
+    await expect(pill(label).locator('.sv-status-word')).toHaveText('Exploratory');
+    await expect(pill(label)).toHaveAttribute('data-tier', 'exploratory');
+    // The header is still one row: the wordmark, the last tab and the label share a line.
+    const middle = async (locator) => {
+      const box = await locator.boundingBox();
+      return box.y + box.height / 2;
+    };
+    const row = await middle(page.locator('.sva-brand'));
+    expect(Math.abs((await middle(page.locator('.sva-tab[data-tab="rbqm"]'))) - row)).toBeLessThan(
+      8
+    );
+    expect(Math.abs((await middle(pill(label))) - row)).toBeLessThan(8);
+    // Ink on white with a solid outline, and no mark.
+    const drawn = await pill(label).evaluate((element) => {
+      const style = getComputedStyle(element);
+      return [style.borderTopStyle, style.borderTopColor, style.color, style.backgroundColor];
+    });
+    expect(drawn).toEqual(['solid', 'rgb(31, 35, 40)', 'rgb(31, 35, 40)', 'rgb(255, 255, 255)']);
+    await expect(pill(label).locator('svg, img')).toHaveCount(0);
+
+    // Hover: one line, and the panel stays shut.
+    const tip = pill(label).locator('.sv-status-tip');
+    await expect(tip).toBeHidden();
+    await pill(label).hover();
+    await expect(tip).toBeVisible();
+    await expect(tip).toHaveText(APP_LINE);
+    await expect(panelOf(label)).toBeHidden();
+    expect(await insideWindow(page, tip)).toBe(true);
+
+    // A click: the panel, which stays open.
+    await pill(label).click();
+    const panel = panelOf(label);
+    await expect(panel).toBeVisible();
+    await expect(tip).toBeHidden();
+    await expect(pill(label)).toHaveAttribute('aria-expanded', 'true');
+    await expect(panel.getByRole('heading')).toHaveText('This app is exploratory');
+    await expect(panel.locator('.sv-status-text').nth(0)).toHaveText(APP_TEXT);
+    await expect(panel.locator('.sv-status-count')).toHaveText(
+      '13 charts are Exploratory. 5 charts and the RBQM tab are Experimental, and say so when you open them.'
+    );
+    const steps = panel.locator('.sv-status-step');
+    await expect(steps.locator('.sv-status-rung')).toHaveText(RUNG_MEANINGS.map(([word]) => word));
+    await expect(steps.locator('.sv-status-meaning')).toHaveText(
+      RUNG_MEANINGS.map(([, meaning]) => meaning)
+    );
+    await expect(panel.locator('.sv-status-here')).toHaveAttribute('data-tier', 'exploratory');
+    await expect(panel.locator('.sv-status-mark')).toHaveText(['This app']);
+    // The four outlines, top to bottom: filled, solid, dashed, dotted and grey.
+    const outlines = await steps.locator('.sv-status-rung').evaluateAll((rungs) =>
+      rungs.map((rung) => {
+        const style = getComputedStyle(rung);
+        return [style.borderTopStyle, style.backgroundColor, style.color];
+      })
+    );
+    expect(outlines).toEqual([
+      ['solid', 'rgb(31, 35, 40)', 'rgb(255, 255, 255)'],
+      ['solid', 'rgb(255, 255, 255)', 'rgb(31, 35, 40)'],
+      ['dashed', 'rgb(255, 255, 255)', 'rgb(31, 35, 40)'],
+      ['dotted', 'rgb(255, 255, 255)', 'rgb(91, 100, 112)']
+    ]);
+    await expect(panel.getByRole('link', { name: 'What each rung means' })).toHaveAttribute(
+      'href',
+      /developer-guidelines\.md#status-ladder$/
+    );
+    expect(await insideWindow(page, panel)).toBe(true);
+    await captureEvidence(page, 'APP-TIER-014', 'app-label-panel');
+    // It stays open while the reader goes on working: a click on the page does not close it.
+    await page.locator('.sva-main').click({ position: { x: 5, y: 5 } });
+    await expect(panel).toBeVisible();
+    // Escape closes it.
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(pill(label)).toHaveAttribute('aria-expanded', 'false');
+    // A second click closes it.
+    await pill(label).click();
+    await expect(panel).toBeVisible();
+    await pill(label).click();
+    await expect(panel).toBeHidden();
+    // The cross closes it.
+    await pill(label).click();
+    await panel.getByRole('button', { name: 'Close' }).click();
+    await expect(panel).toBeHidden();
+    // Nothing in the app is labelled Qualified.
+    await expect(page.locator('.sv-status-label[data-tier="qualified"]')).toHaveCount(0);
+  });
+
+  test('APP-TIER-015: the app’s label is reached and opened from the keyboard: it follows the last tab, Enter or Space opens it, the next stop is its cross, and closing hands the keyboard back to it (#273)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openOnDemo(page);
+    const label = appLabel(page);
+    const panel = panelOf(label);
+    // From the last tab, one press of Tab reaches the label.
+    await page.locator('.sva-tab[data-tab="rbqm"]').focus();
+    await page.keyboard.press('Tab');
+    await expect(pill(label)).toBeFocused();
+    // Focus shows the hover line, and a ring.
+    await expect(pill(label).locator('.sv-status-tip')).toBeVisible();
+    expect(await pill(label).evaluate((element) => getComputedStyle(element).outlineStyle)).toBe(
+      'solid'
+    );
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeVisible();
+    // The panel follows the label in the page, so Tab goes into it: the cross first.
+    await page.keyboard.press('Tab');
+    await expect(panel.getByRole('button', { name: 'Close' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeHidden();
+    await expect(pill(label)).toBeFocused();
+    // Space opens it too, and Escape from inside it closes it and hands the keyboard back.
+    await page.keyboard.press('Space');
+    await expect(panel).toBeVisible();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Tab');
+    await expect(panel.getByRole('link', { name: 'What each rung means' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(pill(label)).toBeFocused();
+  });
+
+  test('APP-TIER-016: at 390 pixels the app’s label is on screen beside the wordmark, and its panel opens inside the window with nothing running off the page (#273)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openOnDemo(page);
+    const label = appLabel(page);
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    await expect(pill(label)).toBeVisible();
+    expect(await insideWindow(page, pill(label))).toBe(true);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    // A tap opens the panel; a phone has no hover.
+    await pill(label).click();
+    const panel = panelOf(label);
+    await expect(panel).toBeVisible();
+    expect(await insideWindow(page, panel)).toBe(true);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    await expect(panel.locator('.sv-status-text').nth(0)).toHaveText(APP_TEXT);
+    await expect(panel.locator('.sv-status-step')).toHaveCount(4);
+    // The cross is big enough for a thumb's tip, and closes it.
+    const cross = panel.getByRole('button', { name: 'Close' });
+    expect(await insideWindow(page, cross)).toBe(true);
+    await captureEvidence(page, 'APP-TIER-016', 'phone-app-label-panel');
+    await cross.click();
+    await expect(panel).toBeHidden();
+  });
+});
+
+test.describe('demo app: the label on a chart or a tab below Exploratory', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+  // The five Experimental charts and the RBQM tab, each with the name its panel
+  // is headed by and the sentence that says why: the approved design's table.
+  const BELOW = [
+    [
+      'time-to-event',
+      'Time-to-Event Explorer is experimental',
+      'Experimental until an external clinical review confirms its Kaplan–Meier estimates.'
+    ],
+    [
+      'hep-waterfall',
+      'Hepatic ALT Waterfall is experimental',
+      'Experimental: a new chart, drawn from a 2025 paper; its layout and settings may still change.'
+    ],
+    [
+      'nep-explorer',
+      'Nephrotoxicity Explorer is experimental',
+      'Experimental until its kidney-injury staging has had a clinical review.'
+    ],
+    [
+      'participant-profile',
+      'Participant Profile is experimental',
+      'Experimental: what it lists for a participant, and how, may still change.'
+    ],
+    [
+      'qt-explorer',
+      'QT Safety Explorer is experimental',
+      'Experimental: its settings and its table may still change.'
+    ],
+    [
+      'rbqm',
+      'The RBQM tab is experimental',
+      'Experimental: new in 1.10. R runs in the browser, and what the tab shows may still change.'
+    ]
+  ];
+  const corner = (page) => page.locator('.sva-content .sva-corner .sv-status');
+  const open = (page, id) =>
+    page.evaluate(([app, view]) => window[app].select(view), ['__safetyVizApp', id]);
+
+  test('APP-TIER-021: each of the five Experimental charts and the RBQM tab shows the label on the corner of its card with its own reason, and no chart draws a status banner inside itself; an Exploratory chart shows no second label (#274)', async ({
+    page
+  }) => {
+    test.setTimeout(MANY_CHARTS);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await openOnDemo(page);
+    // The page was handed the rung of every chart and of the tab.
+    const told = await page.evaluate(`${APP}.tiers()`);
+    expect(Object.keys(told)).toHaveLength(modules.length + bioCharts.length + 1);
+    expect(
+      Object.keys(told)
+        .filter((id) => told[id].tier === 'experimental')
+        .sort()
+    ).toEqual(BELOW.map(([id]) => id).sort());
+    expect(Object.values(told).filter((rung) => rung.tier === 'qualified')).toEqual([]);
+
+    for (const [id, heading, reason] of BELOW) {
+      await open(page, id);
+      const label = corner(page);
+      await expect(label, id).toHaveCount(1);
+      await expect(pill(label).locator('.sv-status-word'), id).toHaveText('Experimental');
+      // Dashed, for Experimental.
+      expect(
+        await pill(label).evaluate((element) => getComputedStyle(element).borderTopStyle),
+        id
+      ).toBe('dashed');
+      await expect(pill(label), id).toHaveAttribute(
+        'aria-label',
+        `Status: Experimental. ${reason}`
+      );
+      await pill(label).click();
+      const panel = panelOf(label);
+      await expect(panel.getByRole('heading'), id).toHaveText(heading);
+      await expect(panel.locator('.sv-status-text').nth(0), id).toHaveText(reason);
+      await expect(panel.locator('.sv-status-here'), id).toHaveAttribute(
+        'data-tier',
+        'experimental'
+      );
+      await expect(panel.locator('.sv-status-mark'), id).toHaveText([
+        'This app',
+        id === 'rbqm' ? 'This tab' : 'This chart'
+      ]);
+      expect(await insideWindow(page, panel), id).toBe(true);
+      if (id === 'time-to-event') {
+        // The label sits on the top edge of the chart's card, at its right.
+        const [card, on] = [
+          await page.locator('.sva-content .sva-chart').boundingBox(),
+          await pill(label).boundingBox()
+        ];
+        expect(on.y).toBeLessThan(card.y);
+        expect(on.y + on.height).toBeGreaterThan(card.y);
+        expect(card.x + card.width - (on.x + on.width)).toBeGreaterThan(0);
+        expect(card.x + card.width - (on.x + on.width)).toBeLessThan(40);
+        await captureEvidence(page, 'APP-TIER-021', 'chart-label-panel');
+      }
+      // The label is the one place the status is said: nothing inside the chart, no pill.
+      await expect(page.locator('.sva-content .sv-experimental'), id).toHaveCount(0);
+      await expect(page.locator('.sva-content .sv-status'), id).toHaveCount(1);
+      await expect(page.locator('.sva-badge'), id).toHaveCount(0);
+      // The app's own label is still the only one in the header, and opening this one closed nothing else.
+      await expect(page.locator('.sva-header .sv-status'), id).toHaveCount(1);
+      await page.keyboard.press('Escape');
+      await expect(panel, id).toBeHidden();
+    }
+
+    // An Exploratory chart, of safety.viz's and of the biomarker library's: no second label.
+    for (const id of ['histogram', 'ae-explorer', 'hep-explorer', bioCharts[0][0]]) {
+      await open(page, id);
+      await expect(item(page, id), id).toHaveAttribute('aria-current', 'page');
+      await expect(page.locator('.sva-main .sv-status'), id).toHaveCount(0);
+      await expect(page.locator('.sva-content .sv-experimental'), id).toHaveCount(0);
+    }
+    // Nor the Hepatic Explorer's migration view, which carried a banner of its own.
+    await open(page, 'hep-explorer');
+    await page.locator('.sva-chart .sv-view-option', { hasText: 'Migration' }).click();
+    await expect(page.locator('.sva-chart .hep-sankey')).toBeVisible();
+    await expect(page.locator('.sva-content .sv-experimental')).toHaveCount(0);
+    await expect(page.locator('.sva-main .sv-status')).toHaveCount(0);
+  });
+
+  test('APP-TIER-022: at 390 pixels the label on a chart’s card is on screen and its panel opens inside the window, with nothing running off the page; the RBQM tab’s label has a line of its own above the tab’s first words (#274)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/tests/e2e/fixtures/basic-app.html#time-to-event');
+    await page.evaluate(`${APP}.ready`);
+    const overflow = () =>
+      page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    const label = corner(page);
+    await expect(pill(label)).toBeVisible();
+    await pill(label).scrollIntoViewIfNeeded();
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    await pill(label).click();
+    const panel = panelOf(label);
+    await expect(panel).toBeVisible();
+    const box = await panel.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+    expect(await overflow()).toBeLessThanOrEqual(0);
+    await expect(panel.getByRole('heading')).toHaveText('Time-to-Event Explorer is experimental');
+    await captureEvidence(page, 'APP-TIER-022', 'phone-chart-label-panel');
+    await panel.getByRole('button', { name: 'Close' }).click();
+    await expect(panel).toBeHidden();
+    // The RBQM tab's too.
+    await page.evaluate(() => {
+      window.location.hash = '#rbqm';
+    });
+    await expect(corner(page).locator('.sv-status-word')).toHaveText('Experimental');
+    // A tab's view has no card to carry it: its label has a line of its own,
+    // above the tab's first words and not over them.
+    const own = await pill(corner(page)).boundingBox();
+    const lede = await page.locator('.sva-rbqm-lede').boundingBox();
+    expect(own.y + own.height).toBeLessThanOrEqual(lede.y);
+    await pill(corner(page)).click();
+    const tabBox = await panelOf(corner(page)).boundingBox();
+    expect(tabBox.x).toBeGreaterThanOrEqual(0);
+    expect(tabBox.x + tabBox.width).toBeLessThanOrEqual(390);
+    expect(await overflow()).toBeLessThanOrEqual(0);
   });
 });

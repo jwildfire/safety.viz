@@ -1,6 +1,6 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-10-10T12:28:11.831Z",
+  "generatedAt": "2026-10-10T12:57:17.212Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38052025665",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38052025665"
+    "id": "38053821482",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38053821482"
   },
   "records": [
     {
@@ -845,7 +845,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-RBQM-018: the RBQM tab follows the domains’ tabs with its Experimental badge; before Start R is pressed it says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235)",
+      "test": "APP-RBQM-018: the RBQM tab follows the domains’ tabs and carries no pill of its own; before Start R is pressed it says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-RBQM-018"],
@@ -917,7 +917,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-RBQM-031: the built demo page carries the RBQM tab with its Experimental badge and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)",
+      "test": "APP-RBQM-031: the built demo page carries the RBQM tab, which says it is Experimental on the corner of its view, and serves everything the tab asks for from beside the app: the pipeline’s R and each workflow file as the repository has it, and gsm.viz’s bundle. Nothing of it is asked for before the press. On the RBQM study, Start R starts real R from the page as built, with gsm’s packages from beside the app, and the overview, the scatter plot and the bar chart are drawn (#235)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-RBQM-031"],
@@ -954,6 +954,70 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-047"],
       "issueRefs": [253],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-014: at 1,280 pixels the header shows one label reading Exploratory on the tabs’ row; hovering it shows one line, a click opens the disclaimer and the four rungs with the app’s marked, and Escape, a second click or the cross closes it (#273)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-014"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-015: the app’s label is reached and opened from the keyboard: it follows the last tab, Enter or Space opens it, the next stop is its cross, and closing hands the keyboard back to it (#273)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-015"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-016: at 390 pixels the app’s label is on screen beside the wordmark, and its panel opens inside the window with nothing running off the page (#273)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-016"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-021: each of the five Experimental charts and the RBQM tab shows the label on the corner of its card with its own reason, and no chart draws a status banner inside itself; an Exploratory chart shows no second label (#274)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-021"],
+      "issueRefs": [274],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-022: at 390 pixels the label on a chart’s card is on screen and its panel opens inside the window, with nothing running off the page; the RBQM tab’s label has a line of its own above the tab’s first words (#274)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-022"],
+      "issueRefs": [274],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-024: every gallery card shows its chart’s rung with the status label, and a click opens its panel over the cards beside it: the four rungs, the chart’s own marked and, below Exploratory, its reason; no pill remains (#275)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-024"],
+      "issueRefs": [275],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-025: the title of each of a chart’s pages shows its rung with the status label, on the demo, evidence, API and guide pages, and a click opens its panel; the kit page’s note carries the Time-to-Event Explorer’s (#275)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-025"],
+      "issueRefs": [275],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-026: at 390 pixels a gallery card’s label and a page title’s label are on screen, and each panel opens inside the window with nothing running off the page (#275)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-026"],
+      "issueRefs": [275],
       "screenshots": []
     },
     {
@@ -5125,11 +5189,11 @@
       "screenshots": []
     },
     {
-      "test": "kit: the shared chart parts as one export KIT-API-012: nothing else the shared modules export is on the kit: the two status banners and the colour helper stay internal (#154)",
+      "test": "kit: the shared chart parts as one export KIT-API-012: nothing else the shared modules export is on the kit: the status label and the colour helper stay internal (#154, #274)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["KIT-API-012"],
-      "issueRefs": [154],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -6813,6 +6877,30 @@
       "screenshots": []
     },
     {
+      "test": "shell: a chart’s own status label APP-TIER-017: the charts read their rung from a file written from the site’s configuration, which names the six charts below Exploratory with their reasons, and the file on disk is the one the script would write (#274)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-017"],
+      "issueRefs": [274],
+      "screenshots": []
+    },
+    {
+      "test": "shell: a chart’s own status label APP-TIER-018: a chart below Exploratory drawn with no host around it shows its status label at the top of its main column, with its name, its reason and its rung marked; an Exploratory chart shows none (#274)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-018"],
+      "issueRefs": [274],
+      "screenshots": []
+    },
+    {
+      "test": "shell: a chart’s own status label APP-TIER-019: a host that shows the label itself says so on the chart’s element or on anything around it, and the chart draws none (#274)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-019"],
+      "issueRefs": [274],
+      "screenshots": []
+    },
+    {
       "test": "shell: addReset RESET-001: activating it calls the handler once (#136)",
       "suite": "unit",
       "status": "pass",
@@ -6866,30 +6954,6 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [128],
-      "screenshots": []
-    },
-    {
-      "test": "shell: status banners each banner uses a caller-supplied note verbatim when given (#97)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [97],
-      "screenshots": []
-    },
-    {
-      "test": "shell: status banners experimentalBanner renders a labelled note saying the chart may change (#97, #165)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [],
-      "screenshots": []
-    },
-    {
-      "test": "shell: status banners prototypeBanner renders a labelled note saying the chart is not ready for production (#97, #165)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -7253,11 +7317,27 @@
       "screenshots": []
     },
     {
-      "test": "site generator: gallery experimentalBadge renders Prototype for a prototype, Experimental for experimental, nothing otherwise (#97)",
+      "test": "site generator: gallery APP-TIER-023: a chart’s demo page carries its status label in its title (#275)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [97],
+      "requirementIds": ["APP-TIER-023"],
+      "issueRefs": [275],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery APP-TIER-023: every available chart’s gallery card carries its status label, Exploratory, Experimental or Prototype, each with a panel id of its own; a chart that is only planned carries none (#275)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-023"],
+      "issueRefs": [275],
+      "screenshots": []
+    },
+    {
+      "test": "site generator: gallery APP-TIER-023: the label a docs page writes is the one the app draws: the rung’s word, the chart’s reason on hover and in the panel, its name in the heading and its rung marked (#275)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-023"],
+      "issueRefs": [275],
       "screenshots": []
     },
     {
@@ -7290,14 +7370,6 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [7, 29],
-      "screenshots": []
-    },
-    {
-      "test": "site generator: gallery gallery marks a prototype renderer with a Prototype badge on its card (#97)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": [],
-      "issueRefs": [97],
       "screenshots": []
     },
     {
@@ -7781,6 +7853,30 @@
       "screenshots": []
     },
     {
+      "test": "the demo app’s own label APP-TIER-012: how many charts stand on each rung is said in a sentence or two, with a tab named as a tab (#273)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-012"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "the demo app’s own label APP-TIER-013: the header carries one label reading Exploratory, after the tabs: its hover line and its panel are the app’s disclaimer, the panel counts the charts on each rung and marks the app’s rung (#273)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-013"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "the demo app’s own label APP-TIER-020: a chart or a tab below Exploratory carries the label on the corner of its card, before the card, with its own reason and both rungs marked; an Exploratory chart carries none, and the page tells a chart it is showing the label (#274)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-020"],
+      "issueRefs": [274],
+      "screenshots": []
+    },
+    {
       "test": "the desktop-R results the browser test compares with APP-R-011: the recorded requests and desktop R’s answers are derived from the study, the app code that shapes the rows, the bundle and the statistics file as they are now, over every step of the walk (#183, #212)",
       "suite": "unit",
       "status": "pass",
@@ -8173,7 +8269,7 @@
       "screenshots": []
     },
     {
-      "test": "the page: a library that brings a view APP-RBQM-017: a library may bring a view in place of charts: a tab of its own after the domains’ tabs, with its name, its status badge and what it says of itself; opening it draws the view in the main area, hides the chart row and writes its address (#235)",
+      "test": "the page: a library that brings a view APP-RBQM-017: a library may bring a view in place of charts: a tab of its own after the domains’ tabs, with its name and what it says of itself; opening it draws the view in the main area, hides the chart row and writes its address (#235)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-017"],
@@ -8373,11 +8469,11 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab on the page APP-RBQM-026: the tab carries the Experimental badge site/config.json gives it, on its tab and in its view, with what the word means (#235)",
+      "test": "the RBQM tab on the page APP-RBQM-026: the tab is Experimental by its entry in site/config.json, which says why; the tab and its view carry no pill of their own, and the page shows the status label on the tab’s corner (#235, #274)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-026"],
-      "issueRefs": [235],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -8690,6 +8786,94 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the status label APP-TIER-007: the label is the rung’s word in a pill with no mark, and the pill’s outline tells the rung: filled for Qualified, solid for Exploratory, dashed for Experimental, dotted and grey for Prototype (#273)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-007"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "the status label APP-TIER-008: hovering shows one line; a click opens the panel and it stays open; a second click, the cross or Escape closes it, and the pill says which it is (#273)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-008"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "the status label APP-TIER-009: the panel leads with the reason, then lists the four rungs from the top with what each means, the label’s own rung marked, and a link to where the rungs are written out (#273)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-009"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "the status label APP-TIER-010: opening one label closes another, and each panel has an id of its own (#273)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-010"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "the status label APP-TIER-011: a page written ahead of time carries the same label as markup, wired where it stands: the same parts, the text escaped, and a panel that may stand inside a heading (#273)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-011"],
+      "issueRefs": [273],
+      "screenshots": []
+    },
+    {
+      "test": "the status ladder: the rung an entry stands on APP-TIER-001: there are four rungs in order, and an entry that names none is Exploratory (#272)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-001"],
+      "issueRefs": [272],
+      "screenshots": []
+    },
+    {
+      "test": "the status ladder: the rung an entry stands on APP-TIER-002: the site’s configuration stores a rung as one field: no entry carries the two flags it replaced, the five Experimental charts and the RBQM tab say why, and the one Prototype is the Patient Journey Explorer (#272)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-002"],
+      "issueRefs": [272],
+      "screenshots": []
+    },
+    {
+      "test": "the status ladder: the rung an entry stands on APP-TIER-003: an entry that says \"qualified\" stops the build with a sentence naming it, and so do a retired flag, a word that is no rung and an Experimental entry with no reason (#272)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-003"],
+      "issueRefs": [272],
+      "screenshots": []
+    },
+    {
+      "test": "the status ladder: the rung on the page APP-TIER-006: the page knows the rung of every chart and every view it lists: what it was told, or what a library’s own entry says, or Exploratory (#272)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-006"],
+      "issueRefs": [272],
+      "screenshots": []
+    },
+    {
+      "test": "the status ladder: the rung reaches the app APP-TIER-004: the app build gives a rung for each of the eighteen charts and for the RBQM tab: thirteen charts Exploratory, five Experimental with their reasons, and the tab Experimental with its own (#272)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-004"],
+      "issueRefs": [272],
+      "screenshots": []
+    },
+    {
+      "test": "the status ladder: the rung reaches the app APP-TIER-005: the single file and the hosted page hand the app every rung, and a page built with none says nothing of them (#272)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-005"],
+      "issueRefs": [272],
       "screenshots": []
     },
     {

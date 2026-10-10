@@ -278,6 +278,7 @@ class SafetyParticipantProfile {
       this,
       renderShell(this.element, {
         moduleClass: 'safety-participant-profile',
+        module: 'participant-profile',
         onToggle: () => this.resize()
       })
     );

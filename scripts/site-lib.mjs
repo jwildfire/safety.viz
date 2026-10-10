@@ -3,8 +3,9 @@
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
 import { LOGO_HREF } from '../src/app/styles.js';
+import { tierNoteOf, tierOf } from '../src/tiers.js';
+import { TIER_MEANINGS, statusHeading, statusLabelHtml } from '../src/status-label.js';
 import {
-  EXPERIMENTAL_MEANING,
   HOSTED_DESCRIPTION,
   HOSTED_PITCH,
   inlineJson,
@@ -751,7 +752,7 @@ export function renderEvidencePage({ module, config, coverage, evidence, require
     )
   );
 
-  html.push(`<h1>${escapeHtml(renderer.title)}: test evidence${experimentalBadge(renderer)}</h1>`);
+  html.push(`<h1>${escapeHtml(renderer.title)}: test evidence${statusBadge(renderer)}</h1>`);
   html.push(
     `<p class="tagline">Requirement-traced qualification evidence for the safety.viz` +
       ` <code>${escapeHtml(module)}</code> module.</p>`
@@ -924,7 +925,7 @@ export function renderGallery(config) {
       `<img src="${hero}" alt="${escapeHtml(renderer.title)} preview" loading="lazy">` +
       `</a><div class="card-body">` +
       `<h3><a href="${base}/index.html">${escapeHtml(renderer.title)}</a>` +
-      `${experimentalBadge(renderer)}</h3>` +
+      `${statusBadge(renderer, { id: `sv-status-${base}` })}</h3>` +
       `<p>${escapeHtml(renderer.blurb)}</p>` +
       `<p class="card-links"><a href="${base}/index.html">Demo</a> · ` +
       `<a href="${base}/evidence.html">Evidence</a> · ` +
@@ -1188,10 +1189,7 @@ function methodSection(method) {
 // _api/<module>.json artifact (scripts/api/build-api-data.mjs, #6) — a
 // module-anatomy overview, then factory, methods, settings, and the
 // schema-derived data contract, with a sticky sidebar table of contents.
-export function renderApiPage(
-  model,
-  { hasGuide = false, experimental = false, prototype = false } = {}
-) {
+export function renderApiPage(model, { hasGuide = false, renderer = null } = {}) {
   const toc =
     `<nav class="api-toc" aria-label="On this page"><h2>On this page</h2><ul>` +
     `<li><a href="#overview">Overview</a></li>` +
@@ -1263,7 +1261,7 @@ export function renderApiPage(
 
   const html = [];
   html.push(
-    `<h1><code>${escapeHtml(model.module)}</code> API reference${experimentalBadge({ experimental, prototype })}</h1>`
+    `<h1><code>${escapeHtml(model.module)}</code> API reference${statusBadge(renderer)}</h1>`
   );
   html.push(
     `<p class="tagline">Generated from the module&#39;s JSDoc and JSON-Schema data contract` +
@@ -1346,11 +1344,10 @@ const KIT_STATUS = {
       ` (<a href="https://github.com/jwildfire/obot.roadmap/issues/182">obot.roadmap#182</a>):` +
       ` its estimates, intervals and at-risk counts may change after that review without` +
       ` counting as a breaking change. Its name and its arguments are kept.`,
-    // A function: the badge's wording is defined further down this file.
-    row: () =>
-      `Follows the Time-to-Event Explorer&#39;s` +
-      ` <span class="site-badge" title="${STATUS_MEANING.experimental}">Experimental</span>` +
-      ` status: see <a href="#contract">what is promised</a>.`
+    // The Explorer's status label, where the page was handed the chart's entry.
+    row: (label = ' Experimental') =>
+      `Follows the Time-to-Event Explorer&#39;s${label} status:` +
+      ` see <a href="#contract">what is promised</a>.`
   }
 };
 
@@ -1369,7 +1366,10 @@ const codeList = (names) => names.map((name) => `<code>${escapeHtml(name)}</code
  * @param {string} options.version The package version, which names the committed bundle's folder.
  * @returns {string} The page content, for the shared shell.
  */
-export function renderKitPage(model, { repoUrl, version }) {
+export function renderKitPage(model, { repoUrl, version, renderers = [] }) {
+  // The chart a member's status follows, for its status label.
+  const followed = renderers.find((entry) => entry.module === 'time-to-event');
+  const followedLabel = followed ? statusBadge(followed, { id: 'sv-status-kit' }) : undefined;
   const bundleDir = `dist/safety.viz-${version}`;
   const modules = model.groups.filter((group) => group.source !== 'chart.js').length;
   const { chart } = model;
@@ -1486,7 +1486,7 @@ export function renderKitPage(model, { repoUrl, version }) {
           `<td><code>${escapeHtml(member.signature)}</code></td>` +
           `<td>${mdInline(member.description)}` +
           (KIT_STATUS[member.name]
-            ? ` <span class="kit-status">${KIT_STATUS[member.name].row()}</span>`
+            ? ` <span class="kit-status">${KIT_STATUS[member.name].row(followedLabel)}</span>`
             : '') +
           `</td></tr>`
       )
@@ -1507,9 +1507,9 @@ export function renderKitPage(model, { repoUrl, version }) {
       `<li>The chart factories. <code>SafetyViz.histogram()</code> and the rest are the` +
       ` library&#39;s own public surface, documented on each chart&#39;s API reference; the kit` +
       ` is what they are built from.</li>` +
-      `<li><code>prototypeBanner</code> and <code>experimentalBanner</code>, which` +
-      ` <code>src/shell.js</code> also exports: their wording is safety.viz&#39;s own release` +
-      ` status.</li>` +
+      `<li>The status label, <code>statusLabel</code> and <code>chartStatus</code> with their` +
+      ` helpers, which <code>src/shell.js</code> also exports: its wording is safety.viz&#39;s` +
+      ` own release status.</li>` +
       `<li><code>hexToRgba</code>, which <code>src/box-whisker.js</code> also exports: a colour` +
       ` helper private to the box drawing.</li>` +
       `<li>Everything else under <code>src/</code>: each chart&#39;s data preparation, scales` +
@@ -1549,36 +1549,43 @@ export function renderKitPage(model, { repoUrl, version }) {
 // real example data (the renderer's `data` config key, defaulting to the
 // shared ADBDS extract, #26). The .demo-page wrapper widens the layout
 // (site.css) so the control sidebar and chart get full room.
-// A small status pill for a page title / gallery card. A chart has one of three
-// tiers, set in site/config.json (#165):
-//
-//   prototype     "Prototype": not ready for production. Shown on the docs site
-//                 only; kept out of the portfolio manifest, and so out of the
-//                 demo app and the Domains page; not counted a finished chart.
-//   experimental  "Experimental": still being worked on, and fine to ship. In
-//                 the manifest and the demo app; its behaviour and settings may
-//                 change.
-//   neither       stable: no pill.
-//
-// Prototype takes precedence when both are set. The pill's title says what the
-// tier means, for whoever hovers it.
-export const STATUS_MEANING = {
-  prototype: 'Not ready for production: on the docs site only, and not in the demo app.',
-  experimental: EXPERIMENTAL_MEANING
+// The status label for a page title or a gallery card (#275, obot.roadmap#403):
+// the same label the demo app and the charts draw (src/status-label.js),
+// written into the page as markup and wired once the page has loaded
+// (status-label.js, which the site build writes beside site.css). A chart
+// stands on one rung of the status ladder, named by `tier` in site/config.json;
+// one that names none is Exploratory. Every rung is shown, Exploratory too: the
+// label is how a page says how far to trust a chart.
+const DOCS_MEANINGS = {
+  ...TIER_MEANINGS,
+  prototype: 'An early look, on the docs site only. Not in the demo app.'
 };
-export function experimentalBadge(renderer) {
-  if (renderer && renderer.prototype) {
-    return ` <span class="site-badge site-badge-prototype" title="${STATUS_MEANING.prototype}">Prototype</span>`;
-  }
-  return renderer && renderer.experimental
-    ? ` <span class="site-badge" title="${STATUS_MEANING.experimental}">Experimental</span>`
-    : '';
+
+/**
+ * A chart's status label, as markup, with a space before it.
+ * @param {?{title?: string, tier?: string, tierNote?: string}} renderer The chart's entry in site/config.json.
+ * @param {{id?: string}} [options] An id for the label's panel, unique on the page: a page with several labels names each.
+ * @returns {string} The markup; empty when there is no chart to label.
+ */
+export function statusBadge(renderer, { id = 'sv-status-panel' } = {}) {
+  if (!renderer) return '';
+  const tier = tierOf(renderer);
+  const note = tierNoteOf(renderer);
+  return ` ${statusLabelHtml({
+    tier,
+    heading: statusHeading(renderer.title || 'This chart', tier),
+    text: note ? [note] : [],
+    marks: { [tier]: ['This chart'] },
+    meanings: DOCS_MEANINGS,
+    align: 'left',
+    id
+  })}`;
 }
 
 export function renderDemoPage({ renderer, version }) {
   return (
     `<div class="demo-page">` +
-    `<h1>${escapeHtml(renderer.title)}${experimentalBadge(renderer)}</h1>` +
+    `<h1>${escapeHtml(renderer.title)}${statusBadge(renderer)}</h1>` +
     `<p class="tagline">${escapeHtml(renderer.blurb)}</p>` +
     moduleTabs('demo', !!renderer.guide) +
     `<p>This live demo mounts the committed` +
@@ -1680,6 +1687,7 @@ export function publishDemoAppFonts(rootDir, demoDir) {
  * @param {Array<{name: string, global: string, file: string}>} [options.libraries] Further chart libraries (#182): each bundle is loaded from beside the page after the app's and handed to the app when it mounts.
  * @param {string} [options.charts] What the app reviews a study in, for the page's description: its charts, counted.
  * @param {Object<string, {guide?: string, evidence?: string}>} [options.chartLinks] Each chart's own pages (#246), as scripts/app-libraries.mjs::chartLinks gives them: handed to the app for the footnote under each chart. Given none, the app is told of none.
+ * @param {Object<string, {tier: string, note?: string}>} [options.tiers] Each chart's and each tab's rung of the status ladder (#272), as scripts/app-libraries.mjs::chartTiers gives them: handed to the app. Given none, the app is told of none.
  * @param {{docs?: ?string, domains?: ?string}} [options.links] Where the app's links to the docs site and the Domains page lead: by default into the site the page is part of. One given no address is left out, and the app's own default, the published site, stands (#214): the page `npm run demo` serves has no site beside it.
  * @returns {string} The complete HTML document.
  */
@@ -1690,7 +1698,8 @@ export function renderDemoAppPage({
   libraries = [],
   charts = 'thirteen clinical safety charts',
   links = {},
-  chartLinks = {}
+  chartLinks = {},
+  tiers = {}
 }) {
   const siteLinks = { ...DEMO_APP_SITE_LINKS, ...links };
   const js = (value) => `'${String(value).replace(/[\\']/g, '\\$&')}'`;
@@ -1724,7 +1733,7 @@ body{margin:0;background:#fafaf8}
 <script src="./${escapeHtml(bundle)}"></script>
 ${libraries.map((library) => `<script src="./${escapeHtml(library.file)}"></script>\n`).join('')}<script>
 window.__safetyVizApp = SafetyVizApp.mount('#app', {
-  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}${Object.keys(chartLinks).length ? `\n  chartLinks: ${inlineJson(chartLinks)},` : ''}
+  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}${Object.keys(chartLinks).length ? `\n  chartLinks: ${inlineJson(chartLinks)},` : ''}${Object.keys(tiers).length ? `\n  tiers: ${inlineJson(tiers)},` : ''}
   links: {${Object.keys(DEMO_APP_SITE_LINKS)
     .filter((name) => siteLinks[name])
     .map((name) => `\n    ${name}: ${js(siteLinks[name])},`)
@@ -1782,7 +1791,7 @@ function renderGuideToc(headings) {
 export function renderGuidePage({ renderer, config, guideMarkdown }) {
   const matrixUrl = `${config.matrixBaseUrl}/${renderer.matrix}`;
   const html = [];
-  html.push(`<h1>${escapeHtml(renderer.title)}: clinical guide${experimentalBadge(renderer)}</h1>`);
+  html.push(`<h1>${escapeHtml(renderer.title)}: clinical guide${statusBadge(renderer)}</h1>`);
   const tagline =
     renderer.guideTagline ||
     `How to read the ${renderer.title} to review participant liver safety, and where each step lives in the controls on this page.`;

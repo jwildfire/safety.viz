@@ -85,6 +85,7 @@ class SafetyTimeToEvent {
       this,
       renderShell(this.element, {
         moduleClass: 'safety-time-to-event',
+        module: 'time-to-event',
         onToggle: () => this.resize()
       })
     );
