@@ -1,6 +1,6 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-10-13T21:16:21.840Z",
+  "generatedAt": "2026-10-13T22:27:27.312Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38469241819",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38469241819"
+    "id": "38474943891",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38474943891"
   },
   "records": [
     {
@@ -1021,7 +1021,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-R-060: at 1,280 pixels each of the five biomarker charts opens with a note at the top of its card, above the chart: blue with a cross on the three R adds p-values to, amber with none on the two that cannot be drawn without R, each with Start R inside its sentence; the chart’s own line points at the note; closing the blue note closes it on all three and leaves the amber ones; nothing is asked of R (#322)",
+      "test": "APP-R-060: at 1,280 pixels each of the five biomarker charts opens with a note at the top of its card, above the chart: blue with a cross on the three R adds p-values to, amber with none on the two that cannot be drawn without R, each with Start R inside its sentence; the chart’s own line points at the note; closing the blue note closes it on all three, whose lines then point at the control, and leaves both amber ones, whose lines still point at the note; nothing is asked of R (#322)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-R-060"],
@@ -1029,7 +1029,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-R-061: Start R in the note is the control’s press: with R’s host held and then refused, the note turns blue, waits and has no button while the control counts; then it is amber, says the chart has no p-values and offers Try again inside its sentence, on a chart that needs R that it cannot be drawn; the chart’s line points at the note, and Try again starts R afresh (#322)",
+      "test": "APP-R-061: Start R in the note is the control’s press: with R’s host held and then refused, the note turns blue, waits and has no button while the control counts; then it is amber, says the chart has no p-values and offers Try again inside its sentence, on a chart that needs R that it cannot be drawn; the chart’s line points at the note, and Try again makes one fresh connection (#322)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-R-061"],
@@ -1045,7 +1045,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-R-063: at a 390-pixel viewport the note is inside the chart’s card with its sentence wrapped and Start R inside it, on a chart R adds p-values to and on one that cannot be drawn without R, and on the RBQM tab; nothing runs off the page (#322)",
+      "test": "APP-R-063: at a 390-pixel viewport the note is inside the chart’s card with its sentence wrapped and Start R inside it, on a chart R adds p-values to and on one that cannot be drawn without R, and on the RBQM tab; when R does not start the note says the reason is above; nothing runs off the page (#322)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-R-063"],
@@ -1069,7 +1069,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-RBQM-018: the RBQM tab follows the domains’ tabs and carries no pill of its own; before Start R is pressed it says in one line that site metrics need R and what the loaded study supports, its control says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235, #280)",
+      "test": "APP-RBQM-018: the RBQM tab follows the domains’ tabs and carries no pill of its own; before Start R is pressed its note says the site metrics cannot be worked out without R and a smaller, quieter line says what the loaded study supports, its control says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235, #280)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-RBQM-018"],
@@ -1253,7 +1253,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-RBQM-082: at 1,280 pixels the RBQM tab opens on an amber note, first in its card, that says the site metrics cannot be worked out without R, with Start R inside its sentence; the button is the control’s press: the note turns blue, waits, has no button and names the step it is on while the control counts; once the metrics are drawn there is no note (#322)",
+      "test": "APP-RBQM-082: at 1,280 pixels the RBQM tab opens on an amber note, first in its card, that says the site metrics cannot be worked out without R, with Start R inside its sentence; the button is the control’s press: the note turns blue, waits, has no button and names the step it is on, as the control does; a metric’s page carries the same note under its heading; once the metrics are drawn there is no note (#322)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-RBQM-082"],
@@ -4514,6 +4514,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-025"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the data panel APP-NOTE-002: a chart with a column not mapped says so in the standard note, as a warning: amber, with the warning mark, and not the red edge of a failure (#321)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-NOTE-002"],
+      "issueRefs": [321],
       "screenshots": []
     },
     {
@@ -8333,7 +8341,7 @@
       "screenshots": []
     },
     {
-      "test": "the note where R can be started APP-R-057: closing the blue note closes it on every chart R adds p-values to, and each chart’s own line then points at the control; the amber note of a chart that needs R stays; a reader who then starts R and is told it did not start has the note back (#322)",
+      "test": "the note where R can be started APP-R-057: closing the blue note closes it on every chart R adds p-values to, and each of those charts’ own line then points at the control; the amber note of a chart that needs R stays, and that chart’s line still points at its note; closed is closed while R starts too, and a reader who is then told R did not start has the note back (#322)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-R-057"],
