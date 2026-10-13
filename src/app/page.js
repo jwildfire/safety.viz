@@ -51,15 +51,9 @@ import {
 } from './libraries.js';
 import { renderDataPanel } from './data-panel.js';
 import { DEMO_STUDIES, studyUrls } from './studies.js';
-import {
-  APP_STATUS_LINE,
-  APP_STATUS_TEXT,
-  dataTag,
-  statusCount,
-  tabCount,
-  welcomeSentence
-} from './header.js';
+import { APP_STATUS_LINE, APP_STATUS_TEXT, dataTag, statusCount, tabCount } from './header.js';
 import { icon } from './icons.js';
+import { note } from './note.js';
 import { el, plural } from './dom.js';
 import { isBelow, tierNoteOf, tierOf } from '../tiers.js';
 import { statusHeading, statusLabel } from '../status-label.js';
@@ -241,6 +235,9 @@ export function mountApp(
   /** An element of a group, with the group's class and, for a library's group, its colour. */
   const inGroup = (tag, className, group) =>
     paint(el(tag, `${className} ${hueClass(group, manifest)}`), declaredBy[group]);
+  /** One of a list of notes (#321): what a load left to say, or a library that did not load, as an amber note. */
+  const noteItem = (sentence) =>
+    note({ kind: 'warning', say: sentence, tag: 'li', className: 'sva-note', role: null });
   const views = new Map();
   const viewLibrary = new Map(); // a view's id → the name of the library that brought it
   for (const { name, view } of handed.filter(bringsView)) {
@@ -299,7 +296,6 @@ export function mountApp(
     notes: [], // sentences about the last load: unplaced, unreadable, replaced
     failed: {}, // module → the message of a chart that was ready and threw
     focus: null, // the mapping row to return the keyboard focus to after a re-render
-    welcome: false, // whether the welcome line is still to be read: set as the app opens on a study, never stored
     selected: 'data',
     item: null, // the open item of the open view, when the view brings a row of its own (#279)
     busy: ''
@@ -387,28 +383,13 @@ export function mountApp(
   // The page shows a chart's status label itself, on the corner of its card,
   // so a chart drawn here draws none of its own (#274, src/shell.js).
   content.dataset.svStatusHost = '';
-  // The welcome line (#269): whose data, how much, and where to load your own.
-  // On first open only, above whatever is drawn; closed with its cross, and
-  // held nowhere but in this page's memory.
-  const welcome = el('div', 'sva-welcome');
-  welcome.setAttribute('role', 'note');
-  welcome.hidden = true;
-  const welcomeText = el('p');
-  const dismiss = el('button', 'sva-close', '×');
-  dismiss.type = 'button';
-  dismiss.setAttribute('aria-label', 'Dismiss');
-  dismiss.onclick = () => {
-    state.welcome = false;
-    welcome.hidden = true;
-  };
-  welcome.append(welcomeText, dismiss);
-  main.append(head, welcome);
+  main.append(head);
   // A library the page asked for whose charts are not listed says so in every
   // view, with why: it is not left out without a word (#193).
   if (unloaded.length) {
     const notes = el('ul', 'sva-notes sva-library-notes');
     notes.setAttribute('role', 'status');
-    for (const sentence of unloaded) notes.append(el('li', 'sva-note', sentence));
+    for (const sentence of unloaded) notes.append(noteItem(sentence));
     main.append(notes);
   }
   main.append(content);
@@ -452,35 +433,6 @@ export function mountApp(
     const { ready, total } = supportedCount(current);
     // Spoken, not shown: each domain's tab already carries its own count.
     count.textContent = state.busy || `${ready} of ${total} charts supported by the loaded data`;
-    renderWelcome(ready);
-  }
-
-  /**
-   * The welcome line, while it is still to be read: for the study the app
-   * opened on, on any view but the data view, where the files are loaded.
-   */
-  function renderWelcome(ready) {
-    const [first] = studies;
-    const due =
-      state.welcome &&
-      !state.busy &&
-      state.selected !== 'data' &&
-      Boolean(first) &&
-      state.study === first.id &&
-      typeof first.whose === 'string';
-    welcome.hidden = !due;
-    if (!due) return;
-    const subject = state.files.subject;
-    const id = subject && state.mappings.subject && state.mappings.subject.columns.USUBJID;
-    const [before, after] = welcomeSentence({
-      whose: first.whose,
-      participants: id && id.value ? distinctValues(subject.rows, id.value).length : null,
-      charts: ready,
-      tabs: chartGroups().size + views.size
-    });
-    const link = el('a', null, 'Data');
-    link.href = '#data';
-    welcomeText.replaceChildren(before, link, after);
   }
 
   function navItem(id, label, tag, hexClass, fullTitle = label) {
@@ -882,7 +834,7 @@ export function mountApp(
   function renderNotes(container) {
     if (!state.notes.length) return;
     const list = el('ul', 'sva-notes');
-    for (const note of state.notes) list.append(el('li', 'sva-note', note));
+    for (const sentence of state.notes) list.append(noteItem(sentence));
     container.append(list);
   }
 
@@ -910,7 +862,10 @@ export function mountApp(
     destroyChart();
     dataShown = null;
     content.innerHTML = '';
-    if (state.busy) content.append(el('p', 'sva-message sva-busy', state.busy));
+    // What is under way is information (#321): a blue note, with a turning ring.
+    if (state.busy) {
+      content.append(note({ say: state.busy, busy: true, className: 'sva-message sva-busy' }));
+    }
     if (state.selected === 'data') {
       title.textContent = 'Data';
       renderNotes(content);
@@ -984,16 +939,28 @@ export function mountApp(
           ? 'The participant profile opens beside a chart when you select a participant in it. ' +
             `Choose one of these charts and select a point or a row: ${hosts.join(', ')}.`
           : sentenceFor(module, current[module], manifest);
-      content.append(el('p', 'sva-message', sentence));
+      // How the chart is opened is information; that it cannot be is a warning (#321).
+      content.append(
+        note({
+          kind: current[module].state === 'ready' ? 'info' : 'warning',
+          say: sentence,
+          className: 'sva-message'
+        })
+      );
       return true;
     }
 
     if (current[module].state !== 'ready') {
-      const message = el('p', 'sva-message', sentenceFor(module, current[module], manifest));
-      if (!['needs more domains', 'not loaded'].includes(current[module].state)) {
-        message.classList.add('sva-problem');
-      }
-      content.append(message);
+      // A chart the page cannot draw as things stand says why in an amber note
+      // (#321): a file not loaded, a column not mapped, domains outside the
+      // standard set, a library that is not there. One that was ready and
+      // threw is a failure, and keeps its red edge.
+      const sentence = sentenceFor(module, current[module], manifest);
+      content.append(
+        current[module].state === 'did not draw'
+          ? el('p', 'sva-message sva-problem', sentence)
+          : note({ kind: 'warning', say: sentence, className: 'sva-message' })
+      );
       return true;
     }
 
@@ -1121,8 +1088,6 @@ export function mountApp(
     clear();
     const list = study.files.map((name, index) => ({ name, text: texts[index] }));
     // A study of gsm's raw domains (#233) is kept as it is; any other is placed and mapped.
-    // The welcome line is for the study the app opened on, and for no other.
-    if (!studies[0] || study.id !== studies[0].id) state.welcome = false;
     if (study.raw) handle.loadRaw(list, { study: study.id });
     else handle.loadFiles(list, { study: study.id });
     if (!open) return;
@@ -1192,7 +1157,6 @@ export function mountApp(
       if (!study) {
         demoRun += 1;
         state.busy = '';
-        state.welcome = false;
       }
       state.notes = [...notes];
       const mappingFiles = [];
@@ -1265,7 +1229,6 @@ export function mountApp(
       if (!study) {
         demoRun += 1;
         state.busy = '';
-        state.welcome = false;
       }
       state.notes = [...notes];
       // Files of the user's own replace a demo study whole, as loadFiles does.
@@ -1459,7 +1422,6 @@ export function mountApp(
     reset() {
       demoRun += 1;
       state.busy = '';
-      state.welcome = false;
       clear();
       handle.select('data');
     },
@@ -1563,7 +1525,6 @@ export function mountApp(
 
   render();
   if (studies.length) {
-    state.welcome = true;
     handle.loadDemo(studies[0].id, { open: true });
   }
   return handle;

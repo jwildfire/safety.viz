@@ -141,24 +141,18 @@ test.describe('docs site', () => {
     }
   });
 
-  test('APP-PAGE-034: on the built demo page at 1,280 pixels, in the app’s own typeface, the welcome is one line above the chart and the header is one row with every tab on it (#269)', async ({
+  test('APP-PAGE-044: on the built demo page at 1,280 pixels there is no line on first open, the chart starts under the header, and the header is one row with every tab on it (#321)', async ({
     page
   }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
     await page.goto('/_site/demo/index.html');
     await page.evaluate('window.__safetyVizApp.ready');
     await page.evaluate(() => document.fonts.ready);
-    const welcome = page.locator('.sva-welcome');
-    await expect(welcome.locator('p')).toHaveText(
-      'You are looking at the CDISC pilot study, a public demo: 254 participants, 18 charts on five tabs. ' +
-        'To use your own files, open Data. They are read in this browser and never leave it.'
-    );
-    // One line of text: the paragraph is no taller than a line and a half of it.
-    const lines = await welcome.locator('p').evaluate((element) => {
-      const style = getComputedStyle(element);
-      return element.getBoundingClientRect().height / parseFloat(style.lineHeight);
-    });
-    expect(lines).toBeLessThan(1.5);
+    await expect(page.locator('.sva-welcome')).toHaveCount(0);
+    await expect(page.locator('.sva-main')).not.toContainText('You are looking at');
+    const header = await page.locator('.sva-header').boundingBox();
+    const chart = await page.locator('.sva-chart').boundingBox();
+    expect(chart.y - (header.y + header.height)).toBeLessThan(30);
     // The header's first row holds the wordmark and all six tabs on one line.
     const tops = await page
       .locator('.sva-tabs > *')
