@@ -41,7 +41,6 @@ import { el } from './dom.js';
 import { icon } from './icons.js';
 import { note } from './note.js';
 import { WEBR_VERSION } from './r-browser.js';
-import { whereSaid } from './r-words.js';
 import {
   NOT_CSV,
   filesForR,
@@ -242,7 +241,7 @@ export function rbqmTab({
     }));
   }
 
-  /** The one line the body opens on, for every state but a finished run. */
+  /** What the note says where it has no button: the page cannot start R, R is busy, or no loaded file is one gsm reads. */
   function bodyLine(app) {
     if (unavailable) return unavailable;
     if (busy()) {
@@ -250,19 +249,63 @@ export function rbqmTab({
         ? 'R is running the metrics. They appear here when it is done.'
         : 'R is starting. The metrics run by themselves when it is ready.';
     }
-    if (phase === 'failed') {
-      return failure.say === words.stopped
-        ? `R stopped answering, so no metric was run. Try again, ${whereSaid()}.`
-        : words.viewFailed();
+    const any = loaded(app).length || Object.keys((app && app.state.files) || {}).length;
+    return any ? NONE_PLACED : NO_FILES;
+  }
+
+  /**
+   * The step the tab is on, as the note's small print says it while R is busy.
+   * It says no seconds: the control counts them, and the tab keeps no clock (#258).
+   */
+  const stepMeta = () => `Step ${stepNumber(moment())} of ${RUN_STEPS.length}`;
+
+  /**
+   * The note the body opens on, for every state but a finished run (#322,
+   * obot.roadmap#420): the line of `bodyLine`, as the app's one note, with the
+   * button that starts R inside its sentence. Amber where the metrics cannot
+   * be worked out as things stand: R is not started, did not start or stopped,
+   * the page cannot start it, or no loaded file is one gsm reads. Blue while R
+   * is busy, and when R is up and only the run is wanted.
+   */
+  function statusNote(app) {
+    const make = (kind, say, options = {}) =>
+      note({ kind, say, className: 'sva-rbqm-need sva-rbqm-status', role: 'status', ...options });
+    const go = (label) => {
+      const button = el('button', 'sva-action sva-note-start', label);
+      button.type = 'button';
+      button.onclick = () => press(app);
+      return button;
+    };
+    if (unavailable) return make('warning', unavailable);
+    if (busy()) {
+      const meta = el('span', 'sva-callout-meta', stepMeta());
+      shown.meta = meta;
+      return make('info', [bodyLine(app), ' ', meta], { busy: true });
     }
-    if (phase === 'stopped')
-      return `R stopped, so there are no results. Run again, ${whereSaid()}.`;
-    const given = handed(app);
-    if (!given.files.length) {
-      const any = loaded(app).length || Object.keys((app && app.state.files) || {}).length;
-      return any ? NONE_PLACED : NO_FILES;
+    const files = handed(app).files.length;
+    if (phase === 'failed' || phase === 'stopped') {
+      const before =
+        phase === 'stopped'
+          ? 'R stopped, so there are no results. '
+          : failure.say === words.stopped
+            ? 'R stopped answering, so no metric was run. '
+            : 'R did not start, so no metric was run. ';
+      const line = make('warning', [
+        before,
+        files ? go(failure.label || words.again) : null,
+        ` ${words.noteWhy()}`
+      ]);
+      line.classList.add('sva-rbqm-problem');
+      return line;
     }
-    return up ? `R is ready. Run the metrics from the R chip, ${whereSaid()}.` : words.viewNeed();
+    // No file gsm reads: the sentence says which, and there is nothing to start R on.
+    if (!files) return make('warning', bodyLine(app));
+    if (up) return make('info', ['R is ready. ', go('Run the metrics'), ' on what is loaded now.']);
+    return make('warning', [
+      'The site metrics cannot be worked out without R. ',
+      go(words.start),
+      ` to run them: ${words.noteCost}`
+    ]);
   }
 
   /** The six steps, as the body lists them while R starts and runs: done, the one it is on, and to come. */
@@ -290,6 +333,7 @@ export function rbqmTab({
       shown.steps.replaceWith(fresh);
       shown.steps = fresh;
     }
+    if (shown.meta && shown.meta.isConnected && busy()) shown.meta.textContent = stepMeta();
     // The control names the step too, and the row's marks follow.
     shown.app.retag();
   }
@@ -729,9 +773,7 @@ export function rbqmTab({
       return;
     }
     if (metric.state !== 'ran') {
-      const line = el('p', 'sva-rbqm-need sva-rbqm-status', bodyLine(app));
-      line.setAttribute('role', 'status');
-      card.append(line);
+      card.append(statusNote(app));
       if (busy()) {
         const steps = stepList();
         card.append(steps);
@@ -909,7 +951,7 @@ export function rbqmTab({
       }
       const root = el('div', 'sva-rbqm');
       container.append(root);
-      shown = { app, steps: null };
+      shown = { app, steps: null, meta: null };
       const card = el('section', 'sva-rbqm-section sva-rbqm-page');
       root.append(card);
       const open = app.state.item
@@ -945,10 +987,7 @@ export function rbqmTab({
         withCharts((viz) => drawOverview(viz, card, app));
       } else {
         // Before R, while it starts and runs, and when it did not start.
-        const line = el('p', 'sva-rbqm-need sva-rbqm-status', bodyLine(app));
-        line.setAttribute('role', 'status');
-        if (phase === 'failed' || phase === 'stopped') line.classList.add('sva-rbqm-problem');
-        card.append(line);
+        card.append(statusNote(app));
         if (busy()) {
           shown.steps = stepList();
           card.append(shown.steps);

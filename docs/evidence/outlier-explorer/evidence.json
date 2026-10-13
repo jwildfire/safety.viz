@@ -1,6 +1,6 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-10-13T20:30:25.227Z",
+  "generatedAt": "2026-10-13T20:51:50.989Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38463274450",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38463274450"
+    "id": "38466075765",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38466075765"
   },
   "records": [
     {
@@ -853,6 +853,38 @@
       "screenshots": []
     },
     {
+      "test": "APP-R-060: at 1,280 pixels each of the five biomarker charts opens with a note at the top of its card, above the chart: blue with a cross on the three R adds p-values to, amber with none on the two that cannot be drawn without R, each with Start R inside its sentence; the chart’s own line points at the note; closing the blue note closes it on all three and leaves the amber ones; nothing is asked of R (#322)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-060"],
+      "issueRefs": [322],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-061: Start R in the note is the control’s press: with R’s host held and then refused, the note turns blue, waits and has no button while the control counts; then it is amber, says the chart has no p-values and offers Try again inside its sentence, on a chart that needs R that it cannot be drawn; the chart’s line points at the note, and Try again starts R afresh (#322)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-061"],
+      "issueRefs": [322],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-062: Start R pressed in the note starts R in the browser: the control becomes the chip, the note leaves the card, the statistic is printed under the chart with nothing drawn again, and a chart that could not be drawn without R is drawn with no note (#322)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-062"],
+      "issueRefs": [322],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-063: at a 390-pixel viewport the note is inside the chart’s card with its sentence wrapped and Start R inside it, on a chart R adds p-values to and on one that cannot be drawn without R, and on the RBQM tab; nothing runs off the page (#322)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-063"],
+      "issueRefs": [322],
+      "screenshots": []
+    },
+    {
       "test": "APP-RBQM-007: choosing the RBQM study loads gsm’s nine raw files and keeps them as they are: each is listed with its rows, none is placed in a domain or mapped, no safety chart reads them, and the view fits a 390-pixel screen (#233)",
       "suite": "browser",
       "status": "pass",
@@ -1050,6 +1082,14 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-080"],
       "issueRefs": [271],
+      "screenshots": []
+    },
+    {
+      "test": "APP-RBQM-082: at 1,280 pixels the RBQM tab opens on an amber note, first in its card, that says the site metrics cannot be worked out without R, with Start R inside its sentence; the button is the control’s press: the note turns blue, waits, has no button and names the step it is on while the control counts; once the metrics are drawn there is no note (#322)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-082"],
+      "issueRefs": [322],
       "screenshots": []
     },
     {
@@ -8344,6 +8384,30 @@
       "screenshots": []
     },
     {
+      "test": "the note where R can be started APP-R-055: before the reader asks, a chart R adds p-values to has a blue note that can be closed and a chart that cannot be drawn without R has an amber one that cannot, each with Start R inside its sentence and what starting it costs; while R starts the note is blue, waits and has no button; once R is ready there is none (#322)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-055"],
+      "issueRefs": [322],
+      "screenshots": []
+    },
+    {
+      "test": "the note where R can be started APP-R-056: when R did not start both notes are amber, say what the chart is left without, offer Try again inside the sentence and say where the reason is; neither can be closed, and the chart’s own line points at the note (#322)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-056"],
+      "issueRefs": [322],
+      "screenshots": []
+    },
+    {
+      "test": "the note where R can be started APP-R-057: closing the blue note closes it on every chart R adds p-values to, and each chart’s own line then points at the control; the amber note of a chart that needs R stays; a reader who then starts R and is told it did not start has the note back (#322)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-057"],
+      "issueRefs": [322],
+      "screenshots": []
+    },
+    {
       "test": "the one R function behind the tab (#234) APP-RBQM-014: it computes nothing itself: every workflow is run through workr, it calls no statistical or arithmetic function on the data, and the one gsm function it names parses a metric’s thresholds from text to numbers (#234)",
       "suite": "unit",
       "status": "pass",
@@ -8477,6 +8541,22 @@
       "status": "pass",
       "requirementIds": ["APP-R-025"],
       "issueRefs": [193],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-058: a chart whose library has a note is drawn under it in the same card: the note is the standard one, blue or amber as the library says, with the button inside its sentence; pressing that button is the control’s press, asked once, and hands the open chart its new settings without drawing it again; the note follows what happened and leaves when the library has none (#322)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-058"],
+      "issueRefs": [322],
+      "screenshots": []
+    },
+    {
+      "test": "the page with a library’s settings and control APP-R-059: a blue note with a cross is closed by it: the library is told, the note leaves the card and the chart is handed its settings again; a library with no note, or one whose note throws or says nothing that can be read, leaves the chart drawn in the card as it always was, and a safety chart’s card is never given one (#322)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-059"],
+      "issueRefs": [322],
       "screenshots": []
     },
     {
@@ -9053,6 +9133,22 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-079"],
       "issueRefs": [271],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: the note where R can be started (#322) APP-RBQM-082: before R is started the tab opens on an amber note that says the site metrics cannot be worked out without R, with Start R inside its sentence and what starting it costs; the button is the control’s press, asked once; while R starts and runs the note is blue, waits, has no button and names the step it is on; once R has answered there is no note (#322)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-082"],
+      "issueRefs": [322, 322],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: the note where R can be started (#322) APP-RBQM-083: when R did not start the note is amber, says no metric was run, offers Try again inside its sentence and says where the reason is; the button makes one fresh connection. With R up and nothing run on what is loaded, the note is blue and its button runs the metrics. On a page that cannot start R, and with no file gsm reads, the note is amber and has no button (#322)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-083"],
+      "issueRefs": [322, 322],
       "screenshots": []
     },
     {

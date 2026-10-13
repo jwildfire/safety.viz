@@ -53,9 +53,10 @@ const asked = (connection) =>
 const NEED_TITLE =
   'Statistics need R. Start R to compute them: about 13 MB, downloaded once from ' +
   'webr.r-wasm.org. The study’s data stays in this browser.';
-const VIEW_NEED = 'Statistics need R. Start R, at the top right.';
+const VIEW_NEED = 'Statistics need R. Start R, in the note above.';
+const VIEW_NEED_CLOSED = 'Statistics need R. Start R, at the top right.';
 const VIEW_STARTING = 'R is starting. The test appears here when it is ready.';
-const VIEW_FAILED = 'R did not start, so there is no test. Try again, at the top right.';
+const VIEW_FAILED = 'R did not start, so there is no test. Try again, in the note above.';
 const DOWNLOAD_FAILED =
   'The browser could not download R from webr.r-wasm.org. Check the connection, or whether ' +
   'this network blocks that address, and try again. The charts still draw; only the ' +
@@ -78,7 +79,7 @@ describe('R on request', () => {
     const { connection, waiting_note: note } = r.settings();
     const answer = await connection.run('Analyze_GroupDifference', { data: [], args: {} });
     expect(answer.status).toBe('unavailable');
-    // One short line, which points at the control (#276).
+    // One short line, which points at the note where R is started (#276, #322).
     expect(answer.message).toBe(VIEW_NEED);
     expect(createConnection).not.toHaveBeenCalled();
     expect(note).toBeNull();
@@ -255,6 +256,101 @@ describe('R on request', () => {
       message: 'Statistics are unavailable in this file.'
     });
     expect(r.action).toBeUndefined();
+  });
+});
+
+// The note at the top of a chart's card (#322, obot.roadmap#420): the same
+// press as the control's, inside a sentence that says why R is wanted here.
+const COST = 'about 13 MB, downloaded once. The study’s data stays in this browser.';
+const NEEDS_R = ['needs-r'];
+
+describe('the note where R can be started', () => {
+  it('APP-R-055: before the reader asks, a chart R adds p-values to has a blue note that can be closed and a chart that cannot be drawn without R has an amber one that cannot, each with Start R inside its sentence and what starting it costs; while R starts the note is blue, waits and has no button; once R is ready there is none (#322)', async () => {
+    let answer;
+    const createConnection = vi.fn(() => ({
+      run: vi.fn(
+        () =>
+          new Promise((resolve) => {
+            answer = resolve;
+          })
+      )
+    }));
+    const r = rOnRequest({ createConnection, ...OPTIONS, required: NEEDS_R });
+    const adds = r.note('adds-p-values');
+    expect(adds).toMatchObject({
+      kind: 'info',
+      before: 'This chart’s p-values need R. ',
+      label: 'Start R',
+      after: ` to add them: ${COST}`
+    });
+    expect(typeof adds.close).toBe('function');
+    const must = r.note('needs-r');
+    expect(must).toEqual({
+      kind: 'warning',
+      before: 'This chart cannot be drawn without R. ',
+      label: 'Start R',
+      after: ` to draw it: ${COST}`
+    });
+    // Asking what the note says starts nothing.
+    expect(createConnection).not.toHaveBeenCalled();
+
+    const started = r.action.press();
+    expect(r.note('adds-p-values')).toEqual({
+      kind: 'info',
+      busy: true,
+      before: 'R is starting. The p-values appear under the chart when it is ready.',
+      meta: '13 MB'
+    });
+    expect(r.note('needs-r')).toEqual({
+      kind: 'info',
+      busy: true,
+      before: 'R is starting. The chart is drawn when it is ready.',
+      meta: '13 MB'
+    });
+    answer({ status: 'ok', value: {}, form: 'browser' });
+    await started;
+    expect(r.note('adds-p-values')).toBeNull();
+    expect(r.note('needs-r')).toBeNull();
+  });
+
+  it('APP-R-056: when R did not start both notes are amber, say what the chart is left without, offer Try again inside the sentence and say where the reason is; neither can be closed, and the chart’s own line points at the note (#322)', async () => {
+    const { createConnection } = fakeFactory(() => LOAD_FAILED);
+    const r = rOnRequest({ createConnection, ...OPTIONS, required: NEEDS_R });
+    await r.action.press();
+    expect(r.note('adds-p-values')).toEqual({
+      kind: 'warning',
+      before: 'R did not start, so this chart has no p-values. ',
+      label: 'Try again',
+      after: ' The reason is behind Why, at the top right.'
+    });
+    expect(r.note('needs-r')).toEqual({
+      kind: 'warning',
+      before: 'R did not start, so this chart cannot be drawn. ',
+      label: 'Try again',
+      after: ' The reason is behind Why, at the top right.'
+    });
+    const told = await r.settings().connection.run('one', { data: [], args: {} });
+    expect(told.message).toBe(VIEW_FAILED);
+  });
+
+  it('APP-R-057: closing the blue note closes it on every chart R adds p-values to, and each chart’s own line then points at the control; the amber note of a chart that needs R stays; a reader who then starts R and is told it did not start has the note back (#322)', async () => {
+    let fails = true;
+    const { createConnection } = fakeFactory(() => (fails ? LOAD_FAILED : null));
+    const r = rOnRequest({ createConnection, ...OPTIONS, required: NEEDS_R });
+    const line = async () =>
+      (await r.settings().connection.run('one', { data: [], args: {} })).message;
+    expect(await line()).toBe(VIEW_NEED);
+    r.note('adds-p-values').close();
+    expect(r.note('adds-p-values')).toBeNull();
+    expect(r.note('another-that-adds')).toBeNull();
+    expect(r.note('needs-r')).toMatchObject({ kind: 'warning', label: 'Start R' });
+    expect(await line()).toBe(VIEW_NEED_CLOSED);
+    expect(createConnection).not.toHaveBeenCalled();
+    await r.action.press();
+    expect(r.note('adds-p-values')).toMatchObject({ kind: 'warning', label: 'Try again' });
+    fails = false;
+    await r.action.press();
+    expect(r.note('adds-p-values')).toBeNull();
   });
 });
 
@@ -454,6 +550,140 @@ describe('the page with a library’s settings and control', () => {
       expect(r.action.state().say).toBe('R did not start');
       expect(r.action.state().details.more).toEqual(['The browser gave no reason.']);
     }
+  });
+
+  it('APP-R-058: a chart whose library has a note is drawn under it in the same card: the note is the standard one, blue or amber as the library says, with the button inside its sentence; pressing that button is the control’s press, asked once, and hands the open chart its new settings without drawing it again; the note follows what happened and leaves when the library has none (#322)', async () => {
+    let phase = 'idle';
+    let finish;
+    const press = vi.fn(() => {
+      phase = 'starting';
+      return new Promise((resolve) => {
+        finish = () => {
+          phase = 'done';
+          resolve();
+        };
+      });
+    });
+    const action = {
+      state: () =>
+        ({
+          idle: { label: 'Start R', say: 'Statistics need R' },
+          starting: { phase: 'starting', say: 'Starting R' },
+          done: { phase: 'ready', say: 'R ready' }
+        })[phase],
+      press
+    };
+    const said = vi.fn(
+      (module) =>
+        ({
+          idle: {
+            kind: module === 'stand-in-strip' ? 'warning' : 'info',
+            before: 'This chart cannot be drawn without R. ',
+            label: 'Start R',
+            after: ' to draw it.'
+          },
+          starting: { kind: 'info', busy: true, before: 'R is starting.', meta: '13 MB' },
+          done: null
+        })[phase]
+    );
+    const app = mounted({ ...standIn, settings: () => ({}), action, note: said });
+    app.select('stand-in-strip');
+    const card = document.querySelector('.sva-chart');
+    const callout = () => card.querySelector('.sva-chart-note .sva-callout');
+    // The note first, the chart's own place after it, and the chart in that.
+    expect([...card.children].map((child) => child.className)).toEqual([
+      'sva-chart-note',
+      'sva-chart-mount'
+    ]);
+    expect(card.querySelector('.sva-chart-mount .stand-in-strip')).not.toBeNull();
+    expect(said).toHaveBeenCalledWith('stand-in-strip');
+    expect(callout().dataset.kind).toBe('warning');
+    expect(callout().classList.contains('sva-warning')).toBe(true);
+    expect(callout().getAttribute('role')).toBe('status');
+    expect(callout().querySelector('.sva-callout-say').textContent).toBe(
+      'This chart cannot be drawn without R. Start R to draw it.'
+    );
+    // The button is in the sentence, and is not the control's.
+    const button = callout().querySelector('.sva-callout-say > button.sva-note-start');
+    expect(button.textContent).toBe('Start R');
+    expect(callout().querySelector('.sva-close')).toBeNull();
+    const drawn = standInLog.filter((entry) => entry.event !== 'setSettings').length;
+
+    button.click();
+    expect(press).toHaveBeenCalledTimes(1);
+    expect(callout().dataset.kind).toBe('info');
+    expect(callout().querySelector('.sva-spin')).not.toBeNull();
+    expect(callout().querySelector('button')).toBeNull();
+    expect(callout().querySelector('.sva-callout-say').textContent).toBe('R is starting. 13 MB');
+    expect(callout().querySelector('.sva-callout-meta').textContent).toBe('13 MB');
+    // The control in the row says the same thing happened: it was one press.
+    expect(document.querySelector('.sva-r .sva-r-say').textContent).toBe('Starting R');
+
+    finish();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(callout()).toBeNull();
+    expect(card.querySelector('.sva-chart-note').hidden).toBe(true);
+    // The chart was handed its settings and never drawn again.
+    expect(standInLog.filter((entry) => entry.event !== 'setSettings')).toHaveLength(drawn);
+    expect(standInLog.some((entry) => entry.event === 'setSettings')).toBe(true);
+    expect(card.querySelector('.sva-chart-mount .stand-in-strip')).not.toBeNull();
+    app.destroy();
+  });
+
+  it('APP-R-059: a blue note with a cross is closed by it: the library is told, the note leaves the card and the chart is handed its settings again; a library with no note, or one whose note throws or says nothing that can be read, leaves the chart drawn in the card as it always was, and a safety chart’s card is never given one (#322)', () => {
+    let closed = false;
+    const close = vi.fn(() => {
+      closed = true;
+    });
+    const said = vi.fn(() =>
+      closed ? null : { kind: 'info', before: 'P-values need R. ', label: 'Start R', close }
+    );
+    const action = { state: () => ({ label: 'Start R' }), press: vi.fn() };
+    let app = mounted({ ...standIn, settings: () => ({}), action, note: said });
+    app.select('stand-in-strip');
+    const callout = () => document.querySelector('.sva-chart-note .sva-callout');
+    expect(callout().dataset.kind).toBe('info');
+    standInLog.length = 0;
+    callout().querySelector('.sva-close').click();
+    expect(close).toHaveBeenCalledTimes(1);
+    expect(callout()).toBeNull();
+    expect(standInLog.map((entry) => entry.event)).toEqual(['setSettings']);
+    expect(action.press).not.toHaveBeenCalled();
+    // A safety chart has no note of a library's.
+    app.select('histogram');
+    expect(document.querySelector('.sva-chart-note')).toBeNull();
+    expect(said).not.toHaveBeenCalledWith('histogram');
+    app.destroy();
+
+    // No note at all: the chart is drawn in the card itself.
+    app = mounted({ ...standIn, settings: () => ({}), action });
+    app.select('stand-in-strip');
+    expect(document.querySelector('.sva-chart > .stand-in-strip')).not.toBeNull();
+    expect(document.querySelector('.sva-chart-note')).toBeNull();
+    app.destroy();
+
+    // A note that throws, or says nothing that can be read: the card, the chart, and no note.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    for (const broken of [
+      () => {
+        throw new Error('no');
+      },
+      () => 'words',
+      () => ({ kind: 'warning' })
+    ]) {
+      app = mounted({ ...standIn, settings: () => ({}), action, note: broken });
+      app.select('stand-in-strip');
+      expect(document.querySelector('.sva-chart-mount .stand-in-strip')).not.toBeNull();
+      expect(document.querySelector('.sva-chart-note').hidden).toBe(true);
+      expect(document.querySelector('.sva-callout.sva-start-note')).toBeNull();
+      app.destroy();
+    }
+    expect(warn).toHaveBeenCalledWith(
+      'safety.viz app: a library could not say its note.',
+      expect.any(Error)
+    );
+    warn.mockRestore();
   });
 
   it('APP-R-025: a library control whose press throws leaves the page working: nothing is thrown out of the click, a warning says why, and the control shows what it now says (#193)', () => {

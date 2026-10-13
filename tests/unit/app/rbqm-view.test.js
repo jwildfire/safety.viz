@@ -131,7 +131,9 @@ function mount({
 
 const RUN_OK = { rbqm_run: () => ({ status: 'ok', value: whole, form: 'browser' }) };
 const ABBREVIATIONS = ['AE', 'SAE', 'PD', 'IPD', 'LB', 'SDSC', 'TDSC', 'SF'];
-const NEED = 'Site metrics need R. Start R, at the top right.';
+const NEED =
+  'The site metrics cannot be worked out without R. Start R to run them: about 55 MB, ' +
+  'downloaded once. The study’s data stays in this browser.';
 const NO_FILES =
   'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.';
 const NONE_PLACED =
@@ -407,7 +409,7 @@ describe('the RBQM tab on the page', () => {
     expect($('.sva-rbqm-start')).toBeNull();
     expect(tabCount()).toBe('starting');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R is starting. The metrics run by themselves when it is ready.'
+      'R is starting. The metrics run by themselves when it is ready. Step 1 of 6'
     );
     expect(stepStates()).toEqual(at(1));
     // The seconds are counted while R starts, and each step is said as it begins.
@@ -647,7 +649,7 @@ describe('the RBQM tab on the page', () => {
     expect($('.sva-rbqm-start').disabled).toBe(false);
     // The tab says what that means for the metrics, and points at the control.
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R did not start, so no metric was run. Try again, at the top right.'
+      'R did not start, so no metric was run. Try again The reason is behind Why, at the top right.'
     );
     expect($('.sva-rbqm-status').classList.contains('sva-rbqm-problem')).toBe(true);
     expect($('.sva-rbqm-steps')).toBeNull();
@@ -694,7 +696,7 @@ describe('the RBQM tab on the page', () => {
     expect(control().dataset.phase).toBe('failed');
     expect($('.sva-r-say').textContent).toBe('R stopped');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R stopped, so there are no results. Run again, at the top right.'
+      'R stopped, so there are no results. Run again The reason is behind Why, at the top right.'
     );
     expect($('.sva-rbqm-status').classList.contains('sva-rbqm-problem')).toBe(true);
     expect(tabCount()).toBe('stopped');
@@ -747,7 +749,7 @@ describe('the RBQM tab on the page', () => {
     await settle();
     expect(view.state().phase).toBe('stopped');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R stopped, so there are no results. Run again, at the top right.'
+      'R stopped, so there are no results. Run again The reason is behind Why, at the top right.'
     );
     expect(connection.runs).toHaveLength(3);
     // Another study, loaded on the Data tab.
@@ -1509,7 +1511,7 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
     app.select('rbqm');
     // R is up and nothing has run: the tab points at the chip, where the run is offered.
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R is ready. Run the metrics from the R chip, at the top right.'
+      'R is ready. Run the metrics on what is loaded now.'
     );
     const run = openDetails().querySelector('.sva-r-actions .sva-action');
     expect(run.textContent).toBe('Run the metrics');
@@ -1636,7 +1638,7 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
     expect($('.sva-rbqm-start').textContent).toBe('Try again');
     expect($('.sva-r-say').textContent).toBe('R did not start');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R did not start, so no metric was run. Try again, at the top right.'
+      'R did not start, so no metric was run. Try again The reason is behind Why, at the top right.'
     );
     $('.sva-r-why').click();
     expect($('.sva-r-panel > .sva-r-text').textContent).toMatch(
@@ -1717,9 +1719,9 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
     clock.now += 7000;
     vi.advanceTimersByTime(7000);
     expect($('.sva-r-meta').textContent).toBe('7 s');
-    // The tab's own line says no seconds: the count is the control's.
+    // The tab's own note names the step and says no seconds: the count is the control's.
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R is starting. The metrics run by themselves when it is ready.'
+      'R is starting. The metrics run by themselves when it is ready. Step 1 of 6'
     );
     // The control is drawn again at each step, and counts on from the press.
     connection.options.onStage('packages');
@@ -1801,7 +1803,7 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
       expect($('.sva-r-meta')).toBeNull();
       expect($('.sva-r-say').textContent).toBe('R stopped answering');
       expect($('.sva-rbqm-status').textContent).toBe(
-        'R stopped answering, so no metric was run. Try again, at the top right.'
+        'R stopped answering, so no metric was run. Try again The reason is behind Why, at the top right.'
       );
       expect($('.sva-rbqm-start').textContent).toBe('Try again');
       expect($('.sva-rbqm-start').disabled).toBe(false);
@@ -1867,6 +1869,123 @@ describe('what the review of the v1.10.0 release candidate found (#258)', () => 
 
 // The tab's own row, its pages and what is behind its control (#278, #279,
 // #280, obot.roadmap#405).
+// The note the tab opens on (#322, obot.roadmap#420): the app's one note, with
+// the button that starts R inside its sentence.
+describe('the RBQM tab: the note where R can be started (#322)', () => {
+  const noteNow = () => {
+    const node = document.querySelector('.sva-rbqm .sva-rbqm-status.sva-callout');
+    if (!node) return null;
+    const button = node.querySelector('.sva-callout-say > button.sva-note-start');
+    return {
+      node,
+      kind: node.dataset.kind,
+      waits: Boolean(node.querySelector('.sva-spin')),
+      button,
+      label: button ? button.textContent : null,
+      meta: node.querySelector('.sva-callout-meta')
+    };
+  };
+
+  it('APP-RBQM-082: before R is started the tab opens on an amber note that says the site metrics cannot be worked out without R, with Start R inside its sentence and what starting it costs; the button is the control’s press, asked once; while R starts and runs the note is blue, waits, has no button and names the step it is on; once R has answered there is no note (#322)', async () => {
+    fakeViz();
+    const { app, r, view, $ } = mount({ answers: RUN_OK });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    let now = noteNow();
+    expect(now.kind).toBe('warning');
+    expect(now.node.classList.contains('sva-warning')).toBe(true);
+    expect(now.node.getAttribute('role')).toBe('status');
+    expect(now.node.textContent).toBe(NEED);
+    expect(now.label).toBe('Start R');
+    expect(now.waits).toBe(false);
+    // The button is the note's own: the control keeps its class, and stays in the row.
+    expect(now.button.classList.contains('sva-rbqm-start')).toBe(false);
+    expect($('.sva-charts .sva-rbqm-start').textContent).toBe('Start R');
+    // No note in the app can be closed where it is a warning.
+    expect(now.node.querySelector('.sva-close')).toBeNull();
+
+    now.button.click();
+    expect(r.made).toHaveLength(1);
+    expect(view.state().phase).toBe('starting');
+    now = noteNow();
+    expect(now.kind).toBe('info');
+    expect(now.waits).toBe(true);
+    expect(now.button).toBeNull();
+    expect(now.meta.textContent).toBe('Step 1 of 6');
+    expect(control().dataset.phase).toBe('starting');
+    // The step in the note follows R without the tab being drawn again.
+    const [connection] = r.made;
+    const standing = now.node;
+    connection.options.onStage('packages');
+    expect(noteNow().node).toBe(standing);
+    expect(noteNow().meta.textContent).toBe('Step 2 of 6');
+    for (let step = 0; step < 3; step += 1) await connection.letGo();
+    expect(view.state().phase).toBe('done');
+    expect(noteNow()).toBeNull();
+    expect(r.made).toHaveLength(1);
+  });
+
+  it('APP-RBQM-083: when R did not start the note is amber, says no metric was run, offers Try again inside its sentence and says where the reason is; the button makes one fresh connection. With R up and nothing run on what is loaded, the note is blue and its button runs the metrics. On a page that cannot start R, and with no file gsm reads, the note is amber and has no button (#322)', async () => {
+    fakeViz();
+    let attempt = 0;
+    const { app, r, view } = mount({
+      answers: {
+        'Sys.time': () =>
+          (attempt += 1) === 1
+            ? { status: 'unavailable', reason: 'load-failed', message: 'Failed to fetch' }
+            : { status: 'ok', value: 'now' },
+        ...RUN_OK
+      }
+    });
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    noteNow().button.click();
+    await r.made[0].letGo();
+    expect(view.state().phase).toBe('failed');
+    let now = noteNow();
+    expect(now.kind).toBe('warning');
+    expect(now.label).toBe('Try again');
+    expect(now.node.textContent).toBe(
+      'R did not start, so no metric was run. Try again The reason is behind Why, at the top right.'
+    );
+    expect(document.body.textContent).not.toContain('Failed to fetch');
+    // Try again, from the note: one fresh connection, and R comes up.
+    now.button.click();
+    expect(r.made).toHaveLength(2);
+    const [, connection] = r.made;
+    // The study is cleared while R starts: R comes up with nothing to run.
+    app.reset();
+    for (let step = 0; step < 2; step += 1) await connection.letGo();
+    expect(view.state().up).toBe(true);
+    app.select('rbqm');
+    // Nothing loaded: the sentence says so, and there is nothing to press.
+    now = noteNow();
+    expect(now.kind).toBe('warning');
+    expect(now.button).toBeNull();
+    expect(now.node.textContent).toBe(NO_FILES);
+    app.loadRaw(STUDY);
+    app.select('rbqm');
+    now = noteNow();
+    expect(now.kind).toBe('info');
+    expect(now.label).toBe('Run the metrics');
+    expect(now.node.textContent).toBe('R is ready. Run the metrics on what is loaded now.');
+    now.button.click();
+    await connection.letGo();
+    expect(view.state().phase).toBe('done');
+    expect(noteNow()).toBeNull();
+    expect(r.made).toHaveLength(2);
+    app.destroy();
+
+    const without = mount({ tab: { unavailable: 'This file cannot start R.' } });
+    without.app.loadRaw(STUDY);
+    without.app.select('rbqm');
+    now = noteNow();
+    expect(now.kind).toBe('warning');
+    expect(now.button).toBeNull();
+    expect(now.node.textContent).toBe('This file cannot start R.');
+  });
+});
+
 describe('the RBQM tab: its footnote (#271)', () => {
   it('APP-RBQM-079: the tab ends with one link, "gsm.kri documentation", to gsm.kri’s own site, under the tab’s name, before R is started and after a run, on the Overview page and on a metric’s; a page that cannot start R has it too', async () => {
     const read = ($) => [
@@ -2328,14 +2447,14 @@ describe('the RBQM tab: a row of its own, one page at a time', () => {
     await connection.letGo();
     isAt(4, '4 of 6 · Loading gsm’s packages');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R is starting. The metrics run by themselves when it is ready.'
+      'R is starting. The metrics run by themselves when it is ready. Step 4 of 6'
     );
     await connection.letGo();
     isAt(5, '5 of 6 · Reading the study');
     expect(view.state().step).toBe('read');
     // R is up: what is left is the run.
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R is running the metrics. They appear here when it is done.'
+      'R is running the metrics. They appear here when it is done. Step 5 of 6'
     );
     // The connection says the run's files are written: R is at work on them.
     expect(typeof connection.runs.at(-1).request.onFiles).toBe('function');
@@ -2351,7 +2470,7 @@ describe('the RBQM tab: a row of its own, one page at a time', () => {
     runAgain();
     isAt(5, '5 of 6 · Reading the study');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R is running the metrics. They appear here when it is done.'
+      'R is running the metrics. They appear here when it is done. Step 5 of 6'
     );
     await connection.letGo();
     expect(view.state().phase).toBe('done');
@@ -2518,7 +2637,7 @@ describe('the RBQM tab: a row of its own, one page at a time', () => {
     expect($('.sva-rbqm-table')).toBeNull();
     expect($('.sva-rbqm-outcome')).toBeNull();
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R is running the metrics. They appear here when it is done.'
+      'R is running the metrics. They appear here when it is done. Step 5 of 6'
     );
     expect(stepStates()).toEqual(at(5));
     expect(control().dataset.phase).toBe('starting');
@@ -2629,7 +2748,7 @@ describe('the RBQM tab: a row of its own, one page at a time', () => {
     app.select('rbqm', 'kri0001');
     expect($('.sva-rbqm-metric-name').textContent).toBe('Adverse Event Rate');
     expect($('.sva-rbqm-count').textContent).toBe('AE, not started');
-    expect($('.sva-rbqm-metric p.sva-rbqm-need.sva-rbqm-status').textContent).toBe(NEED);
+    expect($('.sva-rbqm-metric .sva-rbqm-need.sva-rbqm-status').textContent).toBe(NEED);
     expect($('.sva-rbqm-steps')).toBeNull();
     expect($('.sva-rbqm-figures')).toBeNull();
     // The Overview's own lines are not on it.
@@ -2639,7 +2758,7 @@ describe('the RBQM tab: a row of its own, one page at a time', () => {
     const [connection] = r.made;
     expect($('.sva-rbqm-count').textContent).toBe('AE, running');
     expect($('.sva-rbqm-status').textContent).toBe(
-      'R is starting. The metrics run by themselves when it is ready.'
+      'R is starting. The metrics run by themselves when it is ready. Step 1 of 6'
     );
     expect(stepStates()).toEqual(at(1));
     connection.options.onStage('packages');

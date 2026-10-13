@@ -395,7 +395,7 @@ test.describe('docs site', () => {
       { useInnerText: false }
     );
     await expect(page.locator('.sva-rbqm-status')).toHaveText(
-      'Site metrics need R. Start R, at the top right.'
+      'The site metrics cannot be worked out without R. Start R to run them: about 55 MB, downloaded once. The study’s data stays in this browser.'
     );
     // What starting R downloads, and from where, is on the control (#280).
     await expect(page.locator('.sva-charts > .sva-r .sva-r-row')).toHaveAttribute(

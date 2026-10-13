@@ -90,8 +90,11 @@ test('the keynote’s demo path: the app opens on the pilot study, a chart, the 
     await tab('Biomarkers').click();
     await chart('cross-tab').click();
     const statistic = page.locator('.sva-chart .bv-statistic').first();
-    await expect(statistic).toHaveText('Statistics need R. Start R, at the top right.');
-    await control.locator('.sva-action').click();
+    await expect(statistic).toHaveText('Statistics need R. Start R, in the note above.');
+    // R is started from the note at the top of the chart's card (#322).
+    const startR = page.locator('.sva-chart .sva-callout .sva-note-start');
+    await expect(startR).toHaveText('Start R');
+    await startR.click();
     await expect(chip).toBeVisible({ timeout: R_STARTS });
     await expect(statistic).toContainText('Chi-squared test: p ', { timeout: 60_000 });
     await shot('05-a-statistic-from-r');
@@ -99,7 +102,8 @@ test('the keynote’s demo path: the app opens on the pilot study, a chart, the 
 
   await test.step('6. the RBQM tab runs on the pilot study', async () => {
     await page.locator('.sva-tab[data-tab="rbqm"]').click();
-    await control.locator('.sva-action').click();
+    // And here from the tab's own note, which is amber: no metric runs without R (#322).
+    await page.locator('.sva-rbqm .sva-callout.sva-warning .sva-note-start').click();
     await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible({
       timeout: RBQM_RUNS
     });
