@@ -333,7 +333,7 @@ describe('the note where R can be started', () => {
     expect(told.message).toBe(VIEW_FAILED);
   });
 
-  it('APP-R-057: closing the blue note closes it on every chart R adds p-values to, and each chart’s own line then points at the control; the amber note of a chart that needs R stays; a reader who then starts R and is told it did not start has the note back (#322)', async () => {
+  it('APP-R-057: closing the blue note closes it on every chart R adds p-values to, and each of those charts’ own line then points at the control; the amber note of a chart that needs R stays, and that chart’s line still points at its note; closed is closed while R starts too, and a reader who is then told R did not start has the note back (#322)', async () => {
     let fails = true;
     const { createConnection } = fakeFactory(() => (fails ? LOAD_FAILED : null));
     const r = rOnRequest({ createConnection, ...OPTIONS, required: NEEDS_R });
@@ -345,12 +345,28 @@ describe('the note where R can be started', () => {
     expect(r.note('another-that-adds')).toBeNull();
     expect(r.note('needs-r')).toMatchObject({ kind: 'warning', label: 'Start R' });
     expect(await line()).toBe(VIEW_NEED_CLOSED);
+    // A chart that cannot be drawn without R keeps its note, so its line keeps
+    // pointing at it; every chart R adds p-values to is told the same thing.
+    const lineOf = async (module) =>
+      (await r.settings(module).connection.run('one', { data: [], args: {} })).message;
+    expect(await lineOf('needs-r')).toBe(VIEW_NEED);
+    expect(await lineOf('adds-p-values')).toBe(VIEW_NEED_CLOSED);
+    expect(r.settings('adds-p-values').connection).toBe(r.settings('another-that-adds').connection);
     expect(createConnection).not.toHaveBeenCalled();
-    await r.action.press();
-    expect(r.note('adds-p-values')).toMatchObject({ kind: 'warning', label: 'Try again' });
-    fails = false;
-    await r.action.press();
+    // While R starts the closed note stays closed; the chart that needs R says R is starting.
+    const starting = r.action.press();
     expect(r.note('adds-p-values')).toBeNull();
+    expect(r.note('needs-r')).toMatchObject({ kind: 'info', busy: true });
+    await starting;
+    // That R did not start is always said, on both kinds of chart.
+    expect(r.note('adds-p-values')).toMatchObject({ kind: 'warning', label: 'Try again' });
+    expect(r.note('needs-r')).toMatchObject({ kind: 'warning', label: 'Try again' });
+    fails = false;
+    const again = r.action.press();
+    expect(r.note('adds-p-values')).toBeNull();
+    await again;
+    expect(r.note('adds-p-values')).toBeNull();
+    expect(r.note('needs-r')).toBeNull();
   });
 });
 
@@ -599,7 +615,10 @@ describe('the page with a library’s settings and control', () => {
     expect(said).toHaveBeenCalledWith('stand-in-strip');
     expect(callout().dataset.kind).toBe('warning');
     expect(callout().classList.contains('sva-warning')).toBe(true);
-    expect(callout().getAttribute('role')).toBe('status');
+    // The note's place is the status region: it stays on the page while the note in it is drawn again.
+    const slot = card.querySelector('.sva-chart-note');
+    expect(slot.getAttribute('role')).toBe('status');
+    expect(callout().hasAttribute('role')).toBe(false);
     expect(callout().querySelector('.sva-callout-say').textContent).toBe(
       'This chart cannot be drawn without R. Start R to draw it.'
     );
@@ -611,6 +630,7 @@ describe('the page with a library’s settings and control', () => {
 
     button.click();
     expect(press).toHaveBeenCalledTimes(1);
+    expect(card.querySelector('.sva-chart-note')).toBe(slot);
     expect(callout().dataset.kind).toBe('info');
     expect(callout().querySelector('.sva-spin')).not.toBeNull();
     expect(callout().querySelector('button')).toBeNull();

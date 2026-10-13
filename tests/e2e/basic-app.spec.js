@@ -2315,7 +2315,7 @@ test.describe('demo app with R on request', () => {
     'biomarker-screen': 'warning'
   };
 
-  test('APP-R-060: at 1,280 pixels each of the five biomarker charts opens with a note at the top of its card, above the chart: blue with a cross on the three R adds p-values to, amber with none on the two that cannot be drawn without R, each with Start R inside its sentence; the chart’s own line points at the note; closing the blue note closes it on all three and leaves the amber ones; nothing is asked of R (#322)', async ({
+  test('APP-R-060: at 1,280 pixels each of the five biomarker charts opens with a note at the top of its card, above the chart: blue with a cross on the three R adds p-values to, amber with none on the two that cannot be drawn without R, each with Start R inside its sentence; the chart’s own line points at the note; closing the blue note closes it on all three, the line under a chart that has one then points at the control, and both amber notes stay, whose lines still point at the note; nothing is asked of R (#322)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -2334,6 +2334,9 @@ test.describe('demo app with R on request', () => {
       );
       await expect(noteButton(page)).toHaveText('Start R');
       await expect(note.locator('.sva-close')).toHaveCount(kind === 'warning' ? 0 : 1);
+      // The note's place is the status region; the note in it carries no role of its own.
+      await expect(page.locator('.sva-chart > .sva-chart-note')).toHaveAttribute('role', 'status');
+      await expect(note).not.toHaveAttribute('role', /.*/);
       // First in the card, with the chart under it, and no wider than the card.
       const [card, own, chart] = await Promise.all(
         ['.sva-chart', '.sva-chart > .sva-chart-note', '.sva-chart > .sva-chart-mount'].map(
@@ -2359,6 +2362,11 @@ test.describe('demo app with R on request', () => {
     await captureEvidence(page, 'APP-R-060', 'r-note-warning-1280', {
       clip: { x: 0, y: 0, width: 1280, height: 420 }
     });
+    await item(page, 'biomarker-screen').click();
+    await expect(startNote(page)).toHaveAttribute('data-kind', 'warning');
+    await captureEvidence(page, 'APP-R-060', 'r-note-warning-biomarker-screen-1280', {
+      clip: { x: 0, y: 0, width: 1280, height: 420 }
+    });
     // The cross: closed on one chart, closed on every chart R adds p-values to.
     await item(page, 'cross-tab').click();
     await startNote(page).locator('.sva-close').click();
@@ -2366,18 +2374,28 @@ test.describe('demo app with R on request', () => {
     await expect(page.locator('.sva-chart .bv-stat-result').first()).toHaveText(
       'Statistics need R. Start R, at the top right.'
     );
+    for (const module of ['association-scatter', 'group-comparison']) {
+      await item(page, module).click();
+      await expect(page.locator('.sva-chart > .sva-chart-mount > *').first()).toBeVisible();
+      await expect(startNote(page)).toHaveCount(0);
+    }
     await item(page, 'association-scatter').click();
-    await expect(page.locator('.sva-chart .bv-stat-result').first()).toBeVisible();
-    await expect(startNote(page)).toHaveCount(0);
-    await item(page, 'biomarker-screen').click();
-    await expect(startNote(page)).toHaveAttribute('data-kind', 'warning');
+    await expect(page.locator('.sva-chart .bv-stat-result').first()).toHaveText(
+      'Statistics need R. Start R, at the top right.'
+    );
+    // Both amber notes stay, and under each the chart's own line still points at it.
+    for (const module of ['biomarker-screen', 'correlation-matrix']) {
+      await item(page, module).click();
+      await expect(startNote(page)).toHaveAttribute('data-kind', 'warning');
+      await expect(page.locator('.sva-chart .bv-stat-result').first()).toHaveText(NO_R);
+    }
     // The control is still in the row, and R was asked for nothing.
     await expect(rControl(page).locator('.sva-action')).toHaveText('Start R');
     expect(requests.filter((url) => /r-wasm\.org|statistics\.R/.test(url))).toEqual([]);
     expect(errors).toEqual([]);
   });
 
-  test('APP-R-061: Start R in the note is the control’s press: with R’s host held and then refused, the note turns blue, waits and has no button while the control counts; then it is amber, says the chart has no p-values and offers Try again inside its sentence, on a chart that needs R that it cannot be drawn; the chart’s line points at the note, and Try again starts R afresh (#322)', async ({
+  test('APP-R-061: Start R in the note is the control’s press: with R’s host held and then refused, the note turns blue, waits and has no button while the control counts; then it is amber, says the chart has no p-values and offers Try again inside its sentence, on a chart that needs R that it cannot be drawn; the chart’s line points at the note, and Try again makes one fresh connection (#322)', async ({
     page,
     context
   }) => {
@@ -2411,6 +2429,15 @@ test.describe('demo app with R on request', () => {
       mask: [rControl(page).locator('.sva-r-meta')],
       maskColor: '#e4e6e3'
     });
+    // A chart that cannot be drawn without R says what it is waiting for.
+    await item(page, 'biomarker-screen').click();
+    await expect(startNote(page)).toHaveAttribute('data-kind', 'info');
+    await expect(startNote(page).locator('.sva-spin')).toBeVisible();
+    await expect(startNote(page).locator('button')).toHaveCount(0);
+    await expect(startNote(page).locator('.sva-callout-say')).toHaveText(
+      'R is starting. The chart is drawn when it is ready. 13 MB'
+    );
+    await item(page, 'cross-tab').click();
     refuse();
     await expect(rControl(page)).toHaveAttribute('data-phase', 'failed', { timeout: 150000 });
     await expect(note).toHaveAttribute('data-kind', 'warning');
@@ -2439,6 +2466,47 @@ test.describe('demo app with R on request', () => {
     await expect(noteButton(page)).toHaveText('Try again');
   });
 
+  test('APP-R-057: in the browser a blue note closed with its cross stays closed while R starts, where a chart that cannot be drawn without R says R is starting; when R then does not start, the chart whose note was closed says so in an amber note (#322, #328)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(240000);
+    let refuse;
+    const held = new Promise((resolve) => {
+      refuse = resolve;
+    });
+    await context.route(/r-wasm\.org/, async (route) => {
+      await held;
+      await route.abort();
+    });
+    await page.setViewportSize({ width: 1280, height: 820 });
+    await openOnDemo(page);
+    await openChart(page, 'cross-tab');
+    await startNote(page).locator('.sva-close').click();
+    await expect(startNote(page)).toHaveCount(0);
+    // R is started from the control, as the chart's line now says.
+    await rControl(page).locator('.sva-action').click();
+    await expect(rControl(page)).toHaveAttribute('data-phase', 'starting');
+    await expect(startNote(page)).toHaveCount(0);
+    await expect(page.locator('.sva-chart > .sva-chart-note')).toBeHidden();
+    await item(page, 'association-scatter').click();
+    await expect(page.locator('.sva-chart > .sva-chart-mount > *').first()).toBeVisible();
+    await expect(startNote(page)).toHaveCount(0);
+    await item(page, 'biomarker-screen').click();
+    await expect(startNote(page).locator('.sva-callout-say')).toHaveText(
+      'R is starting. The chart is drawn when it is ready. 13 MB'
+    );
+    await item(page, 'cross-tab').click();
+    await expect(rControl(page)).toHaveAttribute('data-phase', 'starting');
+    await expect(startNote(page)).toHaveCount(0);
+    refuse();
+    await expect(rControl(page)).toHaveAttribute('data-phase', 'failed', { timeout: 150000 });
+    await expect(startNote(page)).toHaveAttribute('data-kind', 'warning');
+    await expect(startNote(page).locator('.sva-callout-say')).toHaveText(
+      'R did not start, so this chart has no p-values. Try again The reason is behind Why, at the top right.'
+    );
+  });
+
   // Starts real R, so it runs in the check's real-R job. Prettier would re-indent the whole test to fit the tag.
   // prettier-ignore
   test('APP-R-062: Start R pressed in the note starts R in the browser: the control becomes the chip, the note leaves the card, the statistic is printed under the chart with nothing drawn again, and a chart that could not be drawn without R is drawn with no note (#322)', { tag: '@real-r' }, async ({
@@ -2450,9 +2518,19 @@ test.describe('demo app with R on request', () => {
     await openOnDemo(page);
     await openChart(page, 'cross-tab');
     await expect(startNote(page)).toHaveAttribute('data-kind', 'info');
+    // The chart as it is drawn now: the same elements must be there once R is ready.
+    await page.evaluate(() => {
+      window.__drawn = [...document.querySelectorAll('.sva-chart-mount, .sva-chart-mount > *')];
+    });
     await noteButton(page).click();
     await expect(rChip(page)).toHaveText('R ready▾', { timeout: 150000 });
     await expect(startNote(page)).toHaveCount(0);
+    expect(
+      await page.evaluate(() => {
+        const now = [...document.querySelectorAll('.sva-chart-mount, .sva-chart-mount > *')];
+        return window.__drawn.length > 1 && window.__drawn.every((node, at) => node === now[at]);
+      })
+    ).toBe(true);
     await expect(page.locator('.sva-chart > .sva-chart-note')).toBeHidden();
     await expect(page.locator('.sva-chart .bv-statistic').first()).toContainText('Chi-squared', {
       timeout: 60000
@@ -2470,7 +2548,7 @@ test.describe('demo app with R on request', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-R-063: at a 390-pixel viewport the note is inside the chart’s card with its sentence wrapped and Start R inside it, on a chart R adds p-values to and on one that cannot be drawn without R, and on the RBQM tab; nothing runs off the page (#322)', async ({
+  test('APP-R-063: at a 390-pixel viewport the note is inside the chart’s card with its sentence wrapped and Start R inside it, on a chart R adds p-values to and on one that cannot be drawn without R, and on the RBQM tab; when R does not start the note says the reason is above; nothing runs off the page (#322)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -2512,6 +2590,19 @@ test.describe('demo app with R on request', () => {
       clip: { x: 0, y: 0, width: 390, height: 480 }
     });
     expect(errors).toEqual([]);
+    // When R does not start, a phone's note says the reason is above, where the control is.
+    // Asked last: a refused request is written to the console, and nothing before it was.
+    await tab(page, 'biomarkers').click();
+    await item(page, 'correlation-matrix').click();
+    await page.route(/r-wasm\.org/, (route) => route.abort());
+    await noteButton(page).click();
+    await expect(startNote(page).locator('.sva-callout-say')).toHaveText(
+      'R did not start, so this chart cannot be drawn. Try again The reason is behind Why, above.',
+      { timeout: 150000 }
+    );
+    await inside(startNote(page));
+    await inside(noteButton(page));
+    expect(await wide()).toBeLessThanOrEqual(390);
   });
 
   test('APP-R-008: a second biomarker chart opened after R has started uses the same R: no second connection and no second download (#183)', async ({
@@ -3293,7 +3384,7 @@ test.describe('demo app: the RBQM tab', () => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
 
-  test('APP-RBQM-018: the RBQM tab follows the domains’ tabs and carries no pill of its own; before Start R is pressed it says in one line that site metrics need R and what the loaded study supports, its control says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235, #280)', async ({
+  test('APP-RBQM-018: the RBQM tab follows the domains’ tabs and carries no pill of its own; before Start R is pressed its note says the site metrics cannot be worked out without R and a smaller, quieter line says what the loaded study supports, its control says what starting R downloads and from where, and the page has asked nothing of R’s hosts, nor its own address for gsm.viz, R’s packages or R’s files (#235, #280)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -3331,6 +3422,11 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(page.locator('.sva-rbqm-supports')).toHaveText(
       'The loaded study supports 3 of 8 metrics. Change the data on the Data tab.'
     );
+    // Under the note, and quieter than it: smaller, in the soft grey (#322's
+    // review found a release candidate that drew it in full ink).
+    await expect(page.locator('.sva-rbqm-supports')).toHaveCSS('font-size', '14.72px');
+    await expect(page.locator('.sva-rbqm-supports')).toHaveCSS('color', 'rgb(91, 100, 112)');
+    await expect(page.locator('.sva-rbqm-supports')).toHaveCSS('margin-top', '0px');
     await expect(rbqmControl(page).locator('.sva-r-row')).toHaveText(
       'Site metrics need R55 MB, onceStart R'
     );
@@ -3361,7 +3457,7 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-082: at 1,280 pixels the RBQM tab opens on an amber note, first in its card, that says the site metrics cannot be worked out without R, with Start R inside its sentence; the button is the control’s press: the note turns blue, waits, has no button and names the step it is on while the control counts; once the metrics are drawn there is no note (#322)', async ({
+  test('APP-RBQM-082: at 1,280 pixels the RBQM tab opens on an amber note, first in its card, that says the site metrics cannot be worked out without R, with Start R inside its sentence; the button is the control’s press: the note turns blue, waits, has no button and names the step it is on, as the control does; a metric’s page carries the same note under its heading; once the metrics are drawn there is no note (#322)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -3385,6 +3481,20 @@ test.describe('demo app: the RBQM tab', () => {
     await captureEvidence(page, 'APP-RBQM-082', 'rbqm-note-warning-1280', {
       clip: { x: 0, y: 0, width: 1280, height: 420 }
     });
+    // A metric's page: its name and state first, then the same note with the same button.
+    await rbqmChoice(page, 'kri0001').click();
+    await expect(note).toHaveAttribute('data-kind', 'warning');
+    await expect(note).toHaveText(RBQM_NEED);
+    await expect(button).toHaveText('Start R');
+    expect(
+      await page.evaluate(() =>
+        [...document.querySelector('.sva-rbqm-page').children].map((child) => child.className)
+      )
+    ).toEqual([
+      expect.stringContaining('sva-rbqm-headrow'),
+      expect.stringContaining('sva-rbqm-status')
+    ]);
+    await rbqmOverview(page).click();
     await button.click();
     await expect(rbqmControl(page)).toHaveAttribute('data-phase', 'starting');
     await expect(note).toHaveAttribute('data-kind', 'info');
@@ -3393,6 +3503,7 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(note).toHaveText(
       'R is starting. The metrics run by themselves when it is ready. Step 1 of 6'
     );
+    await expect(rbqmControl(page).locator('.sva-r-say')).toHaveText(/^1 of 6 · /);
     await captureEvidence(page, 'APP-RBQM-082', 'rbqm-note-starting-1280', {
       clip: { x: 0, y: 0, width: 1280, height: 420 }
     });

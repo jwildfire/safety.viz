@@ -15,8 +15,8 @@ A patch to the demo app. Wherever R can be started, a note at the top of the car
 ## What's new
 
 - **Start R from a note at the top of the card.** Each biomarker chart and the RBQM tab opens with a note that says why R is wanted and what starting it costs, with Start R inside the sentence. The control at the top right is unchanged, and either starts R once. [obot.roadmap#420](https://github.com/jwildfire/obot.roadmap/issues/420), [#322](https://github.com/jwildfire/safety.viz/issues/322), PR [#325](https://github.com/jwildfire/safety.viz/pull/325)
-- **The note is amber where nothing can run without R, and blue where R adds p-values.** Amber on the RBQM tab, the correlation matrix and the biomarker screen. Blue, with a cross that closes it, on the group comparison, the association scatter and the cross-tabulation. While R starts the note says so; once R is ready it is gone. [obot.roadmap#420](https://github.com/jwildfire/obot.roadmap/issues/420), [#322](https://github.com/jwildfire/safety.viz/issues/322), PR [#325](https://github.com/jwildfire/safety.viz/pull/325)
-- **One note across the app: blue for information, amber for something that cannot run.** Red is kept for a failure. A chart with no file loaded, or a column not mapped, now says so in amber, where it was red. [obot.roadmap#420](https://github.com/jwildfire/obot.roadmap/issues/420), [#321](https://github.com/jwildfire/safety.viz/issues/321), PR [#324](https://github.com/jwildfire/safety.viz/pull/324)
+- **The note is amber where nothing can run without R, and blue where R adds p-values.** Amber on the RBQM tab, the correlation matrix and the biomarker screen. Blue, with a cross that closes it, on the group comparison, the association scatter and the cross-tabulation. While R starts the note says so, unless it was closed; once R is ready it is gone. [obot.roadmap#420](https://github.com/jwildfire/obot.roadmap/issues/420), [#322](https://github.com/jwildfire/safety.viz/issues/322), PR [#325](https://github.com/jwildfire/safety.viz/pull/325)
+- **One note across the app: blue for information, amber for something that cannot run.** A chart with no file loaded, or a column not mapped, now says so in amber, where it was red; so does the RBQM tab when R did not start. Red is kept for a chart that was ready and failed, and for the control's "R did not start". [obot.roadmap#420](https://github.com/jwildfire/obot.roadmap/issues/420), [#321](https://github.com/jwildfire/safety.viz/issues/321), PR [#324](https://github.com/jwildfire/safety.viz/pull/324)
 
 ## Also in this release
 
@@ -27,7 +27,7 @@ A patch to the demo app. Wherever R can be started, a note at the top of the car
 
 ## Tests and provenance
 
-2,522 unit and 452 browser tests pass. No file of R's changed since v1.10.0, and no chart's code changed: the sentence inside a biomarker chart is one the app hands to bio.viz 0.3.0, which is unchanged. `dist/safety.viz-1.11.1/` is the release bundle. [#323](https://github.com/jwildfire/safety.viz/issues/323), PR [#326](https://github.com/jwildfire/safety.viz/pull/326)
+2,523 unit and 453 browser tests pass. No file of R's changed since v1.10.0, and no chart's code changed: the sentence inside a biomarker chart is one the app hands to bio.viz 0.3.0, which is unchanged. `dist/safety.viz-1.11.1/` is the release bundle. [#323](https://github.com/jwildfire/safety.viz/issues/323), PR [#326](https://github.com/jwildfire/safety.viz/pull/326), [#328](https://github.com/jwildfire/safety.viz/issues/328), PR [#330](https://github.com/jwildfire/safety.viz/pull/330)
 
 # safety.viz v1.11.0
 

@@ -161,6 +161,18 @@ describe('demo app: the data panel', () => {
     );
   });
 
+  it('APP-NOTE-002: a chart with a column not mapped says so in the standard note, as a warning: amber, with the warning mark, and not the red edge of a failure (#321)', () => {
+    app.loadFiles(STUDY);
+    app.select('hep-explorer');
+    const message = root.querySelector('.sva-message');
+    expect(message.textContent).toBe('Not mapped yet: Upper limit of normal, Total bilirubin.');
+    expect(message.classList.contains('sva-callout')).toBe(true);
+    expect(message.classList.contains('sva-warning')).toBe(true);
+    expect(message.dataset.kind).toBe('warning');
+    expect(message.classList.contains('sva-problem')).toBe(false);
+    expect(message.querySelector('svg.sva-callout-mark')).not.toBeNull();
+  });
+
   it('APP-LOAD-004: every row says how it was filled, and an empty row says which charts need it (#151)', () => {
     app.loadFiles(STUDY);
     const cells = (domain, kind, key) => {

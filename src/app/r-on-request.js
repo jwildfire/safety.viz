@@ -14,6 +14,7 @@
 // that mounts the app passes the factory in.
 
 import {
+  CHART_NOTE,
   IN_THE_NOTE,
   browserSaid,
   megabytesSaid,
@@ -44,9 +45,9 @@ const unavailable = (message) => ({ status: 'unavailable', reason: 'no-r-attache
  * Each of the library's charts also carries a note at the top of its card
  * (#322, obot.roadmap#420), with the same button inside its sentence: amber on
  * a chart that cannot be drawn without R, blue on one R adds p-values to. The
- * blue one can be closed, and then stays closed on every chart for the visit;
- * the amber one cannot. While R starts the note says so, and once R is ready
- * there is none.
+ * blue one can be closed, and then stays closed on every chart for the visit,
+ * while R starts too; the amber one cannot. While R starts the note says so,
+ * when R did not start it always says so, and once R is ready there is none.
  * @param {Object} options
  * @param {(options: Object) => {run: Function}} options.createConnection The library's connection factory.
  * @param {Object} options.browser The options of R in the browser: the statistics source and the packages, as the factory takes them.
@@ -90,8 +91,10 @@ export function rOnRequest({
   // closed on all of them, and the chart's own line points at the control again.
   let closed = false;
   const needsR = (module) => Array.isArray(required) && required.includes(module);
-  // Where a chart's own line says R is started: in the note, while there is one.
-  const where = () => (closed ? whereSaid() : IN_THE_NOTE);
+  // Where a chart's own line says R is started: in the note, while the chart
+  // has one. A chart that cannot be drawn without R always has, so closing the
+  // blue note sends only the other charts' lines back to the control.
+  const where = (must) => (closed && !must ? whereSaid() : IN_THE_NOTE);
   // What was thrown, as words: its message, or itself when it is words (#193).
   const reasonOf = (error) =>
     (error && typeof error.message === 'string' && error.message) ||
@@ -153,19 +156,23 @@ export function rOnRequest({
         return answer;
       });
 
-  // One connection object for every chart, before and after the reader asks:
-  // a chart drawn before still reaches R once R is there.
-  const connection = Object.freeze({
-    run(name, request) {
-      if (phase === 'idle') return Promise.resolve(unavailable(words.viewNeed(where())));
-      if (phase === 'failed') return Promise.resolve(didNotStart());
-      return ask(real, name, request);
-    }
-  });
+  // One connection object for every chart of a kind, before and after the
+  // reader asks: a chart drawn before still reaches R once R is there. The two
+  // kinds reach the same R and differ only in where their line points (#322).
+  const connect = (must) =>
+    Object.freeze({
+      run(name, request) {
+        if (phase === 'idle') return Promise.resolve(unavailable(words.viewNeed(where(must))));
+        if (phase === 'failed') return Promise.resolve(didNotStart());
+        return ask(real, name, request);
+      }
+    });
+  const connection = connect(false);
+  const needing = connect(true);
 
   return {
-    settings: () => ({
-      connection,
+    settings: (module) => ({
+      connection: needsR(module) ? needing : connection,
       waiting_note: phase === 'starting' ? words.viewStarting : null
     }),
     action: {
@@ -213,8 +220,6 @@ export function rOnRequest({
         })[phase],
       press() {
         if (phase === 'starting' || phase === 'running') return started;
-        // A reader who starts R has the note back if it does not start.
-        closed = false;
         // A factory that throws is R that did not start, and says why (#193).
         try {
           real = createConnection({ browser });
@@ -240,42 +245,42 @@ export function rOnRequest({
      */
     note(module) {
       const must = needsR(module);
+      const said = must ? CHART_NOTE.must : CHART_NOTE.adds;
       if (phase === 'idle') {
         if (must) {
           return {
             kind: 'warning',
-            before: 'This chart cannot be drawn without R. ',
+            before: said.need,
             label: words.start,
-            after: ` to draw it: ${words.noteCost}`
+            after: ` to ${said.to}: ${words.noteCost}`
           };
         }
         if (closed) return null;
         return {
           kind: 'info',
-          before: 'This chart’s p-values need R. ',
+          before: said.need,
           label: words.start,
-          after: ` to add them: ${words.noteCost}`,
+          after: ` to ${said.to}: ${words.noteCost}`,
           close() {
             closed = true;
           }
         };
       }
       if (phase === 'starting') {
+        // Closed is closed for the visit: a chart R adds p-values to says
+        // nothing while R starts. That R did not start is always said.
+        if (closed && !must) return null;
         return {
           kind: 'info',
           busy: true,
-          before: must
-            ? 'R is starting. The chart is drawn when it is ready.'
-            : 'R is starting. The p-values appear under the chart when it is ready.',
+          before: said.starting,
           meta: megabytesSaid(megabytes)
         };
       }
       if (phase === 'failed') {
         return {
           kind: 'warning',
-          before: must
-            ? 'R did not start, so this chart cannot be drawn. '
-            : 'R did not start, so this chart has no p-values. ',
+          before: said.failed,
           label: words.again,
           after: ` ${words.noteWhy()}`
         };

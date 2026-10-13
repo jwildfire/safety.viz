@@ -66,6 +66,26 @@ export const NONE_PLACED =
   'None of the loaded files is a subject-level or adverse events file, or a gsm raw file, so there is nothing for R to run.';
 
 /**
+ * What the tab's note says where R can be started (#322), the tab's own words
+ * of it: before its button and what the button is pressed to do; while R
+ * starts and while it runs; before Try again or Run again when R did not
+ * start, stopped answering or stopped; and, with R up and nothing run on what
+ * is loaded, either side of the button that runs the metrics. The button's
+ * words, the cost and where the reason is are the shared ones (r-words.js).
+ */
+export const RBQM_NOTE = {
+  need: 'The site metrics cannot be worked out without R. ',
+  to: 'run them',
+  starting: 'R is starting. The metrics run by themselves when it is ready.',
+  running: 'R is running the metrics. They appear here when it is done.',
+  failed: 'R did not start, so no metric was run. ',
+  silent: 'R stopped answering, so no metric was run. ',
+  stopped: 'R stopped, so there are no results. ',
+  ready: ['R is ready. ', ' on what is loaded now.'],
+  run: 'Run the metrics'
+};
+
+/**
  * What the Data tab's card says of the loaded data (#281, obot.roadmap#406):
  * how many metrics it supports, as the card's sentence and as the workflow's
  * third step counts them; what the card says of a metric's state, under the

@@ -53,6 +53,7 @@ import {
 } from './rbqm-files.js';
 import {
   NONE_PLACED,
+  RBQM_NOTE,
   NO_FILES,
   RBQM_DOCS,
   RUN_STEPS,
@@ -245,9 +246,7 @@ export function rbqmTab({
   function bodyLine(app) {
     if (unavailable) return unavailable;
     if (busy()) {
-      return up && phase === 'running'
-        ? 'R is running the metrics. They appear here when it is done.'
-        : 'R is starting. The metrics run by themselves when it is ready.';
+      return up && phase === 'running' ? RBQM_NOTE.running : RBQM_NOTE.starting;
     }
     const any = loaded(app).length || Object.keys((app && app.state.files) || {}).length;
     return any ? NONE_PLACED : NO_FILES;
@@ -286,10 +285,10 @@ export function rbqmTab({
     if (phase === 'failed' || phase === 'stopped') {
       const before =
         phase === 'stopped'
-          ? 'R stopped, so there are no results. '
+          ? RBQM_NOTE.stopped
           : failure.say === words.stopped
-            ? 'R stopped answering, so no metric was run. '
-            : 'R did not start, so no metric was run. ';
+            ? RBQM_NOTE.silent
+            : RBQM_NOTE.failed;
       const line = make('warning', [
         before,
         files ? go(failure.label || words.again) : null,
@@ -300,11 +299,11 @@ export function rbqmTab({
     }
     // No file gsm reads: the sentence says which, and there is nothing to start R on.
     if (!files) return make('warning', bodyLine(app));
-    if (up) return make('info', ['R is ready. ', go('Run the metrics'), ' on what is loaded now.']);
+    if (up) return make('info', [RBQM_NOTE.ready[0], go(RBQM_NOTE.run), RBQM_NOTE.ready[1]]);
     return make('warning', [
-      'The site metrics cannot be worked out without R. ',
+      RBQM_NOTE.need,
       go(words.start),
-      ` to run them: ${words.noteCost}`
+      ` to ${RBQM_NOTE.to}: ${words.noteCost}`
     ]);
   }
 
