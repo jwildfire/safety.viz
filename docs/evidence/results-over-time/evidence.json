@@ -1,6 +1,6 @@
 {
   "module": "results-over-time",
-  "generatedAt": "2026-10-13T20:51:50.989Z",
+  "generatedAt": "2026-10-13T21:16:21.840Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38466075765",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38466075765"
+    "id": "38469241819",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38469241819"
   },
   "records": [
     {
