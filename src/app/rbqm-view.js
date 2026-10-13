@@ -39,6 +39,7 @@
 
 import { el } from './dom.js';
 import { icon } from './icons.js';
+import { note } from './note.js';
 import { WEBR_VERSION } from './r-browser.js';
 import { whereSaid } from './r-words.js';
 import {
@@ -713,13 +714,18 @@ export function rbqmTab({
     );
     if (metric.state === 'cannot') {
       // R's own sentence, and the way to the data.
-      const why = el('div', 'sva-rbqm-whybox');
-      why.append(
-        el('p', 'sva-rbqm-why', metric.message),
-        ' ',
-        dataLink(app, 'Change the data on the Data tab.')
+      // An amber note (#321): the metric cannot run until the data changes.
+      card.append(
+        note({
+          kind: 'warning',
+          say: [
+            el('span', 'sva-rbqm-why', metric.message),
+            ' ',
+            dataLink(app, 'Change the data on the Data tab.')
+          ],
+          className: 'sva-rbqm-whybox'
+        })
       );
-      card.append(why);
       return;
     }
     if (metric.state !== 'ran') {

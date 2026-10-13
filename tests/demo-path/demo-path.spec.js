@@ -48,9 +48,8 @@ test('the keynote’s demo path: the app opens on the pilot study, a chart, the 
   await test.step('1. the app opens on the pilot study', async () => {
     await page.goto('./');
     await page.evaluate('window.__safetyVizApp.ready');
-    await expect(page.locator('.sva-welcome')).toContainText(
-      'You are looking at the CDISC pilot study, a public demo'
-    );
+    // No line on first open (#321): the Data tab names the study.
+    await expect(page.locator('.sva-welcome')).toHaveCount(0);
     await expect(chart('data').locator('.sva-tag')).toHaveText('Pilot study');
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     await shot('01-opens-on-the-pilot-study');

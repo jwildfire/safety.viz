@@ -601,9 +601,17 @@ describe('the RBQM tab on the page', () => {
     expect($('.sva-rbqm-metric-name').textContent).toBe('Grade 3+ Lab Abnormality Rate');
     expect($('.sva-rbqm-count').textContent).toBe('LB, did not run');
     // R's sentence, alone in its paragraph, and beside it the way to the data.
-    expect($('p.sva-rbqm-why').textContent).toBe(why);
-    expect($('.sva-rbqm-whybox > .sva-rbqm-data').textContent).toBe(
+    expect($('.sva-rbqm-whybox .sva-rbqm-why').textContent).toBe(why);
+    expect($('.sva-rbqm-whybox .sva-rbqm-data').textContent).toBe(
       'Change the data on the Data tab.'
+    );
+    // It is the app's amber note (#321): the metric cannot run until the data changes.
+    expect($('.sva-rbqm-whybox').className).toBe('sva-callout sva-warning sva-rbqm-whybox');
+    expect($('.sva-rbqm-whybox > svg').getAttribute('class')).toBe(
+      'sva-ico sva-ico-warning sva-callout-mark'
+    );
+    expect($('.sva-rbqm-whybox > p.sva-callout-say').textContent).toBe(
+      `${why} Change the data on the Data tab.`
     );
     expect($('.sva-rbqm-figures')).toBeNull();
     expect($$('.sva-view canvas')).toHaveLength(0);
@@ -2541,7 +2549,7 @@ describe('the RBQM tab: a row of its own, one page at a time', () => {
     await connection.letGo();
     expect(view.state().phase).toBe('done');
     expect($('.sva-rbqm-count').textContent).toBe('LB, did not run');
-    expect($('p.sva-rbqm-why').textContent).toBe(LAB_NEEDS);
+    expect($('.sva-rbqm-whybox .sva-rbqm-why').textContent).toBe(LAB_NEEDS);
   });
 
   it('APP-RBQM-066: sentences about a load are shown above the tab until a run is done; from then they are in Run details with R’s own notes, where a stand-in for a missing Groups table is said too, and the page does not show them a second time (#280)', async () => {

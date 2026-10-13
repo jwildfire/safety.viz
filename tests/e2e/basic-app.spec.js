@@ -348,10 +348,8 @@ test.describe('demo app on the demo study', () => {
       expect(box.width).toBeLessThanOrEqual(1);
       expect(box.height).toBeLessThanOrEqual(1);
     }
-    // The chart starts straight under the header.
-    // On first open the welcome line sits between them (#269); once it is closed
-    // the chart starts straight under the header.
-    await page.locator('.sva-welcome').getByRole('button', { name: 'Dismiss' }).click();
+    // The chart starts straight under the header: nothing stands between them
+    // on first open (#321).
     const header = await page.locator('.sva-header').boundingBox();
     const chart = await page.locator('.sva-chart').boundingBox();
     expect(chart.y - (header.y + header.height)).toBeLessThan(30);
@@ -624,9 +622,6 @@ test.describe('demo app: the first screen', () => {
   test.beforeAll(() => {
     execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
   });
-  const WELCOME =
-    'You are looking at the CDISC pilot study, a public demo: 254 participants, 18 charts on five tabs. ' +
-    'To use your own files, open Data. They are read in this browser and never leave it.';
   const dataTag = (page) => item(page, 'data').locator('.sva-tag');
   const counts = (page) => page.locator('.sva-tab[data-domain] .sva-tab-count');
   const hexClass = (page, domain) => tab(page, domain).locator('.sva-hex');
@@ -678,55 +673,36 @@ test.describe('demo app: the first screen', () => {
     await expect(dataTag(page)).toHaveText('no files');
   });
 
-  test('APP-PAGE-034: on first open one line above the chart says whose data this is, how much is here and where to load your own, and its link opens the Data tab (#269)', async ({
+  test('APP-PAGE-044: the app opens straight on its first chart: no line stands between the header and the view on first open, on any tab, and nothing is written to the browser’s storage (#321)', async ({
     page
   }) => {
     const errors = watchErrors(page);
     await openOnDemo(page);
-    const welcome = page.locator('.sva-welcome');
-    await expect(welcome).toBeVisible();
-    await expect(welcome.locator('p')).toHaveText(WELCOME);
-    // Above the chart, and as wide as the chart's card. That it is one line at
-    // this width in the app's own typeface is held on the built page (site.spec.js).
-    const line = await welcome.boundingBox();
+    // The line release 1.11.0 showed on first open is gone, and nothing took its place.
+    await expect(page.locator('.sva-welcome')).toHaveCount(0);
+    await expect(page.locator('.sva-main')).not.toContainText('You are looking at');
+    const header = await page.locator('.sva-header').boundingBox();
     const chart = await page.locator('.sva-chart').boundingBox();
-    expect(line.y + line.height).toBeLessThanOrEqual(chart.y);
-    expect(Math.abs(line.width - chart.width)).toBeLessThan(1);
-    await captureEvidence(page, 'APP-PAGE-034', 'first-screen');
-    // It stays while charts are opened, and its link leads to the Data tab, where it is not shown.
-    await openChart(page, 'ae-explorer');
-    await expect(welcome).toBeVisible();
-    await welcome.getByRole('link', { name: 'Data' }).click();
-    await expect(item(page, 'data')).toHaveAttribute('aria-current', 'page');
-    await expect(welcome).toBeHidden();
-    await openChart(page, 'histogram');
-    await expect(welcome).toBeVisible();
-    expect(errors).toEqual([]);
-  });
-
-  test('APP-PAGE-035: the welcome line closes with its cross and does not come back in that visit, and nothing is written to the browser’s storage (#269)', async ({
-    page
-  }) => {
-    await openOnDemo(page);
-    const welcome = page.locator('.sva-welcome');
-    await expect(welcome).toBeVisible();
-    await welcome.getByRole('button', { name: 'Dismiss' }).click();
-    await expect(welcome).toBeHidden();
-    await openChart(page, 'ae-explorer');
-    await expect(welcome).toBeHidden();
+    expect(chart.y - (header.y + header.height)).toBeLessThan(30);
+    await captureEvidence(page, 'APP-PAGE-044', 'first-screen');
+    // On every tab, and on the Data tab, which still names the loaded study.
+    for (const module of ['ae-explorer', 'qt-explorer', 'group-comparison']) {
+      await openChart(page, module);
+      await expect(page.locator('.sva-welcome')).toHaveCount(0);
+      const box = await page.locator('.sva-chart').boundingBox();
+      expect(box.y - (header.y + header.height)).toBeLessThan(30);
+    }
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await expect(page.locator('.sva-welcome')).toHaveCount(0);
     await item(page, 'data').click();
-    await openChart(page, 'histogram');
-    await expect(welcome).toBeHidden();
+    await expect(dataTag(page)).toHaveText('Pilot study');
     const stored = await page.evaluate(() => ({
       local: window.localStorage.length,
       session: window.sessionStorage.length,
       cookie: document.cookie
     }));
     expect(stored).toEqual({ local: 0, session: 0, cookie: '' });
-    // A new visit is a first open again: nothing remembered the cross.
-    await page.reload();
-    await page.evaluate(`${APP}.ready`);
-    await expect(welcome).toBeVisible();
+    expect(errors).toEqual([]);
   });
 
   test('APP-PAGE-037: the wordmark is a link to the docs home, the mark and the words "Demo app" inside it, and nothing else in the header moves (#270)', async ({
@@ -777,21 +753,115 @@ test.describe('demo app: the first screen', () => {
     });
     await expect(page).toHaveTitle('QT Explorer · safety.viz demo');
   });
+});
 
-  test('APP-PAGE-036: the welcome line is for the study the app opens on: it goes when another study or a reader’s own files are loaded, and a page that opens with no study has none (#269)', async ({
+// Every note is the standard note (#321, obot.roadmap#420): blue for
+// information, amber for something that cannot run until the reader acts.
+test.describe('demo app: the standard note', () => {
+  test.beforeAll(() => {
+    execSync('npm run build:app', { stdio: 'inherit', cwd: new URL('../..', import.meta.url) });
+  });
+  const BLUE = 'rgb(81, 159, 221)';
+  const AMBER = 'rgb(199, 138, 59)';
+  const RED = 'rgb(216, 121, 114)';
+  const PURPLE = 'rgb(108, 50, 112)';
+  // What a note looks like: the colour of its left edge and of its mark, and whether it is tinted.
+  const look = (locator) =>
+    locator.evaluate((element) => {
+      const style = getComputedStyle(element);
+      const mark = element.querySelector(':scope > svg');
+      return {
+        edge: style.borderLeftColor,
+        width: style.borderLeftWidth,
+        tinted: style.backgroundImage !== 'none',
+        mark: mark ? mark.getAttribute('class') : null,
+        markColour: mark ? getComputedStyle(mark).color : null
+      };
+    });
+  // Every element of the app with a left edge of three pixels or more in the accent.
+  const purpleEdges = (page) =>
+    page.evaluate(
+      (purple) =>
+        [...document.querySelectorAll('.sva-app *')]
+          .filter((element) => {
+            const style = getComputedStyle(element);
+            return parseFloat(style.borderLeftWidth) >= 3 && style.borderLeftColor === purple;
+          })
+          .map((element) => element.className),
+      PURPLE
+    );
+
+  test('APP-NOTE-003: in the browser a note’s left edge is the palette’s blue for information and its amber for a warning, each with its own mark on a tint of its colour; no note has a purple edge; a failure keeps its red edge; and at 390 pixels a note fits the screen (#321)', async ({
     page
   }) => {
+    const errors = watchErrors(page);
+    await page.setViewportSize({ width: 1280, height: 800 });
     await openOnDemo(page);
-    const welcome = page.locator('.sva-welcome');
-    await expect(welcome).toBeVisible();
+    expect(await purpleEdges(page)).toEqual([]);
+
+    // Information: how the Participant Profile is opened.
+    await openChart(page, 'participant-profile');
+    const info = page.locator('.sva-message.sva-callout');
+    await expect(info).toHaveAttribute('data-kind', 'info');
+    expect(await look(info)).toEqual({
+      edge: BLUE,
+      width: '3px',
+      tinted: true,
+      mark: 'sva-ico sva-ico-info sva-callout-mark',
+      markColour: 'rgb(31, 95, 153)'
+    });
+    expect(await purpleEdges(page)).toEqual([]);
+    await captureEvidence(page, 'APP-NOTE-003', 'information-note');
+
+    // A warning: an RBQM metric the loaded study cannot support, with the way to the data in it.
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await page.locator('.sva-view-item[data-state="cannot"]').first().click();
+    const cannot = page.locator('.sva-rbqm-whybox');
+    await expect(cannot).toHaveAttribute('data-kind', 'warning');
+    expect(await look(cannot)).toEqual({
+      edge: AMBER,
+      width: '3px',
+      tinted: true,
+      mark: 'sva-ico sva-ico-warning sva-callout-mark',
+      markColour: 'rgb(122, 82, 17)'
+    });
+    await expect(cannot.locator('.sva-rbqm-data')).toHaveCSS('color', 'rgb(122, 82, 17)');
+    expect(await purpleEdges(page)).toEqual([]);
+    await captureEvidence(page, 'APP-NOTE-003', 'warning-note');
+
+    // A failure is not a note: a chart that was ready and threw keeps its red edge.
+    await page.evaluate(`(() => {
+      const app = ${APP};
+      app.state.files.bds = {
+        ...app.state.files.bds,
+        rows: app.state.files.bds.rows.map(({ VISIT, ...row }) => row)
+      };
+    })()`);
+    await openChart(page, 'shift-plot');
+    const failed = page.locator('p.sva-message.sva-problem');
+    await expect(failed).toContainText('Required variable(s) missing: VISIT');
+    expect(await look(failed)).toMatchObject({ edge: RED, width: '3px', mark: null });
+
+    // A warning: a chart the loaded data cannot draw. The liver cohort has no ECG file.
     await item(page, 'data').click();
     await page.locator('.sva-side select.sva-study').selectOption('liver');
-    await openChart(page, 'hep-explorer');
-    await expect(welcome).toBeHidden();
-    await openEmpty(page);
-    await chooseFiles(page, STUDY);
-    await openChart(page, 'ae-explorer');
-    await expect(welcome).toBeHidden();
+    await expect(page.locator('.sva-loaded-name')).toHaveText(['adbds-abnbl.csv']);
+    await openChart(page, 'qt-explorer');
+    const needs = page.locator('.sva-message.sva-callout');
+    await expect(needs).toHaveText('No file loaded for: ECG.');
+    expect((await look(needs)).edge).toBe(AMBER);
+    expect(await purpleEdges(page)).toEqual([]);
+
+    // At phone width a note is inside the screen and the page does not scroll sideways.
+    await page.setViewportSize({ width: 390, height: 800 });
+    await openChart(page, 'participant-profile');
+    const box = await page.locator('.sva-message.sva-callout').boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(390);
+    expect(
+      await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)
+    ).toBe(true);
+    expect(errors).toEqual([]);
   });
 });
 
@@ -3799,9 +3869,6 @@ test.describe('demo app: the RBQM tab', () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
     await page.evaluate(`${APP}.ready`);
-    // With the welcome line closed the tab's card, and the label on its corner,
-    // are as high on the page as they get.
-    await page.locator('.sva-welcome').getByRole('button', { name: 'Dismiss' }).click();
     await rbqmTab(page).click();
     await rbqmStart(page).click();
     await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();

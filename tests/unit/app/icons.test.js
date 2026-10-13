@@ -16,7 +16,10 @@ describe('the marks of the RBQM tab', () => {
       'flag-ok',
       'flag-one',
       'flag-two',
-      'flag-none'
+      'flag-none',
+      // A note's two marks (#321).
+      'info',
+      'warning'
     ]);
     for (const name of ICONS) {
       const mark = icon(name);

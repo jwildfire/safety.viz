@@ -592,3 +592,99 @@ describe('demo app: the page', () => {
     expect(root.innerHTML).toBe('');
   });
 });
+
+// Every note the page draws is the standard note (#321, obot.roadmap#420):
+// blue for information, amber for something that cannot run until the reader
+// acts. A failure is not a note, and keeps its red edge.
+describe('the page’s notes', () => {
+  let root;
+  beforeEach(() => {
+    document.body.innerHTML = '<div id="app"></div>';
+    root = document.querySelector('#app');
+    window.location.hash = '';
+  });
+  const message = () => root.querySelector('.sva-message');
+  const kindOf = (element) => ({
+    note: element.classList.contains('sva-callout'),
+    kind: element.dataset.kind || null,
+    mark: element.querySelector(':scope > svg')
+      ? element.querySelector(':scope > svg').getAttribute('class')
+      : null
+  });
+  const INFO = { note: true, kind: 'info', mark: 'sva-ico sva-ico-info sva-callout-mark' };
+  const WARNING = { note: true, kind: 'warning', mark: 'sva-ico sva-ico-warning sva-callout-mark' };
+
+  it('APP-NOTE-002: the page’s notes are the standard note: information in blue for how a chart is opened and for a study being loaded; a warning in amber for a chart the loaded data cannot draw, for what a load left to say and for a library that did not load; a failure is no note and keeps its red edge (#321)', async () => {
+    const { charts } = fakeCharts(withOutside);
+    const app = mountApp(root, { charts, manifest: withOutside });
+    app.loadFiles([
+      ...DEMO.filter((file) => file.name !== 'adeg.csv'),
+      { name: 'notes.csv', text: 'USUBJID,COMMENT\n01,fine\n' }
+    ]);
+
+    // How a chart is opened is information.
+    app.select('participant-profile');
+    expect(kindOf(message())).toEqual(INFO);
+    expect(message().getAttribute('role')).toBe('note');
+    expect(message().querySelector('p.sva-callout-say').textContent).toContain(
+      'opens beside a chart when you select a participant'
+    );
+    expect(message().querySelector('.sva-close')).toBeNull();
+
+    // A chart that waits on a file, or on domains outside the standard set, cannot be drawn: a warning.
+    app.select('qt-explorer');
+    expect(kindOf(message())).toEqual(WARNING);
+    expect(message().textContent).toBe('No file loaded for: ECG.');
+    app.select('visit-calendar');
+    expect(kindOf(message())).toEqual(WARNING);
+    expect(message().classList.contains('sva-problem')).toBe(false);
+
+    // What the load left to say: a list of warnings, each an item of the list.
+    app.select('data');
+    const notes = [...root.querySelectorAll('ul.sva-notes > li.sva-note')];
+    expect(notes).toHaveLength(1);
+    expect(kindOf(notes[0])).toEqual(WARNING);
+    expect(notes[0].hasAttribute('role')).toBe(false);
+    expect(notes[0].textContent).toBe(
+      'notes.csv was not placed in a domain: it matches at most 1 column of any of them (USUBJID).'
+    );
+
+    // A chart that was ready and threw is a failure: a paragraph with the red edge, not a note.
+    charts[manifest.modules['shift-plot'].export].mockImplementation(() => {
+      throw new Error('Required variable(s) missing: VISIT');
+    });
+    app.select('shift-plot');
+    expect(message().tagName).toBe('P');
+    expect(message().className).toBe('sva-message sva-problem');
+    expect(message().querySelector('svg')).toBeNull();
+    app.destroy();
+
+    // A library that did not load says so above every view, as a warning.
+    const without = mountApp(root, {
+      charts,
+      manifest,
+      libraries: [{ name: 'bio.viz', charts: null, manifest: undefined, file: 'bio.viz.js' }]
+    });
+    const said = [...root.querySelectorAll('ul.sva-library-notes > li.sva-note')];
+    expect(said).toHaveLength(1);
+    expect(kindOf(said[0])).toEqual(WARNING);
+    expect(said[0].textContent).toBe(
+      'The bio.viz charts are not shown: bio.viz.js did not load on this page, or failed as it loaded.'
+    );
+    without.destroy();
+
+    // A study on its way is information, with a turning ring where the mark is.
+    const waiting = mountApp(root, {
+      charts,
+      manifest,
+      demo: { base: '/demo/' },
+      fetchText: () => new Promise(() => {})
+    });
+    const busy = root.querySelector('.sva-message.sva-busy');
+    expect(busy.classList.contains('sva-callout')).toBe(true);
+    expect(busy.dataset.kind).toBe('info');
+    expect(busy.firstElementChild.className).toBe('sva-spin');
+    expect(busy.textContent).toBe('Loading the demo study…');
+    waiting.destroy();
+  });
+});
