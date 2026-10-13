@@ -1904,15 +1904,10 @@ describe('the RBQM tab: the note where R can be started (#322)', () => {
     // No note in the app can be closed where it is a warning.
     expect(now.node.querySelector('.sva-close')).toBeNull();
 
-    now.button.focus();
     now.button.click();
     expect(r.made).toHaveLength(1);
     expect(view.state().phase).toBe('starting');
     now = noteNow();
-    // Pressed from the keyboard: the keyboard stays with the tab's status as it is drawn again.
-    expect(document.activeElement).toBe(now.node);
-    // The control says each step aloud; the note's small print is for the eye.
-    expect(now.meta.getAttribute('aria-hidden')).toBe('true');
     expect(now.kind).toBe('info');
     expect(now.waits).toBe(true);
     expect(now.button).toBeNull();
@@ -1928,8 +1923,6 @@ describe('the RBQM tab: the note where R can be started (#322)', () => {
     expect(view.state().phase).toBe('done');
     expect(noteNow()).toBeNull();
     expect(r.made).toHaveLength(1);
-    // And at the end it is on the outcome, not at the top of the page.
-    expect(document.activeElement).toBe($('.sva-rbqm-outcome.sva-rbqm-status'));
   });
 
   it('APP-RBQM-083: when R did not start the note is amber, says no metric was run, offers Try again inside its sentence and says where the reason is; the button makes one fresh connection. With R up and nothing run on what is loaded, the note is blue and its button runs the metrics. On a page that cannot start R, and with no file gsm reads, the note is amber and has no button (#322)', async () => {

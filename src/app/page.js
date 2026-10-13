@@ -725,25 +725,12 @@ export function mountApp(
   // whenever the library's control changes.
   function placeNote(module, entry) {
     if (!noteSlot) return;
-    // A reader whose keyboard is in the note, on its button or its cross,
-    // keeps it there when the note is drawn again: on the new note, or on the
-    // control in the row when the note is gone.
-    const held = noteSlot.contains(document.activeElement);
     noteSlot.innerHTML = '';
     const name = libraryOf(entry);
     const library = extras.get(name);
     const said = noteSaid(library, module);
     noteSlot.hidden = !said;
-    if (!said) {
-      if (held) {
-        // The control, or the chart's card when the control has nothing to press.
-        const next =
-          chartRow.querySelector('.sva-r button:not(:disabled)') || noteSlot.parentElement;
-        if (next && next.tabIndex < 0) next.tabIndex = -1;
-        if (next) next.focus();
-      }
-      return;
-    }
+    if (!said) return;
     const parts = [said.before];
     if (said.label && library.action && typeof library.action.press === 'function') {
       const button = el('button', 'sva-action sva-note-start', said.label);
@@ -768,9 +755,7 @@ export function mountApp(
           }
         : null
     });
-    fresh.tabIndex = -1;
     noteSlot.append(fresh);
-    if (held) fresh.focus();
   }
 
   // The control in the chart-name row (#276): the open library's, as it says

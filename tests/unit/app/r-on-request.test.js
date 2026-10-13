@@ -628,12 +628,9 @@ describe('the page with a library’s settings and control', () => {
     expect(callout().querySelector('.sva-close')).toBeNull();
     const drawn = standInLog.filter((entry) => entry.event !== 'setSettings').length;
 
-    // Pressed from the keyboard: the keyboard stays with the note as it is drawn again.
-    button.focus();
     button.click();
     expect(press).toHaveBeenCalledTimes(1);
     expect(card.querySelector('.sva-chart-note')).toBe(slot);
-    expect(document.activeElement).toBe(callout());
     expect(callout().dataset.kind).toBe('info');
     expect(callout().querySelector('.sva-spin')).not.toBeNull();
     expect(callout().querySelector('button')).toBeNull();
@@ -647,10 +644,6 @@ describe('the page with a library’s settings and control', () => {
     await Promise.resolve();
     expect(callout()).toBeNull();
     expect(card.querySelector('.sva-chart-note').hidden).toBe(true);
-    // The note is gone, so the keyboard goes to the control in the row; this
-    // control's chip has nothing behind it to open, so it goes to the chart's card.
-    expect(document.querySelector('.sva-charts .sva-r button').disabled).toBe(true);
-    expect(document.activeElement).toBe(card);
     // The chart was handed its settings and never drawn again.
     expect(standInLog.filter((entry) => entry.event !== 'setSettings')).toHaveLength(drawn);
     expect(standInLog.some((entry) => entry.event === 'setSettings')).toBe(true);
@@ -672,13 +665,9 @@ describe('the page with a library’s settings and control', () => {
     const callout = () => document.querySelector('.sva-chart-note .sva-callout');
     expect(callout().dataset.kind).toBe('info');
     standInLog.length = 0;
-    callout().querySelector('.sva-close').focus();
     callout().querySelector('.sva-close').click();
     expect(close).toHaveBeenCalledTimes(1);
     expect(callout()).toBeNull();
-    // The keyboard goes to the control, which the chart's line now points at.
-    expect(document.activeElement).toBe(document.querySelector('.sva-charts .sva-r button'));
-    expect(document.activeElement.textContent).toBe('Start R');
     expect(standInLog.map((entry) => entry.event)).toEqual(['setSettings']);
     expect(action.press).not.toHaveBeenCalled();
     // A safety chart has no note of a library's.

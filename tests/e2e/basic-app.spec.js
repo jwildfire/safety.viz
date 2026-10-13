@@ -2315,7 +2315,7 @@ test.describe('demo app with R on request', () => {
     'biomarker-screen': 'warning'
   };
 
-  test('APP-R-060: at 1,280 pixels each of the five biomarker charts opens with a note at the top of its card, above the chart: blue with a cross on the three R adds p-values to, amber with none on the two that cannot be drawn without R, each with Start R inside its sentence; the chart’s own line points at the note; closing the blue note closes it on all three, whose lines then point at the control, and leaves both amber ones, whose lines still point at the note; nothing is asked of R (#322)', async ({
+  test('APP-R-060: at 1,280 pixels each of the five biomarker charts opens with a note at the top of its card, above the chart: blue with a cross on the three R adds p-values to, amber with none on the two that cannot be drawn without R, each with Start R inside its sentence; the chart’s own line points at the note; closing the blue note closes it on all three, the line under a chart that has one then points at the control, and both amber notes stay, whose lines still point at the note; nothing is asked of R (#322)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -2374,8 +2374,6 @@ test.describe('demo app with R on request', () => {
     await expect(page.locator('.sva-chart .bv-stat-result').first()).toHaveText(
       'Statistics need R. Start R, at the top right.'
     );
-    // Closed from the keyboard's place, the cross hands it to the control.
-    await expect(rControl(page).locator('.sva-action')).toBeFocused();
     for (const module of ['association-scatter', 'group-comparison']) {
       await item(page, module).click();
       await expect(page.locator('.sva-chart > .sva-chart-mount > *').first()).toBeVisible();
@@ -2466,6 +2464,47 @@ test.describe('demo app with R on request', () => {
     await expect.poll(made, { timeout: 150000 }).toBe(2);
     await expect(rControl(page)).toHaveAttribute('data-phase', 'failed', { timeout: 150000 });
     await expect(noteButton(page)).toHaveText('Try again');
+  });
+
+  test('APP-R-057: in the browser a blue note closed with its cross stays closed while R starts, where a chart that cannot be drawn without R says R is starting; when R then does not start, the chart whose note was closed says so in an amber note (#322, #328)', async ({
+    page,
+    context
+  }) => {
+    test.setTimeout(240000);
+    let refuse;
+    const held = new Promise((resolve) => {
+      refuse = resolve;
+    });
+    await context.route(/r-wasm\.org/, async (route) => {
+      await held;
+      await route.abort();
+    });
+    await page.setViewportSize({ width: 1280, height: 820 });
+    await openOnDemo(page);
+    await openChart(page, 'cross-tab');
+    await startNote(page).locator('.sva-close').click();
+    await expect(startNote(page)).toHaveCount(0);
+    // R is started from the control, as the chart's line now says.
+    await rControl(page).locator('.sva-action').click();
+    await expect(rControl(page)).toHaveAttribute('data-phase', 'starting');
+    await expect(startNote(page)).toHaveCount(0);
+    await expect(page.locator('.sva-chart > .sva-chart-note')).toBeHidden();
+    await item(page, 'association-scatter').click();
+    await expect(page.locator('.sva-chart > .sva-chart-mount > *').first()).toBeVisible();
+    await expect(startNote(page)).toHaveCount(0);
+    await item(page, 'biomarker-screen').click();
+    await expect(startNote(page).locator('.sva-callout-say')).toHaveText(
+      'R is starting. The chart is drawn when it is ready. 13 MB'
+    );
+    await item(page, 'cross-tab').click();
+    await expect(rControl(page)).toHaveAttribute('data-phase', 'starting');
+    await expect(startNote(page)).toHaveCount(0);
+    refuse();
+    await expect(rControl(page)).toHaveAttribute('data-phase', 'failed', { timeout: 150000 });
+    await expect(startNote(page)).toHaveAttribute('data-kind', 'warning');
+    await expect(startNote(page).locator('.sva-callout-say')).toHaveText(
+      'R did not start, so this chart has no p-values. Try again The reason is behind Why, at the top right.'
+    );
   });
 
   // Starts real R, so it runs in the check's real-R job. Prettier would re-indent the whole test to fit the tag.
@@ -3456,10 +3495,7 @@ test.describe('demo app: the RBQM tab', () => {
       expect.stringContaining('sva-rbqm-status')
     ]);
     await rbqmOverview(page).click();
-    await button.focus();
     await button.click();
-    // The keyboard stays with the tab's status as the press draws it again.
-    await expect(note).toBeFocused();
     await expect(rbqmControl(page)).toHaveAttribute('data-phase', 'starting');
     await expect(note).toHaveAttribute('data-kind', 'info');
     await expect(note.locator('.sva-spin')).toBeVisible();
@@ -3481,7 +3517,6 @@ test.describe('demo app: the RBQM tab', () => {
     }
     await expect(page.locator('.sva-rbqm-table')).toBeVisible();
     await expect(page.locator('.sva-rbqm .sva-callout.sva-rbqm-need')).toHaveCount(0);
-    await expect(page.locator('.sva-rbqm-outcome.sva-rbqm-status')).toBeFocused();
     expect(errors).toEqual([]);
   });
 
