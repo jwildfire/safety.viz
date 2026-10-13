@@ -1,0 +1,787 @@
+{
+  "$schema": "./schema/portfolio.json",
+  "version": 2,
+  "description": "The standard domain set a study supplies to safety.viz, and what every chart module reads from it. Column names are the ADaM-shaped defaults the modules already expect; each setting is the key in the module’s own data schema (src/data/schema/<module>.json), with the column it defaults to and whether that schema requires it. A test holds the two in agreement.",
+  "domains": {
+    "subject": {
+      "label": "Subject-level",
+      "grain": "One row per participant.",
+      "demo": "adsl.csv",
+      "columns": {
+        "USUBJID": {
+          "label": "Participant",
+          "description": "Unique participant identifier; the key that joins every domain."
+        },
+        "ARM": {
+          "label": "Treatment arm",
+          "description": "Treatment group the participant was assigned to."
+        },
+        "SITEID": {
+          "label": "Site",
+          "description": "Investigational site identifier."
+        },
+        "SEX": {
+          "label": "Sex",
+          "description": "Participant sex."
+        },
+        "RACE": {
+          "label": "Race",
+          "description": "Participant race."
+        },
+        "EOSDY": {
+          "label": "End-of-study day",
+          "description": "Study day follow-up ended (day 1 = first dose); the censoring time for participants with no event."
+        },
+        "EOSSTT": {
+          "label": "End-of-study status",
+          "description": "End-of-study status, shown where a participant is censored."
+        }
+      }
+    },
+    "ae": {
+      "label": "Adverse events",
+      "grain": "One row per adverse event, plus one all-blank placeholder row per participant with no events.",
+      "demo": "adae.csv",
+      "columns": {
+        "USUBJID": {
+          "label": "Participant",
+          "description": "Unique participant identifier."
+        },
+        "AESEQ": {
+          "label": "Sequence",
+          "description": "Sequence number of the event within the participant."
+        },
+        "AEBODSYS": {
+          "label": "Body system",
+          "description": "System organ class of the event."
+        },
+        "AEDECOD": {
+          "label": "Preferred term",
+          "description": "Dictionary-coded preferred term."
+        },
+        "AETERM": {
+          "label": "Reported term",
+          "description": "Verbatim term as reported."
+        },
+        "ASTDY": {
+          "label": "Start day",
+          "description": "Study day the event started (day 1 = first dose)."
+        },
+        "AENDY": {
+          "label": "End day",
+          "description": "Study day the event ended."
+        },
+        "ARM": {
+          "label": "Treatment arm",
+          "description": "Treatment group the participant was assigned to."
+        },
+        "AESEV": {
+          "label": "Severity",
+          "description": "Severity or intensity of the event."
+        },
+        "AESER": {
+          "label": "Serious",
+          "description": "Whether the event was serious (Y/N)."
+        }
+      }
+    },
+    "bds": {
+      "label": "Labs and vitals",
+      "grain": "One row per participant, measure and visit: laboratory results and vital signs together, in long format.",
+      "demo": "adbds.csv",
+      "columns": {
+        "USUBJID": {
+          "label": "Participant",
+          "description": "Unique participant identifier."
+        },
+        "TEST": {
+          "label": "Measure",
+          "description": "Name of the laboratory test or vital sign."
+        },
+        "STRESN": {
+          "label": "Result",
+          "description": "Numeric result in standard units."
+        },
+        "STRESU": {
+          "label": "Unit",
+          "description": "Standard unit of the result."
+        },
+        "STNRLO": {
+          "label": "Lower limit of normal",
+          "description": "Lower limit of the normal range."
+        },
+        "STNRHI": {
+          "label": "Upper limit of normal",
+          "description": "Upper limit of the normal range."
+        },
+        "VISIT": {
+          "label": "Visit",
+          "description": "Visit name."
+        },
+        "VISITNUM": {
+          "label": "Visit order",
+          "description": "Numeric visit order."
+        },
+        "DY": {
+          "label": "Study day",
+          "description": "Study day of the measurement (day 1 = first dose)."
+        },
+        "ARM": {
+          "label": "Treatment arm",
+          "description": "Treatment group the participant was assigned to."
+        },
+        "SITEID": {
+          "label": "Site",
+          "description": "Investigational site identifier."
+        },
+        "SEX": {
+          "label": "Sex",
+          "description": "Participant sex."
+        },
+        "RACE": {
+          "label": "Race",
+          "description": "Participant race."
+        }
+      }
+    },
+    "eg": {
+      "label": "ECG",
+      "grain": "One row per participant, ECG interval and visit, in long format.",
+      "demo": "adeg.csv",
+      "columns": {
+        "USUBJID": {
+          "label": "Participant",
+          "description": "Unique participant identifier."
+        },
+        "TEST": {
+          "label": "Measure",
+          "description": "Name of the ECG interval or parameter."
+        },
+        "STRESN": {
+          "label": "Result",
+          "description": "Numeric result in standard units."
+        },
+        "STRESU": {
+          "label": "Unit",
+          "description": "Standard unit of the result."
+        },
+        "BASE": {
+          "label": "Baseline value",
+          "description": "The participant’s baseline value for the measure."
+        },
+        "CHG": {
+          "label": "Change from baseline",
+          "description": "Result minus baseline."
+        },
+        "ABLFL": {
+          "label": "Baseline flag",
+          "description": "Marks the baseline record (Y)."
+        },
+        "ARM": {
+          "label": "Treatment arm",
+          "description": "Treatment group the participant was assigned to."
+        },
+        "VISIT": {
+          "label": "Visit",
+          "description": "Visit name."
+        },
+        "VISITNUM": {
+          "label": "Visit order",
+          "description": "Numeric visit order."
+        }
+      }
+    }
+  },
+  "modules": {
+    "histogram": {
+      "export": "histogram",
+      "title": "Safety Histogram",
+      "domains": ["bds"],
+      "settings": {
+        "measure_col": {
+          "domain": "bds",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "bds",
+          "column": "STRESN",
+          "required": true
+        },
+        "id_col": {
+          "domain": "bds",
+          "column": "USUBJID",
+          "required": false
+        },
+        "unit_col": {
+          "domain": "bds",
+          "column": "STRESU",
+          "required": false
+        },
+        "normal_col_low": {
+          "domain": "bds",
+          "column": "STNRLO",
+          "required": false
+        },
+        "normal_col_high": {
+          "domain": "bds",
+          "column": "STNRHI",
+          "required": false
+        }
+      }
+    },
+    "outlier-explorer": {
+      "export": "outlierExplorer",
+      "title": "Safety Outlier Explorer",
+      "domains": ["bds"],
+      "settings": {
+        "measure_col": {
+          "domain": "bds",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "bds",
+          "column": "STRESN",
+          "required": true
+        },
+        "id_col": {
+          "domain": "bds",
+          "column": "USUBJID",
+          "required": false
+        },
+        "unit_col": {
+          "domain": "bds",
+          "column": "STRESU",
+          "required": false
+        },
+        "normal_col_low": {
+          "domain": "bds",
+          "column": "STNRLO",
+          "required": false
+        },
+        "normal_col_high": {
+          "domain": "bds",
+          "column": "STNRHI",
+          "required": false
+        }
+      }
+    },
+    "results-over-time": {
+      "export": "resultsOverTime",
+      "title": "Safety Results Over Time",
+      "domains": ["bds"],
+      "settings": {
+        "measure_col": {
+          "domain": "bds",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "bds",
+          "column": "STRESN",
+          "required": true
+        },
+        "time_col": {
+          "domain": "bds",
+          "column": "VISIT",
+          "required": true
+        },
+        "time_order_col": {
+          "domain": "bds",
+          "column": "VISITNUM",
+          "required": false
+        },
+        "id_col": {
+          "domain": "bds",
+          "column": "USUBJID",
+          "required": false
+        },
+        "unit_col": {
+          "domain": "bds",
+          "column": "STRESU",
+          "required": false
+        }
+      }
+    },
+    "shift-plot": {
+      "export": "shiftPlot",
+      "title": "Safety Shift Plot",
+      "domains": ["bds"],
+      "settings": {
+        "measure_col": {
+          "domain": "bds",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "bds",
+          "column": "STRESN",
+          "required": true
+        },
+        "visit_col": {
+          "domain": "bds",
+          "column": "VISIT",
+          "required": true
+        },
+        "visit_order_col": {
+          "domain": "bds",
+          "column": "VISITNUM",
+          "required": false
+        },
+        "id_col": {
+          "domain": "bds",
+          "column": "USUBJID",
+          "required": false
+        },
+        "unit_col": {
+          "domain": "bds",
+          "column": "STRESU",
+          "required": false
+        }
+      }
+    },
+    "delta-delta": {
+      "export": "deltaDelta",
+      "title": "Safety Delta-Delta",
+      "domains": ["bds"],
+      "settings": {
+        "measure_col": {
+          "domain": "bds",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "bds",
+          "column": "STRESN",
+          "required": true
+        },
+        "id_col": {
+          "domain": "bds",
+          "column": "USUBJID",
+          "required": true
+        },
+        "visit_col": {
+          "domain": "bds",
+          "column": "VISIT",
+          "required": true
+        },
+        "visitn_col": {
+          "domain": "bds",
+          "column": "VISITNUM",
+          "required": false
+        }
+      }
+    },
+    "hep-explorer": {
+      "export": "hepExplorer",
+      "title": "Hepatic Safety Explorer",
+      "domains": ["bds"],
+      "settings": {
+        "id_col": {
+          "domain": "bds",
+          "column": "USUBJID",
+          "required": true
+        },
+        "measure_col": {
+          "domain": "bds",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "bds",
+          "column": "STRESN",
+          "required": true
+        },
+        "unit_col": {
+          "domain": "bds",
+          "column": "STRESU",
+          "required": false
+        },
+        "normal_col_high": {
+          "domain": "bds",
+          "column": "STNRHI",
+          "required": true
+        },
+        "normal_col_low": {
+          "domain": "bds",
+          "column": "STNRLO",
+          "required": false
+        },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
+          "required": false
+        },
+        "visit_col": {
+          "domain": "bds",
+          "column": "VISIT",
+          "required": false
+        },
+        "visitn_col": {
+          "domain": "bds",
+          "column": "VISITNUM",
+          "required": false
+        },
+        "arm_col": {
+          "domain": "bds",
+          "column": "ARM",
+          "required": false
+        },
+        "baseline_col": {
+          "domain": "bds",
+          "column": null,
+          "required": false
+        }
+      }
+    },
+    "hep-waterfall": {
+      "export": "hepWaterfall",
+      "title": "Hepatic ALT Waterfall",
+      "domains": ["bds"],
+      "settings": {
+        "id_col": {
+          "domain": "bds",
+          "column": "USUBJID",
+          "required": true
+        },
+        "measure_col": {
+          "domain": "bds",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "bds",
+          "column": "STRESN",
+          "required": true
+        },
+        "unit_col": {
+          "domain": "bds",
+          "column": "STRESU",
+          "required": false
+        },
+        "normal_col_high": {
+          "domain": "bds",
+          "column": "STNRHI",
+          "required": true
+        },
+        "normal_col_low": {
+          "domain": "bds",
+          "column": "STNRLO",
+          "required": false
+        },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
+          "required": false
+        },
+        "visit_col": {
+          "domain": "bds",
+          "column": "VISIT",
+          "required": false
+        },
+        "visitn_col": {
+          "domain": "bds",
+          "column": "VISITNUM",
+          "required": false
+        },
+        "arm_col": {
+          "domain": "bds",
+          "column": "ARM",
+          "required": true
+        },
+        "baseline_col": {
+          "domain": "bds",
+          "column": null,
+          "required": false
+        }
+      },
+      "note": "Meaningful for a cohort enrolled with elevated baseline ALT and normal baseline bilirubin; the demo site draws it on the synthetic abnormal-baseline extract adbds-abnbl.csv, which has the same columns as the labs and vitals domain."
+    },
+    "nep-explorer": {
+      "export": "nepExplorer",
+      "title": "Nephrotoxicity Explorer",
+      "domains": ["bds"],
+      "settings": {
+        "id_col": {
+          "domain": "bds",
+          "column": "USUBJID",
+          "required": true
+        },
+        "measure_col": {
+          "domain": "bds",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "bds",
+          "column": "STRESN",
+          "required": true
+        },
+        "unit_col": {
+          "domain": "bds",
+          "column": "STRESU",
+          "required": false
+        },
+        "baseline_col": {
+          "domain": "bds",
+          "column": null,
+          "required": false
+        },
+        "visit_col": {
+          "domain": "bds",
+          "column": "VISIT",
+          "required": false
+        },
+        "visitn_col": {
+          "domain": "bds",
+          "column": "VISITNUM",
+          "required": false
+        },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
+          "required": false
+        },
+        "arm_col": {
+          "domain": "bds",
+          "column": "ARM",
+          "required": false
+        }
+      }
+    },
+    "participant-profile": {
+      "export": "participantProfile",
+      "title": "Participant Profile",
+      "domains": ["bds"],
+      "settings": {
+        "id_col": {
+          "domain": "bds",
+          "column": "USUBJID",
+          "required": true
+        },
+        "measure_col": {
+          "domain": "bds",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "bds",
+          "column": "STRESN",
+          "required": true
+        },
+        "unit_col": {
+          "domain": "bds",
+          "column": "STRESU",
+          "required": false
+        },
+        "normal_col_high": {
+          "domain": "bds",
+          "column": "STNRHI",
+          "required": true
+        },
+        "normal_col_low": {
+          "domain": "bds",
+          "column": "STNRLO",
+          "required": false
+        },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
+          "required": false
+        },
+        "visit_col": {
+          "domain": "bds",
+          "column": "VISIT",
+          "required": false
+        },
+        "visitn_col": {
+          "domain": "bds",
+          "column": "VISITNUM",
+          "required": false
+        },
+        "baseline_col": {
+          "domain": "bds",
+          "column": null,
+          "required": false
+        },
+        "p_alt_col": {
+          "domain": "bds",
+          "column": null,
+          "required": false
+        }
+      },
+      "optionalDomains": ["ae"],
+      "note": "Adverse events are optional: when supplied, the profile adds their summary and timeline on the labs study-day axis, reading the same columns the adverse-event charts do."
+    },
+    "qt-explorer": {
+      "export": "qtExplorer",
+      "title": "QT Safety Explorer",
+      "domains": ["eg"],
+      "settings": {
+        "id_col": {
+          "domain": "eg",
+          "column": "USUBJID",
+          "required": false
+        },
+        "measure_col": {
+          "domain": "eg",
+          "column": "TEST",
+          "required": true
+        },
+        "value_col": {
+          "domain": "eg",
+          "column": "STRESN",
+          "required": true
+        },
+        "baseline_col": {
+          "domain": "eg",
+          "column": "BASE",
+          "required": true
+        },
+        "change_col": {
+          "domain": "eg",
+          "column": "CHG",
+          "required": false
+        },
+        "unit_col": {
+          "domain": "eg",
+          "column": "STRESU",
+          "required": false
+        },
+        "arm_col": {
+          "domain": "eg",
+          "column": "ARM",
+          "required": true
+        },
+        "visit_col": {
+          "domain": "eg",
+          "column": "VISIT",
+          "required": false
+        },
+        "visitn_col": {
+          "domain": "eg",
+          "column": "VISITNUM",
+          "required": false
+        },
+        "baseline_flag_col": {
+          "domain": "eg",
+          "column": "ABLFL",
+          "required": false
+        }
+      }
+    },
+    "ae-explorer": {
+      "export": "aeExplorer",
+      "title": "Adverse Event Explorer",
+      "domains": ["ae"],
+      "settings": {
+        "id_col": {
+          "domain": "ae",
+          "column": "USUBJID",
+          "required": true
+        },
+        "major_col": {
+          "domain": "ae",
+          "column": "AEBODSYS",
+          "required": true
+        },
+        "minor_col": {
+          "domain": "ae",
+          "column": "AEDECOD",
+          "required": true
+        },
+        "group_col": {
+          "domain": "ae",
+          "column": "ARM",
+          "required": true
+        },
+        "placeholder_flag.value_col": {
+          "domain": "ae",
+          "column": null,
+          "required": false
+        }
+      }
+    },
+    "ae-timelines": {
+      "export": "aeTimelines",
+      "title": "Adverse Event Timelines",
+      "domains": ["ae"],
+      "settings": {
+        "id_col": {
+          "domain": "ae",
+          "column": "USUBJID",
+          "required": true
+        },
+        "seq_col": {
+          "domain": "ae",
+          "column": "AESEQ",
+          "required": true
+        },
+        "stdy_col": {
+          "domain": "ae",
+          "column": "ASTDY",
+          "required": true
+        },
+        "endy_col": {
+          "domain": "ae",
+          "column": "AENDY",
+          "required": true
+        },
+        "term_col": {
+          "domain": "ae",
+          "column": "AETERM",
+          "required": true
+        },
+        "color.value_col": {
+          "domain": "ae",
+          "column": "AESEV",
+          "required": true
+        },
+        "highlight.value_col": {
+          "domain": "ae",
+          "column": "AESER",
+          "required": false
+        }
+      }
+    },
+    "time-to-event": {
+      "export": "timeToEvent",
+      "title": "Time-to-Event Explorer",
+      "domains": ["ae", "subject"],
+      "settings": {
+        "id_col": {
+          "domain": ["ae", "subject"],
+          "column": "USUBJID",
+          "required": false
+        },
+        "group_col": {
+          "domain": "subject",
+          "column": "ARM",
+          "required": false
+        },
+        "fu_day_col": {
+          "domain": "subject",
+          "column": "EOSDY",
+          "required": false
+        },
+        "censor_desc_col": {
+          "domain": "subject",
+          "column": "EOSSTT",
+          "required": false
+        },
+        "event_day_col": {
+          "domain": "ae",
+          "column": "ASTDY",
+          "required": false
+        },
+        "event_desc_col": {
+          "domain": "ae",
+          "column": "AEDECOD",
+          "required": false
+        }
+      },
+      "note": "Takes two tables: the adverse events as the events, without the placeholder rows for event-free participants, and the subject-level table as the population. The participant column must carry the same name in both."
+    }
+  }
+}
