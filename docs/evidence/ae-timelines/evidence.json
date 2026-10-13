@@ -1,6 +1,6 @@
 {
   "module": "ae-timelines",
-  "generatedAt": "2026-10-10T18:05:24.599Z",
+  "generatedAt": "2026-10-13T20:30:25.227Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38072575214",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38072575214"
+    "id": "38463274450",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38463274450"
   },
   "records": [
     {
@@ -493,6 +493,14 @@
       "screenshots": []
     },
     {
+      "test": "APP-NOTE-003: in the browser a note’s left edge is the palette’s blue for information and its amber for a warning, each with its own mark on a tint of its colour; no note has a purple edge; a failure keeps its red edge; and at 390 pixels a note fits the screen (#321)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-NOTE-003"],
+      "issueRefs": [321],
+      "screenshots": []
+    },
+    {
       "test": "APP-PAGE-001: every chart is listed under its group with a status: thirteen safety charts under three domains, and five biomarker charts in their own tab (#150, #165, #182, #212)",
       "suite": "browser",
       "status": "pass",
@@ -757,38 +765,6 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-034: on first open one line above the chart says whose data this is, how much is here and where to load your own, and its link opens the Data tab (#269)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["APP-PAGE-034"],
-      "issueRefs": [269],
-      "screenshots": []
-    },
-    {
-      "test": "APP-PAGE-034: on the built demo page at 1,280 pixels, in the app’s own typeface, the welcome is one line above the chart and the header is one row with every tab on it (#269)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["APP-PAGE-034"],
-      "issueRefs": [269],
-      "screenshots": []
-    },
-    {
-      "test": "APP-PAGE-035: the welcome line closes with its cross and does not come back in that visit, and nothing is written to the browser’s storage (#269)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["APP-PAGE-035"],
-      "issueRefs": [269],
-      "screenshots": []
-    },
-    {
-      "test": "APP-PAGE-036: the welcome line is for the study the app opens on: it goes when another study or a reader’s own files are loaded, and a page that opens with no study has none (#269)",
-      "suite": "browser",
-      "status": "pass",
-      "requirementIds": ["APP-PAGE-036"],
-      "issueRefs": [269],
-      "screenshots": []
-    },
-    {
       "test": "APP-PAGE-037: the wordmark is a link to the docs home, the mark and the words \"Demo app\" inside it, and nothing else in the header moves (#270)",
       "suite": "browser",
       "status": "pass",
@@ -818,6 +794,22 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-040"],
       "issueRefs": [271],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-044: on the built demo page at 1,280 pixels there is no line on first open, the chart starts under the header, and the header is one row with every tab on it (#321)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-044"],
+      "issueRefs": [321],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-044: the app opens straight on its first chart: no line stands between the header and the view on first open, on any tab, and nothing is written to the browser’s storage (#321)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-044"],
+      "issueRefs": [321],
       "screenshots": []
     },
     {
@@ -7813,27 +7805,11 @@
       "screenshots": []
     },
     {
-      "test": "the first screen: the welcome line APP-PAGE-034: on first open one line says whose data this is, how much is here and where to load your own (#269)",
+      "test": "the first screen: no line on first open APP-PAGE-044: the app opens straight on its first chart: no line stands between the header and the view on first open, on any view or study, and nothing is written to the browser’s storage (#321)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["APP-PAGE-034"],
-      "issueRefs": [269],
-      "screenshots": []
-    },
-    {
-      "test": "the first screen: the welcome line APP-PAGE-035: the welcome line closes with a cross, does not come back in that visit, and nothing is written to the browser’s storage (#269)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["APP-PAGE-035"],
-      "issueRefs": [269],
-      "screenshots": []
-    },
-    {
-      "test": "the first screen: the welcome line APP-PAGE-036: the welcome line is for the study the app opens on: it goes when another study or a reader’s own files are loaded, and a page with no demo study has none (#269)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["APP-PAGE-036"],
-      "issueRefs": [269],
+      "requirementIds": ["APP-PAGE-044"],
+      "issueRefs": [321],
       "screenshots": []
     },
     {
@@ -8306,6 +8282,14 @@
       "status": "pass",
       "requirementIds": ["APP-R-054"],
       "issueRefs": [309, 309],
+      "screenshots": []
+    },
+    {
+      "test": "the page’s notes APP-NOTE-002: the page’s notes are the standard note: information in blue for how a chart is opened and for a study being loaded; a warning in amber for a chart the loaded data cannot draw, for what a load left to say and for a library that did not load; a failure is no note and keeps its red edge (#321)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-NOTE-002"],
+      "issueRefs": [321],
       "screenshots": []
     },
     {
@@ -9074,6 +9058,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the standard note APP-NOTE-001: a note has two formats, information and warning, each with its own mark; its sentence is one paragraph that may hold a button or a link among its words; it has a cross only when it can be closed, and a turning ring in place of the mark while something is under way (#321)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-NOTE-001"],
+      "issueRefs": [321],
       "screenshots": []
     },
     {
