@@ -84,6 +84,8 @@
             createConnection: factory,
             browser: { sourceUrl: '/site/vendor/gsm.bio/statistics.R', packages: [] },
             megabytes: 13,
+            // The charts that draw nothing without R, as the demo page names them (#322).
+            required: ['correlation-matrix', 'biomarker-screen'],
             host: 'webr.r-wasm.org',
             webr: BioViz.r.WEBR_VERSION
           })

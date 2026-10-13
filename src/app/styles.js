@@ -158,15 +158,17 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-callout a,.sva-callout .sva-link{color:var(--info-deep);text-underline-offset:.2em}
 .sva-callout.sva-warning a,.sva-callout.sva-warning .sva-link{color:var(--warn-deep)}
 .sva-callout-meta{font-family:var(--mono);font-size:.72rem;letter-spacing:.03em;color:var(--soft);white-space:nowrap}
+.sva-chart-note[hidden]{display:none}
+.sva-chart-note .sva-callout{margin:0 0 .8rem}
+.sva-chart-mount{min-width:0}
 .sva-notes{margin:0 0 1rem;padding:0;list-style:none;max-width:62rem}
 .sva-note{margin:0 0 .45rem}
 
 .sva-rbqm{min-width:0;max-width:100%}
 .sva-app .sva-rbqm-subheading{margin:.7rem 0 .3rem;font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
 .sva-rbqm-section{margin:0 0 1.1rem;padding:1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px;min-width:0}
-.sva-app .sva-rbqm-need{margin:0 0 .3rem;font-size:1.05rem}
-.sva-app .sva-rbqm-need.sva-rbqm-problem{color:var(--alarm)}
-.sva-app .sva-rbqm-supports{margin:0 0 1rem;font-size:.92rem;color:var(--soft)}
+.sva-app .sva-rbqm-need{margin:0 0 .8rem}
+.sva-app .sva-app .sva-rbqm-supports{margin:0 0 1rem;font-size:.92rem;color:var(--soft)}
 .sva-app .sva-rbqm-placeholder{margin:0;padding:2.4rem 1rem;border:1.5px dashed var(--line);border-radius:8px;text-align:center;color:var(--soft);font-size:.9rem}
 .sva-link{appearance:none;border:0;background:none;padding:0;font:inherit;color:var(--accent-deep);text-decoration:underline;text-underline-offset:.2em;cursor:pointer}
 .sva-rbqm-steps{list-style:none;margin:.9rem 0 .2rem;padding:0;max-width:26rem}

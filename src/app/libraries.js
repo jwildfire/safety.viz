@@ -520,6 +520,44 @@ export function controlState(action) {
 // ---- A tab's own files, and what the loaded data supports (#281, #282) ----
 
 /**
+ * The note at the top of a chart's card, read safely (#322): what a library
+ * that starts R says above one of its charts, where the reader can start R
+ * from inside the sentence.
+ *
+ * A library's `note(module)` answers with:
+ *
+ * - `kind`: `info` or `warning`. One that names neither is `info`.
+ * - `before` and `after`: the sentence, either side of the button.
+ * - `label`: the button's words. A note with none has no button.
+ * - `busy`: whether it waits, and so is drawn with a turning ring.
+ * - `meta`: small print after the sentence.
+ * - `close`: what closing the note does. A note with none cannot be closed.
+ * @param {?{note?: Function}} library What a library brings besides its charts.
+ * @param {string} module The chart.
+ * @returns {?Object} The note, every member present and of its kind; null when the library has none for this chart, or said nothing that can be read.
+ */
+export function noteSaid(library, module) {
+  if (!isRecord(library) || typeof library.note !== 'function') return null;
+  let said;
+  try {
+    said = library.note(module);
+  } catch (error) {
+    console.warn('safety.viz app: a library could not say its note.', error);
+    return null;
+  }
+  if (!isRecord(said) || !(isText(said.before) || isText(said.after))) return null;
+  return {
+    kind: said.kind === 'warning' ? 'warning' : 'info',
+    before: textOr(said.before, ''),
+    label: textOr(said.label),
+    after: textOr(said.after, ''),
+    busy: Boolean(said.busy),
+    meta: textOr(said.meta),
+    close: typeof said.close === 'function' ? said.close : null
+  };
+}
+
+/**
  * Whether a tab says a file is its own, read safely: the first of the two
  * things a tab hands the Data tab (obot.roadmap#406). The page asks it of each
  * file a reader loads, before the file is placed in a standard domain

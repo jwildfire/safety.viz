@@ -37,6 +37,7 @@ import { chartData, chartSettings, isDestination } from './charts.js';
 import {
   claimSaid,
   controlState,
+  noteSaid,
   supportSaid,
   OTHER_GROUP,
   DOMAIN_COLOURS,
@@ -301,6 +302,8 @@ export function mountApp(
     busy: ''
   };
   let instance = null;
+  // The place of the note at the top of the open chart's card (#322).
+  let noteSlot = null;
   let dataShown = null; // what the data view returned, while it is the view on the page
   const studies = demo ? demo.studies || DEMO_STUDIES : [];
   let demoRun = 0; // the latest demo study asked for; an earlier one still loading is dropped
@@ -427,6 +430,7 @@ export function mountApp(
       }
     }
     instance = null;
+    noteSlot = null;
   }
 
   function renderHead(current) {
@@ -677,6 +681,7 @@ export function mountApp(
     if (!isChart(state.selected)) return;
     const entry = manifest.modules[state.selected];
     if (!entry || libraryOf(entry) !== name || !instance) return;
+    placeNote(state.selected, entry);
     if (typeof instance.setSettings !== 'function') {
       render();
       return;
@@ -690,6 +695,68 @@ export function mountApp(
       );
       render();
     }
+  }
+
+  /**
+   * Press a library's control (#276), from the control itself or from the
+   * button in the note at the top of a chart's card (#322): the same press,
+   * so R is started once whichever the reader uses.
+   */
+  function pressAction(name, action) {
+    controlOpen = null;
+    let settled;
+    try {
+      settled = action.press();
+    } catch (error) {
+      console.warn('safety.viz app: a library’s control failed when pressed.', error);
+    }
+    afterAction(name);
+    if (settled && typeof settled.then === 'function') {
+      const update = () => afterAction(name);
+      settled.then(update, update);
+    }
+  }
+
+  // The note at the top of the open chart's card (#322, obot.roadmap#420):
+  // what its library says above it where R can be started, with the button
+  // inside the sentence. It has a place of its own in the card, beside the
+  // chart's and not inside it, so a chart that draws itself again leaves it
+  // standing; the page fills that place when the chart is drawn and again
+  // whenever the library's control changes.
+  function placeNote(module, entry) {
+    if (!noteSlot) return;
+    noteSlot.innerHTML = '';
+    const name = libraryOf(entry);
+    const library = extras.get(name);
+    const said = noteSaid(library, module);
+    noteSlot.hidden = !said;
+    if (!said) return;
+    const parts = [said.before];
+    if (said.label && library.action && typeof library.action.press === 'function') {
+      const button = el('button', 'sva-action sva-note-start', said.label);
+      button.type = 'button';
+      button.onclick = () => pressAction(name, library.action);
+      parts.push(button);
+    }
+    parts.push(said.after);
+    // The small print says no seconds: the control counts them (#258).
+    if (said.meta) parts.push(' ', el('span', 'sva-callout-meta', said.meta));
+    noteSlot.append(
+      note({
+        kind: said.kind,
+        busy: said.busy,
+        say: parts,
+        className: 'sva-start-note',
+        // What the note says changes as R starts, and is said aloud when it does.
+        role: 'status',
+        onClose: said.close
+          ? () => {
+              said.close();
+              afterAction(name);
+            }
+          : null
+      })
+    );
   }
 
   // The control in the chart-name row (#276): the open library's, as it says
@@ -742,20 +809,7 @@ export function mountApp(
           : chartRow.querySelector('.sva-chip');
         if (next) next.focus();
       },
-      onPress() {
-        controlOpen = null;
-        let settled;
-        try {
-          settled = action.press();
-        } catch (error) {
-          console.warn('safety.viz app: a library’s control failed when pressed.', error);
-        }
-        afterAction(name);
-        if (settled && typeof settled.then === 'function') {
-          const update = () => afterAction(name);
-          settled.then(update, update);
-        }
-      }
+      onPress: () => pressAction(name, action)
     });
     chartRow.append(control.row);
     if (control.panel) {
@@ -964,8 +1018,18 @@ export function mountApp(
       return true;
     }
 
-    const mount = inGroup('div', 'sva-chart', groupOf(entry));
-    content.append(mount);
+    const card = inGroup('div', 'sva-chart', groupOf(entry));
+    content.append(card);
+    // A chart whose library has a note to say above it (#322) is drawn in a
+    // place of its own inside the card, under the note's.
+    let mount = card;
+    const noted = extras.get(libraryOf(entry));
+    if (noted && typeof noted.note === 'function') {
+      noteSlot = el('div', 'sva-chart-note');
+      mount = el('div', 'sva-chart-mount');
+      card.append(noteSlot, mount);
+      placeNote(module, entry);
+    }
     try {
       instance = factoryOf(module)(mount, {
         ...chartSettings(module, state.mappings, manifest),

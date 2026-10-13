@@ -92,7 +92,8 @@ export async function openAndStartR(page) {
   await page.locator('.sva-tab[data-domain="biomarkers"]').click();
   await chip(page, 'group-comparison').click();
   await page.locator('.sva-chart .bv-tile').first().waitFor();
-  await page.locator('.sva-action').click();
+  // The control in the row: the note at the top of the card has a button too (#322).
+  await page.locator('.sva-r .sva-action').click();
 }
 
 /**

@@ -16,6 +16,9 @@ export function whereSaid() {
   return narrow ? 'above' : 'at the top right';
 }
 
+/** Where the note is, as a line inside the chart points at it: at the top of the chart's card (#322). */
+export const IN_THE_NOTE = 'in the note above';
+
 /**
  * The sentences for one thing that needs R.
  * @param {Object} what What needs R.
@@ -58,10 +61,15 @@ export function rWords({ needs, verb, megabytes, from, appears, missing, still }
     stoppedReason: (limit, doing) =>
       `R gave no answer for ${limit} while ${doing}, so it was closed. Try again; if it stops ` +
       `again, reload the page. ${still}`,
-    // The one short line in the view, which points at the control.
-    viewNeed: () => `${needs} need R. Start R, ${whereSaid()}.`,
+    // The one short line in the view, which points at where R is started: the
+    // control, or the note at the top of the card when there is one (#322).
+    viewNeed: (where = whereSaid()) => `${needs} need R. Start R, ${where}.`,
     viewStarting: `R is starting. ${appears} appears here when it is ready.`,
-    viewFailed: () => `R did not start, so ${missing}. Try again, ${whereSaid()}.`
+    viewFailed: (where = whereSaid()) => `R did not start, so ${missing}. Try again, ${where}.`,
+    // The note at the top of the card (#322): what follows the button in its
+    // sentence before R is started, and what follows it when R did not start.
+    noteCost: `about ${cost}, downloaded once. The study’s data stays in this browser.`,
+    noteWhy: () => `The reason is behind Why, ${whereSaid()}.`
   };
 }
 
