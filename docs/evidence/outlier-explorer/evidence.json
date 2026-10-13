@@ -1,6 +1,6 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-10-13T22:27:27.312Z",
+  "generatedAt": "2026-10-13T22:42:04.138Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38474943891",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38474943891"
+    "id": "38479463278",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38479463278"
   },
   "records": [
     {
@@ -853,7 +853,15 @@
       "screenshots": []
     },
     {
-      "test": "APP-R-060: at 1,280 pixels each of the five biomarker charts opens with a note at the top of its card, above the chart: blue with a cross on the three R adds p-values to, amber with none on the two that cannot be drawn without R, each with Start R inside its sentence; the chart’s own line points at the note; closing the blue note closes it on all three, whose lines then point at the control, and leaves both amber ones, whose lines still point at the note; nothing is asked of R (#322)",
+      "test": "APP-R-057: in the browser a blue note closed with its cross stays closed while R starts, where a chart that cannot be drawn without R says R is starting; when R then does not start, the chart whose note was closed says so in an amber note (#322, #328)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-R-057"],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "APP-R-060: at 1,280 pixels each of the five biomarker charts opens with a note at the top of its card, above the chart: blue with a cross on the three R adds p-values to, amber with none on the two that cannot be drawn without R, each with Start R inside its sentence; the chart’s own line points at the note; closing the blue note closes it on all three, the line under a chart that has one then points at the control, and both amber notes stay, whose lines still point at the note; nothing is asked of R (#322)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-R-060"],
