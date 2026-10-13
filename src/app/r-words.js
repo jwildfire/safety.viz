@@ -20,6 +20,28 @@ export function whereSaid() {
 export const IN_THE_NOTE = 'in the note above';
 
 /**
+ * What the note at the top of a chart's card says (#322), for a chart R adds
+ * p-values to and for one that cannot be drawn without R: the words before
+ * its button, what the button is pressed to do, the sentence while R starts,
+ * and the words before Try again when R did not start. The button's words,
+ * the cost and where the reason is are the shared ones of `rWords`.
+ */
+export const CHART_NOTE = {
+  adds: {
+    need: 'This chart’s p-values need R. ',
+    to: 'add them',
+    starting: 'R is starting. The p-values appear under the chart when it is ready.',
+    failed: 'R did not start, so this chart has no p-values. '
+  },
+  must: {
+    need: 'This chart cannot be drawn without R. ',
+    to: 'draw it',
+    starting: 'R is starting. The chart is drawn when it is ready.',
+    failed: 'R did not start, so this chart cannot be drawn. '
+  }
+};
+
+/**
  * The sentences for one thing that needs R.
  * @param {Object} what What needs R.
  * @param {string} what.needs What needs R, as the control names it: "Statistics", "Site metrics".

@@ -53,6 +53,7 @@ import {
 } from './rbqm-files.js';
 import {
   NONE_PLACED,
+  RBQM_NOTE,
   NO_FILES,
   RBQM_DOCS,
   RUN_STEPS,
@@ -130,6 +131,7 @@ export function rbqmTab({
   let library = null; // the promise of gsm.viz
   let libraryProblem = '';
   let shown = null; // { app, steps } of the view as it is on the page now
+  let keepKeyboard = false; // the reader pressed the note's button: the keyboard follows the tab's status as it is redrawn
 
   const busy = () => ['starting', 'attaching', 'running'].includes(phase);
   const seconds = () => Math.max(0, Math.round((now().getTime() - pressedAt) / 1000));
@@ -245,9 +247,7 @@ export function rbqmTab({
   function bodyLine(app) {
     if (unavailable) return unavailable;
     if (busy()) {
-      return up && phase === 'running'
-        ? 'R is running the metrics. They appear here when it is done.'
-        : 'R is starting. The metrics run by themselves when it is ready.';
+      return up && phase === 'running' ? RBQM_NOTE.running : RBQM_NOTE.starting;
     }
     const any = loaded(app).length || Object.keys((app && app.state.files) || {}).length;
     return any ? NONE_PLACED : NO_FILES;
@@ -273,12 +273,18 @@ export function rbqmTab({
     const go = (label) => {
       const button = el('button', 'sva-action sva-note-start', label);
       button.type = 'button';
-      button.onclick = () => press(app);
+      button.onclick = () => {
+        // The keyboard stays with the tab's status while the press redraws it.
+        keepKeyboard = true;
+        press(app);
+      };
       return button;
     };
     if (unavailable) return make('warning', unavailable);
     if (busy()) {
       const meta = el('span', 'sva-callout-meta', stepMeta());
+      // The control says each step aloud; said here too, the whole note would be read again at every step.
+      meta.setAttribute('aria-hidden', 'true');
       shown.meta = meta;
       return make('info', [bodyLine(app), ' ', meta], { busy: true });
     }
@@ -286,10 +292,10 @@ export function rbqmTab({
     if (phase === 'failed' || phase === 'stopped') {
       const before =
         phase === 'stopped'
-          ? 'R stopped, so there are no results. '
+          ? RBQM_NOTE.stopped
           : failure.say === words.stopped
-            ? 'R stopped answering, so no metric was run. '
-            : 'R did not start, so no metric was run. ';
+            ? RBQM_NOTE.silent
+            : RBQM_NOTE.failed;
       const line = make('warning', [
         before,
         files ? go(failure.label || words.again) : null,
@@ -300,11 +306,11 @@ export function rbqmTab({
     }
     // No file gsm reads: the sentence says which, and there is nothing to start R on.
     if (!files) return make('warning', bodyLine(app));
-    if (up) return make('info', ['R is ready. ', go('Run the metrics'), ' on what is loaded now.']);
+    if (up) return make('info', [RBQM_NOTE.ready[0], go(RBQM_NOTE.run), RBQM_NOTE.ready[1]]);
     return make('warning', [
-      'The site metrics cannot be worked out without R. ',
+      RBQM_NOTE.need,
       go(words.start),
-      ` to run them: ${words.noteCost}`
+      ` to ${RBQM_NOTE.to}: ${words.noteCost}`
     ]);
   }
 
@@ -961,6 +967,21 @@ export function rbqmTab({
       card.classList.add(open ? 'sva-rbqm-metric' : 'sva-rbqm-overview');
       const done = phase === 'done' && result;
 
+      // A reader who pressed the note's button keeps the keyboard on the tab's
+      // status each time the press draws the tab again, where it would fall to
+      // the top of the page: on the note, and at the end on the outcome. A
+      // reader who has moved the keyboard elsewhere meanwhile is left alone.
+      const holdKeyboard = () => {
+        if (!keepKeyboard) return;
+        const status = root.querySelector('.sva-rbqm-status');
+        const dropped = !document.activeElement || document.activeElement === document.body;
+        if (status && dropped) {
+          status.tabIndex = -1;
+          status.focus();
+        }
+        if (status && !busy()) keepKeyboard = false;
+      };
+
       const withCharts = (draw) => {
         const ready = charts && globalThis[charts.global] && globalThis[charts.global].default;
         const go = (viz) => {
@@ -975,6 +996,7 @@ export function rbqmTab({
           // Under the page's heading, where the charts would be.
           if (!viz && libraryProblem)
             card.append(el('p', 'sva-message sva-problem', libraryProblem));
+          holdKeyboard();
         };
         if (ready) go(ready);
         else loadLibrary().then(go);
@@ -1012,6 +1034,8 @@ export function rbqmTab({
           );
         }
       }
+
+      holdKeyboard();
 
       if (changed) {
         if (up && files.files.length) queueMicrotask(() => press(app));

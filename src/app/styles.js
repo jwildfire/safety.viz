@@ -168,7 +168,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-app .sva-rbqm-subheading{margin:.7rem 0 .3rem;font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
 .sva-rbqm-section{margin:0 0 1.1rem;padding:1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px;min-width:0}
 .sva-app .sva-rbqm-need{margin:0 0 .8rem}
-.sva-app .sva-app .sva-rbqm-supports{margin:0 0 1rem;font-size:.92rem;color:var(--soft)}
+.sva-app .sva-rbqm-supports{margin:0 0 1rem;font-size:.92rem;color:var(--soft)}
 .sva-app .sva-rbqm-placeholder{margin:0;padding:2.4rem 1rem;border:1.5px dashed var(--line);border-radius:8px;text-align:center;color:var(--soft);font-size:.9rem}
 .sva-link{appearance:none;border:0;background:none;padding:0;font:inherit;color:var(--accent-deep);text-decoration:underline;text-underline-offset:.2em;cursor:pointer}
 .sva-rbqm-steps{list-style:none;margin:.9rem 0 .2rem;padding:0;max-width:26rem}

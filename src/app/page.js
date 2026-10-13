@@ -725,12 +725,25 @@ export function mountApp(
   // whenever the library's control changes.
   function placeNote(module, entry) {
     if (!noteSlot) return;
+    // A reader whose keyboard is in the note, on its button or its cross,
+    // keeps it there when the note is drawn again: on the new note, or on the
+    // control in the row when the note is gone.
+    const held = noteSlot.contains(document.activeElement);
     noteSlot.innerHTML = '';
     const name = libraryOf(entry);
     const library = extras.get(name);
     const said = noteSaid(library, module);
     noteSlot.hidden = !said;
-    if (!said) return;
+    if (!said) {
+      if (held) {
+        // The control, or the chart's card when the control has nothing to press.
+        const next =
+          chartRow.querySelector('.sva-r button:not(:disabled)') || noteSlot.parentElement;
+        if (next && next.tabIndex < 0) next.tabIndex = -1;
+        if (next) next.focus();
+      }
+      return;
+    }
     const parts = [said.before];
     if (said.label && library.action && typeof library.action.press === 'function') {
       const button = el('button', 'sva-action sva-note-start', said.label);
@@ -741,22 +754,23 @@ export function mountApp(
     parts.push(said.after);
     // The small print says no seconds: the control counts them (#258).
     if (said.meta) parts.push(' ', el('span', 'sva-callout-meta', said.meta));
-    noteSlot.append(
-      note({
-        kind: said.kind,
-        busy: said.busy,
-        say: parts,
-        className: 'sva-start-note',
-        // What the note says changes as R starts, and is said aloud when it does.
-        role: 'status',
-        onClose: said.close
-          ? () => {
-              said.close();
-              afterAction(name);
-            }
-          : null
-      })
-    );
+    const fresh = note({
+      kind: said.kind,
+      busy: said.busy,
+      say: parts,
+      className: 'sva-start-note',
+      // The note's place is the status region, which stays on the page; the note in it is drawn again.
+      role: null,
+      onClose: said.close
+        ? () => {
+            said.close();
+            afterAction(name);
+          }
+        : null
+    });
+    fresh.tabIndex = -1;
+    noteSlot.append(fresh);
+    if (held) fresh.focus();
   }
 
   // The control in the chart-name row (#276): the open library's, as it says
@@ -1026,6 +1040,9 @@ export function mountApp(
     const noted = extras.get(libraryOf(entry));
     if (noted && typeof noted.note === 'function') {
       noteSlot = el('div', 'sva-chart-note');
+      // What the note says changes as R starts, and is said aloud when it does:
+      // the place stays on the page while the note in it is drawn again.
+      noteSlot.setAttribute('role', 'status');
       mount = el('div', 'sva-chart-mount');
       card.append(noteSlot, mount);
       placeNote(module, entry);

@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { controlState } from '../../../src/app/libraries.js';
 import { R_PHASES, rControl, secondsSince } from '../../../src/app/r-control.js';
 import {
+  IN_THE_NOTE,
   browserSaid,
   megabytesSaid,
   rWords,
@@ -619,8 +620,21 @@ describe('what is said wherever R is started (#277)', () => {
     expect(metrics.stoppedReason('5 minutes', 'it was running the workflows')).toBe(
       'R gave no answer for 5 minutes while it was running the workflows, so it was closed. Try again; if it stops again, reload the page. No metric was run.'
     );
-    // The one short line in the view points at the control, where it is.
+    // The one short line in the view points at the control, where it is, or
+    // at the note at the top of the card where the view has one (#322).
     expect(biomarkers.viewNeed()).toBe('Statistics need R. Start R, at the top right.');
+    expect(biomarkers.viewNeed(IN_THE_NOTE)).toBe('Statistics need R. Start R, in the note above.');
+    expect(biomarkers.viewFailed(IN_THE_NOTE)).toBe(
+      'R did not start, so there is no test. Try again, in the note above.'
+    );
+    // What the note itself says after its button, and where it says the reason is.
+    expect(biomarkers.noteCost).toBe(
+      'about 13 MB, downloaded once. The study’s data stays in this browser.'
+    );
+    expect(metrics.noteCost).toBe(
+      'about 55 MB, downloaded once. The study’s data stays in this browser.'
+    );
+    expect(metrics.noteWhy()).toBe('The reason is behind Why, at the top right.');
     expect(biomarkers.viewStarting).toBe('R is starting. The test appears here when it is ready.');
     expect(biomarkers.viewFailed()).toBe(
       'R did not start, so there is no test. Try again, at the top right.'
