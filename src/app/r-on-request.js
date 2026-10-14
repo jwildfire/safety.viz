@@ -13,7 +13,16 @@
 // decides when the library's connection is made. It names no library; the page
 // that mounts the app passes the factory in.
 
-import { browserSaid, megabytesSaid, rWords, startedSaid, versionSaid } from './r-words.js';
+import {
+  CHART_NOTE,
+  IN_THE_NOTE,
+  browserSaid,
+  megabytesSaid,
+  rWords,
+  startedSaid,
+  versionSaid,
+  whereSaid
+} from './r-words.js';
 
 const unavailable = (message) => ({ status: 'unavailable', reason: 'no-r-attached', message });
 
@@ -32,14 +41,22 @@ const unavailable = (message) => ({ status: 'unavailable', reason: 'no-r-attache
  * reached, or the statistics file cannot be read — the control says so and
  * offers to try again, and every chart is told the same without R being
  * started again for each one; trying again makes one fresh connection.
+ *
+ * Each of the library's charts also carries a note at the top of its card
+ * (#322, obot.roadmap#420), with the same button inside its sentence: amber on
+ * a chart that cannot be drawn without R, blue on one R adds p-values to. The
+ * blue one can be closed, and then stays closed on every chart for the visit,
+ * while R starts too; the amber one cannot. While R starts the note says so,
+ * when R did not start it always says so, and once R is ready there is none.
  * @param {Object} options
  * @param {(options: Object) => {run: Function}} options.createConnection The library's connection factory.
  * @param {Object} options.browser The options of R in the browser: the statistics source and the packages, as the factory takes them.
  * @param {number} options.megabytes About how much starting R downloads.
  * @param {string} options.host Where R is downloaded from.
  * @param {?string} [options.webr] The version of the runtime R runs on, when the page knows it: said in the details if R itself does not say.
+ * @param {string[]} [options.required] The charts that cannot be drawn without R, by module: their note is a warning.
  * @param {() => number} [options.now] The clock, in milliseconds.
- * @returns {{settings: () => Object, action: {state: () => Object, press: () => Promise<void>}}} The settings to add to each of the library's charts as it is drawn, and the control.
+ * @returns {{settings: () => Object, action: {state: () => Object, press: () => Promise<void>}, note: (module: string) => ?Object}} The settings to add to each of the library's charts as it is drawn, the control, and the note at the top of a chart's card.
  */
 export function rOnRequest({
   createConnection,
@@ -47,6 +64,7 @@ export function rOnRequest({
   megabytes,
   host,
   webr = null,
+  required = [],
   now = () => Date.now()
 }) {
   // idle → starting → running, or → failed, from which pressing again starts afresh.
@@ -69,6 +87,14 @@ export function rOnRequest({
   const versions = { r: null, webr };
   // Whether what stopped R was a download that failed, and what was said of it.
   let reason = null;
+  // Whether the reader closed the blue note (#322): closed on one chart, it is
+  // closed on all of them, and the chart's own line points at the control again.
+  let closed = false;
+  const needsR = (module) => Array.isArray(required) && required.includes(module);
+  // Where a chart's own line says R is started: in the note, while the chart
+  // has one. A chart that cannot be drawn without R always has, so closing the
+  // blue note sends only the other charts' lines back to the control.
+  const where = (must) => (closed && !must ? whereSaid() : IN_THE_NOTE);
   // What was thrown, as words: its message, or itself when it is words (#193).
   const reasonOf = (error) =>
     (error && typeof error.message === 'string' && error.message) ||
@@ -77,7 +103,7 @@ export function rOnRequest({
   const didNotStart = () => ({
     status: 'unavailable',
     reason: 'load-failed',
-    message: words.viewFailed()
+    message: words.viewFailed(IN_THE_NOTE)
   });
   const fail = (message, downloading) => {
     phase = 'failed';
@@ -130,19 +156,23 @@ export function rOnRequest({
         return answer;
       });
 
-  // One connection object for every chart, before and after the reader asks:
-  // a chart drawn before still reaches R once R is there.
-  const connection = Object.freeze({
-    run(name, request) {
-      if (phase === 'idle') return Promise.resolve(unavailable(words.viewNeed()));
-      if (phase === 'failed') return Promise.resolve(didNotStart());
-      return ask(real, name, request);
-    }
-  });
+  // One connection object for every chart of a kind, before and after the
+  // reader asks: a chart drawn before still reaches R once R is there. The two
+  // kinds reach the same R and differ only in where their line points (#322).
+  const connect = (must) =>
+    Object.freeze({
+      run(name, request) {
+        if (phase === 'idle') return Promise.resolve(unavailable(words.viewNeed(where(must))));
+        if (phase === 'failed') return Promise.resolve(didNotStart());
+        return ask(real, name, request);
+      }
+    });
+  const connection = connect(false);
+  const needing = connect(true);
 
   return {
-    settings: () => ({
-      connection,
+    settings: (module) => ({
+      connection: needsR(module) ? needing : connection,
       waiting_note: phase === 'starting' ? words.viewStarting : null
     }),
     action: {
@@ -206,6 +236,56 @@ export function rOnRequest({
         started = ask(real, 'identity', { data: [], args: {} }).then(() => undefined);
         return started;
       }
+    },
+    /**
+     * The note at the top of one chart's card, as it is now (#322): its kind,
+     * what it says before and after its button, and the button's words; a
+     * note with no `label` has no button. Null when there is nothing to say:
+     * R is ready, or the reader closed the blue note.
+     */
+    note(module) {
+      const must = needsR(module);
+      const said = must ? CHART_NOTE.must : CHART_NOTE.adds;
+      if (phase === 'idle') {
+        if (must) {
+          return {
+            kind: 'warning',
+            before: said.need,
+            label: words.start,
+            after: ` to ${said.to}: ${words.noteCost}`
+          };
+        }
+        if (closed) return null;
+        return {
+          kind: 'info',
+          before: said.need,
+          label: words.start,
+          after: ` to ${said.to}: ${words.noteCost}`,
+          close() {
+            closed = true;
+          }
+        };
+      }
+      if (phase === 'starting') {
+        // Closed is closed for the visit: a chart R adds p-values to says
+        // nothing while R starts. That R did not start is always said.
+        if (closed && !must) return null;
+        return {
+          kind: 'info',
+          busy: true,
+          before: said.starting,
+          meta: megabytesSaid(megabytes)
+        };
+      }
+      if (phase === 'failed') {
+        return {
+          kind: 'warning',
+          before: said.failed,
+          label: words.again,
+          after: ` ${words.noteWhy()}`
+        };
+      }
+      return null;
     }
   };
 }

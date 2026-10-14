@@ -6,12 +6,12 @@ import { fileURLToPath } from 'node:url';
 import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
 import { DEMO_STUDIES } from '../../../src/app/studies.js';
-import { dataTag, numberWord, tabCount, welcomeSentence } from '../../../src/app/header.js';
+import { dataTag, tabCount } from '../../../src/app/header.js';
 
 // The first screen says where the reader is (#269, obot.roadmap#402): a tab
-// reads one number when every chart draws, the Data tab names the loaded
-// study, and a one-line welcome on first open says whose data this is, how
-// much is here and where to load your own.
+// reads one number when every chart draws, and the Data tab names the loaded
+// study. The one-line welcome release 1.11.0 showed on first open is gone
+// (#321, obot.roadmap#420): the app opens straight on its first chart.
 
 // jsdom replaces the global URL, so the fixture path is built with node:path.
 const dataDir = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../../site/data');
@@ -113,10 +113,8 @@ describe('the first screen: what a tab and the Data tab say', () => {
   });
 });
 
-describe('the first screen: the welcome line', () => {
+describe('the first screen: no line on first open', () => {
   let root;
-  const welcome = () => root.querySelector('.sva-welcome');
-  const shown = () => Boolean(welcome()) && !welcome().hidden;
   const mount = (options = {}) =>
     mountApp(root, { charts, manifest, demo: { base: '/demo/' }, fetchText, ...options });
   beforeEach(() => {
@@ -127,109 +125,39 @@ describe('the first screen: the welcome line', () => {
     window.sessionStorage.clear();
   });
 
-  it('APP-PAGE-034: on first open one line says whose data this is, how much is here and where to load your own (#269)', async () => {
-    expect(numberWord(5)).toBe('five');
-    expect(numberWord(1)).toBe('one');
-    expect(numberWord(12)).toBe('twelve');
-    expect(numberWord(13)).toBe('13');
-    expect(welcomeSentence({ whose: 'a study', participants: 254, charts: 18, tabs: 5 })).toEqual([
-      'You are looking at a study: 254 participants, 18 charts on five tabs. To use your own files, open ',
-      '. They are read in this browser and never leave it.'
-    ]);
-    // A count that is not known is left out, and one of anything is not plural.
-    expect(welcomeSentence({ whose: 'a study', participants: null, charts: 1, tabs: 1 })[0]).toBe(
-      'You are looking at a study: 1 chart on one tab. To use your own files, open '
-    );
-    expect(
-      welcomeSentence({ whose: 'a study', participants: 1254, charts: 3, tabs: 2 })[0]
-    ).toContain('1,254 participants, 3 charts on two tabs.');
-
-    const app = mount();
-    // Not while the study is still on its way.
-    expect(shown()).toBe(false);
-    await app.ready;
-    expect(app.state.selected).toBe('histogram');
-    expect(shown()).toBe(true);
-    // 254 participants in the pilot study's subject-level file; thirteen charts on three tabs here.
-    expect(welcome().querySelector('p').textContent).toBe(
-      'You are looking at the CDISC pilot study, a public demo: 254 participants, 13 charts on three tabs. ' +
-        'To use your own files, open Data. They are read in this browser and never leave it.'
-    );
-    const link = welcome().querySelector('a');
-    expect(link.textContent).toBe('Data');
-    expect(link.getAttribute('href')).toBe('#data');
-    // It is the first thing of the main area, above the chart.
-    expect(welcome().parentElement).toBe(root.querySelector('.sva-main'));
-    expect(
-      welcome().compareDocumentPosition(root.querySelector('.sva-content')) &
-        Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
-    // On another chart it is still there; on the data view, where the files are loaded, it is not.
-    app.select('ae-explorer');
-    expect(shown()).toBe(true);
-    app.select('data');
-    expect(shown()).toBe(false);
-    app.select('histogram');
-    expect(shown()).toBe(true);
-    app.destroy();
-  });
-
-  it('APP-PAGE-035: the welcome line closes with a cross, does not come back in that visit, and nothing is written to the browser’s storage (#269)', async () => {
+  it('APP-PAGE-044: the app opens straight on its first chart: no line stands between the header and the view on first open, on any view or study, and nothing is written to the browser’s storage (#321)', async () => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem');
     const app = mount();
     await app.ready;
-    const close = welcome().querySelector('button');
-    expect(close.getAttribute('aria-label')).toBe('Dismiss');
-    expect(close.type).toBe('button');
-    close.click();
-    expect(shown()).toBe(false);
-    // Not on another chart, not after the data view, not after the study is loaded again.
-    app.select('ae-explorer');
-    expect(shown()).toBe(false);
-    app.select('data');
+    const between = () =>
+      [...root.querySelector('.sva-main').children].map((child) => child.className);
+    // The heading kept for a screen reader, then the view: nothing else.
+    expect(app.state.selected).toBe('histogram');
+    expect(between()).toEqual(['sva-sechead', 'sva-content']);
+    expect(root.querySelector('.sva-welcome')).toBeNull();
+    expect(root.querySelector('.sva-main').textContent).not.toContain('You are looking at');
+    expect('welcome' in app.state).toBe(false);
+    for (const view of ['ae-explorer', 'qt-explorer', 'data', 'histogram']) {
+      app.select(view);
+      expect(between(), view).toEqual(['sva-sechead', 'sva-content']);
+    }
+    // The Data tab still says whose data is loaded.
+    expect(root.querySelector('.sva-item[data-view="data"] .sva-tag').textContent).toBe(
+      'Pilot study'
+    );
+    // No study carries the phrase the line was built from.
+    for (const study of DEMO_STUDIES) expect('whose' in study, study.id).toBe(false);
+    // Another study, and a reader's own files: the same.
+    await app.loadDemo('liver', { open: true });
+    expect(between()).toEqual(['sva-sechead', 'sva-content']);
+    app.loadFiles(OWN);
     app.select('histogram');
-    expect(shown()).toBe(false);
-    await app.loadDemo('pilot', { open: true });
-    expect(shown()).toBe(false);
+    expect(between()).toEqual(['sva-sechead', 'sva-content']);
     expect(setItem).not.toHaveBeenCalled();
     expect(window.localStorage.length).toBe(0);
     expect(window.sessionStorage.length).toBe(0);
     expect(document.cookie).toBe('');
     app.destroy();
     setItem.mockRestore();
-  });
-
-  it('APP-PAGE-036: the welcome line is for the study the app opens on: it goes when another study or a reader’s own files are loaded, and a page with no demo study has none (#269)', async () => {
-    const app = mount();
-    await app.ready;
-    expect(shown()).toBe(true);
-    await app.loadDemo('liver', { open: true });
-    expect(shown()).toBe(false);
-    // And it does not come back with the first study.
-    await app.loadDemo('pilot', { open: true });
-    expect(shown()).toBe(false);
-    app.destroy();
-
-    const own = mount();
-    await own.ready;
-    own.loadFiles(OWN);
-    own.select('histogram');
-    expect(shown()).toBe(false);
-    own.destroy();
-
-    // The single file opens with no demo study: nothing to welcome a reader to.
-    const empty = mountApp(root, { charts, manifest });
-    expect(shown()).toBe(false);
-    empty.loadFiles(PILOT.files.map((name) => ({ name, text: text(name) })));
-    empty.select('histogram');
-    expect(shown()).toBe(false);
-    empty.destroy();
-    // A first study that does not say whose it is has no line either.
-    const [first, ...rest] = DEMO_STUDIES;
-    const { whose: _whose, ...unnamed } = first;
-    const plain = mount({ demo: { base: '/demo/', studies: [unnamed, ...rest] } });
-    await plain.ready;
-    expect(shown()).toBe(false);
-    plain.destroy();
   });
 });

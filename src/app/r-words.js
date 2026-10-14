@@ -16,6 +16,31 @@ export function whereSaid() {
   return narrow ? 'above' : 'at the top right';
 }
 
+/** Where the note is, as a line inside the chart points at it: at the top of the chart's card (#322). */
+export const IN_THE_NOTE = 'in the note above';
+
+/**
+ * What the note at the top of a chart's card says (#322), for a chart R adds
+ * p-values to and for one that cannot be drawn without R: the words before
+ * its button, what the button is pressed to do, the sentence while R starts,
+ * and the words before Try again when R did not start. The button's words,
+ * the cost and where the reason is are the shared ones of `rWords`.
+ */
+export const CHART_NOTE = {
+  adds: {
+    need: 'This chart’s p-values need R. ',
+    to: 'add them',
+    starting: 'R is starting. The p-values appear under the chart when it is ready.',
+    failed: 'R did not start, so this chart has no p-values. '
+  },
+  must: {
+    need: 'This chart cannot be drawn without R. ',
+    to: 'draw it',
+    starting: 'R is starting. The chart is drawn when it is ready.',
+    failed: 'R did not start, so this chart cannot be drawn. '
+  }
+};
+
 /**
  * The sentences for one thing that needs R.
  * @param {Object} what What needs R.
@@ -58,10 +83,15 @@ export function rWords({ needs, verb, megabytes, from, appears, missing, still }
     stoppedReason: (limit, doing) =>
       `R gave no answer for ${limit} while ${doing}, so it was closed. Try again; if it stops ` +
       `again, reload the page. ${still}`,
-    // The one short line in the view, which points at the control.
-    viewNeed: () => `${needs} need R. Start R, ${whereSaid()}.`,
+    // The one short line in the view, which points at where R is started: the
+    // control, or the note at the top of the card when there is one (#322).
+    viewNeed: (where = whereSaid()) => `${needs} need R. Start R, ${where}.`,
     viewStarting: `R is starting. ${appears} appears here when it is ready.`,
-    viewFailed: () => `R did not start, so ${missing}. Try again, ${whereSaid()}.`
+    viewFailed: (where = whereSaid()) => `R did not start, so ${missing}. Try again, ${where}.`,
+    // The note at the top of the card (#322): what follows the button in its
+    // sentence before R is started, and what follows it when R did not start.
+    noteCost: `about ${cost}, downloaded once. The study’s data stays in this browser.`,
+    noteWhy: () => `The reason is behind Why, ${whereSaid()}.`
   };
 }
 

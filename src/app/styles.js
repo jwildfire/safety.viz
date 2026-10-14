@@ -51,7 +51,7 @@ const HEX_OUTLINE =
   "url(\"data:image/svg+xml;utf8,%3Csvg xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg' viewBox%3D'0 0 20 23'%3E%3Cpolygon points%3D'10%2C1.6 18.2%2C6.3 18.2%2C16.7 10%2C21.4 1.8%2C16.7 1.8%2C6.3' fill%3D'none' stroke%3D'%23000' stroke-width%3D'2.6'%2F%3E%3C%2Fsvg%3E\")";
 
 export const STYLES = `
-.sva-app{--bg:#fafaf8;--rail:#f3f4f1;--ink:#1f2328;--soft:#5b6470;--faint:#98a0aa;--accent:#6c3270;--accent-deep:#522456;--accent-soft:rgba(108,50,112,.1);--card:#fff;--rule:#e4e6e3;--line:#cfd3cf;--alarm:#a2423a;
+.sva-app{--bg:#fafaf8;--rail:#f3f4f1;--ink:#1f2328;--soft:#5b6470;--faint:#98a0aa;--accent:#6c3270;--accent-deep:#522456;--accent-soft:rgba(108,50,112,.1);--card:#fff;--rule:#e4e6e3;--line:#cfd3cf;--alarm:#a2423a;--info:#519fdd;--info-deep:#1f5f99;--info-soft:rgba(81,159,221,.1);--info-line:rgba(81,159,221,.45);--warn:#c78a3b;--warn-deep:#7a5211;--warn-soft:rgba(199,138,59,.13);--warn-line:rgba(199,138,59,.55);
 --s0:#d87972;--s1:#c78a3b;--s2:#77a95b;--s3:#00afa9;--s4:#519fdd;--s5:#988bdd;--s6:#c67bb6;
 --spec:linear-gradient(90deg,var(--s0),var(--s1),var(--s2),var(--s3),var(--s4),var(--s5),var(--s6));
 --spec-diag:linear-gradient(135deg,var(--s0),var(--s1),var(--s2),var(--s3),var(--s4),var(--s5),var(--s6));
@@ -140,24 +140,34 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-corner{position:relative;height:0;z-index:6}
 .sva-corner>.sv-status{position:absolute;top:-.74rem;right:1rem}
 .sva-chart{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:1rem;min-width:0}
-.sva-message{margin:0 0 1rem;max-width:62rem;padding:.9rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px}
-.sva-message.sva-problem{border-left-color:var(--s0)}
+.sva-message{margin:0 0 1rem;max-width:62rem}
+.sva-message.sva-problem{padding:.9rem 1.1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--s0);border-radius:10px}
 .sva-chart-links{margin:.75rem 0 0;font-family:var(--mono);font-size:.72rem;line-height:1.6;color:var(--soft)}
 .sva-chart-links a{white-space:nowrap;color:var(--ink);text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:.2em}
 .sva-chart-links a:hover{color:var(--accent);text-decoration-color:var(--accent)}
-.sva-welcome{display:flex;align-items:center;gap:.8rem;margin:0 0 1.15rem;padding:.5rem .5rem .5rem 1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:10px;font-size:.86rem}
-.sva-app .sva-welcome p{margin:0;flex:1;min-width:0}
-.sva-welcome a{color:var(--accent-deep);text-underline-offset:.2em}
 .sva-close{flex:none;width:1.7rem;height:1.7rem;padding:0;border:0;border-radius:50%;background:none;color:var(--soft);font-family:inherit;font-size:1.15rem;line-height:1;cursor:pointer}
 .sva-close:hover{background:var(--accent-soft);color:var(--accent)}
+.sva-callout{display:flex;align-items:flex-start;gap:.6rem;margin:0 0 1rem;padding:.6rem .6rem .6rem .8rem;border:1px solid var(--info-line);border-left:3px solid var(--info);border-radius:10px;background:linear-gradient(var(--info-soft),var(--info-soft)) var(--card);font-size:.92rem;line-height:1.55;color:var(--ink)}
+.sva-callout.sva-warning{border-color:var(--warn-line);border-left-color:var(--warn);background:linear-gradient(var(--warn-soft),var(--warn-soft)) var(--card)}
+.sva-callout>.sva-callout-mark{flex:none;width:1.15rem;height:1.15rem;margin-top:.14rem;color:var(--info-deep)}
+.sva-callout.sva-warning>.sva-callout-mark{color:var(--warn-deep)}
+.sva-app .sva-callout-say{margin:0;flex:1;min-width:0}
+.sva-callout .sva-action{margin:0 .2rem;vertical-align:.08em}
+.sva-callout>.sva-spin{margin-top:.28rem;border-top-color:var(--info-deep)}
+.sva-callout>.sva-close{margin:-.15rem 0}
+.sva-callout a,.sva-callout .sva-link{color:var(--info-deep);text-underline-offset:.2em}
+.sva-callout.sva-warning a,.sva-callout.sva-warning .sva-link{color:var(--warn-deep)}
+.sva-callout-meta{font-family:var(--mono);font-size:.72rem;letter-spacing:.03em;color:var(--soft);white-space:nowrap}
+.sva-chart-note[hidden]{display:none}
+.sva-chart-note .sva-callout{margin:0 0 .8rem}
+.sva-chart-mount{min-width:0}
 .sva-notes{margin:0 0 1rem;padding:0;list-style:none;max-width:62rem}
-.sva-note{margin:0 0 .45rem;padding:.6rem 1rem;background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--s1);border-radius:10px;font-size:.92rem}
+.sva-note{margin:0 0 .45rem}
 
 .sva-rbqm{min-width:0;max-width:100%}
 .sva-app .sva-rbqm-subheading{margin:.7rem 0 .3rem;font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
 .sva-rbqm-section{margin:0 0 1.1rem;padding:1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px;min-width:0}
-.sva-app .sva-rbqm-need{margin:0 0 .3rem;font-size:1.05rem}
-.sva-app .sva-rbqm-need.sva-rbqm-problem{color:var(--alarm)}
+.sva-app .sva-rbqm-need{margin:0 0 .8rem}
 .sva-app .sva-rbqm-supports{margin:0 0 1rem;font-size:.92rem;color:var(--soft)}
 .sva-app .sva-rbqm-placeholder{margin:0;padding:2.4rem 1rem;border:1.5px dashed var(--line);border-radius:8px;text-align:center;color:var(--soft);font-size:.9rem}
 .sva-link{appearance:none;border:0;background:none;padding:0;font:inherit;color:var(--accent-deep);text-decoration:underline;text-underline-offset:.2em;cursor:pointer}
@@ -176,8 +186,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-rbqm-key li{display:flex;gap:.45rem;align-items:center;margin:0;padding:.12rem 0}
 .sva-app .sva-rbqm-key p{margin:0}
 .sva-flag-green{color:#3daf06}.sva-flag-amber{color:#feaa02}.sva-flag-red{color:#ff5859}.sva-flag-none{color:#828282}
-.sva-rbqm-whybox{padding:.8rem 1.1rem;border:1px solid var(--rule);border-left:3px solid var(--accent);border-radius:8px;color:var(--ink)}
-.sva-app .sva-rbqm-why{display:inline;margin:0}
+.sva-rbqm-whybox{margin:0}
 .sva-ico{width:.95rem;height:.95rem;flex:none}
 .sva-view-item .sva-ico{width:.92rem;height:.92rem}
 .sva-ico-ran{color:#5f9e45}.sva-ico-cannot,.sva-ico-todo{color:#8b939d}

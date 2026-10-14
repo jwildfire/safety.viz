@@ -1,4 +1,4 @@
-// Demo app: the small marks the RBQM tab uses (#279, obot.roadmap#405). A
+// Demo app: the small marks (#279, obot.roadmap#405; a note's two, #321). A
 // metric's state where a chart has its hex: a filled hex with a tick for one
 // that ran, an outlined hex with a bar for one that did not, a dashed hex for
 // one not started and a turning ring for one that is running. And the marks
@@ -66,7 +66,21 @@ const SHAPES = {
       }
     ]
   ],
-  'flag-none': [['path', { d: 'M4.5 8h7', ...line, 'stroke-width': '1.6' }]]
+  'flag-none': [['path', { d: 'M4.5 8h7', ...line, 'stroke-width': '1.6' }]],
+  // The marks of a note (#321): information, and a warning.
+  info: [
+    ['circle', { cx: '8', cy: '8', r: '6.4', ...line, 'stroke-width': '1.5' }],
+    ['path', { d: 'M8 7.3v3.9', ...line, 'stroke-width': '1.7' }],
+    ['circle', { cx: '8', cy: '4.9', r: '1', fill: 'currentColor' }]
+  ],
+  warning: [
+    [
+      'path',
+      { d: 'M8 2l6.4 11.2H1.6z', ...line, 'stroke-width': '1.5', 'stroke-linejoin': 'round' }
+    ],
+    ['path', { d: 'M8 6.4v3.3', ...line, 'stroke-width': '1.7' }],
+    ['circle', { cx: '8', cy: '11.4', r: '.95', fill: 'currentColor' }]
+  ]
 };
 
 /** The names of the marks. */
