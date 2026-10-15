@@ -10,7 +10,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 ## What's new
 
-- **Hep Explorer screens for cholestatic injury (eDISH-AP).** A Screen control switches the scatter, the migration Sankey and the composite plot from ALT to ALP against bilirubin, the pair FDA's liver-injury reviewers read side by side, and names the quadrants for cholestatic injury. ALP's default reference line moves from 1×ULN to 2×ULN. The cut lines await clinical review. [obot.roadmap#421](https://github.com/jwildfire/obot.roadmap/issues/421), [#344](https://github.com/jwildfire/safety.viz/issues/344)
+- **Hep Explorer screens for cholestatic injury (eDISH-AP).** A Screen control switches the scatter, the migration Sankey and the composite plot from ALT to ALP against bilirubin, the pair FDA's liver-injury reviewers read side by side, and names the quadrants for cholestatic injury. ALP's default reference line moves from 1×ULN to 2×ULN. The cut lines await clinical review. [obot.roadmap#421](https://github.com/jwildfire/obot.roadmap/issues/421), [#344](https://github.com/jwildfire/safety.viz/issues/344), PR [#345](https://github.com/jwildfire/safety.viz/pull/345)
 
 # safety.viz v1.11.2
 
