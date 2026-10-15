@@ -36,8 +36,12 @@ describe('hep-explorer configure', () => {
     expect(DISPLAY_MODES[0].label).toBe('Upper limit of normal adjusted (eDISH)');
     expect(DISPLAY_MODES[1].label).toBe('Baseline adjusted (mDISH)');
     expect(AXIS_TYPES).toEqual(['linear', 'log']);
-    expect(POINT_SIZE_OPTIONS).toEqual(['Uniform', 'rRatio']);
+    expect(POINT_SIZE_OPTIONS.slice(0, 2)).toEqual(['Uniform', 'rRatio']);
     expect(MEASURE_KEYS).toEqual(['ALT', 'AST', 'TB', 'ALP']);
+  });
+
+  it('HEP-CTRL-007: Point Size offers Uniform, rRatio and nrRatio, as the original renderer did (#334)', () => {
+    expect(POINT_SIZE_OPTIONS).toEqual(['Uniform', 'rRatio', 'nrRatio']);
   });
 
   it('HEP-DATA-002/HEP-CTRL-001/002: measure_values map the short keys to full TEST strings and x/y defaults are ALT vs TB (port)', () => {

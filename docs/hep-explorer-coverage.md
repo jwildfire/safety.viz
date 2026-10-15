@@ -39,7 +39,8 @@ pending; each row lists the module IDs its test covers.
 | HEP-CTRL-006, HEP-CHART-003                         | —                  | #43   | the axis-type toggle switches both axes between linear and log                                               |
 | HEP-CTRL-017                                        | —                  | #54   | the log base picker appears with the log axis and moves the gridlines to every doubling                      |
 | HEP-AXIS-001/002/003/004                            | —                  | #54   | each axis carries editable limits that seed from the domain in force                                         |
-| HEP-CHART-004                                       | —                  | #43   | point tooltips list participant, R Ratio, peaks with days, and the day difference                            |
+| HEP-CHART-004                                       | —                  | #43   | point tooltips list participant, R Ratio, nR Ratio, peaks with days, and the day difference                  |
+| HEP-DISPLAY-008, HEP-CTRL-007/014, HEP-CHART-004    | —                  | #334  | Point Size can scale points by the nR ratio, which takes AST when it is the higher                           |
 | HEP-API-003                                         | —                  | #43   | participantsSelected fires on select and clear                                                               |
 | HEP-API-001                                         | —                  | #43   | lifecycle API supports init, setData, setSettings, render, resize, and destroy                               |
 | HEP-COMP-006                                        | —                  | #67   | opens on the composite view with a reduced control set                                                       |
@@ -83,6 +84,9 @@ pending; each row lists the module IDs its test covers.
 | HEP-CHART-002/003/004, HEP-CTRL-006, HEP-DISPLAY-001 (domains, log, labels)                | —                                                      | #43   | `getScales.test.js`                               |
 | HEP-CTRL-017, HEP-AXIS-004 (log-base gridlines; limit overrides a chart may not draw)      | —                                                      | #54   | `getScales.test.js`                               |
 | HEP-CHART-004, HEP-CTRL-009, HEP-QUAD-002, HEP-SELECT-001 (tooltip, palette, plugin)       | —                                                      | #43   | `getPlugins.test.js`                              |
+| HEP-DISPLAY-008 (nR ratio: higher of ALT and AST over ALP, on each point)                  | —                                                      | #334  | `structureData.test.js`                           |
+| HEP-CTRL-014, HEP-CHART-004 (the nrRatio note, the nR tooltip line)                        | —                                                      | #334  | `getPlugins.test.js`                              |
+| HEP-CTRL-007 (the nrRatio Point Size option)                                               | —                                                      | #334  | `configure.test.js`                               |
 | HEP-API-001 (module export)                                                                | —                                                      | #43   | `export.test.js`                                  |
 | HEP-COMP-001/002/003/004/005/006 (classification, migration, concern matrix, by-arm)       | —                                                      | #67   | `composite.test.js`                               |
 | HEP-MIG-001..009, HEP-MIG-012/013/016 (Sankey geometry: stacking, shared scale, paths)     | —                                                      | #92   | `sankeyLayout.test.js`                            |

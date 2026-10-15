@@ -19,6 +19,7 @@ import {
   participantMeasureSeries,
   measureSummary
 } from '../../../src/hep-explorer/structureData.js';
+import { computeNRRatio } from '../../../src/hep-core/rows.js';
 
 const settings = syncSettings({ filters: ['SEX'] });
 const M = settings.measure_values;
@@ -211,6 +212,43 @@ describe('hep-explorer structureData', () => {
     expect(computeRRatio(p1Rows, settings)).toBeCloseTo(4 / 1.2, 10);
     const p2Rows = prepared.filter((r) => r.USUBJID === 'P2');
     expect(computeRRatio(p2Rows, settings)).toBeNaN();
+  });
+
+  it('HEP-DISPLAY-008: computeNRRatio is the higher of peak ALT and peak AST xULN over peak ALP xULN (#334)', () => {
+    // ULNs: ALT 40, AST 40, ALP 100. ALP peaks at 2xULN for every participant.
+    const nr = (rows) =>
+      computeNRRatio(deriveBaseline(cleanData(rows, settings).rows, settings), settings);
+    const alp = (id) => [row(id, 'ALP', 0, 100, 100), row(id, 'ALP', 10, 200, 100)];
+    // AST predominant: AST 6xULN beats ALT 3xULN, so nR = 6 / 2 while R = 3 / 2.
+    const astHigh = [row('A', 'ALT', 10, 120, 40), row('A', 'AST', 12, 240, 40), ...alp('A')];
+    expect(nr(astHigh)).toBeCloseTo(3, 10);
+    expect(
+      computeRRatio(deriveBaseline(cleanData(astHigh, settings).rows, settings), settings)
+    ).toBeCloseTo(1.5, 10);
+    // ALT predominant: nR equals R.
+    expect(
+      nr([row('B', 'ALT', 10, 200, 40), row('B', 'AST', 10, 80, 40), ...alp('B')])
+    ).toBeCloseTo(2.5, 10);
+    // Either aminotransferase alone is enough.
+    expect(nr([row('C', 'ALT', 10, 160, 40), ...alp('C')])).toBeCloseTo(2, 10);
+    expect(nr([row('D', 'AST', 10, 160, 40), ...alp('D')])).toBeCloseTo(2, 10);
+    // No ALP, or no ALT and no AST, gives NaN.
+    expect(nr([row('E', 'ALT', 10, 160, 40), row('E', 'AST', 10, 160, 40)])).toBeNaN();
+    expect(nr([row('F', 'TB', 10, 2, 1), ...alp('F')])).toBeNaN();
+    // An ALP peak of 0 (a recorded zero, before any imputation) gives NaN too.
+    expect(nr([row('G', 'ALT', 10, 160, 40), row('G', 'ALP', 10, 0, 100)])).toBeNaN();
+    // Always on the ULN scale: the active display mode does not enter into it.
+    const p1Rows = prepared.filter((r) => r.USUBJID === 'P1');
+    expect(computeNRRatio(p1Rows, settings)).toBeCloseTo(4 / 1.2, 10);
+  });
+
+  it('HEP-DISPLAY-008: buildPoints carries each participant nR ratio beside the R ratio (#334)', () => {
+    const { points } = buildPoints(prepared, settings, edishState);
+    expect(points[0].nrRatio).toBeCloseTo(4 / 1.2, 10);
+    expect(points[1].nrRatio).toBeNaN();
+    // nR stays on the ULN scale in mDISH, as R does.
+    const mdish = buildPoints(prepared, settings, { ...edishState, display: 'relative_baseline' });
+    expect(mdish.points.find((p) => p.id === 'P1').nrRatio).toBeCloseTo(4 / 1.2, 10);
   });
 
   it('HEP-CHART-001/HEP-DISPLAY-003: buildPoints reduces to one peak-vs-peak point per participant with timing and rRatio (port)', () => {

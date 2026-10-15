@@ -903,10 +903,12 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(lines[0]).toBe('Participant: SUBJ-001');
     // rRatio = peak ALT xULN / peak ALP xULN = 4 / 1.1.
     expect(lines[1]).toBe('R Ratio: 3.64');
+    // The fixture has no AST, so nR (the higher of ALT and AST) equals R (#334).
+    expect(lines[2]).toBe('nR Ratio: 3.64');
     // Each measure is named with its full label from settings.measure_values.
-    expect(lines[2]).toBe('Aminotransferase, alanine (ALT): 4 @ day 28');
-    expect(lines[3]).toBe('Total Bilirubin: 2.5 @ day 28');
-    expect(lines[4]).toBe('0 days apart');
+    expect(lines[3]).toBe('Aminotransferase, alanine (ALT): 4 @ day 28');
+    expect(lines[4]).toBe('Total Bilirubin: 2.5 @ day 28');
+    expect(lines[5]).toBe('0 days apart');
 
     // The visit-path overlay (dataset 1) is excluded from the tooltip so
     // hovering the path line never pops an empty box (HEP-SELECT-003).
@@ -932,6 +934,68 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(events.length).toBe(2);
     expect(events[0].length).toBe(1);
     expect(events[1].length).toBe(0);
+  });
+
+  test('HEP-DISPLAY-008/HEP-CTRL-007/HEP-CTRL-014/HEP-CHART-004: Point Size can scale points by the nR ratio, which takes AST when it is the higher (#334)', async ({
+    page
+  }) => {
+    // Give SUBJ-003 (ALT 3.5xULN, ALP 1xULN at its peak) an AST of 8xULN on
+    // day 28, so its nR is 8 while its R stays 3.5. SUBJ-001 keeps the largest
+    // R (4 / 1.1 = 3.64) and has no AST, so the two settings size different
+    // participants largest.
+    await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const template = instance.rawData.find(
+        (row) => row.USUBJID === 'SUBJ-003' && row.TEST === 'Aminotransferase, alanine (ALT)'
+      );
+      const ast = [40, 320, 80].map((value, i) => ({
+        ...template,
+        TEST: 'Aminotransferase, aspartate (AST)',
+        STRESN: value,
+        STNRHI: 40,
+        VISIT: ['Baseline', 'Week 4', 'Week 8'][i],
+        VISITNUM: i + 1,
+        DY: [1, 28, 56][i]
+      }));
+      instance.setData([...instance.rawData, ...ast]);
+    });
+    const radii = () =>
+      page.evaluate(() => {
+        const instance = window.__safetyHepExplorerInstance;
+        const dataset = instance.chart.data.datasets[0];
+        const at = (id) =>
+          dataset.pointRadius({ dataIndex: instance.points.findIndex((p) => p.id === id) });
+        return { s1: at('SUBJ-001'), s3: at('SUBJ-003') };
+      });
+
+    const pointSize = page.locator('.sv-control', {
+      has: page.locator('label:text-is("Point Size")')
+    });
+    const options = await pointSize.locator('option').allTextContents();
+    expect(options).toEqual(['Uniform', 'rRatio', 'nrRatio']);
+
+    await pointSize.locator('select').selectOption('rRatio');
+    const byR = await radii();
+    expect(byR.s1).toBeGreaterThan(byR.s3);
+
+    await pointSize.locator('select').selectOption('nrRatio');
+    const byNR = await radii();
+    expect(byNR.s3).toBeGreaterThan(byNR.s1);
+    expect(byNR.s3).toBeCloseTo(10, 5);
+
+    const note = page.locator('.hep-legend .hep-legend-note');
+    await expect(note).toContainText('nR Ratio');
+    await expect(note).toContainText('AST');
+
+    const lines = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      const dataIndex = instance.points.findIndex((point) => point.id === 'SUBJ-003');
+      return instance.chart.options.plugins.tooltip.callbacks.label({ datasetIndex: 0, dataIndex });
+    });
+    expect(lines[1]).toBe('R Ratio: 3.5');
+    expect(lines[2]).toBe('nR Ratio: 8');
+
+    await captureEvidence(page.locator('.sv-main'), 'HEP-DISPLAY-008', 'nr-ratio-point-size');
   });
 
   test('HEP-API-001: lifecycle API supports init, setData, setSettings, render, resize, and destroy (#43)', async ({
