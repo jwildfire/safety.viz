@@ -68,12 +68,22 @@ describe('hep-explorer getPlugins', () => {
   it('HEP-CHART-004: pointTooltip lists participant, R Ratio, both peaks with days, and the day gap (port)', () => {
     const state = { measureX: 'ALT', measureY: 'TB' };
     const lines = pointTooltip(
-      { id: 'P1', x: 4, y: 3, days_x: 10, days_y: 12, day_diff: 2, rRatio: 4 / 1.2 },
+      {
+        id: 'P1',
+        x: 4,
+        y: 3,
+        days_x: 10,
+        days_y: 12,
+        day_diff: 2,
+        rRatio: 4 / 1.2,
+        nrRatio: 4 / 1.2
+      },
       state
     );
     expect(lines).toEqual([
       'Participant: P1',
       'R Ratio: 3.33',
+      'nR Ratio: 3.33',
       'ALT: 4 @ day 10',
       'TB: 3 @ day 12',
       '2 days apart'
@@ -83,12 +93,22 @@ describe('hep-explorer getPlugins', () => {
   it('HEP-CHART-004: pointTooltip shows NA for a missing R Ratio or day and omits an unknown day gap (port)', () => {
     const state = { measureX: 'ALT', measureY: 'TB' };
     const lines = pointTooltip(
-      { id: 'P2', x: 0.75, y: 0.8, days_x: NaN, days_y: NaN, day_diff: NaN, rRatio: NaN },
+      {
+        id: 'P2',
+        x: 0.75,
+        y: 0.8,
+        days_x: NaN,
+        days_y: NaN,
+        day_diff: NaN,
+        rRatio: NaN,
+        nrRatio: NaN
+      },
       state
     );
     expect(lines).toEqual([
       'Participant: P2',
       'R Ratio: NA',
+      'nR Ratio: NA',
       'ALT: 0.75 @ day NA',
       'TB: 0.8 @ day NA'
     ]);
@@ -98,13 +118,23 @@ describe('hep-explorer getPlugins', () => {
     const state = { measureX: 'ALT', measureY: 'TB' };
     const measureValues = { ALT: 'Aminotransferase, alanine (ALT)', TB: 'Total Bilirubin' };
     const lines = pointTooltip(
-      { id: 'P1', x: 4, y: 3, days_x: 10, days_y: 12, day_diff: 2, rRatio: 4 / 1.2 },
+      {
+        id: 'P1',
+        x: 4,
+        y: 3,
+        days_x: 10,
+        days_y: 12,
+        day_diff: 2,
+        rRatio: 4 / 1.2,
+        nrRatio: 4 / 1.2
+      },
       state,
       measureValues
     );
     expect(lines).toEqual([
       'Participant: P1',
       'R Ratio: 3.33',
+      'nR Ratio: 3.33',
       'Aminotransferase, alanine (ALT): 4 @ day 10',
       'Total Bilirubin: 3 @ day 12',
       '2 days apart'
@@ -155,5 +185,22 @@ describe('hep-explorer quadrant and legend polish (#54)', () => {
     expect(pointSizeNote('rRatio')).toMatch(/R Ratio/);
     expect(pointSizeNote('rRatio')).toMatch(/larger|bigger/i);
     expect(pointSizeNote('Uniform')).toBe('');
+  });
+
+  it('HEP-CTRL-014: the nrRatio point size says what nR encodes and how it differs from R (#334)', () => {
+    expect(pointSizeNote('nrRatio')).toMatch(/nR Ratio/);
+    expect(pointSizeNote('nrRatio')).toMatch(/AST/);
+    expect(pointSizeNote('nrRatio')).toMatch(/larger|bigger/i);
+    expect(pointSizeNote('nrRatio')).toMatch(/base size/);
+  });
+
+  it('HEP-CHART-004: pointTooltip shows the nR ratio under the R ratio, NA when it is missing (#334)', () => {
+    const state = { measureX: 'ALT', measureY: 'TB' };
+    const point = { id: 'P9', x: 4, y: 3, days_x: 10, days_y: 10, day_diff: 0, rRatio: 1.5 };
+    expect(pointTooltip({ ...point, nrRatio: 3 }, state).slice(1, 3)).toEqual([
+      'R Ratio: 1.5',
+      'nR Ratio: 3'
+    ]);
+    expect(pointTooltip(point, state)[2]).toBe('nR Ratio: NA');
   });
 });

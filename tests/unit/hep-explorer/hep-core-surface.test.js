@@ -37,6 +37,7 @@ const ROWS_EXPORTS = [
   'MEASURE_KEYS',
   'assignSequence',
   'cleanData',
+  'computeNRRatio',
   'computeRRatio',
   'cutFor',
   'dayThenIndex',
