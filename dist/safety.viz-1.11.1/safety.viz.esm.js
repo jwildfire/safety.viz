@@ -13920,18 +13920,6 @@ function computeRRatio(participantRows, settings) {
   if (!altPeak || !alpPeak || !(alpPeak.value > 0)) return NaN;
   return altPeak.value / alpPeak.value;
 }
-function computeNRRatio(participantRows, settings) {
-  const peaks = ["ALT", "AST"].map(
-    (key) => participantPeak(resolveMeasureRows(participantRows, settings, key), key, "relative_uln")
-  ).filter(Boolean);
-  const alpPeak = participantPeak(
-    resolveMeasureRows(participantRows, settings, "ALP"),
-    "ALP",
-    "relative_uln"
-  );
-  if (!peaks.length || !alpPeak || !(alpPeak.value > 0)) return NaN;
-  return Math.max(...peaks.map((peak) => peak.value)) / alpPeak.value;
-}
 
 // src/participant-profile/configure.js
 function arrayify2(value) {
@@ -14064,7 +14052,7 @@ var LOG_BASES = [
   { value: 10, label: "log10 (decades)" },
   { value: 2, label: "log2 (doublings)" }
 ];
-var POINT_SIZE_OPTIONS = ["Uniform", "rRatio", "nrRatio"];
+var POINT_SIZE_OPTIONS = ["Uniform", "rRatio"];
 var DEFAULT_SETTINGS3 = {
   id_col: "USUBJID",
   measure_col: "TEST",
@@ -23054,13 +23042,8 @@ function groupLegendEntries(groupValues, points) {
   });
 }
 function pointSizeNote(pointSize) {
-  if (pointSize === "rRatio") {
-    return "Point size encodes R Ratio: a larger point is a more hepatocellular pattern. Participants with no R Ratio are drawn at the base size.";
-  }
-  if (pointSize === "nrRatio") {
-    return "Point size encodes nR Ratio, which takes AST in place of ALT when AST is the higher: a larger point is a more hepatocellular pattern. Participants with no nR Ratio are drawn at the base size.";
-  }
-  return "";
+  if (pointSize !== "rRatio") return "";
+  return "Point size encodes R Ratio: a larger point is a more hepatocellular pattern. Participants with no R Ratio are drawn at the base size.";
 }
 function hexToRgba3(hex2, opacity) {
   const clean = hex2.replace("#", "");
@@ -23083,7 +23066,6 @@ function pointTooltip2(point, state, measureValues) {
   const lines = [
     `Participant: ${point.id}`,
     `R Ratio: ${Number.isFinite(point.rRatio) ? formatNumber4(point.rRatio) : "NA"}`,
-    `nR Ratio: ${Number.isFinite(point.nrRatio) ? formatNumber4(point.nrRatio) : "NA"}`,
     `${measureLabel5(state.measureX, measureValues)}: ${formatNumber4(point.x)} @ day ${dayText(
       point.days_x
     )}`,
@@ -23282,7 +23264,6 @@ function buildPoints(cleanRows, settings, state) {
       day_diff: dayDiff,
       withinWindow,
       rRatio: computeRRatio(participantRows, settings),
-      nrRatio: computeNRRatio(participantRows, settings),
       group: groupValue === null || groupValue === void 0 ? null : String(groupValue),
       raw: meta
     });
@@ -24252,12 +24233,11 @@ function colorFor2(host, point) {
   return BASE_POINT_COLOR;
 }
 function radiusFor(host, point) {
-  const field = host.state.pointSize;
-  if (field !== "rRatio" && field !== "nrRatio") return 5;
-  const values = host.points.map((candidate) => candidate[field]).filter(Number.isFinite);
+  if (host.state.pointSize !== "rRatio") return 5;
+  const values = host.points.map((candidate) => candidate.rRatio).filter(Number.isFinite);
   const rMax = values.length ? Math.max(...values) : 0;
-  if (!Number.isFinite(point[field]) || rMax <= 0) return 3;
-  return 3 + 7 * (point[field] / rMax);
+  if (!Number.isFinite(point.rRatio) || rMax <= 0) return 3;
+  return 3 + 7 * (point.rRatio / rMax);
 }
 function animating(host) {
   return host.state.animation && host.state.animation.day != null;
