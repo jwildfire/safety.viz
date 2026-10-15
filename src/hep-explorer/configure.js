@@ -61,8 +61,11 @@ export const LOG_BASES = [
   { value: 2, label: 'log2 (doublings)' }
 ];
 
-/** Point-size options for the Point Size control: uniform radius or rRatio-scaled (HEP-CTRL-007). */
-export const POINT_SIZE_OPTIONS = ['Uniform', 'rRatio'];
+/**
+ * Point-size options for the Point Size control: a uniform radius, or scaled by
+ * the participant R-Ratio or nR-Ratio (HEP-CTRL-007, nrRatio added with #334).
+ */
+export const POINT_SIZE_OPTIONS = ['Uniform', 'rRatio', 'nrRatio'];
 
 // The four liver measures (MEASURE_KEYS) and the Hy's-Law cutpoint resolver
 // (cutFor) moved VERBATIM to src/hep-core/rows.js in safety.viz#98 so the

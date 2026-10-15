@@ -59,7 +59,7 @@ Characterize the injury pattern with the **R-Ratio**, `R = (ALT/ULN) / (ALP/ULN)
 | `R = 2–5` | Mixed hepatocellular / cholestatic |
 |  `R < 2`  | Cholestatic                        |
 
-Read the R-Ratio in the point tooltip, filter on it with the **R-Ratio range** control, or encode it as point size via **Point Size → rRatio**. A newer variant, **nR** — `nR = (highest of AST or ALT / ULN) / (ALP/ULN)`, substituting AST for ALT whenever AST yields the greater ratio so that AST-predominant injury is not missed — comes from [Robles-Diaz et al. 2014](<https://www.gastrojournal.org/article/S0016-5085(14)01484-X/fulltext>), whose composite algorithm introduced it; [Suh 2020](https://pmc.ncbi.nlm.nih.gov/articles/PMC6986960/) states the calculation in one line. This tool computes R from ALT, so nR is a manual calculation for now.
+Read the R-Ratio in the point tooltip, filter on it with the **R-Ratio range** control, or encode it as point size via **Point Size → rRatio**. A newer variant, **nR** — `nR = (highest of AST or ALT / ULN) / (ALP/ULN)`, substituting AST for ALT whenever AST yields the greater ratio so that AST-predominant injury is not missed — comes from [Robles-Diaz et al. 2014](<https://www.gastrojournal.org/article/S0016-5085(14)01484-X/fulltext>), whose composite algorithm introduced it; [Suh 2020](https://pmc.ncbi.nlm.nih.gov/articles/PMC6986960/) states the calculation in one line. The tooltip shows nR under R, and **Point Size → nrRatio** sizes points by it. Each is computed from the participant's peaks, so nR uses the higher of peak ALT and peak AST, over peak ALP.
 
 ### Step 2b — Onset window and rate of rise (ALT)
 
@@ -207,7 +207,7 @@ For a rapid triage of which cases merit referral to a hepatic board, the manual'
 - **Baseline-corrected (mDISH) reasoning** → the Display Type toggle, eDISH (÷ ULN) versus mDISH (÷ day-0 baseline).
 - **Which analyte is on each axis** → the measure pickers for ALT, AST, total bilirubin, and ALP, plus the linear/log Axis Type toggle.
 - **Timing coincidence between peaks** → the timing-window days input, which fills in-window points and hollows out-of-window ones, alongside the day-gap in the tooltip.
-- **Injury pattern (hepatocellular versus cholestatic)** → the R-Ratio value in the tooltip and the R-Ratio range filter; point size can also encode R-Ratio via the Point Size toggle (Uniform / rRatio).
+- **Injury pattern (hepatocellular versus cholestatic)** → the R-Ratio and nR-Ratio values in the tooltip and the R-Ratio range filter; point size can also encode either via the Point Size toggle (Uniform / rRatio / nrRatio).
 - **Onset window and rate of rise** → click a point to open the Standardized Lab Values by Study Day chart and read each peak's study day.
 - **AST corroboration and per-measure detail** → the same drill-down, with its Measure / N / Min / Median / Max summary table and linked record listing; direct/indirect bilirubin and other analytes appear here when present in the data.
 - **Population and subgroup context** → the Group color-by control with its legend, plus the categorical data filters.

@@ -128,14 +128,19 @@ export function groupLegendEntries(groupValues, points) {
 
 /**
  * The sentence explaining what point size encodes (HEP-CTRL-014, upstream
- * #274). Only the R-Ratio setting encodes anything, so only it needs a legend:
- * saying "all points are the same size" is noise.
+ * #274). Only the R-Ratio and nR-Ratio settings encode anything, so only they
+ * need a legend: saying "all points are the same size" is noise.
  * @param {string} pointSize The active Point Size setting.
  * @returns {string} The note, or '' when size carries no meaning.
  */
 export function pointSizeNote(pointSize) {
-  if (pointSize !== 'rRatio') return '';
-  return 'Point size encodes R Ratio: a larger point is a more hepatocellular pattern. Participants with no R Ratio are drawn at the base size.';
+  if (pointSize === 'rRatio') {
+    return 'Point size encodes R Ratio: a larger point is a more hepatocellular pattern. Participants with no R Ratio are drawn at the base size.';
+  }
+  if (pointSize === 'nrRatio') {
+    return 'Point size encodes nR Ratio, which takes AST in place of ALT when AST is the higher: a larger point is a more hepatocellular pattern. Participants with no nR Ratio are drawn at the base size.';
+  }
+  return '';
 }
 
 /**
@@ -175,11 +180,11 @@ function dayText(day) {
 
 /**
  * Tooltip text lines for a participant point (HEP-CHART-004): the participant
- * id, the R Ratio, each axis measure with its standardized peak value and day,
+ * id, the R Ratio and nR Ratio, each axis measure with its standardized peak value and day,
  * and the day-difference between the two peaks. Each measure is named with its
  * full label from measure_values (e.g. `Total Bilirubin`) rather than the short
  * key, matching the axis titles and the original renderer.
- * @param {Object} point The plotted point ({ id, x, y, days_x, days_y, day_diff, rRatio }).
+ * @param {Object} point The plotted point ({ id, x, y, days_x, days_y, day_diff, rRatio, nrRatio }).
  * @param {Object} state The live instance state ({ measureX, measureY }).
  * @param {Object} [measureValues] The settings.measure_values map (short key -> full label).
  * @returns {Array<string>} Tooltip lines.
@@ -188,6 +193,7 @@ export function pointTooltip(point, state, measureValues) {
   const lines = [
     `Participant: ${point.id}`,
     `R Ratio: ${Number.isFinite(point.rRatio) ? formatNumber(point.rRatio) : 'NA'}`,
+    `nR Ratio: ${Number.isFinite(point.nrRatio) ? formatNumber(point.nrRatio) : 'NA'}`,
     `${measureLabel(state.measureX, measureValues)}: ${formatNumber(point.x)} @ day ${dayText(
       point.days_x
     )}`,

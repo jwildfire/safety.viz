@@ -448,15 +448,17 @@ function colorFor(host, point) {
 
 /**
  * The point radius for the active Point Size mode (HEP-CTRL-007): a uniform
- * radius, or a radius scaled by the participant R-Ratio.
+ * radius, or a radius scaled by the participant R-Ratio or nR-Ratio, both of
+ * which ride on the point under the option's own name.
  * @private
  */
 function radiusFor(host, point) {
-  if (host.state.pointSize !== 'rRatio') return 5;
-  const values = host.points.map((candidate) => candidate.rRatio).filter(Number.isFinite);
+  const field = host.state.pointSize;
+  if (field !== 'rRatio' && field !== 'nrRatio') return 5;
+  const values = host.points.map((candidate) => candidate[field]).filter(Number.isFinite);
   const rMax = values.length ? Math.max(...values) : 0;
-  if (!Number.isFinite(point.rRatio) || rMax <= 0) return 3;
-  return 3 + 7 * (point.rRatio / rMax);
+  if (!Number.isFinite(point[field]) || rMax <= 0) return 3;
+  return 3 + 7 * (point[field] / rMax);
 }
 
 /**
@@ -1129,7 +1131,7 @@ const scatterView = {
       host.render();
     };
 
-    // Point Size: uniform / rRatio-scaled (HEP-CTRL-007).
+    // Point Size: uniform / rRatio- / nrRatio-scaled (HEP-CTRL-007).
     const pointSize = addControl('Point Size', document.createElement('select'), settingsParent);
     POINT_SIZE_OPTIONS.forEach((value) =>
       option(pointSize, value, value, value === host.state.pointSize)

@@ -28,6 +28,7 @@ import {
   resolveMeasureRows,
   participantPeak,
   computeRRatio,
+  computeNRRatio,
   participantMeasureSeries,
   measureSummary,
   partitionUnscheduledRows,
@@ -101,7 +102,7 @@ export function maxRRatio(cleanRows, settings) {
  * Reduce cleaned rows to one eDISH scatter point per participant (HEP-CHART-001,
  * HEP-DISPLAY-003): the peak X measure vs peak Y measure in the active display
  * units, tagged with each peak's day, the day-difference and timing flag, the
- * R-Ratio, and the color-by group. A participant is dropped when either peak is
+ * R-Ratio and nR-Ratio (HEP-DISPLAY-008), and the color-by group. A participant is dropped when either peak is
  * missing or ≤ 0, or (in mDISH) lacks a baseline; the drop count feeds the
  * warning note (HEP-DISPLAY-004).
  * @param {Object[]} cleanRows Rows from cleanData (after deriveBaseline).
@@ -181,6 +182,7 @@ export function buildPoints(cleanRows, settings, state) {
       day_diff: dayDiff,
       withinWindow,
       rRatio: computeRRatio(participantRows, settings),
+      nrRatio: computeNRRatio(participantRows, settings),
       group: groupValue === null || groupValue === undefined ? null : String(groupValue),
       raw: meta
     });

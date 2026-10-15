@@ -8,7 +8,9 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.12.0 (Upcoming)
 
-_Nothing merged yet._
+## What's new
+
+- **Hep Explorer sizes points by the nR ratio.** nR takes the higher of ALT and AST over ULN, divided by ALP over ULN, so injury where AST rises more than ALT is not missed. Point Size offers nrRatio beside rRatio, as the original renderer did, and the tooltip shows nR under R. [#334](https://github.com/jwildfire/safety.viz/issues/334)
 
 # safety.viz v1.11.1
 

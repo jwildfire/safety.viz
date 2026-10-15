@@ -11,7 +11,7 @@
 // dependencies of the listed functions.
 //
 // Requirement groups: HEP-DATA-* (cleaning/derivation), HEP-DISPLAY-007
-// (R-Ratio), HEP-QUAD-001 (cutpoints), HEP-SELECT-002/005 (drill-down series).
+// (R-Ratio), HEP-DISPLAY-008 (nR-Ratio, added with #334), HEP-QUAD-001 (cutpoints), HEP-SELECT-002/005 (drill-down series).
 
 import { median } from './stats.js';
 import { isUnscheduledVisit } from '../unscheduled-visits.js';
@@ -281,6 +281,32 @@ export function computeRRatio(participantRows, settings) {
   );
   if (!altPeak || !alpPeak || !(alpPeak.value > 0)) return NaN;
   return altPeak.value / alpPeak.value;
+}
+
+/**
+ * Participant nR-Ratio (HEP-DISPLAY-008, #334): the higher of the peak ALT ×ULN
+ * and the peak AST ×ULN, divided by the peak ALP ×ULN (Robles-Diaz et al. 2014),
+ * so that injury where AST rises more than ALT is not read as cholestatic.
+ * Either aminotransferase alone is enough. NaN when both are missing, when
+ * ALP's peak is missing, or when ALP's peak is ≤ 0. Always computed on the ULN
+ * scale regardless of the active display mode, like computeRRatio.
+ * @param {Object[]} participantRows One participant's cleaned records (all measures).
+ * @param {Object} settings Normalized settings.
+ * @returns {number} The nR-Ratio, or NaN.
+ */
+export function computeNRRatio(participantRows, settings) {
+  const peaks = ['ALT', 'AST']
+    .map((key) =>
+      participantPeak(resolveMeasureRows(participantRows, settings, key), key, 'relative_uln')
+    )
+    .filter(Boolean);
+  const alpPeak = participantPeak(
+    resolveMeasureRows(participantRows, settings, 'ALP'),
+    'ALP',
+    'relative_uln'
+  );
+  if (!peaks.length || !alpPeak || !(alpPeak.value > 0)) return NaN;
+  return Math.max(...peaks.map((peak) => peak.value)) / alpPeak.value;
 }
 
 /**
