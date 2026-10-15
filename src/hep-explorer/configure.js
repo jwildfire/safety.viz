@@ -10,6 +10,7 @@
 
 /** The "no grouping" sentinel value for the color-by control (HEP-CTRL-009). */
 import { normalizeFilterSpec } from '../filters.js';
+import { resolveScreen } from '../hep-core/quadrants.js';
 
 export const GROUP_NONE = 'hep_none';
 
@@ -43,6 +44,19 @@ export const VIEW_MODES = [
   { value: 'scatter', label: 'eDISH / mDISH scatter' },
   { value: 'migration', label: 'Migration (Sankey)' },
   { value: 'composite', label: 'Composite plot (baseline-referenced)' }
+];
+
+/**
+ * The two DILI screens offered by the Screen control (HEP-AP-006): eDISH, the
+ * hepatocellular screen (ALT against bilirubin), and eDISH-AP, the cholestatic
+ * screen (ALP against bilirubin) from FDA's hepatology review for fitusiran
+ * (NDA 219019, 2025). The quadrant sets behind them live in
+ * src/hep-core/quadrants.js (QUADRANT_SETS).
+ * @type {Array<{value: string, label: string}>}
+ */
+export const SCREEN_OPTIONS = [
+  { value: 'hepatocellular', label: 'eDISH (hepatocellular)' },
+  { value: 'cholestatic', label: 'eDISH-AP (cholestatic)' }
 ];
 
 /** Axis-type options for the Axis Type control (HEP-CTRL-006). */
@@ -108,6 +122,7 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {string[]} [x_options=['ALT','AST','TB','ALP']] Measures offered by the X-axis Measure control (HEP-CTRL-001).
  * @property {string[]} [y_options=['TB']] Measures offered by the Y-axis Measure control; when only one option the control is dropped (HEP-CTRL-002).
  * @property {Object} [cuts] Per-measure Hy's-Law cutpoints keyed by measure then display mode; a `defaults` entry back-fills any measure without its own cuts (HEP-QUAD-001).
+ * @property {string} [screen='hepatocellular'] Initial DILI screen: `hepatocellular` (eDISH — ALT against total bilirubin) or `cholestatic` (eDISH-AP — ALP against total bilirubin, cut at 2×ULN, with the cholestatic quadrant names in the scatter, the migration Sankey and the composite plot). On the scatter the screen follows the X-axis Measure: choosing eDISH-AP puts ALP on x, and choosing ALP on x is eDISH-AP. Unknown values fall back to `hepatocellular` (HEP-AP-006).
  * @property {string} [view='scatter'] Initial view mode: `scatter` (eDISH/mDISH scatter), `migration` (the bidirectional baseline → on-treatment Sankey with per-arm cross tables), or `composite` (baseline-referenced composite plot for abnormal-baseline subjects) (HEP-COMP-006, HEP-MIG-001).
  * @property {?string} [group_order_col=null] Numeric companion column (e.g. `TRTN` beside `TRT`) that orders the colour-by legend; null leaves the groups alphabetical (HEP-CTRL-015).
  * @property {Object} [imputation_methods] Below-LLOQ handling per measure key: `data-driven` (limit = the smallest positive recorded value), `user-defined` (limit from imputation_values), or `drop` (remove non-positive records). Defaults to `data-driven` for ALT, AST, TB and ALP, matching the original renderer (HEP-IMPUTE-001).
@@ -136,10 +151,12 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
 /**
  * Built-in defaults for every hep-explorer setting; syncSettings merges caller
  * overrides onto these. Cutpoint defaults reproduce the original renderer's
- * settings.cuts: TB 2×ULN / 4.8×Baseline, ALP 1×ULN / 3.8×Baseline, rRatio 5/5,
- * and a `defaults` fallback of 3×ULN / 3.8×Baseline used by ALT, AST, and any
+ * settings.cuts: TB 2×ULN / 4.8×Baseline, ALP 3.8×Baseline, rRatio 5/5, and a
+ * `defaults` fallback of 3×ULN / 3.8×Baseline used by ALT, AST, and any
  * unlisted measure — so the default eDISH view is ALT ≥ 3×ULN vs TB ≥ 2×ULN
- * (HEP-QUAD-001).
+ * (HEP-QUAD-001). ALP's ×ULN cut is 2, not the original renderer's 1: with ALP
+ * on x the scatter is eDISH-AP, and 2×ULN is the usual threshold for
+ * cholestatic injury (HEP-AP-006).
  * @type {HepExplorerSettings}
  */
 export const DEFAULT_SETTINGS = {
@@ -170,6 +187,7 @@ export const DEFAULT_SETTINGS = {
     TB: 'Total Bilirubin',
     ALP: 'Alkaline phosphatase (ALP)'
   },
+  screen: 'hepatocellular',
   view: 'scatter',
   x_default: 'ALT',
   y_default: 'TB',
@@ -177,7 +195,7 @@ export const DEFAULT_SETTINGS = {
   y_options: ['TB'],
   cuts: {
     TB: { relative_uln: 2, relative_baseline: 4.8 },
-    ALP: { relative_uln: 1, relative_baseline: 3.8 },
+    ALP: { relative_uln: 2, relative_baseline: 3.8 },
     rRatio: { relative_uln: 5, relative_baseline: 5 },
     defaults: { relative_uln: 3, relative_baseline: 3.8 }
   },
@@ -283,6 +301,8 @@ export function syncSettings(settings) {
     };
   });
   synced.cuts = mergedCuts;
+
+  synced.screen = resolveScreen(synced.screen);
 
   synced.r_ratio = arrayify(synced.r_ratio);
   if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];

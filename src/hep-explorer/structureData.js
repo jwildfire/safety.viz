@@ -18,7 +18,8 @@
 // re-exported below for compatibility so no existing caller or test churns.
 
 import { GROUP_NONE } from './configure.js';
-import { QUADRANT_LABELS } from './getPlugins.js';
+import { quadrantLabelsFor } from './getPlugins.js';
+import { resolveScreen } from '../hep-core/quadrants.js';
 import { mean, median, quantile } from '../hep-core/stats.js';
 import {
   cleanData,
@@ -212,21 +213,29 @@ export function applyFilters(points, filters) {
  * @param {Object[]} points Shown scatter points.
  * @param {number} xCut The x-axis cutpoint.
  * @param {number} yCut The y-axis cutpoint.
+ * @param {?string} [screen='hepatocellular'] The active screen; 'cholestatic' is eDISH-AP (HEP-AP-005).
  * @returns {{counts: Object, labels: Array<{position: string, label: string, count: number, percent: number}>}}
  */
-export function classifyQuadrants(points, xCut, yCut) {
+export function classifyQuadrants(points, xCut, yCut, screen) {
+  // eDISH-AP (HEP-AP-005) names its own quadrants and, like the FDA reference
+  // the composite and Sankey follow, counts a value ON a cut line as normal;
+  // the hepatocellular scatter keeps the original renderer's at-or-above rule.
+  const strict = resolveScreen(screen) === 'cholestatic';
+  const quadrantLabels = quadrantLabelsFor(screen);
   const counts = {};
-  QUADRANT_LABELS.forEach((entry) => {
+  quadrantLabels.forEach((entry) => {
     counts[entry.position] = 0;
   });
   points.forEach((point) => {
-    const xCat = point.x >= xCut ? 'High' : 'Normal';
-    const yCat = point.y >= yCut ? 'High' : 'Normal';
-    const quadrant = QUADRANT_LABELS.find((entry) => entry.xCat === xCat && entry.yCat === yCat);
+    const xHigh = strict ? point.x > xCut : point.x >= xCut;
+    const yHigh = strict ? point.y > yCut : point.y >= yCut;
+    const xCat = xHigh ? 'High' : 'Normal';
+    const yCat = yHigh ? 'High' : 'Normal';
+    const quadrant = quadrantLabels.find((entry) => entry.xCat === xCat && entry.yCat === yCat);
     if (quadrant) counts[quadrant.position] += 1;
   });
   const total = points.length;
-  const labels = QUADRANT_LABELS.map((entry) => {
+  const labels = quadrantLabels.map((entry) => {
     const count = counts[entry.position];
     return {
       position: entry.position,

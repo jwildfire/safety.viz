@@ -48,8 +48,9 @@ import {
   renderShell,
   renderViewSelector
 } from './shell.js';
-import { VIEW_MODES, syncSettings, cutFor } from './hep-explorer/configure.js';
+import { SCREEN_OPTIONS, VIEW_MODES, syncSettings, cutFor } from './hep-explorer/configure.js';
 import { resolveArmCol } from './hep-core/arms.js';
+import { QUADRANT_SETS, screenForMeasure } from './hep-core/quadrants.js';
 import { checkInputs } from './hep-explorer/checkInputs.js';
 import {
   assignSequence,
@@ -106,6 +107,21 @@ const VIEWS = {
  */
 function resolveViewId(value) {
   return Object.prototype.hasOwnProperty.call(VIEWS, value) ? value : 'scatter';
+}
+
+/**
+ * The x-axis measure a `screen` setting opens on (HEP-AP-006): eDISH-AP opens
+ * on the cholestatic set's measure (ALP) when the X-axis Measure offers it;
+ * otherwise the configured x_default.
+ * @param {Object} settings Normalized settings.
+ * @returns {string} A measure key.
+ * @private
+ */
+function initialMeasureX(settings) {
+  const alp = QUADRANT_SETS.cholestatic.xMeasure;
+  return settings.screen === 'cholestatic' && settings.x_options.includes(alp)
+    ? alp
+    : settings.x_default;
 }
 
 /**
@@ -197,7 +213,10 @@ class SafetyHepExplorer {
     this.profileDetails = null;
     this.state = {
       view: resolveViewId(this.settings.view),
-      measureX: this.settings.x_default,
+      measureX: initialMeasureX(this.settings),
+      // The last hepatocellular x measure, restored when the Screen control
+      // leaves eDISH-AP (HEP-AP-006).
+      lastHepX: null,
       measureY: this.settings.y_default,
       display: 'relative_uln',
       axisType: 'linear',
@@ -462,6 +481,44 @@ class SafetyHepExplorer {
   }
 
   /**
+   * The DILI screen in force (HEP-AP-003): it follows the x-axis measure, so the
+   * scatter's X-axis Measure and the Screen control can never disagree — ALP on
+   * x is eDISH-AP, anything else is eDISH. The migration Sankey and the
+   * composite plot read the same screen.
+   * @returns {string} 'hepatocellular' | 'cholestatic'.
+   * @private
+   */
+  activeScreen() {
+    return screenForMeasure(this.state.measureX);
+  }
+
+  /**
+   * Switch the DILI screen from the Screen control (HEP-AP-006). eDISH-AP puts
+   * ALP on x, remembering the hepatocellular measure it replaced; eDISH puts
+   * that measure back, else x_default, else the first non-ALP option. Axis
+   * limits are per measure, so they return to automatic.
+   * @param {string} screen 'hepatocellular' | 'cholestatic'.
+   * @private
+   */
+  setScreen(screen) {
+    const alp = QUADRANT_SETS.cholestatic.xMeasure;
+    const options = this.settings.x_options;
+    if (screen === 'cholestatic') {
+      if (this.state.measureX !== alp) this.state.lastHepX = this.state.measureX;
+      this.state.measureX = alp;
+    } else {
+      const candidates = [this.state.lastHepX, this.settings.x_default, ...options];
+      this.state.measureX =
+        candidates.find((key) => key && key !== alp && options.includes(key)) ||
+        this.state.measureX;
+    }
+    clearAxisLimits(this.state.axisX);
+    clearAxisLimits(this.state.axisY);
+    this.buildControls();
+    this.render();
+  }
+
+  /**
    * The base footnote: usage hint plus the timing-window sentence explaining
    * filled vs hollow points (HEP-DISPLAY-005).
    * @private
@@ -514,7 +571,8 @@ class SafetyHepExplorer {
     if ('view' in settings) this.state.view = resolveViewId(this.settings.view);
     if ('hide_unchanged' in settings) this.state.hideUnchanged = this.settings.hide_unchanged;
     if ('active_arms' in settings) this.state.activeArms = this.settings.active_arms;
-    if ('x_default' in settings) this.state.measureX = this.settings.x_default;
+    if ('x_default' in settings || 'screen' in settings)
+      this.state.measureX = initialMeasureX(this.settings);
     if ('y_default' in settings) this.state.measureY = this.settings.y_default;
     if ('visit_window' in settings) this.state.visitWindow = this.settings.visit_window;
     if ('group_by' in settings) this.state.groupBy = this.settings.group_by;
@@ -691,6 +749,18 @@ class SafetyHepExplorer {
     this.buildViewControl(addSection);
 
     const settingsParent = addSection('Settings');
+
+    // Screen (HEP-AP-006): eDISH or eDISH-AP, shared by every view. Offered
+    // only when ALP is one of the X-axis Measure options.
+    if (this.settings.x_options.includes(QUADRANT_SETS.cholestatic.xMeasure)) {
+      const screen = addControl('Screen', document.createElement('select'), settingsParent);
+      screen.classList.add('hep-screen');
+      const active = this.activeScreen();
+      SCREEN_OPTIONS.forEach((mode) =>
+        option(screen, mode.value, mode.label, mode.value === active)
+      );
+      screen.onchange = () => this.setScreen(screen.value);
+    }
 
     // The active view's own settings controls (HEP-CTRL-001..008 for the
     // scatter; none for the composite plot).

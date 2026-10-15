@@ -2061,3 +2061,193 @@ test.describe('safety.viz hep-explorer migration Sankey', () => {
     );
   });
 });
+
+// eDISH-AP, the cholestatic DILI screening plot (safety.viz#344,
+// obot.roadmap#421): the Screen control switches every view between eDISH (ALT
+// against bilirubin) and eDISH-AP (ALP against bilirubin, cut at 2×ULN), and
+// names the quadrants for the screen in force.
+test.describe('safety.viz hep-explorer eDISH-AP screen', () => {
+  const screenSelect = (page) =>
+    page.locator('.sv-control', { has: page.locator('label:text-is("Screen")') }).locator('select');
+  const xSelect = (page) =>
+    page
+      .locator('.sv-control', { has: page.locator('label:text-is("X-axis Measure")') })
+      .locator('select');
+  const summaryRow = (page, label) =>
+    page.locator('.hep-quadrant-summary tbody tr', {
+      has: page.locator(`td:first-child:text-is("${label}")`)
+    });
+
+  test.beforeEach(async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    page._hepErrors = errors;
+  });
+
+  test.afterEach(async ({ page }) => {
+    expect(page._hepErrors).toEqual([]);
+  });
+
+  test('HEP-AP-005/HEP-AP-006: the Screen control turns the scatter into eDISH-AP — ALP on x at 2×ULN with cholestatic quadrant names (#344)', async ({
+    page
+  }) => {
+    await page.goto('/tests/e2e/fixtures/hep-explorer.html');
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance?.chart?.$hepQuadrants);
+
+    // The control offers both screens and opens on eDISH.
+    await expect(screenSelect(page).locator('option')).toHaveText([
+      'eDISH (hepatocellular)',
+      'eDISH-AP (cholestatic)'
+    ]);
+    await expect(screenSelect(page)).toHaveValue('hepatocellular');
+    await expect(summaryRow(page, "Possible Hy's Law Range")).toHaveCount(1);
+
+    await screenSelect(page).selectOption('cholestatic');
+    await page.waitForFunction(
+      () => window.__safetyHepExplorerInstance.chart?.$hepQuadrants?.xCut === 2
+    );
+    await expect(xSelect(page)).toHaveValue('ALP');
+    const state = await page.evaluate(() => {
+      const instance = window.__safetyHepExplorerInstance;
+      return {
+        measureX: instance.state.measureX,
+        xCut: instance.state.xCut,
+        xTitle: instance.chart.options.scales.x.title.text
+      };
+    });
+    expect(state.measureX).toBe('ALP');
+    expect(state.xCut).toBe(2);
+    expect(state.xTitle).toMatch(/ALP|Alkaline/);
+
+    // Fixture peaks (×ULN): SUBJ-001 and SUBJ-002 have bilirubin 2.5 with ALP
+    // at or below 1.1, the other three are normal on both.
+    const rows = await page
+      .locator('.hep-quadrant-summary tbody tr td:first-child')
+      .evaluateAll((cells) => cells.map((cell) => cell.firstChild.textContent));
+    expect(rows).toEqual([
+      'Cholestatic injury + jaundice',
+      'Bilirubin only',
+      'ALP elevation only',
+      'Normal range'
+    ]);
+    await expect(summaryRow(page, 'Bilirubin only').locator('td').nth(1)).toHaveText('2');
+    await expect(summaryRow(page, 'Normal range').locator('td').nth(1)).toHaveText('3');
+    await expect(summaryRow(page, 'Cholestatic injury + jaundice')).toContainText(
+      'no fatality rate has been validated'
+    );
+    await expect(page.locator('.hep-quadrant-summary')).not.toContainText("Hy's Law Range");
+    await captureEvidence(page, 'HEP-AP-005', 'edish-ap-scatter');
+
+    // Back to eDISH: ALT returns to x with the hepatocellular names.
+    await screenSelect(page).selectOption('hepatocellular');
+    await expect(xSelect(page)).toHaveValue('ALT');
+    await expect(summaryRow(page, "Possible Hy's Law Range")).toHaveCount(1);
+  });
+
+  test('HEP-AP-006: choosing ALP on the X-axis Measure is eDISH-AP, and a screen setting opens on it (#344)', async ({
+    page
+  }) => {
+    await page.goto('/tests/e2e/fixtures/hep-explorer.html');
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance?.chart?.$hepQuadrants);
+
+    await xSelect(page).selectOption('ALP');
+    await expect(screenSelect(page)).toHaveValue('cholestatic');
+    await expect(summaryRow(page, 'Bilirubin only')).toHaveCount(1);
+
+    await xSelect(page).selectOption('AST');
+    await expect(screenSelect(page)).toHaveValue('hepatocellular');
+
+    await page.evaluate(() =>
+      window.__safetyHepExplorerInstance.setSettings({ screen: 'cholestatic' })
+    );
+    await expect(screenSelect(page)).toHaveValue('cholestatic');
+    await expect(xSelect(page)).toHaveValue('ALP');
+  });
+
+  test('HEP-AP-007: the migration Sankey and its cross tables classify on ALP and use the cholestatic names (#344)', async ({
+    page
+  }) => {
+    await page.goto('/tests/e2e/fixtures/hep-explorer-composite.html');
+    await page.waitForFunction(
+      () => document.querySelectorAll('.hep-composite-panels canvas').length === 4
+    );
+    await page.locator('.sv-view-option', { hasText: 'Migration' }).click();
+    await page.waitForFunction(() => window.__safetyHepExplorerInstance.root.$hepSankey);
+    await screenSelect(page).selectOption('cholestatic');
+    await page.waitForFunction(() =>
+      document
+        .querySelector('.hep-xtab th')
+        ?.closest('table')
+        ?.textContent.includes('Bilirubin only')
+    );
+
+    // CS-06 (placebo): ALP 2.0×ULN at baseline — on the line, so normal — and
+    // 2.17×ULN at peak, with bilirubin 3× then 4×: Bilirubin only → both.
+    const ribbon = page.locator(
+      `.hep-ribbon[data-side="placebo"][data-pre="Cholestasis"][data-post="Hy's Law"]`
+    );
+    await expect(ribbon).toHaveCount(1);
+    await expect(ribbon).toHaveAttribute(
+      'aria-label',
+      /1 participant shifted from Bilirubin only to Cholestatic injury \+ jaundice on placebo/
+    );
+
+    const headers = await page
+      .locator('.hep-xtab table')
+      .first()
+      .locator('thead th')
+      .allTextContents();
+    expect(headers).toEqual([
+      'Baseline ↓ / On-treatment →',
+      'Cholestatic injury + jaundice',
+      'Bilirubin only',
+      'ALP elevation only',
+      'Normal range',
+      'Total'
+    ]);
+    const nodeText = await page.locator('.hep-sankey-node-label').allTextContents();
+    expect(nodeText.join(' ')).toContain('Cholestatic injury + jaundice');
+    expect(nodeText.join(' ')).not.toContain("Hy's Law");
+    await expect(page.locator('.sv-footnote')).toContainText('baseline eDISH-AP categorization');
+    await captureEvidence(page, 'HEP-AP-007', 'edish-ap-migration');
+  });
+
+  test('HEP-AP-008: the composite plot reads ALP on x with its 2×ULN cut line and names its panels for eDISH-AP (#344)', async ({
+    page
+  }) => {
+    await page.goto('/tests/e2e/fixtures/hep-explorer-composite.html');
+    await page.waitForFunction(
+      () => document.querySelectorAll('.hep-composite-panels canvas').length === 4
+    );
+    await screenSelect(page).selectOption('cholestatic');
+    await page.waitForFunction(() =>
+      document.querySelector('.hep-composite-section-title')?.textContent.includes('eDISH-AP')
+    );
+
+    const titles = await page
+      .locator('.hep-composite-panels .hep-composite-card h4')
+      .allTextContents();
+    expect(titles).toEqual([
+      'Bilirubin only (3)',
+      'Cholestatic injury + jaundice (1)',
+      'Normal range (4)',
+      'ALP elevation only (0)'
+    ]);
+    const axes = await page.evaluate(() => {
+      const chart = window.__safetyHepExplorerInstance.charts[0];
+      return {
+        x: chart.options.scales.x.title.text
+      };
+    });
+    expect(axes.x).toBe('ALP [×ULN]');
+    await expect(page.locator('.hep-composite-legend')).toContainText('Bilirubin only');
+    await expect(page.locator('.hep-migration table thead').first()).toContainText(
+      'Cholestatic injury + jaundice'
+    );
+    await expect(page.locator('.hep-composite-legend')).not.toContainText("Hy's Law");
+    await captureEvidence(page, 'HEP-AP-008', 'edish-ap-composite');
+  });
+});

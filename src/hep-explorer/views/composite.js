@@ -18,13 +18,14 @@ import { Chart } from 'chart.js';
 
 import { createElement } from '../../shell.js';
 import {
-  ALT_ULN_CUT,
-  BILI_ULN_CUT,
   BLN_LINES,
   COMPOSITE_QUADRANTS,
   CONCERN_COLORS,
+  QUADRANT_SETS,
   QUADRANT_STYLE,
-  concernOf
+  concernOf,
+  quadrantName,
+  screenForMeasure
 } from '../../hep-core/quadrants.js';
 import { buildCompositeSubjects } from '../../hep-core/subjects.js';
 import { byArmSummary, migrationMatrix } from '../../hep-core/migration.js';
@@ -39,7 +40,7 @@ import { HIGHLIGHT } from '../selection.js';
  * with its coded color and symbol (HEP-COMP-001).
  * @private
  */
-function buildLegend() {
+function buildLegend(screen) {
   const legend = createElement('div', 'hep-composite-legend');
   legend.append(createElement('strong', null, 'Baseline quadrant:'));
   COMPOSITE_QUADRANTS.forEach((quadrant) => {
@@ -49,7 +50,7 @@ function buildLegend() {
     swatch.style.cssText = `display:inline-block;width:.7rem;height:.7rem;border-radius:${
       style.pointStyle === 'circle' ? '50%' : '2px'
     };background:${style.color}`;
-    item.append(swatch, document.createTextNode(quadrant));
+    item.append(swatch, document.createTextNode(quadrantName(quadrant, screen)));
     legend.append(item);
   });
   return legend;
@@ -57,18 +58,19 @@ function buildLegend() {
 
 /**
  * Log-log Chart.js scale configs for the composite eDISH scatters, widened to
- * keep the ALT 3xULN / BILI 2xULN cut-lines in view.
+ * keep the active screen's cut-lines in view: ALT 3xULN / BILI 2xULN on eDISH,
+ * ALP 2xULN / BILI 2xULN on eDISH-AP (HEP-AP-008).
  * @private
  */
-function edishScales(xValues, yValues) {
-  const xDomain = edishDomain(xValues, ALT_ULN_CUT, 'log');
-  const yDomain = edishDomain(yValues, BILI_ULN_CUT, 'log');
+function edishScales(xValues, yValues, set) {
+  const xDomain = edishDomain(xValues, set.xCut, 'log');
+  const yDomain = edishDomain(yValues, set.yCut, 'log');
   return {
     x: {
       type: 'logarithmic',
       min: xDomain[0],
       max: xDomain[1],
-      title: { display: true, text: 'ALT [×ULN]' },
+      title: { display: true, text: `${set.xMeasure} [×ULN]` },
       grid: { color: 'rgba(148, 163, 184, 0.25)' }
     },
     y: {
@@ -101,17 +103,20 @@ function blnDomain(values) {
  */
 function tooltipLine(subject, which) {
   if (!subject) return '';
+  // The subject carries its own screen and x measure (HEP-AP-008).
+  const pre = quadrantName(subject.pretreatQuadrant, subject.screen);
+  const post = quadrantName(subject.onTreatQuadrant, subject.screen);
   if (which === 'bln') {
     return (
-      `${subject.id}: ALT ${formatNumber(subject.peakAltBLN)}×BLN, ` +
-      `TB ${formatNumber(subject.peakBiliBLN)}×BLN (baseline ${subject.pretreatQuadrant})`
+      `${subject.id}: ${subject.xMeasure} ${formatNumber(subject.peakXBLN)}×BLN, ` +
+      `TB ${formatNumber(subject.peakBiliBLN)}×BLN (baseline ${pre})`
     );
   }
-  const alt = which === 'pretreat' ? subject.baselineAltULN : subject.peakAltULN;
+  const x = which === 'pretreat' ? subject.baselineXULN : subject.peakXULN;
   const bili = which === 'pretreat' ? subject.baselineBiliULN : subject.peakBiliULN;
   return (
-    `${subject.id}: ALT ${formatNumber(alt)}×ULN, TB ${formatNumber(bili)}×ULN — ` +
-    `${subject.pretreatQuadrant} → ${subject.onTreatQuadrant}`
+    `${subject.id}: ${subject.xMeasure} ${formatNumber(x)}×ULN, TB ${formatNumber(bili)}×ULN — ` +
+    `${pre} → ${post}`
   );
 }
 
@@ -310,7 +315,8 @@ function registerChart(host, chart, subjects, canvas) {
  * Build one composite eDISH scatter card (pretreatment or peak on-treatment):
  * peak/baseline ALT (x) vs total bilirubin (y) in xULN, each point colored and
  * shaped by its baseline quadrant, with the ALT 3xULN / BILI 2xULN cut-lines
- * (HEP-COMP-001, HEP-COMP-002).
+ * (HEP-COMP-001, HEP-COMP-002). On eDISH-AP the x axis is ALP with its 2xULN
+ * cut-line (HEP-AP-008).
  * @private
  */
 function buildEdishCard(host, title, subjects, which) {
@@ -321,7 +327,8 @@ function buildEdishCard(host, title, subjects, which) {
   wrap.append(canvas);
   card.append(wrap);
 
-  const xKey = which === 'pretreat' ? 'baselineAltULN' : 'peakAltULN';
+  const set = QUADRANT_SETS[screenForMeasure(host.state.measureX)];
+  const xKey = which === 'pretreat' ? 'baselineXULN' : 'peakXULN';
   const yKey = which === 'pretreat' ? 'baselineBiliULN' : 'peakBiliULN';
   const data = subjects.map((subject) => ({ x: subject[xKey], y: subject[yKey] }));
 
@@ -340,14 +347,15 @@ function buildEdishCard(host, title, subjects, which) {
       },
       scales: edishScales(
         subjects.map((subject) => subject[xKey]),
-        subjects.map((subject) => subject[yKey])
+        subjects.map((subject) => subject[yKey]),
+        set
       ),
       ...interactionOptions(host)
     },
     plugins: [
       referenceLinePlugin({
-        vLines: [{ value: ALT_ULN_CUT, label: `${ALT_ULN_CUT}×ULN` }],
-        hLines: [{ value: BILI_ULN_CUT, label: `${BILI_ULN_CUT}×ULN` }]
+        vLines: [{ value: set.xCut, label: `${set.xCut}×ULN` }],
+        hLines: [{ value: set.yCut, label: `${set.yCut}×ULN` }]
       })
     ]
   });
@@ -366,21 +374,23 @@ function buildEdishCard(host, title, subjects, which) {
  */
 function buildPanels(host, subjects) {
   const grid = createElement('div', 'hep-composite-panels');
+  const screen = screenForMeasure(host.state.measureX);
+  const set = QUADRANT_SETS[screen];
   const order = ['Cholestasis', "Hy's Law", 'Normal & NN', "Temple's Corollary"];
-  const xDomain = blnDomain(subjects.map((subject) => subject.peakAltBLN));
+  const xDomain = blnDomain(subjects.map((subject) => subject.peakXBLN));
   const yDomain = blnDomain(subjects.map((subject) => subject.peakBiliBLN));
   const refLines = BLN_LINES.map((value) => ({ value, label: `${value}×` }));
 
   order.forEach((quadrant) => {
     const members = subjects.filter((subject) => subject.onTreatQuadrant === quadrant);
     const card = createElement('div', 'hep-composite-card');
-    card.append(createElement('h4', null, `${quadrant} (${members.length})`));
+    card.append(createElement('h4', null, `${quadrantName(quadrant, screen)} (${members.length})`));
     const wrap = createElement('div', 'hep-composite-panel-canvas');
     const canvas = document.createElement('canvas');
     wrap.append(canvas);
     card.append(wrap);
 
-    const data = members.map((subject) => ({ x: subject.peakAltBLN, y: subject.peakBiliBLN }));
+    const data = members.map((subject) => ({ x: subject.peakXBLN, y: subject.peakBiliBLN }));
 
     const chart = new Chart(canvas.getContext('2d'), {
       type: 'scatter',
@@ -400,7 +410,7 @@ function buildPanels(host, subjects) {
             type: 'logarithmic',
             min: xDomain[0],
             max: xDomain[1],
-            title: { display: true, text: 'ALT [×Baseline]' },
+            title: { display: true, text: `${set.xMeasure} [×Baseline]` },
             grid: { color: 'rgba(148, 163, 184, 0.2)' }
           },
           y: {
@@ -449,7 +459,7 @@ function buildConcernLegend() {
  * concern (red/yellow/green/gray), plus the concern legend.
  * @private
  */
-function buildMigrationTable(subjects) {
+function buildMigrationTable(subjects, screen) {
   const wrap = createElement('div', 'hep-migration');
   const matrix = migrationMatrix(subjects);
   const table = createElement('table');
@@ -464,7 +474,9 @@ function buildMigrationTable(subjects) {
   const thead = document.createElement('thead');
   const headRow = document.createElement('tr');
   headRow.append(createElement('th', null, 'Baseline ↓ / On-treatment →'));
-  COMPOSITE_QUADRANTS.forEach((quadrant) => headRow.append(createElement('th', null, quadrant)));
+  COMPOSITE_QUADRANTS.forEach((quadrant) =>
+    headRow.append(createElement('th', null, quadrantName(quadrant, screen)))
+  );
   headRow.append(createElement('th', 'hep-total', 'Total'));
   thead.append(headRow);
   table.append(thead);
@@ -472,7 +484,7 @@ function buildMigrationTable(subjects) {
   const tbody = document.createElement('tbody');
   COMPOSITE_QUADRANTS.forEach((pre) => {
     const tr = document.createElement('tr');
-    tr.append(createElement('td', 'hep-rowhead', pre));
+    tr.append(createElement('td', 'hep-rowhead', quadrantName(pre, screen)));
     COMPOSITE_QUADRANTS.forEach((post) => {
       const td = createElement('td', null, String(matrix.counts[pre][post]));
       td.style.background = CONCERN_COLORS[concernOf(pre, post)];
@@ -601,7 +613,10 @@ const compositeView = {
    * the selection is cleared and listeners notified.
    */
   render(host, { carriedIds = [] } = {}) {
-    const { subjects, excluded } = buildCompositeSubjects(host.cleanRows, host.settings);
+    // The active screen picks the x measure: ALT on eDISH, ALP on eDISH-AP (HEP-AP-008).
+    const screen = screenForMeasure(host.state.measureX);
+    const set = QUADRANT_SETS[screen];
+    const { subjects, excluded } = buildCompositeSubjects(host.cleanRows, host.settings, screen);
     const shown = applyFilters(subjects, host.state.filters);
     host.compositeSubjectsShown = shown;
 
@@ -615,30 +630,34 @@ const compositeView = {
     const excludedNote = excluded
       ? `<span class="sv-warning">${excluded} participant${
           excluded > 1 ? 's' : ''
-        } excluded (missing baseline or on-treatment ALT/total bilirubin).</span>`
+        } excluded (missing baseline or on-treatment ${set.xMeasure}/total bilirubin).</span>`
       : '';
     host.notes.innerHTML =
       `<span>${shown.length} of ${totalParticipants} participants shown in the composite plot.</span>` +
       excludedNote;
     host.footnote.textContent =
       'Composite plot (Tesfaldet et al., Drug Safety 2024): symbol color and shape mark each ' +
-      'participant’s baseline (pretreatment) eDISH quadrant, carried through every panel so ' +
+      `participant’s baseline (pretreatment) ${set.label} quadrant, carried through every panel so ` +
       'migration is visible. ×Baseline = peak on-treatment value ÷ the participant’s own baseline.';
 
     if (!shown.length) {
       const note = createElement('div', 'sv-warning');
       note.textContent =
-        'The composite plot needs baseline and on-treatment ALT and total bilirubin for at ' +
+        `The composite plot needs baseline and on-treatment ${set.xMeasure} and total bilirubin for at ` +
         'least one participant. No participant in the current selection qualifies.';
       host.compositeWrap.append(note);
       if (carriedIds.length) host.selection.dispatch([]);
       return;
     }
 
-    host.compositeWrap.append(buildLegend());
+    host.compositeWrap.append(buildLegend(screen));
 
     host.compositeWrap.append(
-      createElement('h3', 'hep-composite-section-title', 'Baseline → on-treatment eDISH (×ULN)')
+      createElement(
+        'h3',
+        'hep-composite-section-title',
+        `Baseline → on-treatment ${set.label} (×ULN)`
+      )
     );
     const edishRow = createElement('div', 'hep-composite-edish');
     edishRow.append(buildEdishCard(host, 'Pretreatment (baseline)', shown, 'pretreat'));
@@ -654,7 +673,7 @@ const compositeView = {
     );
     host.compositeWrap.append(buildPanels(host, shown));
 
-    host.compositeWrap.append(buildMigrationTable(shown));
+    host.compositeWrap.append(buildMigrationTable(shown, screen));
     host.compositeWrap.append(buildByArmSummary(host, shown));
 
     // Carry a live selection into the freshly built composite view

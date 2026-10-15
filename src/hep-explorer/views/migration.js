@@ -39,8 +39,11 @@ import { createElement } from '../../shell.js';
 import {
   CONCERN_COLORS,
   QUADRANT_STYLE,
+  QUADRANT_SETS,
   SEVERITY_ORDER,
-  concernOf
+  concernOf,
+  quadrantName,
+  screenForMeasure
 } from '../../hep-core/quadrants.js';
 import { resolveArmDesignation } from '../../hep-core/arms.js';
 import { buildHepSubjects } from '../../hep-core/subjects.js';
@@ -134,7 +137,13 @@ function designationFor(host, arms) {
  * @private
  */
 function buildCohort(host) {
-  const built = buildHepSubjects(host.cleanRows, host.settings);
+  // The active screen picks the x measure the quadrants come from: ALT on eDISH,
+  // ALP on eDISH-AP (HEP-AP-007).
+  const built = buildHepSubjects(
+    host.cleanRows,
+    host.settings,
+    screenForMeasure(host.state.measureX)
+  );
   const shown = applyFilters(built.subjects, host.state.filters);
   const designation = designationFor(host, built.arms);
   const sides = designation.sides;
@@ -204,9 +213,11 @@ function sankeyLabel(summary) {
  * four facts a reviewer needs before deciding whether to open the cases.
  * @private
  */
-function ribbonLabel(ribbon) {
+function ribbonLabel(ribbon, screen) {
+  const pre = quadrantName(ribbon.pre, screen);
+  const post = quadrantName(ribbon.post, screen);
   const verb = ribbon.pre === ribbon.post ? 'remained in' : 'shifted from';
-  const where = ribbon.pre === ribbon.post ? `${ribbon.pre}` : `${ribbon.pre} to ${ribbon.post}`;
+  const where = ribbon.pre === ribbon.post ? `${pre}` : `${pre} to ${post}`;
   return (
     `${participantCount(ribbon.count)} ${verb} ${where} on ${SIDE_LABEL[ribbon.side]} — ` +
     `${CONCERN_PHRASE[ribbon.concern]}`
@@ -220,10 +231,10 @@ function ribbonLabel(ribbon) {
  * evidenced.
  * @private
  */
-function ribbonTip(ribbon) {
+function ribbonTip(ribbon, screen) {
   return (
     `${SIDE_TITLE[ribbon.side]} · ${participantCount(ribbon.count)}\n` +
-    `${ribbon.pre} → ${ribbon.post}\n` +
+    `${quadrantName(ribbon.pre, screen)} → ${quadrantName(ribbon.post, screen)}\n` +
     `${CONCERN_PHRASE[ribbon.concern]}`
   );
 }
@@ -302,7 +313,8 @@ function renderFootnote(host) {
 
   if (!cell) {
     footnote.textContent =
-      'Migration plot (Amirzadegan et al., Drug Safety 2025, Fig 3): baseline eDISH categorization ' +
+      'Migration plot (Amirzadegan et al., Drug Safety 2025, Fig 3): baseline ' +
+      `${QUADRANT_SETS[screenForMeasure(host.state.measureX)].label} categorization ` +
       'in the centre, peak on-treatment shifts running left for placebo and right for active drug. ' +
       'Ribbon thickness is participant count on one shared scale; upward shifts are unfavourable ' +
       '(pink) and downward shifts favourable (green). Select a ribbon or a cross-table cell to ' +
@@ -312,8 +324,10 @@ function renderFootnote(host) {
 
   const count = cell.ids.length;
   const block = createElement('div', 'hep-step');
-  const move =
-    cell.pre === cell.post ? `remained in ${cell.pre}` : `shifted ${cell.pre} → ${cell.post}`;
+  const screen = screenForMeasure(host.state.measureX);
+  const pre = quadrantName(cell.pre, screen);
+  const post = quadrantName(cell.post, screen);
+  const move = cell.pre === cell.post ? `remained in ${pre}` : `shifted ${pre} → ${post}`;
   block.append(
     createElement(
       'strong',
@@ -438,7 +452,7 @@ function paintTiers(group, nodes) {
  * (HEP-MIG-011).
  * @private
  */
-function paintNodes(group, nodes) {
+function paintNodes(group, nodes, screen) {
   const columns = sankeyColumns();
   nodes.forEach((node) => {
     const style = QUADRANT_STYLE[node.quadrant];
@@ -474,7 +488,7 @@ function paintNodes(group, nodes) {
       'text-anchor': centred ? 'middle' : node.column === 'left' ? 'start' : 'end',
       'dominant-baseline': 'middle'
     });
-    text.textContent = `${node.quadrant} ${counts}`;
+    text.textContent = `${quadrantName(node.quadrant, screen)} ${counts}`;
     group.append(text);
   });
 }
@@ -507,10 +521,10 @@ function paintRibbons(host, group, ribbons) {
       'stroke-width': 1,
       tabindex: 0,
       role: 'button',
-      'aria-label': ribbonLabel(ribbon)
+      'aria-label': ribbonLabel(ribbon, screenForMeasure(host.state.measureX))
     });
 
-    const tip = ribbonTip(ribbon);
+    const tip = ribbonTip(ribbon, screenForMeasure(host.state.measureX));
     path.addEventListener('pointerenter', (event) => {
       host.migrationHoverKey = ribbon.key;
       refreshHighlight(host);
@@ -584,7 +598,7 @@ function buildSankey(host, layout, summary) {
 
   paintTiers(group, layout.nodes);
   paintRibbons(host, group, layout.ribbons);
-  paintNodes(group, layout.nodes);
+  paintNodes(group, layout.nodes, screenForMeasure(host.state.measureX));
 
   svg.append(group);
   return svg;
@@ -639,7 +653,10 @@ function buildCrossTable(host, side, matrix) {
   const thead = document.createElement('thead');
   const headRow = document.createElement('tr');
   headRow.append(createElement('th', null, 'Baseline ↓ / On-treatment →'));
-  SEVERITY_ORDER.forEach((quadrant) => headRow.append(createElement('th', null, quadrant)));
+  const screen = screenForMeasure(host.state.measureX);
+  SEVERITY_ORDER.forEach((quadrant) =>
+    headRow.append(createElement('th', null, quadrantName(quadrant, screen)))
+  );
   headRow.append(createElement('th', 'hep-total', 'Total'));
   thead.append(headRow);
   table.append(thead);
@@ -647,7 +664,7 @@ function buildCrossTable(host, side, matrix) {
   const tbody = document.createElement('tbody');
   SEVERITY_ORDER.forEach((pre) => {
     const tr = document.createElement('tr');
-    tr.append(createElement('td', 'hep-rowhead', pre));
+    tr.append(createElement('td', 'hep-rowhead', quadrantName(pre, screen)));
     SEVERITY_ORDER.forEach((post) => {
       const count = matrix.counts[pre][post];
       const key = `${side}|${pre}|${post}`;
@@ -664,7 +681,8 @@ function buildCrossTable(host, side, matrix) {
         td.setAttribute('role', 'button');
         td.setAttribute(
           'aria-label',
-          `${participantCount(count)}, ${pre} to ${post}, ${SIDE_LABEL[side]}`
+          `${participantCount(count)}, ${quadrantName(pre, screen)} to ` +
+            `${quadrantName(post, screen)}, ${SIDE_LABEL[side]}`
         );
         td.onclick = () => selectCell(host, key);
         td.onkeydown = (event) => {
@@ -710,7 +728,8 @@ function buildHyLawCaution(host, cells) {
     createElement(
       'span',
       'hep-caution-text',
-      `⚠ ${participantCount(ids.length)} remained in Hy's Law throughout. A shift view cannot ` +
+      `⚠ ${participantCount(ids.length)} remained in ` +
+        `${quadrantName("Hy's Law", screenForMeasure(host.state.measureX))} throughout. A shift view cannot ` +
         'detect worsening within a category — review them individually.'
     )
   );
@@ -747,7 +766,8 @@ function renderNotes(host, cohort, summary) {
     note(
       `${cohort.excludedNoData} participant${
         cohort.excludedNoData > 1 ? 's' : ''
-      } excluded (missing baseline or on-treatment ALT/total bilirubin).`,
+      } excluded (missing baseline or on-treatment ` +
+        `${QUADRANT_SETS[screenForMeasure(host.state.measureX)].xMeasure}/total bilirubin).`,
       true
     );
   if (cohort.armExcluded)
@@ -873,7 +893,8 @@ const migrationView = {
       const note = createElement('div', 'sv-warning');
       note.textContent =
         'The migration plot needs participants in an arm designated placebo or active, each with ' +
-        'baseline and on-treatment ALT and total bilirubin. No participant in the current ' +
+        `baseline and on-treatment ${QUADRANT_SETS[screenForMeasure(host.state.measureX)].xMeasure} and total ` +
+        'bilirubin. No participant in the current ' +
         'selection qualifies.';
       host.migrationWrap.append(note);
       if (carriedIds.length) host.selection.dispatch([]);

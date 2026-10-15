@@ -61,7 +61,9 @@ describe('hep-explorer configure', () => {
   it('HEP-QUAD-001: default cuts give the classic eDISH view — ALT >= 3xULN via the defaults entry, TB >= 2xULN (port)', () => {
     const { cuts } = syncSettings({});
     expect(cuts.TB).toEqual({ relative_uln: 2, relative_baseline: 4.8 });
-    expect(cuts.ALP).toEqual({ relative_uln: 1, relative_baseline: 3.8 });
+    // ALP's ×ULN cut is 2, not the original renderer's 1: ALP on x is the
+    // eDISH-AP cholestatic screen (HEP-AP-006, #344).
+    expect(cuts.ALP).toEqual({ relative_uln: 2, relative_baseline: 3.8 });
     expect(cuts.rRatio).toEqual({ relative_uln: 5, relative_baseline: 5 });
     expect(cuts.defaults).toEqual({ relative_uln: 3, relative_baseline: 3.8 });
     // ALT and AST have no entry of their own — they resolve via defaults.
@@ -86,7 +88,7 @@ describe('hep-explorer configure', () => {
     const { cuts } = syncSettings({ cuts: { TB: { relative_uln: 2.5 } } });
     expect(cuts.TB.relative_uln).toBe(2.5);
     expect(cuts.TB.relative_baseline).toBe(4.8);
-    expect(cuts.ALP).toEqual({ relative_uln: 1, relative_baseline: 3.8 });
+    expect(cuts.ALP).toEqual({ relative_uln: 2, relative_baseline: 3.8 });
     expect(cuts.defaults).toEqual({ relative_uln: 3, relative_baseline: 3.8 });
   });
 
