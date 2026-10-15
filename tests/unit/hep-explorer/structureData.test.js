@@ -235,6 +235,8 @@ describe('hep-explorer structureData', () => {
     // No ALP, or no ALT and no AST, gives NaN.
     expect(nr([row('E', 'ALT', 10, 160, 40), row('E', 'AST', 10, 160, 40)])).toBeNaN();
     expect(nr([row('F', 'TB', 10, 2, 1), ...alp('F')])).toBeNaN();
+    // An ALP peak of 0 (a recorded zero, before any imputation) gives NaN too.
+    expect(nr([row('G', 'ALT', 10, 160, 40), row('G', 'ALP', 10, 0, 100)])).toBeNaN();
     // Always on the ULN scale: the active display mode does not enter into it.
     const p1Rows = prepared.filter((r) => r.USUBJID === 'P1');
     expect(computeNRRatio(p1Rows, settings)).toBeCloseTo(4 / 1.2, 10);
@@ -244,6 +246,9 @@ describe('hep-explorer structureData', () => {
     const { points } = buildPoints(prepared, settings, edishState);
     expect(points[0].nrRatio).toBeCloseTo(4 / 1.2, 10);
     expect(points[1].nrRatio).toBeNaN();
+    // nR stays on the ULN scale in mDISH, as R does.
+    const mdish = buildPoints(prepared, settings, { ...edishState, display: 'relative_baseline' });
+    expect(mdish.points.find((p) => p.id === 'P1').nrRatio).toBeCloseTo(4 / 1.2, 10);
   });
 
   it('HEP-CHART-001/HEP-DISPLAY-003: buildPoints reduces to one peak-vs-peak point per participant with timing and rRatio (port)', () => {

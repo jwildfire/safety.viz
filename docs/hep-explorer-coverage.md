@@ -39,7 +39,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-CTRL-006, HEP-CHART-003                         | —                  | #43   | the axis-type toggle switches both axes between linear and log                                               |
 | HEP-CTRL-017                                        | —                  | #54   | the log base picker appears with the log axis and moves the gridlines to every doubling                      |
 | HEP-AXIS-001/002/003/004                            | —                  | #54   | each axis carries editable limits that seed from the domain in force                                         |
-| HEP-CHART-004                                       | —                  | #43   | point tooltips list participant, R Ratio, peaks with days, and the day difference                            |
+| HEP-CHART-004                                       | —                  | #43   | point tooltips list participant, R Ratio, nR Ratio, peaks with days, and the day difference                  |
 | HEP-DISPLAY-008, HEP-CTRL-007/014, HEP-CHART-004    | —                  | #334  | Point Size can scale points by the nR ratio, which takes AST when it is the higher                           |
 | HEP-API-003                                         | —                  | #43   | participantsSelected fires on select and clear                                                               |
 | HEP-API-001                                         | —                  | #43   | lifecycle API supports init, setData, setSettings, render, resize, and destroy                               |
