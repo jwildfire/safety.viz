@@ -6,11 +6,19 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
-# safety.viz v1.12.0 (Upcoming)
+# safety.viz v1.11.2 (Upcoming)
+
+**See it move:** the [annotated v1.11.2 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.11.2-demo/) has captures, try-it steps and the detail behind everything below.
+
+A patch to Hep Explorer. It brings back the new R ratio (nR), which the original renderer offered and the port had left out. R, its filter and the other Point Size settings work as they did; the tooltip gains one line.
 
 ## What's new
 
-- **Hep Explorer sizes points by the nR ratio.** nR takes the higher of ALT and AST over ULN, divided by ALP over ULN, so injury where AST rises more than ALT is not missed. Point Size offers nrRatio beside rRatio, as the original renderer did, and the tooltip shows nR under R. [#334](https://github.com/jwildfire/safety.viz/issues/334)
+- **Hep Explorer sizes points by the nR ratio.** nR takes the higher of ALT and AST over ULN, divided by ALP over ULN, so injury where AST rises more than ALT is not missed. Point Size offers nrRatio beside rRatio, as the original renderer did, and the tooltip shows nR under R. [#334](https://github.com/jwildfire/safety.viz/issues/334), PR [#335](https://github.com/jwildfire/safety.viz/pull/335)
+
+## Tests and provenance
+
+2,528 unit and 454 browser tests pass. `dist/safety.viz-1.11.2/` is the release bundle. [#336](https://github.com/jwildfire/safety.viz/issues/336)
 
 # safety.viz v1.11.1
 
