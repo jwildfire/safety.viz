@@ -6,6 +6,7 @@
 // HEP-CTRL-009 (grouping), HEP-CHART-004 (tooltip).
 
 import { formatNumber, measureLabel } from './getScales.js';
+import { QUADRANT_SETS, resolveScreen } from '../hep-core/quadrants.js';
 
 // Categorical palette for color-by grouping and the participant lab-over-time
 // lines (HEP-CTRL-009). Distinct, print- and colorblind-considerate hues; cycles
@@ -89,8 +90,61 @@ export const QUADRANT_MEANINGS = {
     'Bilirubin above its cutpoint with the aminotransferase below its own — a bilirubin rise without the hepatocellular injury pattern (consider haemolysis, Gilbert syndrome, or cholestasis).',
   "Temple's Corollary":
     "Aminotransferase above its cutpoint with bilirubin below its own — hepatocellular injury without the loss of function that defines the Hy's Law range.",
-  'Normal Range': 'Neither measure above its cutpoint for this participant.'
+  'Normal Range': 'Neither measure above its cutpoint for this participant.',
+  // eDISH-AP, the cholestatic screen (HEP-AP-005). Hy's Law does not apply on
+  // this plot: its fatality rate was established for hepatocellular injury.
+  'Cholestatic injury + jaundice':
+    'ALP and bilirubin both above their cutpoints — cholestatic injury with loss of liver function. Review each case: no fatality rate has been validated for this range, and only a full case review can rule out other causes such as biliary obstruction.',
+  'Bilirubin only':
+    'Bilirubin above its cutpoint with ALP below its own — consider Gilbert syndrome, haemolysis, or hepatocellular injury, which the eDISH screen shows.',
+  'ALP elevation only':
+    'ALP above its cutpoint with bilirubin below its own — a cholestatic signal without jaundice. Bone disease and pregnancy also raise ALP, so check GGT before reading it as liver.',
+  'Normal range': 'Neither ALP nor bilirubin above its cutpoint for this participant.'
 };
+
+/**
+ * The four eDISH-AP quadrants (HEP-AP-005): the cholestatic screen's names, in
+ * the same corners and the same order as QUADRANT_LABELS, taken from the
+ * shared cholestatic quadrant set so the scatter, the Sankey and the composite
+ * plot name a region the same way.
+ * @type {Array<{position: string, label: string, xCat: string, yCat: string}>}
+ */
+export const CHOLESTATIC_QUADRANT_LABELS = [
+  {
+    position: 'upper-right',
+    label: QUADRANT_SETS.cholestatic.names["Hy's Law"],
+    xCat: 'High',
+    yCat: 'High'
+  },
+  {
+    position: 'upper-left',
+    label: QUADRANT_SETS.cholestatic.names.Cholestasis,
+    xCat: 'Normal',
+    yCat: 'High'
+  },
+  {
+    position: 'lower-right',
+    label: QUADRANT_SETS.cholestatic.names["Temple's Corollary"],
+    xCat: 'High',
+    yCat: 'Normal'
+  },
+  {
+    position: 'lower-left',
+    label: QUADRANT_SETS.cholestatic.names['Normal & NN'],
+    xCat: 'Normal',
+    yCat: 'Normal'
+  }
+];
+
+/**
+ * The scatter's quadrant labels for a screen (HEP-AP-005): QUADRANT_LABELS on
+ * the hepatocellular screen, CHOLESTATIC_QUADRANT_LABELS on eDISH-AP.
+ * @param {?string} screen The active screen.
+ * @returns {Array<{position: string, label: string, xCat: string, yCat: string}>}
+ */
+export function quadrantLabelsFor(screen) {
+  return resolveScreen(screen) === 'cholestatic' ? CHOLESTATIC_QUADRANT_LABELS : QUADRANT_LABELS;
+}
 
 /**
  * The standing caution the chart carries wherever it renders (HEP-CAUTION-001,

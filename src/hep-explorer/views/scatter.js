@@ -40,6 +40,7 @@ import {
   cutFor
 } from '../configure.js';
 import { applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
+import { screenForMeasure } from '../../hep-core/quadrants.js';
 import { cutHandleAt, cutValueFor } from '../cutDrag.js';
 import { availableDisplays, groupOrder } from '../availability.js';
 import { MARGINAL_MODES, marginalPlugin, scatterPadding } from '../marginals.js';
@@ -182,7 +183,12 @@ function moveCut(host, axis, value) {
   host.state[axis === 'x' ? 'xCut' : 'yCut'] = value;
   const input = host.cutInputs && host.cutInputs[axis];
   if (input) input.value = String(value);
-  host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
+  host.quadrants = classifyQuadrants(
+    host.points,
+    host.state.xCut,
+    host.state.yCut,
+    screenForMeasure(host.state.measureX)
+  );
   drawQuadrantSummary(host);
   if (host.chart) host.chart.update('none');
 }
@@ -1249,7 +1255,12 @@ const scatterView = {
       : [];
     host.colorScale = groupColorScale(host.groupValues);
 
-    host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
+    host.quadrants = classifyQuadrants(
+      host.points,
+      host.state.xCut,
+      host.state.yCut,
+      screenForMeasure(host.state.measureX)
+    );
     drawScatter(host);
     // The playback frames are rebuilt AFTER the points, because they are the
     // same participants in the same order (HEP-ANIM-002).

@@ -207,6 +207,7 @@ For a rapid triage of which cases merit referral to a hepatic board, the manual'
 - **Baseline-corrected (mDISH) reasoning** → the Display Type toggle, eDISH (÷ ULN) versus mDISH (÷ day-0 baseline).
 - **Which analyte is on each axis** → the measure pickers for ALT, AST, total bilirubin, and ALP, plus the linear/log Axis Type toggle.
 - **Timing coincidence between peaks** → the timing-window days input, which fills in-window points and hollows out-of-window ones, alongside the day-gap in the tooltip.
+- **Which screen: hepatocellular or cholestatic** → the Screen control, eDISH (ALT against bilirubin) or eDISH-AP (ALP against bilirubin), described below.
 - **Injury pattern (hepatocellular versus cholestatic)** → the R-Ratio and nR-Ratio values in the tooltip and the R-Ratio range filter; point size can also encode either via the Point Size toggle (Uniform / rRatio / nrRatio).
 - **Onset window and rate of rise** → click a point to open the Standardized Lab Values by Study Day chart and read each peak's study day.
 - **AST corroboration and per-measure detail** → the same drill-down, with its Measure / N / Min / Median / Max summary table and linked record listing; direct/indirect bilirubin and other analytes appear here when present in the data.
@@ -222,7 +223,7 @@ The View control offers a third top-level view, **Migration (Sankey)**, which re
 
 **Colour comes from the medicine, not the geometry.** A ribbon's fill is derived from the FDA concern matrix (`concernOf(baseline, on-treatment)`), never from the sign of its vertical travel. Cholestasis and Temple's Corollary therefore share **one severity tier**, drawn as adjacent sub-nodes under a single _Single-analyte elevation_ label: the concern matrix deliberately declines to rank them against each other, and stacking them apart would draw a neutral shift as an upward one.
 
-**Cutpoints are fixed here.** The migration view classifies with the FDA constants **ALT > 3× ULN** and **TB > 2× ULN** — the same thresholds as the composite plot, and faithful to the paper. The scatter view's user-adjustable Reference Line inputs do not apply to it.
+**Cutpoints are fixed here.** The migration view classifies with the FDA constants **ALT > 3× ULN** and **TB > 2× ULN** — the same thresholds as the composite plot, and faithful to the paper. The scatter view's user-adjustable Reference Line inputs do not apply to it. On the eDISH-AP screen the x threshold is ALP > 2× ULN instead.
 
 **Arms are structural.** The diagram needs a treatment-arm column (`arm_col`, auto-detected across `ARM`, `ACTARM`, `TRT01A`, `TREATMENT`, `TRTA`), one arm designated placebo (`placebo_arm`, else auto-detected against `/placebo|control/i`) and one or more designated active (`active_arms`, else every non-placebo arm pools right). Participants in an arm designated **neither** are excluded and counted in the notes rather than silently pooled, and with no arm column at all the Migration option is disabled with an explanation instead of rendering an empty diagram.
 
@@ -231,6 +232,26 @@ The View control offers a third top-level view, **Migration (Sankey)**, which re
 **The two-step hand-off.** The paper frames "Sankey then composite" as a deliberate two-step replacement for the single eDISH plot: the Sankey delivers _visualise shift between arms_ and _categorise by severity_, but not _identify individual participants for case review_. So selecting a ribbon (click, Enter or Space — every ribbon is a focusable button with a spoken name) states the shift in the footnote and offers **Review these N in the composite plot**, which switches to the composite view with exactly those participants restored and highlighted in every panel.
 
 **One caution the paper asks for.** A grey **Hy's Law → Hy's Law** band looks reassuring, but it is precisely where the paper's acknowledged limitation lives: a shift view cannot detect worsening _within_ a category, and this is the most severe one. When that cell is non-empty the view says so and offers to select those participants for individual review.
+
+## The eDISH-AP screen — cholestatic injury
+
+> Prototype. The eDISH-AP screen is new, and its cut lines and quadrant names await clinical review. Confirm every result.
+
+Classic Hy's Law asks for no large ALP rise, so the eDISH scatter leaves cholestatic injury out on purpose. FDA's liver-injury team reads a second plot beside it: in the hepatology review for fitusiran (NDA 219019, 2025) they call eDISH the hepatocellular DILI screening plot and eDISH-AP, which puts alkaline phosphatase (ALP) on the x-axis in place of ALT, the cholestatic DILI screening plot.
+
+The Screen control switches between them, in every view:
+
+- The scatter puts peak ALP ×ULN on x with its reference line at 2× ULN, the usual threshold for cholestatic injury. Choosing ALP on the X-axis Measure picks eDISH-AP too, and going back to eDISH restores the aminotransferase you had.
+- The quadrants are named for the screen: Cholestatic injury + jaundice (both above their lines), ALP elevation only, Bilirubin only, and Normal range. A value exactly on a line counts as normal.
+- The migration Sankey, its cross tables and the composite plot classify on ALP and bilirubin and use the same names.
+
+How to read it:
+
+- Cholestatic injury + jaundice is the quadrant to review case by case. Hy's Law does not apply here: its fatality rate was established for hepatocellular injury, and none has been validated for this quadrant.
+- ALP elevation only is a cholestatic signal without jaundice. Bone disease and pregnancy also raise ALP, so check GGT before reading it as liver.
+- A participant can be high on both screens. The R-Ratio and nR-Ratio in the tooltip say which pattern dominates.
+
+Set `screen: 'cholestatic'` to open the chart on eDISH-AP. ALP's ×ULN reference line now defaults to 2, where it was 1.
 
 ## Is this the right graphic for your trial?
 
@@ -282,6 +303,7 @@ This guide ports the workflow and clinical rationale of the **"Interactive Safet
 - Davidson CS, Leevy CM, Chamberlayne EC, editors. Guidelines for Detection of Hepatotoxicity due to Drugs and Chemicals. [Fogarty Conference, 1978] NIH Publication No. 79-313. 1979.
 - Dunn GD, Hayes P, Breen KJ, Schenker S. The liver in congestive heart failure: a review. _Am J Med Sci._ 1973;265:174–189.
 - European Association for the Study of the Liver. EASL clinical practice guidelines: drug-induced liver injury. _J Hepatol._ 2019;70:1222–1261.
+- FDA, Division of Hepatology and Nutrition. Hepatology review for fitusiran, NDA 219019 (2025), with the eDISH and eDISH-AP screening plots. [accessdata.fda.gov](https://www.accessdata.fda.gov/drugsatfda_docs/nda/2025/219019Orig1s000OtherR.pdf)
 - Food and Drug Administration. Guidance for Industry — Drug-Induced Liver Injury: Premarketing Clinical Evaluation. July 2009.
 - Green RM, Flamm S. AGA technical review on the evaluation of liver chemistry tests. _Gastroenterology_ 2002;123:1367–1384.
 - Herlong HF, Mitchell MC. Laboratory tests. In: _Schiff's Diseases of the Liver_, 11th ed. Wiley; 2012:17–43.

@@ -31,7 +31,7 @@
 import { GROUP_NONE } from '../hep-explorer/configure.js';
 import { resolveMeasureRows } from './rows.js';
 import { distinctArms, resolveArmCol, resolveArmDesignation } from './arms.js';
-import { classifyComposite, concernOf } from './quadrants.js';
+import { QUADRANT_SETS, classifyComposite, concernOf, resolveScreen } from './quadrants.js';
 
 /**
  * Table-1 baseline-jaundice cutpoint (TB ×ULN) used when the caller carries no
@@ -205,12 +205,22 @@ export function reduceMeasure(rows, settings = {}) {
  * A participant is excluded when either analyte lacks a usable baseline or
  * on-treatment peak (graceful degradation for abnormal/missing baselines); the
  * excluded count feeds the warning note.
+ *
+ * The screen (HEP-AP-004) picks the x measure the quadrants are read from: ALT
+ * on the default hepatocellular screen, ALP on eDISH-AP. Each subject carries
+ * that measure in the generic `xMeasure` / `baselineXULN` / `peakXULN` /
+ * `peakXBLN` fields; the ALT-named fields keep meaning ALT on both screens (the
+ * waterfall reads them), and are NaN on eDISH-AP for a participant with no ALT.
+ * On eDISH-AP a participant is excluded when ALP or bilirubin is unusable.
  * @param {Object[]} cleanRows Rows from cleanData after deriveBaseline.
  * @param {Object} settings Normalized settings.
+ * @param {?string} [screen='hepatocellular'] 'hepatocellular' (eDISH) or 'cholestatic' (eDISH-AP).
  * @returns {{subjects: Object[], excluded: number, armCol: ?string, arms: string[], sides: Map<string, ?string>}}
  *   The subjects, the drop count, and the resolved arm designation.
  */
-export function buildHepSubjects(cleanRows, settings) {
+export function buildHepSubjects(cleanRows, settings, screen) {
+  const screenId = resolveScreen(screen);
+  const xMeasure = QUADRANT_SETS[screenId].xMeasure;
   const rows = cleanRows || [];
   const armCol = resolveArmCol(rows, settings);
   const metaCols = [
@@ -237,13 +247,17 @@ export function buildHepSubjects(cleanRows, settings) {
   let excluded = 0;
   byId.forEach((participantRows, id) => {
     const alt = reduceMeasure(resolveMeasureRows(participantRows, settings, 'ALT'), settings);
+    const x =
+      xMeasure === 'ALT'
+        ? alt
+        : reduceMeasure(resolveMeasureRows(participantRows, settings, xMeasure), settings);
     const bili = reduceMeasure(resolveMeasureRows(participantRows, settings, 'TB'), settings);
-    if (!alt || !bili) {
+    if (!x || !bili) {
       excluded += 1;
       return;
     }
-    const pretreatQuadrant = classifyComposite(alt.baselineULN, bili.baselineULN);
-    const onTreatQuadrant = classifyComposite(alt.peakULN, bili.peakULN);
+    const pretreatQuadrant = classifyComposite(x.baselineULN, bili.baselineULN, screenId);
+    const onTreatQuadrant = classifyComposite(x.peakULN, bili.peakULN, screenId);
     const raw = {};
     metaCols.forEach((col) => {
       raw[col] = participantRows[0][col] === undefined ? '' : String(participantRows[0][col]);
@@ -251,21 +265,26 @@ export function buildHepSubjects(cleanRows, settings) {
     subjects.push({
       id,
       raw,
-      baselineAltULN: alt.baselineULN,
+      screen: screenId,
+      xMeasure,
+      baselineXULN: x.baselineULN,
+      peakXULN: x.peakULN,
+      peakXBLN: x.peakBLN,
+      baselineAltULN: alt ? alt.baselineULN : NaN,
       baselineBiliULN: bili.baselineULN,
-      peakAltULN: alt.peakULN,
+      peakAltULN: alt ? alt.peakULN : NaN,
       peakBiliULN: bili.peakULN,
-      peakAltBLN: alt.peakBLN,
+      peakAltBLN: alt ? alt.peakBLN : NaN,
       peakBiliBLN: bili.peakBLN,
       pretreatQuadrant,
       onTreatQuadrant,
       concern: concernOf(pretreatQuadrant, onTreatQuadrant),
       // Absolute units for the ALT waterfall (Fig 5), where ×ULN quadrants lose
       // their meaning and the axis is the measure's own U/L.
-      baselineAlt: alt.baselineValue,
-      peakAlt: alt.peakValue,
-      peakAltDay: alt.peakDay,
-      altUln: alt.uln,
+      baselineAlt: alt ? alt.baselineValue : NaN,
+      peakAlt: alt ? alt.peakValue : NaN,
+      peakAltDay: alt ? alt.peakDay : NaN,
+      altUln: alt ? alt.uln : NaN,
       baselineBili: bili.baselineValue,
       peakBili: bili.peakValue,
       // Both jaundice clauses stay explicit even though, inside the waterfall's
@@ -307,8 +326,9 @@ export function buildHepSubjects(cleanRows, settings) {
  * demo population from 295/23 to 293/25.
  * @param {Object[]} cleanRows Rows from cleanData after deriveBaseline.
  * @param {Object} settings Normalized settings.
+ * @param {?string} [screen='hepatocellular'] The active screen (HEP-AP-004).
  * @returns {{subjects: Object[], excluded: number}} The composite subjects and drop count.
  */
-export function buildCompositeSubjects(cleanRows, settings) {
-  return buildHepSubjects(cleanRows, settings);
+export function buildCompositeSubjects(cleanRows, settings, screen) {
+  return buildHepSubjects(cleanRows, settings, screen);
 }

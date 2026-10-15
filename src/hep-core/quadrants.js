@@ -26,8 +26,84 @@ export const ALT_ULN_CUT = 3;
 /** Total-bilirubin elevation cutpoint on the xULN scale — strictly greater than this. */
 export const BILI_ULN_CUT = 2;
 
+/** ALP elevation cutpoint on the xULN scale for the eDISH-AP screen — strictly greater than this. */
+export const ALP_ULN_CUT = 2;
+
 /** xBLN reference lines drawn on the composite shift panels (1x = baseline). */
 export const BLN_LINES = [1, 3, 5];
+
+/**
+ * The two DILI screens a reviewer reads side by side (HEP-AP-001), after FDA's
+ * hepatology review for fitusiran (NDA 219019, 2025): eDISH, the
+ * hepatocellular screen (peak ALT against peak total bilirubin), and eDISH-AP,
+ * the cholestatic screen (peak ALP against peak total bilirubin). Classic Hy's
+ * Law asks for no large ALP rise, so it leaves cholestatic injury out on
+ * purpose; eDISH-AP is the screen for what it leaves out.
+ *
+ * Both sets share the FDA reference's four quadrant KEYS (COMPOSITE_QUADRANTS),
+ * which are positional — neither elevated, y only, x only, both — so the
+ * concern matrix, the severity tiers and the Sankey layout serve both screens
+ * unchanged. `names` maps each key to what a reader sees; the hepatocellular
+ * names are the keys themselves. The cholestatic cut line (ALP 2×ULN, the usual
+ * threshold for cholestatic injury) and its names await clinical review.
+ * @type {Object<string, {id: string, label: string, title: string, xMeasure: string, xCut: number, yCut: number, names: Object<string, string>}>}
+ */
+export const QUADRANT_SETS = {
+  hepatocellular: {
+    id: 'hepatocellular',
+    label: 'eDISH',
+    title: 'eDISH (hepatocellular)',
+    xMeasure: 'ALT',
+    xCut: ALT_ULN_CUT,
+    yCut: BILI_ULN_CUT,
+    names: { [NN]: NN, [CH]: CH, [TC]: TC, [HL]: HL }
+  },
+  cholestatic: {
+    id: 'cholestatic',
+    label: 'eDISH-AP',
+    title: 'eDISH-AP (cholestatic)',
+    xMeasure: 'ALP',
+    xCut: ALP_ULN_CUT,
+    yCut: BILI_ULN_CUT,
+    names: {
+      [NN]: 'Normal range',
+      [CH]: 'Bilirubin only',
+      [TC]: 'ALP elevation only',
+      [HL]: 'Cholestatic injury + jaundice'
+    }
+  }
+};
+
+/**
+ * Resolve a `screen` value to a known screen id, falling back to the
+ * hepatocellular screen (HEP-AP-003).
+ * @param {?string} value The requested screen.
+ * @returns {string} 'hepatocellular' | 'cholestatic'.
+ */
+export function resolveScreen(value) {
+  return Object.prototype.hasOwnProperty.call(QUADRANT_SETS, value) ? value : 'hepatocellular';
+}
+
+/**
+ * The screen an x-axis measure belongs to (HEP-AP-003): ALP on x is the
+ * cholestatic screen; every other measure reads as the hepatocellular one.
+ * @param {?string} measureKey The short measure key on the x-axis.
+ * @returns {string} 'hepatocellular' | 'cholestatic'.
+ */
+export function screenForMeasure(measureKey) {
+  return measureKey === QUADRANT_SETS.cholestatic.xMeasure ? 'cholestatic' : 'hepatocellular';
+}
+
+/**
+ * What a reader sees for a quadrant key on the given screen (HEP-AP-003).
+ * Unknown keys pass through unchanged.
+ * @param {string} quadrant A COMPOSITE_QUADRANTS key.
+ * @param {?string} screen The active screen; hepatocellular when omitted.
+ * @returns {string} The display name.
+ */
+export function quadrantName(quadrant, screen) {
+  return QUADRANT_SETS[resolveScreen(screen)].names[quadrant] ?? quadrant;
+}
 
 /**
  * Point color + Chart.js pointStyle per quadrant, carrying the paper's coded
@@ -93,13 +169,20 @@ export function concernOf(pretreatQuadrant, onTreatQuadrant) {
  * an artifact this port deliberately does not reproduce. In practice
  * buildCompositeSubjects only calls this on finite baseline/peak values, so the
  * non-finite path is not exercised at runtime.
- * @param {number} altULN ALT as a multiple of its ULN.
+ *
+ * The screen picks the x cutpoint (HEP-AP-002): ALT 3×ULN for the default
+ * hepatocellular screen, ALP 2×ULN for eDISH-AP. The same strict rule holds on
+ * both. The returned value is always a COMPOSITE_QUADRANTS key; read it through
+ * quadrantName for display.
+ * @param {number} altULN The x measure (ALT, or ALP on eDISH-AP) as a multiple of its ULN.
  * @param {number} biliULN Total bilirubin as a multiple of its ULN.
- * @returns {string} The quadrant label.
+ * @param {?string} [screen='hepatocellular'] The active screen.
+ * @returns {string} The quadrant key.
  */
-export function classifyComposite(altULN, biliULN) {
-  const altElevated = altULN > ALT_ULN_CUT;
-  const biliElevated = biliULN > BILI_ULN_CUT;
+export function classifyComposite(altULN, biliULN, screen) {
+  const set = QUADRANT_SETS[resolveScreen(screen)];
+  const altElevated = altULN > set.xCut;
+  const biliElevated = biliULN > set.yCut;
   if (!altElevated && !biliElevated) return NN;
   if (!altElevated && biliElevated) return CH;
   if (altElevated && biliElevated) return HL;

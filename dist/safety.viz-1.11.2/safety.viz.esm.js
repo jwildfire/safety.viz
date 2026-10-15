@@ -14048,6 +14048,95 @@ function checkInputs2(data, settings) {
   }
 }
 
+// src/hep-core/quadrants.js
+var COMPOSITE_QUADRANTS = ["Normal & NN", "Cholestasis", "Temple's Corollary", "Hy's Law"];
+var [NN, CH, TC, HL] = COMPOSITE_QUADRANTS;
+var ALT_ULN_CUT = 3;
+var BILI_ULN_CUT = 2;
+var ALP_ULN_CUT = 2;
+var BLN_LINES = [1, 3, 5];
+var QUADRANT_SETS = {
+  hepatocellular: {
+    id: "hepatocellular",
+    label: "eDISH",
+    title: "eDISH (hepatocellular)",
+    xMeasure: "ALT",
+    xCut: ALT_ULN_CUT,
+    yCut: BILI_ULN_CUT,
+    names: { [NN]: NN, [CH]: CH, [TC]: TC, [HL]: HL }
+  },
+  cholestatic: {
+    id: "cholestatic",
+    label: "eDISH-AP",
+    title: "eDISH-AP (cholestatic)",
+    xMeasure: "ALP",
+    xCut: ALP_ULN_CUT,
+    yCut: BILI_ULN_CUT,
+    names: {
+      [NN]: "Normal range",
+      [CH]: "Bilirubin only",
+      [TC]: "ALP elevation only",
+      [HL]: "Cholestatic injury + jaundice"
+    }
+  }
+};
+function resolveScreen(value) {
+  return Object.prototype.hasOwnProperty.call(QUADRANT_SETS, value) ? value : "hepatocellular";
+}
+function screenForMeasure(measureKey) {
+  return measureKey === QUADRANT_SETS.cholestatic.xMeasure ? "cholestatic" : "hepatocellular";
+}
+function quadrantName(quadrant, screen) {
+  return QUADRANT_SETS[resolveScreen(screen)].names[quadrant] ?? quadrant;
+}
+var QUADRANT_STYLE = {
+  [NN]: { color: "#33a02c", pointStyle: "rect", label: NN },
+  [CH]: { color: "#e6a000", pointStyle: "circle", label: CH },
+  [TC]: { color: "#1f78b4", pointStyle: "cross", label: TC },
+  [HL]: { color: "#e31a1c", pointStyle: "triangle", label: HL }
+};
+var CONCERN_COLORS = {
+  red: "#f28b82",
+  yellow: "#fdd663",
+  green: "#81c995",
+  gray: "#dadce0"
+};
+var CONCERN_MATRIX = {
+  [NN]: { [NN]: "gray", [CH]: "red", [TC]: "red", [HL]: "red" },
+  [CH]: { [NN]: "green", [CH]: "gray", [TC]: "yellow", [HL]: "red" },
+  [TC]: { [NN]: "green", [CH]: "yellow", [TC]: "gray", [HL]: "red" },
+  [HL]: { [NN]: "green", [CH]: "green", [TC]: "green", [HL]: "gray" }
+};
+function concernOf(pretreatQuadrant, onTreatQuadrant) {
+  const row = CONCERN_MATRIX[pretreatQuadrant];
+  return row && row[onTreatQuadrant] || "gray";
+}
+function classifyComposite(altULN, biliULN, screen) {
+  const set2 = QUADRANT_SETS[resolveScreen(screen)];
+  const altElevated = altULN > set2.xCut;
+  const biliElevated = biliULN > set2.yCut;
+  if (!altElevated && !biliElevated) return NN;
+  if (!altElevated && biliElevated) return CH;
+  if (altElevated && biliElevated) return HL;
+  return TC;
+}
+var SEVERITY_TIERS = {
+  [HL]: 0,
+  [CH]: 1,
+  [TC]: 1,
+  [NN]: 2
+};
+var SEVERITY_ORDER = [HL, CH, TC, NN];
+function shiftDirection(pretreatQuadrant, onTreatQuadrant) {
+  const delta = SEVERITY_TIERS[pretreatQuadrant] - SEVERITY_TIERS[onTreatQuadrant];
+  if (delta > 0) return "up";
+  if (delta < 0) return "down";
+  return "lateral";
+}
+function ribbonColor(pretreatQuadrant, onTreatQuadrant) {
+  return CONCERN_COLORS[concernOf(pretreatQuadrant, onTreatQuadrant)];
+}
+
 // src/hep-explorer/configure.js
 var GROUP_NONE = "hep_none";
 var DISPLAY_MODES = [
@@ -14058,6 +14147,10 @@ var VIEW_MODES = [
   { value: "scatter", label: "eDISH / mDISH scatter" },
   { value: "migration", label: "Migration (Sankey)" },
   { value: "composite", label: "Composite plot (baseline-referenced)" }
+];
+var SCREEN_OPTIONS = [
+  { value: "hepatocellular", label: "eDISH (hepatocellular)" },
+  { value: "cholestatic", label: "eDISH-AP (cholestatic)" }
 ];
 var AXIS_TYPES = ["linear", "log"];
 var LOG_BASES = [
@@ -14093,6 +14186,7 @@ var DEFAULT_SETTINGS3 = {
     TB: "Total Bilirubin",
     ALP: "Alkaline phosphatase (ALP)"
   },
+  screen: "hepatocellular",
   view: "scatter",
   x_default: "ALT",
   y_default: "TB",
@@ -14100,7 +14194,7 @@ var DEFAULT_SETTINGS3 = {
   y_options: ["TB"],
   cuts: {
     TB: { relative_uln: 2, relative_baseline: 4.8 },
-    ALP: { relative_uln: 1, relative_baseline: 3.8 },
+    ALP: { relative_uln: 2, relative_baseline: 3.8 },
     rRatio: { relative_uln: 5, relative_baseline: 5 },
     defaults: { relative_uln: 3, relative_baseline: 3.8 }
   },
@@ -14171,6 +14265,7 @@ function syncSettings3(settings) {
     };
   });
   synced.cuts = mergedCuts;
+  synced.screen = resolveScreen(synced.screen);
   synced.r_ratio = arrayify3(synced.r_ratio);
   if (synced.r_ratio.length < 2) synced.r_ratio = [0, null];
   const activeArms = arrayify3(synced.active_arms).map(String);
@@ -14247,59 +14342,6 @@ function resolveArmDesignation(arms, settings) {
   return { sides, placeboArm, ambiguous: detail.ambiguous, candidates: detail.candidates, warning };
 }
 
-// src/hep-core/quadrants.js
-var COMPOSITE_QUADRANTS = ["Normal & NN", "Cholestasis", "Temple's Corollary", "Hy's Law"];
-var [NN, CH, TC, HL] = COMPOSITE_QUADRANTS;
-var ALT_ULN_CUT = 3;
-var BILI_ULN_CUT = 2;
-var BLN_LINES = [1, 3, 5];
-var QUADRANT_STYLE = {
-  [NN]: { color: "#33a02c", pointStyle: "rect", label: NN },
-  [CH]: { color: "#e6a000", pointStyle: "circle", label: CH },
-  [TC]: { color: "#1f78b4", pointStyle: "cross", label: TC },
-  [HL]: { color: "#e31a1c", pointStyle: "triangle", label: HL }
-};
-var CONCERN_COLORS = {
-  red: "#f28b82",
-  yellow: "#fdd663",
-  green: "#81c995",
-  gray: "#dadce0"
-};
-var CONCERN_MATRIX = {
-  [NN]: { [NN]: "gray", [CH]: "red", [TC]: "red", [HL]: "red" },
-  [CH]: { [NN]: "green", [CH]: "gray", [TC]: "yellow", [HL]: "red" },
-  [TC]: { [NN]: "green", [CH]: "yellow", [TC]: "gray", [HL]: "red" },
-  [HL]: { [NN]: "green", [CH]: "green", [TC]: "green", [HL]: "gray" }
-};
-function concernOf(pretreatQuadrant, onTreatQuadrant) {
-  const row = CONCERN_MATRIX[pretreatQuadrant];
-  return row && row[onTreatQuadrant] || "gray";
-}
-function classifyComposite(altULN, biliULN) {
-  const altElevated = altULN > ALT_ULN_CUT;
-  const biliElevated = biliULN > BILI_ULN_CUT;
-  if (!altElevated && !biliElevated) return NN;
-  if (!altElevated && biliElevated) return CH;
-  if (altElevated && biliElevated) return HL;
-  return TC;
-}
-var SEVERITY_TIERS = {
-  [HL]: 0,
-  [CH]: 1,
-  [TC]: 1,
-  [NN]: 2
-};
-var SEVERITY_ORDER = [HL, CH, TC, NN];
-function shiftDirection(pretreatQuadrant, onTreatQuadrant) {
-  const delta = SEVERITY_TIERS[pretreatQuadrant] - SEVERITY_TIERS[onTreatQuadrant];
-  if (delta > 0) return "up";
-  if (delta < 0) return "down";
-  return "lateral";
-}
-function ribbonColor(pretreatQuadrant, onTreatQuadrant) {
-  return CONCERN_COLORS[concernOf(pretreatQuadrant, onTreatQuadrant)];
-}
-
 // src/hep-core/subjects.js
 var DEFAULT_BASELINE_TB_MAX = 1;
 var DEFAULT_JAUNDICE_ULN = 2;
@@ -14358,7 +14400,9 @@ function reduceMeasure(rows, settings = {}) {
     uln: baselineRow.__hep_uln
   };
 }
-function buildHepSubjects(cleanRows, settings) {
+function buildHepSubjects(cleanRows, settings, screen) {
+  const screenId = resolveScreen(screen);
+  const xMeasure = QUADRANT_SETS[screenId].xMeasure;
   const rows = cleanRows || [];
   const armCol = resolveArmCol(rows, settings);
   const metaCols = [
@@ -14378,13 +14422,14 @@ function buildHepSubjects(cleanRows, settings) {
   let excluded = 0;
   byId.forEach((participantRows, id) => {
     const alt = reduceMeasure(resolveMeasureRows(participantRows, settings, "ALT"), settings);
+    const x = xMeasure === "ALT" ? alt : reduceMeasure(resolveMeasureRows(participantRows, settings, xMeasure), settings);
     const bili = reduceMeasure(resolveMeasureRows(participantRows, settings, "TB"), settings);
-    if (!alt || !bili) {
+    if (!x || !bili) {
       excluded += 1;
       return;
     }
-    const pretreatQuadrant = classifyComposite(alt.baselineULN, bili.baselineULN);
-    const onTreatQuadrant = classifyComposite(alt.peakULN, bili.peakULN);
+    const pretreatQuadrant = classifyComposite(x.baselineULN, bili.baselineULN, screenId);
+    const onTreatQuadrant = classifyComposite(x.peakULN, bili.peakULN, screenId);
     const raw = {};
     metaCols.forEach((col) => {
       raw[col] = participantRows[0][col] === void 0 ? "" : String(participantRows[0][col]);
@@ -14392,21 +14437,26 @@ function buildHepSubjects(cleanRows, settings) {
     subjects.push({
       id,
       raw,
-      baselineAltULN: alt.baselineULN,
+      screen: screenId,
+      xMeasure,
+      baselineXULN: x.baselineULN,
+      peakXULN: x.peakULN,
+      peakXBLN: x.peakBLN,
+      baselineAltULN: alt ? alt.baselineULN : NaN,
       baselineBiliULN: bili.baselineULN,
-      peakAltULN: alt.peakULN,
+      peakAltULN: alt ? alt.peakULN : NaN,
       peakBiliULN: bili.peakULN,
-      peakAltBLN: alt.peakBLN,
+      peakAltBLN: alt ? alt.peakBLN : NaN,
       peakBiliBLN: bili.peakBLN,
       pretreatQuadrant,
       onTreatQuadrant,
       concern: concernOf(pretreatQuadrant, onTreatQuadrant),
       // Absolute units for the ALT waterfall (Fig 5), where ×ULN quadrants lose
       // their meaning and the axis is the measure's own U/L.
-      baselineAlt: alt.baselineValue,
-      peakAlt: alt.peakValue,
-      peakAltDay: alt.peakDay,
-      altUln: alt.uln,
+      baselineAlt: alt ? alt.baselineValue : NaN,
+      peakAlt: alt ? alt.peakValue : NaN,
+      peakAltDay: alt ? alt.peakDay : NaN,
+      altUln: alt ? alt.uln : NaN,
       baselineBili: bili.baselineValue,
       peakBili: bili.peakValue,
       // Both jaundice clauses stay explicit even though, inside the waterfall's
@@ -14436,8 +14486,8 @@ function buildHepSubjects(cleanRows, settings) {
     armWarning: designation.warning
   };
 }
-function buildCompositeSubjects(cleanRows, settings) {
-  return buildHepSubjects(cleanRows, settings);
+function buildCompositeSubjects(cleanRows, settings, screen) {
+  return buildHepSubjects(cleanRows, settings, screen);
 }
 
 // src/hep-core/palt.js
@@ -23036,8 +23086,43 @@ var QUADRANT_MEANINGS = {
   "Possible Hy's Law Range": "Both measures above their cutpoints. A screening range, not a diagnosis: Hy's Law also requires that no other cause explains the injury, which only a full case review can establish.",
   Hyperbilirubinemia: "Bilirubin above its cutpoint with the aminotransferase below its own \u2014 a bilirubin rise without the hepatocellular injury pattern (consider haemolysis, Gilbert syndrome, or cholestasis).",
   "Temple's Corollary": "Aminotransferase above its cutpoint with bilirubin below its own \u2014 hepatocellular injury without the loss of function that defines the Hy's Law range.",
-  "Normal Range": "Neither measure above its cutpoint for this participant."
+  "Normal Range": "Neither measure above its cutpoint for this participant.",
+  // eDISH-AP, the cholestatic screen (HEP-AP-005). Hy's Law does not apply on
+  // this plot: its fatality rate was established for hepatocellular injury.
+  "Cholestatic injury + jaundice": "ALP and bilirubin both above their cutpoints \u2014 cholestatic injury with loss of liver function. Review each case: no fatality rate has been validated for this range, and only a full case review can rule out other causes such as biliary obstruction.",
+  "Bilirubin only": "Bilirubin above its cutpoint with ALP below its own \u2014 consider Gilbert syndrome, haemolysis, or hepatocellular injury, which the eDISH screen shows.",
+  "ALP elevation only": "ALP above its cutpoint with bilirubin below its own \u2014 a cholestatic signal without jaundice. Bone disease and pregnancy also raise ALP, so check GGT before reading it as liver.",
+  "Normal range": "Neither ALP nor bilirubin above its cutpoint for this participant."
 };
+var CHOLESTATIC_QUADRANT_LABELS = [
+  {
+    position: "upper-right",
+    label: QUADRANT_SETS.cholestatic.names["Hy's Law"],
+    xCat: "High",
+    yCat: "High"
+  },
+  {
+    position: "upper-left",
+    label: QUADRANT_SETS.cholestatic.names.Cholestasis,
+    xCat: "Normal",
+    yCat: "High"
+  },
+  {
+    position: "lower-right",
+    label: QUADRANT_SETS.cholestatic.names["Temple's Corollary"],
+    xCat: "High",
+    yCat: "Normal"
+  },
+  {
+    position: "lower-left",
+    label: QUADRANT_SETS.cholestatic.names["Normal & NN"],
+    xCat: "Normal",
+    yCat: "Normal"
+  }
+];
+function quadrantLabelsFor(screen) {
+  return resolveScreen(screen) === "cholestatic" ? CHOLESTATIC_QUADRANT_LABELS : QUADRANT_LABELS;
+}
 var CLINICAL_CAUTION = "Exploratory tool \u2014 not validated for clinical use. Confirm any signal with a full case review.";
 function groupLegendEntries(groupValues, points) {
   const rows = points || [];
@@ -23294,19 +23379,23 @@ function applyFilters6(points, filters) {
     (point) => Object.entries(filters || {}).every(([key, value]) => filterMatches(point.raw[key], value))
   );
 }
-function classifyQuadrants(points, xCut, yCut) {
+function classifyQuadrants(points, xCut, yCut, screen) {
+  const strict = resolveScreen(screen) === "cholestatic";
+  const quadrantLabels = quadrantLabelsFor(screen);
   const counts = {};
-  QUADRANT_LABELS.forEach((entry) => {
+  quadrantLabels.forEach((entry) => {
     counts[entry.position] = 0;
   });
   points.forEach((point) => {
-    const xCat = point.x >= xCut ? "High" : "Normal";
-    const yCat = point.y >= yCut ? "High" : "Normal";
-    const quadrant = QUADRANT_LABELS.find((entry) => entry.xCat === xCat && entry.yCat === yCat);
+    const xHigh = strict ? point.x > xCut : point.x >= xCut;
+    const yHigh = strict ? point.y > yCut : point.y >= yCut;
+    const xCat = xHigh ? "High" : "Normal";
+    const yCat = yHigh ? "High" : "Normal";
+    const quadrant = quadrantLabels.find((entry) => entry.xCat === xCat && entry.yCat === yCat);
     if (quadrant) counts[quadrant.position] += 1;
   });
   const total = points.length;
-  const labels = QUADRANT_LABELS.map((entry) => {
+  const labels = quadrantLabels.map((entry) => {
     const count2 = counts[entry.position];
     return {
       position: entry.position,
@@ -24087,7 +24176,12 @@ function moveCut(host, axis, value) {
   host.state[axis === "x" ? "xCut" : "yCut"] = value;
   const input = host.cutInputs && host.cutInputs[axis];
   if (input) input.value = String(value);
-  host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
+  host.quadrants = classifyQuadrants(
+    host.points,
+    host.state.xCut,
+    host.state.yCut,
+    screenForMeasure(host.state.measureX)
+  );
   drawQuadrantSummary(host);
   if (host.chart) host.chart.update("none");
 }
@@ -24835,7 +24929,12 @@ var scatterView = {
       host.settings.group_order_col
     ) : [];
     host.colorScale = groupColorScale2(host.groupValues);
-    host.quadrants = classifyQuadrants(host.points, host.state.xCut, host.state.yCut);
+    host.quadrants = classifyQuadrants(
+      host.points,
+      host.state.xCut,
+      host.state.yCut,
+      screenForMeasure(host.state.measureX)
+    );
     drawScatter(host);
     rebuildAnimationFrames(host);
     drawAnimationBar(host);
@@ -25226,7 +25325,11 @@ function designationFor(host, arms) {
   return resolveArmDesignation(arms, { ...host.settings, active_arms: activeArms });
 }
 function buildCohort(host) {
-  const built = buildHepSubjects(host.cleanRows, host.settings);
+  const built = buildHepSubjects(
+    host.cleanRows,
+    host.settings,
+    screenForMeasure(host.state.measureX)
+  );
   const shown = applyFilters6(built.subjects, host.state.filters);
   const designation = designationFor(host, built.arms);
   const sides = designation.sides;
@@ -25267,14 +25370,16 @@ function sankeyLabel(summary) {
   const arm = (side) => `${SIDE_TITLE[side]}: ${summary[side].up} unfavourable and ${summary[side].down} favourable shifts among ${participantCount(summary[side].total)}`;
   return `Baseline to peak on-treatment migration Sankey. Baseline categorization in the centre, placebo flows left, active drug flows right. ${arm("placebo")}. ${arm("active")}.`;
 }
-function ribbonLabel(ribbon) {
+function ribbonLabel(ribbon, screen) {
+  const pre = quadrantName(ribbon.pre, screen);
+  const post = quadrantName(ribbon.post, screen);
   const verb = ribbon.pre === ribbon.post ? "remained in" : "shifted from";
-  const where = ribbon.pre === ribbon.post ? `${ribbon.pre}` : `${ribbon.pre} to ${ribbon.post}`;
+  const where = ribbon.pre === ribbon.post ? `${pre}` : `${pre} to ${post}`;
   return `${participantCount(ribbon.count)} ${verb} ${where} on ${SIDE_LABEL[ribbon.side]} \u2014 ${CONCERN_PHRASE[ribbon.concern]}`;
 }
-function ribbonTip(ribbon) {
+function ribbonTip(ribbon, screen) {
   return `${SIDE_TITLE[ribbon.side]} \xB7 ${participantCount(ribbon.count)}
-${ribbon.pre} \u2192 ${ribbon.post}
+${quadrantName(ribbon.pre, screen)} \u2192 ${quadrantName(ribbon.post, screen)}
 ${CONCERN_PHRASE[ribbon.concern]}`;
 }
 function showTip(host, event, text3) {
@@ -25323,12 +25428,15 @@ function renderFootnote(host) {
   footnote.textContent = "";
   const cell2 = host.migrationSelectedKey ? host.migrationCellIndex.get(host.migrationSelectedKey) : null;
   if (!cell2) {
-    footnote.textContent = "Migration plot (Amirzadegan et al., Drug Safety 2025, Fig 3): baseline eDISH categorization in the centre, peak on-treatment shifts running left for placebo and right for active drug. Ribbon thickness is participant count on one shared scale; upward shifts are unfavourable (pink) and downward shifts favourable (green). Select a ribbon or a cross-table cell to carry those participants into the composite plot.";
+    footnote.textContent = `Migration plot (Amirzadegan et al., Drug Safety 2025, Fig 3): baseline ${QUADRANT_SETS[screenForMeasure(host.state.measureX)].label} categorization in the centre, peak on-treatment shifts running left for placebo and right for active drug. Ribbon thickness is participant count on one shared scale; upward shifts are unfavourable (pink) and downward shifts favourable (green). Select a ribbon or a cross-table cell to carry those participants into the composite plot.`;
     return;
   }
   const count2 = cell2.ids.length;
   const block2 = createElement("div", "hep-step");
-  const move = cell2.pre === cell2.post ? `remained in ${cell2.pre}` : `shifted ${cell2.pre} \u2192 ${cell2.post}`;
+  const screen = screenForMeasure(host.state.measureX);
+  const pre = quadrantName(cell2.pre, screen);
+  const post = quadrantName(cell2.post, screen);
+  const move = cell2.pre === cell2.post ? `remained in ${pre}` : `shifted ${pre} \u2192 ${post}`;
   block2.append(
     createElement(
       "strong",
@@ -25410,7 +25518,7 @@ function paintTiers(group, nodes) {
     group.append(label);
   });
 }
-function paintNodes(group, nodes) {
+function paintNodes(group, nodes, screen) {
   const columns = sankeyColumns();
   nodes.forEach((node2) => {
     const style = QUADRANT_STYLE[node2.quadrant];
@@ -25441,7 +25549,7 @@ function paintNodes(group, nodes) {
       "text-anchor": centred ? "middle" : node2.column === "left" ? "start" : "end",
       "dominant-baseline": "middle"
     });
-    text3.textContent = `${node2.quadrant} ${counts}`;
+    text3.textContent = `${quadrantName(node2.quadrant, screen)} ${counts}`;
     group.append(text3);
   });
 }
@@ -25466,9 +25574,9 @@ function paintRibbons(host, group, ribbons) {
       "stroke-width": 1,
       tabindex: 0,
       role: "button",
-      "aria-label": ribbonLabel(ribbon)
+      "aria-label": ribbonLabel(ribbon, screenForMeasure(host.state.measureX))
     });
-    const tip = ribbonTip(ribbon);
+    const tip = ribbonTip(ribbon, screenForMeasure(host.state.measureX));
     path.addEventListener("pointerenter", (event) => {
       host.migrationHoverKey = ribbon.key;
       refreshHighlight(host);
@@ -25528,7 +25636,7 @@ function buildSankey(host, layout, summary) {
   });
   paintTiers(group, layout.nodes);
   paintRibbons(host, group, layout.ribbons);
-  paintNodes(group, layout.nodes);
+  paintNodes(group, layout.nodes, screenForMeasure(host.state.measureX));
   svg.append(group);
   return svg;
 }
@@ -25562,14 +25670,17 @@ function buildCrossTable(host, side, matrix) {
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
   headRow.append(createElement("th", null, "Baseline \u2193 / On-treatment \u2192"));
-  SEVERITY_ORDER.forEach((quadrant) => headRow.append(createElement("th", null, quadrant)));
+  const screen = screenForMeasure(host.state.measureX);
+  SEVERITY_ORDER.forEach(
+    (quadrant) => headRow.append(createElement("th", null, quadrantName(quadrant, screen)))
+  );
   headRow.append(createElement("th", "hep-total", "Total"));
   thead.append(headRow);
   table.append(thead);
   const tbody = document.createElement("tbody");
   SEVERITY_ORDER.forEach((pre) => {
     const tr = document.createElement("tr");
-    tr.append(createElement("td", "hep-rowhead", pre));
+    tr.append(createElement("td", "hep-rowhead", quadrantName(pre, screen)));
     SEVERITY_ORDER.forEach((post) => {
       const count2 = matrix.counts[pre][post];
       const key = `${side}|${pre}|${post}`;
@@ -25586,7 +25697,7 @@ function buildCrossTable(host, side, matrix) {
         td.setAttribute("role", "button");
         td.setAttribute(
           "aria-label",
-          `${participantCount(count2)}, ${pre} to ${post}, ${SIDE_LABEL[side]}`
+          `${participantCount(count2)}, ${quadrantName(pre, screen)} to ${quadrantName(post, screen)}, ${SIDE_LABEL[side]}`
         );
         td.onclick = () => selectCell(host, key);
         td.onkeydown = (event) => {
@@ -25620,7 +25731,7 @@ function buildHyLawCaution(host, cells) {
     createElement(
       "span",
       "hep-caution-text",
-      `\u26A0 ${participantCount(ids.length)} remained in Hy's Law throughout. A shift view cannot detect worsening within a category \u2014 review them individually.`
+      `\u26A0 ${participantCount(ids.length)} remained in ${quadrantName("Hy's Law", screenForMeasure(host.state.measureX))} throughout. A shift view cannot detect worsening within a category \u2014 review them individually.`
     )
   );
   const button = createElement("button", "hep-step-btn", `Review these ${ids.length}`);
@@ -25639,7 +25750,7 @@ function renderNotes(host, cohort, summary) {
   note(`${cohort.plotted.length} of ${total} participants shown in the migration plot.`);
   if (cohort.excludedNoData)
     note(
-      `${cohort.excludedNoData} participant${cohort.excludedNoData > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).`,
+      `${cohort.excludedNoData} participant${cohort.excludedNoData > 1 ? "s" : ""} excluded (missing baseline or on-treatment ${QUADRANT_SETS[screenForMeasure(host.state.measureX)].xMeasure}/total bilirubin).`,
       true
     );
   if (cohort.armExcluded)
@@ -25738,7 +25849,7 @@ var migrationView = {
     renderFootnote(host);
     if (!cohort.plotted.length) {
       const note = createElement("div", "sv-warning");
-      note.textContent = "The migration plot needs participants in an arm designated placebo or active, each with baseline and on-treatment ALT and total bilirubin. No participant in the current selection qualifies.";
+      note.textContent = `The migration plot needs participants in an arm designated placebo or active, each with baseline and on-treatment ${QUADRANT_SETS[screenForMeasure(host.state.measureX)].xMeasure} and total bilirubin. No participant in the current selection qualifies.`;
       host.migrationWrap.append(note);
       if (carriedIds.length) host.selection.dispatch([]);
       return;
@@ -25792,7 +25903,7 @@ var migrationView = {
 var migration_default = migrationView;
 
 // src/hep-explorer/views/composite.js
-function buildLegend() {
+function buildLegend(screen) {
   const legend = createElement("div", "hep-composite-legend");
   legend.append(createElement("strong", null, "Baseline quadrant:"));
   COMPOSITE_QUADRANTS.forEach((quadrant) => {
@@ -25800,20 +25911,20 @@ function buildLegend() {
     const item = createElement("span", "hep-legend-item");
     const swatch = createElement("span");
     swatch.style.cssText = `display:inline-block;width:.7rem;height:.7rem;border-radius:${style.pointStyle === "circle" ? "50%" : "2px"};background:${style.color}`;
-    item.append(swatch, document.createTextNode(quadrant));
+    item.append(swatch, document.createTextNode(quadrantName(quadrant, screen)));
     legend.append(item);
   });
   return legend;
 }
-function edishScales(xValues, yValues) {
-  const xDomain = edishDomain(xValues, ALT_ULN_CUT, "log");
-  const yDomain = edishDomain(yValues, BILI_ULN_CUT, "log");
+function edishScales(xValues, yValues, set2) {
+  const xDomain = edishDomain(xValues, set2.xCut, "log");
+  const yDomain = edishDomain(yValues, set2.yCut, "log");
   return {
     x: {
       type: "logarithmic",
       min: xDomain[0],
       max: xDomain[1],
-      title: { display: true, text: "ALT [\xD7ULN]" },
+      title: { display: true, text: `${set2.xMeasure} [\xD7ULN]` },
       grid: { color: "rgba(148, 163, 184, 0.25)" }
     },
     y: {
@@ -25834,12 +25945,14 @@ function blnDomain(values) {
 }
 function tooltipLine(subject, which) {
   if (!subject) return "";
+  const pre = quadrantName(subject.pretreatQuadrant, subject.screen);
+  const post = quadrantName(subject.onTreatQuadrant, subject.screen);
   if (which === "bln") {
-    return `${subject.id}: ALT ${formatNumber4(subject.peakAltBLN)}\xD7BLN, TB ${formatNumber4(subject.peakBiliBLN)}\xD7BLN (baseline ${subject.pretreatQuadrant})`;
+    return `${subject.id}: ${subject.xMeasure} ${formatNumber4(subject.peakXBLN)}\xD7BLN, TB ${formatNumber4(subject.peakBiliBLN)}\xD7BLN (baseline ${pre})`;
   }
-  const alt = which === "pretreat" ? subject.baselineAltULN : subject.peakAltULN;
+  const x = which === "pretreat" ? subject.baselineXULN : subject.peakXULN;
   const bili = which === "pretreat" ? subject.baselineBiliULN : subject.peakBiliULN;
-  return `${subject.id}: ALT ${formatNumber4(alt)}\xD7ULN, TB ${formatNumber4(bili)}\xD7ULN \u2014 ${subject.pretreatQuadrant} \u2192 ${subject.onTreatQuadrant}`;
+  return `${subject.id}: ${subject.xMeasure} ${formatNumber4(x)}\xD7ULN, TB ${formatNumber4(bili)}\xD7ULN \u2014 ${pre} \u2192 ${post}`;
 }
 function tooltipConfig(subjects, which) {
   let itemCount = 0;
@@ -25947,7 +26060,8 @@ function buildEdishCard(host, title, subjects, which) {
   const canvas = document.createElement("canvas");
   wrap.append(canvas);
   card.append(wrap);
-  const xKey = which === "pretreat" ? "baselineAltULN" : "peakAltULN";
+  const set2 = QUADRANT_SETS[screenForMeasure(host.state.measureX)];
+  const xKey = which === "pretreat" ? "baselineXULN" : "peakXULN";
   const yKey = which === "pretreat" ? "baselineBiliULN" : "peakBiliULN";
   const data = subjects.map((subject) => ({ x: subject[xKey], y: subject[yKey] }));
   const chart = new Chart(canvas.getContext("2d"), {
@@ -25965,14 +26079,15 @@ function buildEdishCard(host, title, subjects, which) {
       },
       scales: edishScales(
         subjects.map((subject) => subject[xKey]),
-        subjects.map((subject) => subject[yKey])
+        subjects.map((subject) => subject[yKey]),
+        set2
       ),
       ...interactionOptions(host)
     },
     plugins: [
       referenceLinePlugin({
-        vLines: [{ value: ALT_ULN_CUT, label: `${ALT_ULN_CUT}\xD7ULN` }],
-        hLines: [{ value: BILI_ULN_CUT, label: `${BILI_ULN_CUT}\xD7ULN` }]
+        vLines: [{ value: set2.xCut, label: `${set2.xCut}\xD7ULN` }],
+        hLines: [{ value: set2.yCut, label: `${set2.yCut}\xD7ULN` }]
       })
     ]
   });
@@ -25981,19 +26096,21 @@ function buildEdishCard(host, title, subjects, which) {
 }
 function buildPanels(host, subjects) {
   const grid = createElement("div", "hep-composite-panels");
+  const screen = screenForMeasure(host.state.measureX);
+  const set2 = QUADRANT_SETS[screen];
   const order = ["Cholestasis", "Hy's Law", "Normal & NN", "Temple's Corollary"];
-  const xDomain = blnDomain(subjects.map((subject) => subject.peakAltBLN));
+  const xDomain = blnDomain(subjects.map((subject) => subject.peakXBLN));
   const yDomain = blnDomain(subjects.map((subject) => subject.peakBiliBLN));
   const refLines = BLN_LINES.map((value) => ({ value, label: `${value}\xD7` }));
   order.forEach((quadrant) => {
     const members = subjects.filter((subject) => subject.onTreatQuadrant === quadrant);
     const card = createElement("div", "hep-composite-card");
-    card.append(createElement("h4", null, `${quadrant} (${members.length})`));
+    card.append(createElement("h4", null, `${quadrantName(quadrant, screen)} (${members.length})`));
     const wrap = createElement("div", "hep-composite-panel-canvas");
     const canvas = document.createElement("canvas");
     wrap.append(canvas);
     card.append(wrap);
-    const data = members.map((subject) => ({ x: subject.peakAltBLN, y: subject.peakBiliBLN }));
+    const data = members.map((subject) => ({ x: subject.peakXBLN, y: subject.peakBiliBLN }));
     const chart = new Chart(canvas.getContext("2d"), {
       type: "scatter",
       data: {
@@ -26012,7 +26129,7 @@ function buildPanels(host, subjects) {
             type: "logarithmic",
             min: xDomain[0],
             max: xDomain[1],
-            title: { display: true, text: "ALT [\xD7Baseline]" },
+            title: { display: true, text: `${set2.xMeasure} [\xD7Baseline]` },
             grid: { color: "rgba(148, 163, 184, 0.2)" }
           },
           y: {
@@ -26049,7 +26166,7 @@ function buildConcernLegend2() {
   });
   return legend;
 }
-function buildMigrationTable(subjects) {
+function buildMigrationTable(subjects, screen) {
   const wrap = createElement("div", "hep-migration");
   const matrix = migrationMatrix(subjects);
   const table = createElement("table");
@@ -26063,14 +26180,16 @@ function buildMigrationTable(subjects) {
   const thead = document.createElement("thead");
   const headRow = document.createElement("tr");
   headRow.append(createElement("th", null, "Baseline \u2193 / On-treatment \u2192"));
-  COMPOSITE_QUADRANTS.forEach((quadrant) => headRow.append(createElement("th", null, quadrant)));
+  COMPOSITE_QUADRANTS.forEach(
+    (quadrant) => headRow.append(createElement("th", null, quadrantName(quadrant, screen)))
+  );
   headRow.append(createElement("th", "hep-total", "Total"));
   thead.append(headRow);
   table.append(thead);
   const tbody = document.createElement("tbody");
   COMPOSITE_QUADRANTS.forEach((pre) => {
     const tr = document.createElement("tr");
-    tr.append(createElement("td", "hep-rowhead", pre));
+    tr.append(createElement("td", "hep-rowhead", quadrantName(pre, screen)));
     COMPOSITE_QUADRANTS.forEach((post) => {
       const td = createElement("td", null, String(matrix.counts[pre][post]));
       td.style.background = CONCERN_COLORS[concernOf(pre, post)];
@@ -26176,24 +26295,30 @@ var compositeView = {
    * the selection is cleared and listeners notified.
    */
   render(host, { carriedIds = [] } = {}) {
-    const { subjects, excluded } = buildCompositeSubjects(host.cleanRows, host.settings);
+    const screen = screenForMeasure(host.state.measureX);
+    const set2 = QUADRANT_SETS[screen];
+    const { subjects, excluded } = buildCompositeSubjects(host.cleanRows, host.settings, screen);
     const shown = applyFilters6(subjects, host.state.filters);
     host.compositeSubjectsShown = shown;
     host.selection.mount(host.compositeSelectSection, shown);
     const totalParticipants = unique6(host.cleanRows.map((row) => row[host.settings.id_col])).length;
-    const excludedNote = excluded ? `<span class="sv-warning">${excluded} participant${excluded > 1 ? "s" : ""} excluded (missing baseline or on-treatment ALT/total bilirubin).</span>` : "";
+    const excludedNote = excluded ? `<span class="sv-warning">${excluded} participant${excluded > 1 ? "s" : ""} excluded (missing baseline or on-treatment ${set2.xMeasure}/total bilirubin).</span>` : "";
     host.notes.innerHTML = `<span>${shown.length} of ${totalParticipants} participants shown in the composite plot.</span>` + excludedNote;
-    host.footnote.textContent = "Composite plot (Tesfaldet et al., Drug Safety 2024): symbol color and shape mark each participant\u2019s baseline (pretreatment) eDISH quadrant, carried through every panel so migration is visible. \xD7Baseline = peak on-treatment value \xF7 the participant\u2019s own baseline.";
+    host.footnote.textContent = `Composite plot (Tesfaldet et al., Drug Safety 2024): symbol color and shape mark each participant\u2019s baseline (pretreatment) ${set2.label} quadrant, carried through every panel so migration is visible. \xD7Baseline = peak on-treatment value \xF7 the participant\u2019s own baseline.`;
     if (!shown.length) {
       const note = createElement("div", "sv-warning");
-      note.textContent = "The composite plot needs baseline and on-treatment ALT and total bilirubin for at least one participant. No participant in the current selection qualifies.";
+      note.textContent = `The composite plot needs baseline and on-treatment ${set2.xMeasure} and total bilirubin for at least one participant. No participant in the current selection qualifies.`;
       host.compositeWrap.append(note);
       if (carriedIds.length) host.selection.dispatch([]);
       return;
     }
-    host.compositeWrap.append(buildLegend());
+    host.compositeWrap.append(buildLegend(screen));
     host.compositeWrap.append(
-      createElement("h3", "hep-composite-section-title", "Baseline \u2192 on-treatment eDISH (\xD7ULN)")
+      createElement(
+        "h3",
+        "hep-composite-section-title",
+        `Baseline \u2192 on-treatment ${set2.label} (\xD7ULN)`
+      )
     );
     const edishRow = createElement("div", "hep-composite-edish");
     edishRow.append(buildEdishCard(host, "Pretreatment (baseline)", shown, "pretreat"));
@@ -26207,7 +26332,7 @@ var compositeView = {
       )
     );
     host.compositeWrap.append(buildPanels(host, shown));
-    host.compositeWrap.append(buildMigrationTable(shown));
+    host.compositeWrap.append(buildMigrationTable(shown, screen));
     host.compositeWrap.append(buildByArmSummary(host, shown));
     if (carriedIds.length) {
       const shownIds = new Set(shown.map((subject) => String(subject.id)));
@@ -26258,6 +26383,10 @@ var VIEWS = {
 };
 function resolveViewId(value) {
   return Object.prototype.hasOwnProperty.call(VIEWS, value) ? value : "scatter";
+}
+function initialMeasureX(settings) {
+  const alp = QUADRANT_SETS.cholestatic.xMeasure;
+  return settings.screen === "cholestatic" && settings.x_options.includes(alp) ? alp : settings.x_default;
 }
 var SafetyHepExplorer = class {
   constructor(element = "body", settings = {}) {
@@ -26310,7 +26439,10 @@ var SafetyHepExplorer = class {
     this.profileDetails = null;
     this.state = {
       view: resolveViewId(this.settings.view),
-      measureX: this.settings.x_default,
+      measureX: initialMeasureX(this.settings),
+      // The last hepatocellular x measure, restored when the Screen control
+      // leaves eDISH-AP (HEP-AP-006).
+      lastHepX: null,
       measureY: this.settings.y_default,
       display: "relative_uln",
       axisType: "linear",
@@ -26526,6 +26658,40 @@ var SafetyHepExplorer = class {
     this.activeView().highlight(this);
   }
   /**
+   * The DILI screen in force (HEP-AP-003): it follows the x-axis measure, so the
+   * scatter's X-axis Measure and the Screen control can never disagree — ALP on
+   * x is eDISH-AP, anything else is eDISH. The migration Sankey and the
+   * composite plot read the same screen.
+   * @returns {string} 'hepatocellular' | 'cholestatic'.
+   * @private
+   */
+  activeScreen() {
+    return screenForMeasure(this.state.measureX);
+  }
+  /**
+   * Switch the DILI screen from the Screen control (HEP-AP-006). eDISH-AP puts
+   * ALP on x, remembering the hepatocellular measure it replaced; eDISH puts
+   * that measure back, else x_default, else the first non-ALP option. Axis
+   * limits are per measure, so they return to automatic.
+   * @param {string} screen 'hepatocellular' | 'cholestatic'.
+   * @private
+   */
+  setScreen(screen) {
+    const alp = QUADRANT_SETS.cholestatic.xMeasure;
+    const options = this.settings.x_options;
+    if (screen === "cholestatic") {
+      if (this.state.measureX !== alp) this.state.lastHepX = this.state.measureX;
+      this.state.measureX = alp;
+    } else {
+      const candidates = [this.state.lastHepX, this.settings.x_default, ...options];
+      this.state.measureX = candidates.find((key) => key && key !== alp && options.includes(key)) || this.state.measureX;
+    }
+    clearAxisLimits(this.state.axisX);
+    clearAxisLimits(this.state.axisY);
+    this.buildControls();
+    this.render();
+  }
+  /**
    * The base footnote: usage hint plus the timing-window sentence explaining
    * filled vs hollow points (HEP-DISPLAY-005).
    * @private
@@ -26571,7 +26737,8 @@ var SafetyHepExplorer = class {
     if ("view" in settings) this.state.view = resolveViewId(this.settings.view);
     if ("hide_unchanged" in settings) this.state.hideUnchanged = this.settings.hide_unchanged;
     if ("active_arms" in settings) this.state.activeArms = this.settings.active_arms;
-    if ("x_default" in settings) this.state.measureX = this.settings.x_default;
+    if ("x_default" in settings || "screen" in settings)
+      this.state.measureX = initialMeasureX(this.settings);
     if ("y_default" in settings) this.state.measureY = this.settings.y_default;
     if ("visit_window" in settings) this.state.visitWindow = this.settings.visit_window;
     if ("group_by" in settings) this.state.groupBy = this.settings.group_by;
@@ -26702,6 +26869,15 @@ var SafetyHepExplorer = class {
     const view = this.activeView();
     this.buildViewControl(addSection);
     const settingsParent = addSection("Settings");
+    if (this.settings.x_options.includes(QUADRANT_SETS.cholestatic.xMeasure)) {
+      const screen = addControl("Screen", document.createElement("select"), settingsParent);
+      screen.classList.add("hep-screen");
+      const active = this.activeScreen();
+      SCREEN_OPTIONS.forEach(
+        (mode) => option(screen, mode.value, mode.label, mode.value === active)
+      );
+      screen.onchange = () => this.setScreen(screen.value);
+    }
     view.contributeControls(this, { addSection, addRow, addControl, settingsParent });
     if (this.hasUnscheduled) {
       const unscheduled = addControl(
