@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-10-13T22:42:04.138Z",
+  "generatedAt": "2026-10-15T10:44:29.188Z",
   "environment": {
     "os": "linux 6.17.0-1022-azure",
     "node": "v22.23.3",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "38479463278",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38479463278"
+    "id": "38722321010",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/38722321010"
   },
   "records": [
     {
@@ -1532,6 +1532,14 @@
       "requirementIds": ["HEP-DISPLAY-006", "HEP-CTRL-015", "HEP-CTRL-016"],
       "issueRefs": [55],
       "screenshots": ["HEP-CTRL-015-legend-order-and-palette.png"]
+    },
+    {
+      "test": "HEP-DISPLAY-008/HEP-CTRL-007/HEP-CTRL-014/HEP-CHART-004: Point Size can scale points by the nR ratio, which takes AST when it is the higher (#334)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-008", "HEP-CTRL-007", "HEP-CTRL-014", "HEP-CHART-004"],
+      "issueRefs": [334],
+      "screenshots": ["HEP-DISPLAY-008-nr-ratio-point-size.png"]
     },
     {
       "test": "HEP-DROP-001/HEP-DROP-002/HEP-DROP-003/HEP-IMPUTE-002: removed records are downloadable with a reason, and below-limit values are imputed (#50)",
@@ -6386,6 +6394,14 @@
       "screenshots": ["HEP-CTRL-001-control-panel.png"]
     },
     {
+      "test": "hep-explorer configure HEP-CTRL-007: Point Size offers Uniform, rRatio and nrRatio, as the original renderer did (#334)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-007"],
+      "issueRefs": [334],
+      "screenshots": []
+    },
+    {
       "test": "hep-explorer configure HEP-CTRL-008: the timing window defaults to 30 days (port)",
       "suite": "unit",
       "status": "pass",
@@ -7066,11 +7082,27 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer quadrant and legend polish (#54) HEP-CHART-004: pointTooltip shows the nR ratio under the R ratio, NA when it is missing (#334)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CHART-004"],
+      "issueRefs": [54, 334],
+      "screenshots": []
+    },
+    {
       "test": "hep-explorer quadrant and legend polish (#54) HEP-CTRL-013: legend entries carry each group's count and percent (#54)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["HEP-CTRL-013"],
       "issueRefs": [54, 54],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer quadrant and legend polish (#54) HEP-CTRL-014: the nrRatio point size says what nR encodes and how it differs from R (#334)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-CTRL-014"],
+      "issueRefs": [54, 334],
       "screenshots": []
     },
     {
@@ -7272,6 +7304,22 @@
       "requirementIds": ["HEP-DISPLAY-007"],
       "issueRefs": [],
       "screenshots": []
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-008: buildPoints carries each participant nR ratio beside the R ratio (#334)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-008"],
+      "issueRefs": [334],
+      "screenshots": ["HEP-DISPLAY-008-nr-ratio-point-size.png"]
+    },
+    {
+      "test": "hep-explorer structureData HEP-DISPLAY-008: computeNRRatio is the higher of peak ALT and peak AST xULN over peak ALP xULN (#334)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-DISPLAY-008"],
+      "issueRefs": [334],
+      "screenshots": ["HEP-DISPLAY-008-nr-ratio-point-size.png"]
     },
     {
       "test": "hep-explorer structureData HEP-QUAD-004: a point exactly on a cutpoint classifies as High, and empty data yields zero percents (port)",
