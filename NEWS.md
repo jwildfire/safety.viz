@@ -8,7 +8,9 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.12.0 (Upcoming)
 
-_Nothing merged yet._
+## What's new
+
+- **safety.viz is licensed under the Apache License 2.0,** the licence gsm.safety, gsm.bio and open.csr carry. The repository has a LICENSE file and `package.json` names it.
 
 # safety.viz v1.11.2
 

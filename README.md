@@ -201,3 +201,7 @@ safety.viz is part of the safetyGraphics → gsm modernization
 architecture of [gsm.viz](https://github.com/Gilead-BioStats/rbm-viz) behind
 [gsm.kri](https://github.com/Gilead-BioStats/gsm.kri). Full credits are on the
 [about page](https://jwildfire.github.io/safety.viz/about.html).
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE).
