@@ -6,13 +6,24 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
-# safety.viz v1.12.0 (Upcoming)
+# safety.viz v1.11.3 (Upcoming)
+
+**See it move:** the [annotated v1.11.3 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.11.3-demo/) has captures, try-it steps and the detail behind everything below.
+
+A patch to the Safety Histogram, from a working-group member's review: its axes are titled, and clicking a bar lists each record's visit. Display only: no value, bin or count changes. safety.viz is now licensed under the Apache License 2.0.
 
 ## What's new
 
 - **The Safety Histogram titles its axes.** The single-measure chart names the measure and its unit under the x-axis and counts results up the y-axis; the overview and grouped panels title their y-axes. The original renderer did this and the port did not. [obot.roadmap#430](https://github.com/jwildfire/obot.roadmap/issues/430), [#347](https://github.com/jwildfire/safety.viz/issues/347), PR [#349](https://github.com/jwildfire/safety.viz/pull/349)
 - **Clicking a histogram bar lists each record's visit.** A Visit column follows the participant ID when the chart is given `visit_col`, and the participant ID is listed once even when it is also a filter. A listing configured with `details` is unchanged. [obot.roadmap#430](https://github.com/jwildfire/obot.roadmap/issues/430), [#348](https://github.com/jwildfire/safety.viz/issues/348), PR [#350](https://github.com/jwildfire/safety.viz/pull/350)
-- **safety.viz is licensed under the Apache License 2.0,** the licence gsm.safety, gsm.bio and open.csr carry. The repository has a LICENSE file and `package.json` names it.
+
+## Also in this release
+
+- **safety.viz is licensed under the Apache License 2.0,** the licence gsm.safety, gsm.bio and open.csr carry. The repository has a LICENSE file and `package.json` names it. PR [#346](https://github.com/jwildfire/safety.viz/pull/346)
+
+## Tests and provenance
+
+2,537 unit and 455 browser tests pass. `dist/safety.viz-1.11.3/` is the release bundle, and `dist/safety.viz-1.11.2/` is as v1.11.2 released it. [#351](https://github.com/jwildfire/safety.viz/issues/351), PR [#PRNUM](https://github.com/jwildfire/safety.viz/pull/PRNUM)
 
 # safety.viz v1.11.2
 

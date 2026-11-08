@@ -13269,10 +13269,8 @@ var SafetyViz = (() => {
     synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
     synced.details = arrayify(synced.details).map(fieldSpec).filter((d) => d.value_col);
     if (!synced.details.length) {
-      const listed = /* @__PURE__ */ new Set();
       synced.details = [
         { value_col: synced.id_col, label: "Participant ID" },
-        { value_col: synced.visit_col, label: "Visit" },
         // Listing columns, not filters: take only the column and its label, so the
         // filter contract's start/all/multiple keys do not leak into the listing.
         ...synced.filters.map((filter) => fieldSpec(filter)),
@@ -13280,11 +13278,7 @@ var SafetyViz = (() => {
         { value_col: synced.normal_col_low, label: "Lower Limit of Normal" },
         { value_col: synced.normal_col_high, label: "Upper Limit of Normal" },
         { value_col: synced.unit_col, label: "Unit" }
-      ].filter((d) => {
-        if (!d.value_col || listed.has(d.value_col)) return false;
-        listed.add(d.value_col);
-        return true;
-      });
+      ].filter((d) => d.value_col);
     }
     if (settings.displayNormalRange !== void 0)
       synced.display_normal_range = settings.displayNormalRange;
@@ -13586,28 +13580,10 @@ var SafetyViz = (() => {
       (bin) => annotateBoundaries ? `${formatNumber2(bin.lower, digits)}\u2013${formatNumber2(bin.upper, digits)}` : formatNumber2((bin.lower + bin.upper) / 2, digits)
     );
   }
-  var COUNT_TITLE = "Number of results";
-  function buildScales(measure) {
+  function buildScales() {
     return {
-      y: {
-        beginAtZero: true,
-        ticks: { precision: 0 },
-        title: { display: true, text: COUNT_TITLE }
-      },
-      x: {
-        ticks: { maxRotation: 45, minRotation: 0 },
-        ...measure ? { title: { display: true, text: measure } } : {}
-      }
-    };
-  }
-  function buildMultipleScales() {
-    return {
-      y: {
-        beginAtZero: true,
-        ticks: { precision: 0 },
-        title: { display: true, text: COUNT_TITLE }
-      },
-      x: { ticks: { display: false } }
+      y: { beginAtZero: true, ticks: { precision: 0 } },
+      x: { ticks: { maxRotation: 45, minRotation: 0 } }
     };
   }
 
@@ -17219,7 +17195,7 @@ var SafetyViz = (() => {
               }
             }
           },
-          scales: buildScales(this.state.measure),
+          scales: buildScales(),
           onHover: (event, active) => {
             if (active.length) this.describeBin(inputs.bins[active[0].index], inputs.digits, false);
           },
@@ -17297,7 +17273,10 @@ var SafetyViz = (() => {
             maintainAspectRatio: false,
             responsive: true,
             plugins: { legend: { display: false } },
-            scales: buildMultipleScales(),
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } },
+              x: { ticks: { display: false } }
+            },
             onClick: (event, active) => {
               if (active.length) {
                 const bin = inputs.bins[active[0].index];
@@ -17369,7 +17348,10 @@ var SafetyViz = (() => {
             responsive: true,
             events: [],
             plugins: { legend: { display: false }, tooltip: { enabled: false } },
-            scales: buildMultipleScales()
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } },
+              x: { ticks: { display: false } }
+            }
           }
         });
         chart.$shBins = bins;
