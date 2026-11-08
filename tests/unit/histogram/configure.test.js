@@ -44,6 +44,60 @@ describe('histogram configure', () => {
     ]);
   });
 
+  it('SH-LIST-005: with visit_col set and a participant filter, the default listing names the participant once, then the visit (#348)', () => {
+    const settings = syncSettings({
+      visit_col: 'VISIT',
+      studyday_col: 'VISITNUM',
+      filters: [
+        { value_col: 'SEX', label: 'Sex' },
+        { value_col: 'USUBJID', label: 'Participant ID' }
+      ]
+    });
+    expect(settings.details).toEqual([
+      { value_col: 'USUBJID', label: 'Participant ID' },
+      { value_col: 'VISIT', label: 'Visit' },
+      { value_col: 'SEX', label: 'Sex' },
+      { value_col: 'STRESN', label: 'Result' },
+      { value_col: 'STNRLO', label: 'Lower Limit of Normal' },
+      { value_col: 'STNRHI', label: 'Upper Limit of Normal' },
+      { value_col: 'STRESU', label: 'Unit' }
+    ]);
+  });
+
+  it('SH-LIST-005: a filter on the visit adds no second Visit column, and the study day is never listed (#348)', () => {
+    const settings = syncSettings({
+      visit_col: 'VISIT',
+      studyday_col: 'ADY',
+      filters: [{ value_col: 'VISIT', label: 'Visit name' }]
+    });
+    const columns = settings.details.map((detail) => detail.value_col);
+    expect(columns.filter((column) => column === 'VISIT')).toHaveLength(1);
+    expect(columns).not.toContain('ADY');
+    expect(settings.details[1]).toEqual({ value_col: 'VISIT', label: 'Visit' });
+  });
+
+  it('SH-LIST-005: without visit_col the default listing has no visit column (#348)', () => {
+    const labels = syncSettings({
+      filters: [{ value_col: 'USUBJID', label: 'Participant ID' }]
+    }).details.map((detail) => detail.label);
+    expect(labels).toEqual([
+      'Participant ID',
+      'Result',
+      'Lower Limit of Normal',
+      'Upper Limit of Normal',
+      'Unit'
+    ]);
+  });
+
+  it("SH-LIST-005: a caller's own details stay as given, visit_col or not (#348)", () => {
+    const details = [
+      { value_col: 'USUBJID', label: 'Subject' },
+      { value_col: 'USUBJID', label: 'Subject again' },
+      { value_col: 'STRESN', label: 'Value' }
+    ];
+    expect(syncSettings({ visit_col: 'VISIT', details }).details).toEqual(details);
+  });
+
   it('SH-CHART-004: the group list always offers None and adopts an unknown group_by column (#2)', () => {
     const settings = syncSettings({ group_by: 'ARM' });
     expect(settings.groups[0]).toEqual({ value_col: 'sh_none', label: 'None' });

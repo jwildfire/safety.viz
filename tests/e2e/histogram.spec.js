@@ -184,8 +184,9 @@ test.describe('safety.viz histogram module', () => {
     const csvDownload = await download;
     expect(csvDownload.suggestedFilename()).toBe('safety-histogram-listing.csv');
     const csv = fs.readFileSync(await csvDownload.path(), 'utf8');
+    // The harness filters on the participant ID too; it is listed once (#348, SH-LIST-005).
     expect(csv.split('\n')[0]).toBe(
-      'Participant ID,Site ID,Sex,Race,Treatment Group,Participant ID,Result,Lower Limit of Normal,Upper Limit of Normal,Unit'
+      'Participant ID,Site ID,Sex,Race,Treatment Group,Result,Lower Limit of Normal,Upper Limit of Normal,Unit'
     );
     expect(csv).toContain('SUBJ-030');
   });
