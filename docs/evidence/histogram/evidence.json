@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-11-08T13:17:09.838Z",
+  "generatedAt": "2026-11-08T12:58:25.661Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42483246105",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42483246105"
+    "id": "42481563579",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42481563579"
   },
   "records": [
     {
@@ -1470,6 +1470,14 @@
       "requirementIds": ["SH-AXIS-001", "SH-AXIS-002", "SH-AXIS-003"],
       "issueRefs": [85],
       "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
+    },
+    {
+      "test": "SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and each grouped panel titles its y-axis (#347)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-005", "SH-AXIS-006"],
+      "issueRefs": [347],
+      "screenshots": ["SH-AXIS-005-axis-titles.png"]
     },
     {
       "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
@@ -5072,6 +5080,46 @@
       "screenshots": []
     },
     {
+      "test": "histogram axis titles (#347) SH-AXIS-005: the single-measure chart titles its x-axis with the measure and unit, and its y-axis with what the bars count (#347)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-005"],
+      "issueRefs": [347, 347],
+      "screenshots": ["SH-AXIS-005-axis-titles.png"]
+    },
+    {
+      "test": "histogram axis titles (#347) SH-AXIS-005: the titles change no tick or count: the count axis stays integer-based at zero and the x ticks keep their rotation (#347)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-005"],
+      "issueRefs": [347, 347],
+      "screenshots": ["SH-AXIS-005-axis-titles.png"]
+    },
+    {
+      "test": "histogram axis titles (#347) SH-AXIS-005: the x-axis title follows the Measure control (#347)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-005"],
+      "issueRefs": [347, 347],
+      "screenshots": ["SH-AXIS-005-axis-titles.png"]
+    },
+    {
+      "test": "histogram axis titles (#347) SH-AXIS-006: each all-measures overview panel titles its y-axis and leaves its x-axis untitled and unticked (#347)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-006"],
+      "issueRefs": [347, 347],
+      "screenshots": []
+    },
+    {
+      "test": "histogram axis titles (#347) SH-AXIS-006: each grouped small multiple titles its y-axis, under a titled single-measure chart (#347)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-006"],
+      "issueRefs": [347, 347],
+      "screenshots": []
+    },
+    {
       "test": "histogram axis-limit prefill (SH-AXIS-001) SH-AXIS-001: displaying a limit does not pin it — the overrides stay null until edited (#85)",
       "suite": "unit",
       "status": "pass",
@@ -5190,38 +5238,6 @@
       "requirementIds": ["SH-CHART-004"],
       "issueRefs": [2],
       "screenshots": ["SH-CHART-004-grouped-multiples.png"]
-    },
-    {
-      "test": "histogram configure SH-LIST-005: a caller's own details stay as given, visit_col or not (#348)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-005"],
-      "issueRefs": [348],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-LIST-005: a filter on the visit adds no second Visit column, and the study day is never listed (#348)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-005"],
-      "issueRefs": [348],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-LIST-005: with visit_col set and a participant filter, the default listing names the participant once, then the visit (#348)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-005"],
-      "issueRefs": [348],
-      "screenshots": []
-    },
-    {
-      "test": "histogram configure SH-LIST-005: without visit_col the default listing has no visit column (#348)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["SH-LIST-005"],
-      "issueRefs": [348],
-      "screenshots": []
     },
     {
       "test": "histogram getPlugins SH-CHART-002: bin descriptions report the count and value range in the pilot's wording (#2)",

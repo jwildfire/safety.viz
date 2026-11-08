@@ -1,6 +1,6 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-11-08T13:17:09.838Z",
+  "generatedAt": "2026-11-08T12:58:25.661Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42483246105",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42483246105"
+    "id": "42481563579",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42481563579"
   },
   "records": [
     {

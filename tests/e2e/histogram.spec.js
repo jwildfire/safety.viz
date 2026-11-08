@@ -306,6 +306,26 @@ test.describe('safety.viz histogram module', () => {
     await captureEvidence(page, 'SH-AXIS-001', 'axis-limits-prefilled');
   });
 
+  test('SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and each grouped panel titles its y-axis (#347)', async ({
+    page
+  }) => {
+    await setHarnessSettings(page, { group_by: 'SEX' });
+    await expect(page.locator('.sv-multiple').first()).toBeVisible();
+    const titles = await page.evaluate(() =>
+      window.__safetyHistogramInstance.charts.map((chart) => {
+        const title = (axis) => {
+          const { display, text } = chart.options.scales[axis].title || {};
+          return display ? text : null;
+        };
+        return { x: title('x'), y: title('y') };
+      })
+    );
+    expect(titles[0]).toEqual({ x: 'Albumin (g/dL)', y: 'Number of results' });
+    expect(titles.length).toBeGreaterThan(1);
+    titles.slice(1).forEach((panel) => expect(panel).toEqual({ x: null, y: 'Number of results' }));
+    await captureEvidence(page, 'SH-AXIS-005', 'axis-titles');
+  });
+
   test('SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)', async ({
     page
   }) => {
