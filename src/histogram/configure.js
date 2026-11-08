@@ -34,7 +34,7 @@ export const removedSetting = (name) =>
  * @property {string} [normal_col_high='STNRHI'] Upper-limit-of-normal column; see normal_col_low.
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true whether or not a start is given — pass `all: false` to remove it, and the filter then always holds one value, the first unless `start` names another; a start value the data lacks is dropped with a console warning; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {Array<string|Object>} [groups=[]] Group-by options for the small-multiple charts; a "None" option is always offered first.
- * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, the filter columns, result, normal limits, and unit.
+ * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, the visit (when visit_col is set), the filter columns, result, normal limits, and unit, each column listed once.
  * @property {?string} [start_value=null] Measure selected on first render. When null (the default) the histogram opens on the all-measures overview — one small-multiple histogram per measure, click one to drill in. A measure absent from the data falls back to the overview with a console warning.
  * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. Entries match the label the control shows (the measure name with its unit appended where `unit_col` is mapped), falling back to the bare `measure_col` value, which picks up every unit variant of that measure. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SH-MEAS-001, SH-MEAS-002).
  * @property {string} [bin_algorithm="Scott's normal reference rule"] Binning algorithm applied on first render; one of the ALGORITHMS options. Setting an explicit bin quantity or width in the UI switches it to "Custom".
@@ -43,7 +43,7 @@ export const removedSetting = (name) =>
  * @property {boolean} [annotate_bin_boundaries=false] Label the x-axis with bin boundaries instead of linear ticks on first render.
  * @property {string} [group_by='sh_none'] Column the small multiples are grouped by on first render; 'sh_none' disables grouping. Unknown columns are added to the group options as-is.
  * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-SH-001).
- * @property {?string} [visit_col=null] Visit-name column passed to the docked profile for point tooltips (#99, PPRF-SH-001).
+ * @property {?string} [visit_col=null] Visit-name column: listed as "Visit" after the participant ID in the default bar listing (#348), and passed to the docked profile for point tooltips (#99, PPRF-SH-001).
  * @property {?string} [visitn_col=null] Numeric visit column passed to the docked profile for point ordering context (#99, PPRF-SH-001).
  * @property {?Object} [measure_values=null] Optional map of short profile keys (ALT/AST/TB/ALP) to this data's full measure names, passed to the docked profile so the key liver measures resolve; null keeps the profile module's defaults (#99, PPRF-SH-001).
  * @property {boolean} [profile=true] Dock the shared participant-profile module in the shell's profile slot, fed by the linked listing's row-click focus via the participantsSelected event; false restores the pre-#99 listing-only detail (#99, PPRF-SH-001).
@@ -157,8 +157,13 @@ export function syncSettings(settings) {
     .map(fieldSpec)
     .filter((d) => d.value_col);
   if (!synced.details.length) {
+    // Each column is listed once, at its first place: a filter on the
+    // participant ID or the visit adds no second column (#348, SH-LIST-005).
+    // The visit follows the participant ID; the study day is not listed.
+    const listed = new Set();
     synced.details = [
       { value_col: synced.id_col, label: 'Participant ID' },
+      { value_col: synced.visit_col, label: 'Visit' },
       // Listing columns, not filters: take only the column and its label, so the
       // filter contract's start/all/multiple keys do not leak into the listing.
       ...synced.filters.map((filter) => fieldSpec(filter)),
@@ -166,7 +171,11 @@ export function syncSettings(settings) {
       { value_col: synced.normal_col_low, label: 'Lower Limit of Normal' },
       { value_col: synced.normal_col_high, label: 'Upper Limit of Normal' },
       { value_col: synced.unit_col, label: 'Unit' }
-    ].filter((d) => d.value_col);
+    ].filter((d) => {
+      if (!d.value_col || listed.has(d.value_col)) return false;
+      listed.add(d.value_col);
+      return true;
+    });
   }
   if (settings.displayNormalRange !== undefined)
     synced.display_normal_range = settings.displayNormalRange;

@@ -13269,8 +13269,10 @@ var SafetyViz = (() => {
     synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
     synced.details = arrayify(synced.details).map(fieldSpec).filter((d) => d.value_col);
     if (!synced.details.length) {
+      const listed = /* @__PURE__ */ new Set();
       synced.details = [
         { value_col: synced.id_col, label: "Participant ID" },
+        { value_col: synced.visit_col, label: "Visit" },
         // Listing columns, not filters: take only the column and its label, so the
         // filter contract's start/all/multiple keys do not leak into the listing.
         ...synced.filters.map((filter) => fieldSpec(filter)),
@@ -13278,7 +13280,11 @@ var SafetyViz = (() => {
         { value_col: synced.normal_col_low, label: "Lower Limit of Normal" },
         { value_col: synced.normal_col_high, label: "Upper Limit of Normal" },
         { value_col: synced.unit_col, label: "Unit" }
-      ].filter((d) => d.value_col);
+      ].filter((d) => {
+        if (!d.value_col || listed.has(d.value_col)) return false;
+        listed.add(d.value_col);
+        return true;
+      });
     }
     if (settings.displayNormalRange !== void 0)
       synced.display_normal_range = settings.displayNormalRange;

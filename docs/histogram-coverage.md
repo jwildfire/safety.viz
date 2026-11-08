@@ -59,6 +59,7 @@ schemes appear:
 | ----------------------------------------- | -------------------------------------------------- | ----- | ------------------------------------------------------ |
 | SH-CFG-004..009 (defaults)                | SH-CFG-004..009                                    | #2    | `configure.test.js`                                    |
 | SH-CFG-010/011, SH-CHART-004              | SH-CFG-010, SH-CFG-011                             | #2    | `configure.test.js`                                    |
+| SH-LIST-005 (default listing columns)     | SH-LIST-005                                        | #348  | `configure.test.js`                                    |
 | SH-CFG-013/014                            | SH-CFG-013, SH-CFG-014                             | #2    | `configure.test.js`                                    |
 | SH-DATA-001/002                           | SH-CFG-005                                         | #2    | `structureData.test.js`                                |
 | SH-CTRL-002/005/006                       | SH-FUNC-004C (detection)                           | #2    | `structureData.test.js`                                |
