@@ -35,6 +35,7 @@ import {
   unique
 } from './histogram/structureData.js';
 import {
+  buildMultipleScales,
   buildScales,
   buildTickLabels,
   normalizeDomain,
@@ -723,7 +724,7 @@ class SafetyHistogram {
             }
           }
         },
-        scales: buildScales(),
+        scales: buildScales(this.state.measure),
         onHover: (event, active) => {
           if (active.length) this.describeBin(inputs.bins[active[0].index], inputs.digits, false);
         },
@@ -804,10 +805,7 @@ class SafetyHistogram {
           maintainAspectRatio: false,
           responsive: true,
           plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } },
-            x: { ticks: { display: false } }
-          },
+          scales: buildMultipleScales(),
           onClick: (event, active) => {
             if (active.length) {
               const bin = inputs.bins[active[0].index];
@@ -882,10 +880,7 @@ class SafetyHistogram {
           responsive: true,
           events: [],
           plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } },
-            x: { ticks: { display: false } }
-          }
+          scales: buildMultipleScales()
         }
       });
       chart.$shBins = bins;

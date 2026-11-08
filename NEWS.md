@@ -10,6 +10,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 ## What's new
 
+- **The Safety Histogram titles its axes.** The single-measure chart names the measure and its unit under the x-axis and counts results up the y-axis; the overview and grouped panels title their y-axes. The original renderer did this and the port did not. [obot.roadmap#430](https://github.com/jwildfire/obot.roadmap/issues/430), [#347](https://github.com/jwildfire/safety.viz/issues/347), PR [#349](https://github.com/jwildfire/safety.viz/pull/349)
 - **safety.viz is licensed under the Apache License 2.0,** the licence gsm.safety, gsm.bio and open.csr carry. The repository has a LICENSE file and `package.json` names it.
 
 # safety.viz v1.11.2

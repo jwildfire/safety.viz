@@ -51,6 +51,7 @@ schemes appear:
 | PPRF-SH-003                         | PPRF-SH-003 (participant-profile matrix)              | #99   | the rail Clear affordance un-highlights the row and keeps the listing             |
 | PPRF-SH-003 (bin/control clears)    | PPRF-SH-003 (participant-profile matrix)              | #99   | a new bin click and control changes empty the rail                                |
 | SH-AXIS-001/002/003                 | SH-AXIS-001, SH-AXIS-002, SH-AXIS-003, SH-FUNC-006    | #85   | x-axis limit inputs load pre-filled, follow the measure, and Reset restores       |
+| SH-AXIS-005/006                     | SH-AXIS-005, SH-AXIS-006                              | #347  | the single-measure chart titles both axes, and each grouped panel its y-axis      |
 
 ## Unit evidence (Vitest — `tests/unit/histogram/`)
 
@@ -64,6 +65,7 @@ schemes appear:
 | SH-CTRL-006 (original QC)                 | —                                                  | #19   | `binning.test.js`                                      |
 | SH-CTRL-005/007                           | SH-FUNC-005A, SH-FUNC-005B                         | #2    | `getScales.test.js`                                    |
 | SH-AXIS-001/002/003/004                   | SH-AXIS-001, SH-AXIS-002, SH-AXIS-003, SH-AXIS-004 | #85   | `axis-limits.test.js`                                  |
+| SH-AXIS-005/006 (axis titles)             | SH-AXIS-005, SH-AXIS-006                           | #347  | `axis-titles.test.js`                                  |
 | SH-CHART-002                              | SH-FUNC-011 (colors)                               | #2    | `getPlugins.test.js`                                   |
 | SH-LIST-002/003/004                       | —                                                  | #2    | `listing.test.js`                                      |
 | SH-DATA-001/003 (schema)                  | SH-DATA-001                                        | #2    | `checkInputs.test.js`                                  |
