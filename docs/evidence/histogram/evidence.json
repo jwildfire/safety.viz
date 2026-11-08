@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-11-08T12:58:25.661Z",
+  "generatedAt": "2026-11-08T14:01:09.190Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42481563579",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42481563579"
+    "id": "42486516147",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42486516147"
   },
   "records": [
     {
@@ -5238,6 +5238,38 @@
       "requirementIds": ["SH-CHART-004"],
       "issueRefs": [2],
       "screenshots": ["SH-CHART-004-grouped-multiples.png"]
+    },
+    {
+      "test": "histogram configure SH-LIST-005: a caller's own details stay as given, visit_col or not (#348)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-005"],
+      "issueRefs": [348],
+      "screenshots": []
+    },
+    {
+      "test": "histogram configure SH-LIST-005: a filter on the visit adds no second Visit column, and the study day is never listed (#348)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-005"],
+      "issueRefs": [348],
+      "screenshots": []
+    },
+    {
+      "test": "histogram configure SH-LIST-005: with visit_col set and a participant filter, the default listing names the participant once, then the visit (#348)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-005"],
+      "issueRefs": [348],
+      "screenshots": []
+    },
+    {
+      "test": "histogram configure SH-LIST-005: without visit_col the default listing has no visit column (#348)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-LIST-005"],
+      "issueRefs": [348],
+      "screenshots": []
     },
     {
       "test": "histogram getPlugins SH-CHART-002: bin descriptions report the count and value range in the pilot's wording (#2)",
