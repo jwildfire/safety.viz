@@ -309,7 +309,9 @@ test.describe('safety.viz histogram module', () => {
   test('SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and each grouped panel titles its y-axis (#347)', async ({
     page
   }) => {
-    await setHarnessSettings(page, { group_by: 'SEX' });
+    await setHarnessSettings(page);
+    // The grouped panels are the fixture's own, by treatment group: group_by is
+    // read at first render, and setSettings() does not change the grouping (#353).
     await expect(page.locator('.sv-multiple').first()).toBeVisible();
     const titles = await page.evaluate(() =>
       window.__safetyHistogramInstance.charts.map((chart) => {
