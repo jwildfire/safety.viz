@@ -1,0 +1,1601 @@
+USUBJID,SITE,SITEID,SEX,RACE,ARM,VISIT,VISITNUM,TEST,STRESU,STRESN,STNRLO,STNRHI
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,40,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,34,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,128,40,120
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,46,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,40,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,126,40,120
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,55,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,47,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,122,40,120
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,49,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,42,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,135,40,120
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,47,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,40,6,40
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1001,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,139,40,120
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,45,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,37,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,111,40,120
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,102,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,83,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,106,40,120
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,106,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,86,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,118,40,120
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,180,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,147,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,107,40,120
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,131,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,107,6,40
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1002,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,112,40,120
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,51,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,42,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,196,40,120
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,70,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,57,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,203,40,120
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,64,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,52,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,181,40,120
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,80,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,65,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,207,40,120
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,92,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,75,6,40
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1003,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,201,40,120
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,54,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,42,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,149,40,120
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,44,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,34,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,168,40,120
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,42,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,32,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,159,40,120
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,42,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,32,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,168,40,120
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,42,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,32,6,40
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1004,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,149,40,120
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,59,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,51,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,193,40,120
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,25,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,21,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,180,40,120
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,27,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,23,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,181,40,120
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,25,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,21,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,181,40,120
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,25,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,21,6,40
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1005,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,198,40,120
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,64,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,50,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,153,40,120
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,184,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,143,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,151,40,120
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,207,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,161,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,151,40,120
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,281,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,219,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,161,40,120
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,154,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,120,6,40
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1006,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,163,40,120
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,69,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,56,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,197,40,120
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,86,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,69,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,174,40,120
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,90,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,73,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,193,40,120
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,83,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,67,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,175,40,120
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,101,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,81,6,40
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1007,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,195,40,120
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,74,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,69,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,136,40,120
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,182,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,169,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,133,40,120
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,112,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,104,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,123,40,120
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,112,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,104,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,1.6,0.1,1.2
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,126,40,120
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,146,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,135,6,40
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,1.7,0.1,1.2
+ABL-1008,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,141,40,120
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,80,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,75,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,135,40,120
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,94,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,88,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,142,40,120
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,109,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,102,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,142,40,120
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,94,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,88,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,137,40,120
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,91,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,85,6,40
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1009,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,138,40,120
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,84,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,72,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,184,40,120
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,217,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,187,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,174,40,120
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,211,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,182,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,174,40,120
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,285,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,246,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,168,40,120
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,204,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,176,6,40
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1010,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,181,40,120
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,88,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,76,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,132,40,120
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,138,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,120,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,144,40,120
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,128,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,111,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,1.7,0.1,1.2
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,147,40,120
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,132,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,114,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,126,40,120
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,211,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,183,6,40
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,4.2,0.1,1.2
+ABL-1011,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,133,40,120
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,93,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,86,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,138,40,120
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,73,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,67,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,139,40,120
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,68,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,63,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,138,40,120
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,68,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,63,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,155,40,120
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,68,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,63,6,40
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1012,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,136,40,120
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,100,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,92,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,127,40,120
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,54,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,50,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,122,40,120
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,57,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,53,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,123,40,120
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,54,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,50,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,129,40,120
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,54,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,50,6,40
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1013,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,132,40,120
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,104,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,78,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,114,40,120
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,194,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,146,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,115,40,120
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,195,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,147,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,122,40,120
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,343,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,258,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,127,40,120
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,239,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,180,6,40
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1014,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,132,40,120
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,109,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,97,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,189,40,120
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,117,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,104,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,187,40,120
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,120,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,107,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,204,40,120
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,120,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,107,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,185,40,120
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,130,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,116,6,40
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1015,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,205,40,120
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,113,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,90,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,143,40,120
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,265,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,212,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,130,40,120
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,216,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,173,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,2,0.1,1.2
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,134,40,120
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,167,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,134,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,1.5,0.1,1.2
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,143,40,120
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,224,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,179,6,40
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1016,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,143,40,120
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,119,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,93,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,190,40,120
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,149,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,117,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,178,40,120
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,213,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,167,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,195,40,120
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,155,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,121,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,208,40,120
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,161,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,126,6,40
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1017,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,209,40,120
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,125,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,110,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,103,40,120
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,304,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,267,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,114,40,120
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,259,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,227,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,116,40,120
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,499,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,438,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,110,40,120
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,330,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,290,6,40
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1018,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,107,40,120
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,129,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,98,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,181,40,120
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,169,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,128,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,179,40,120
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,157,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,119,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,185,40,120
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,167,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,126,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,191,40,120
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,186,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,141,6,40
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,1,0.1,1.2
+ABL-1019,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,203,40,120
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,133,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,121,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,122,40,120
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,70,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,64,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,123,40,120
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,65,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,59,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,126,40,120
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,65,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,59,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,119,40,120
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,65,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,59,6,40
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1020,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,114,40,120
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,139,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,125,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,106,40,120
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,62,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,56,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,122,40,120
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,65,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,59,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,119,40,120
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,62,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,56,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,118,40,120
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,62,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,56,6,40
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1021,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,120,40,120
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,144,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,108,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,132,40,120
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,346,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,260,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,151,40,120
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,260,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,195,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,143,40,120
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,470,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,353,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,150,40,120
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,361,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,271,6,40
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1022,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,133,40,120
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,147,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,137,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,172,40,120
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,164,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,153,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,172,40,120
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,172,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,160,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,168,40,120
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,167,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,155,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,157,40,120
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,185,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,172,6,40
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1023,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,160,40,120
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,154,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,137,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,172,40,120
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,432,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,383,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,156,40,120
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,243,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,216,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,1.8,0.1,1.2
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,154,40,120
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,302,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,268,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,2.2,0.1,1.2
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,156,40,120
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,279,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,248,6,40
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,1.6,0.1,1.2
+ABL-1024,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,165,40,120
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,157,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,121,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,149,40,120
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,188,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,145,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,155,40,120
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,201,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,155,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,168,40,120
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,176,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,136,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,155,40,120
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,180,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,139,6,40
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1025,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,157,40,120
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,162,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,154,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,173,40,120
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,86,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,82,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,181,40,120
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,86,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,82,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,191,40,120
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,92,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,87,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,190,40,120
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,86,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,82,6,40
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1026,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,190,40,120
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,167,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,157,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,173,40,120
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,123,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,115,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,162,40,120
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,123,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,115,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,165,40,120
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,123,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,115,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,156,40,120
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,131,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,123,6,40
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1027,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,168,40,120
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,173,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,132,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,147,40,120
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,397,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,302,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,152,40,120
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,340,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,259,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,1.5,0.1,1.2
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,154,40,120
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,317,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,241,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,1.5,0.1,1.2
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,140,40,120
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,341,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,260,6,40
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,1.9,0.1,1.2
+ABL-1028,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,153,40,120
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,177,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,163,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,165,40,120
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,222,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,204,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,161,40,120
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,238,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,219,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,1,0.1,1.2
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,161,40,120
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,209,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,192,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,167,40,120
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,212,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,195,6,40
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1029,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,150,40,120
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,184,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,142,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,165,40,120
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,313,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,242,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,182,40,120
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,387,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,299,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,185,40,120
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,566,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,437,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,167,40,120
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,414,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,320,6,40
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1030,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,186,40,120
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,187,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,163,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,126,40,120
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,199,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,174,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,125,40,120
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,214,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,187,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,121,40,120
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,201,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,176,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,117,40,120
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,228,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,199,6,40
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1031,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,129,40,120
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,191,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,180,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,134,40,120
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,125,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,118,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,119,40,120
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,118,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,111,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,134,40,120
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,118,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,111,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,133,40,120
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,118,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,111,6,40
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1032,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,124,40,120
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,198,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,154,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,178,40,120
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,246,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,191,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,191,40,120
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,347,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,270,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,167,40,120
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,277,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,215,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,182,40,120
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,303,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,235,6,40
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1033,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,165,40,120
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,201,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,184,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,192,40,120
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,433,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,397,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,1.9,0.1,1.2
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,177,40,120
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,411,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,377,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,171,40,120
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,547,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,502,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,3.3,0.1,1.2
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,179,40,120
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,321,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,294,6,40
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,1.9,0.1,1.2
+ABL-1034,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,184,40,120
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,208,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,165,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,198,40,120
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,115,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,91,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,184,40,120
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,115,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,91,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,188,40,120
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,115,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,91,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,180,40,120
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,123,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,97,6,40
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1035,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,181,40,120
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,213,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,162,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,188,40,120
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,114,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,87,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,173,40,120
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,107,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,81,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,177,40,120
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,107,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,81,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,178,40,120
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,107,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,81,6,40
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1036,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,189,40,120
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,217,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,163,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,152,40,120
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,249,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,187,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,177,40,120
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,277,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,208,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,165,40,120
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,248,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,187,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,156,40,120
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,258,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,194,6,40
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1037,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,158,40,120
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,222,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,181,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,148,40,120
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,449,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,365,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,159,40,120
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,503,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,409,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,163,40,120
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,699,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,568,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,172,40,120
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,408,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,332,6,40
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1038,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,171,40,120
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,227,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,180,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,174,40,120
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,257,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,203,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,175,40,120
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,257,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,203,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,166,40,120
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,263,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,208,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,163,40,120
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,289,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,229,6,40
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1039,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,169,40,120
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,233,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,213,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,110,40,120
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,608,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,557,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.9,0.1,1.2
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,103,40,120
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,505,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,463,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,1.9,0.1,1.2
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,102,40,120
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,459,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,420,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,2.1,0.1,1.2
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,102,40,120
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,389,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,356,6,40
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,2.6,0.1,1.2
+ABL-1040,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,111,40,120
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,237,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,216,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,142,40,120
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,340,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,310,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.3,0.1,1.2
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,153,40,120
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,382,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,349,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,145,40,120
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,339,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,309,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.3,0.1,1.2
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,155,40,120
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,310,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,283,6,40
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.3,0.1,1.2
+ABL-1041,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,156,40,120
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,241,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,213,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,155,40,120
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,153,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,135,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,179,40,120
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,153,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,135,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,155,40,120
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,162,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,143,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,160,40,120
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,153,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,135,6,40
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1042,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,179,40,120
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,246,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,224,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,113,40,120
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,108,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,98,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,129,40,120
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,108,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,98,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,129,40,120
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,108,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,98,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,119,40,120
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,115,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,105,6,40
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1043,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,125,40,120
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,251,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,194,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,124,40,120
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,185,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,143,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,118,40,120
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,174,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,134,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,123,40,120
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,174,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,134,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,130,40,120
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,174,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,134,6,40
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1044,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,125,40,120
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,257,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,240,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,142,40,120
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,341,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,318,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,137,40,120
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,454,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,424,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,146,40,120
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,363,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,339,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,146,40,120
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,386,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,360,6,40
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1045,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,140,40,120
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,261,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,218,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,154,40,120
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,126,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,105,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,152,40,120
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,126,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,105,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,149,40,120
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,134,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,112,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,171,40,120
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,126,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,105,6,40
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1046,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,170,40,120
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,265,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,252,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,117,40,120
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,294,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,279,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,113,40,120
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,291,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,276,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,122,40,120
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,297,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,282,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,113,40,120
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,350,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,332,6,40
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1047,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,107,40,120
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,270,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,206,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,151,40,120
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,202,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,154,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,149,40,120
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,190,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,145,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,156,40,120
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,190,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,145,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,135,40,120
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,190,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,145,6,40
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1048,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,139,40,120
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,276,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,209,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,104,40,120
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,209,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,158,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,104,40,120
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,222,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,168,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,101,40,120
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,209,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,158,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,100,40,120
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,209,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,158,6,40
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1049,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,99,40,120
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,281,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,227,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,136,40,120
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,143,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,116,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,133,40,120
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,143,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,116,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,137,40,120
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,152,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,123,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,120,40,120
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,143,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,116,6,40
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1050,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,121,40,120
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,286,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,236,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,105,40,120
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,428,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,354,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,111,40,120
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,359,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,297,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,109,40,120
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,387,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,320,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,107,40,120
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,492,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,406,6,40
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1051,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,115,40,120
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,290,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,252,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,140,40,120
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,167,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,145,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.8,0.1,1.2
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,131,40,120
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,157,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,136,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,129,40,120
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,157,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,136,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,139,40,120
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,157,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,136,6,40
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1052,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,130,40,120
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,296,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,232,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,101,40,120
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,401,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,314,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,103,40,120
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,544,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,426,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,115,40,120
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,450,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,353,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,115,40,120
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,395,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,310,6,40
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1053,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,107,40,120
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,302,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,277,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.9,0.1,1.2
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,111,40,120
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,137,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,126,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,109,40,120
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,137,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,126,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,103,40,120
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,146,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,134,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,117,40,120
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,137,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,126,6,40
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1054,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,104,40,120
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,306,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,288,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,186,40,120
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,219,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,206,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,193,40,120
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,219,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,206,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,182,40,120
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,219,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,206,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,205,40,120
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,233,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,220,6,40
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1055,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,192,40,120
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,310,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,244,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,131,40,120
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,200,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,157,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,116,40,120
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,188,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,148,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,129,40,120
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,188,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,148,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,122,40,120
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,188,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,148,6,40
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.5,0.1,1.2
+ABL-1056,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,124,40,120
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,314,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,282,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,138,40,120
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,339,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,305,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,151,40,120
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,373,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,335,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,147,40,120
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,344,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,309,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,149,40,120
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,335,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,301,6,40
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,0.4,0.1,1.2
+ABL-1057,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,154,40,120
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,319,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,241,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,0.6,0.1,1.2
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,113,40,120
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,157,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,118,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,116,40,120
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,157,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,118,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,108,40,120
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,167,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,126,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,118,40,120
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,157,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,118,6,40
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,0.7,0.1,1.2
+ABL-1058,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,118,40,120
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,52,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,49,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,1.9,0.1,1.2
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,133,40,120
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,80,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,75,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,2.2,0.1,1.2
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,155,40,120
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,78,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,73,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,2.1,0.1,1.2
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,153,40,120
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,81,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,76,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,2.2,0.1,1.2
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,150,40,120
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,92,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,87,6,40
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1059,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,133,40,120
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,63,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,50,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,1.9,0.1,1.2
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,126,40,120
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,32,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,25,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,2,0.1,1.2
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,121,40,120
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,30,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,24,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,1.9,0.1,1.2
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,115,40,120
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,30,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,24,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,1.9,0.1,1.2
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,123,40,120
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,30,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,24,6,40
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,1.9,0.1,1.2
+ABL-1060,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,117,40,120
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,75,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,68,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,2.1,0.1,1.2
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,121,40,120
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,81,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,74,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,2.3,0.1,1.2
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,109,40,120
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,93,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,85,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,2.6,0.1,1.2
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,104,40,120
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,87,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,79,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,110,40,120
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,86,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,78,6,40
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,2.3,0.1,1.2
+ABL-1061,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,114,40,120
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,88,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,70,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,2.2,0.1,1.2
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,192,40,120
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,53,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,42,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,2.3,0.1,1.2
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,174,40,120
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,53,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,42,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,197,40,120
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,57,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,46,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,2.6,0.1,1.2
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,185,40,120
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,53,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,42,6,40
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1062,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,190,40,120
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,100,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,92,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,127,40,120
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,74,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,68,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,2.6,0.1,1.2
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,128,40,120
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,74,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,68,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,2.5,0.1,1.2
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,136,40,120
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,74,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,68,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,2.7,0.1,1.2
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,124,40,120
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,79,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,72,6,40
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,2.8,0.1,1.2
+ABL-1063,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,135,40,120
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,110,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,88,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,2.5,0.1,1.2
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,103,40,120
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,179,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,144,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,105,40,120
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,144,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,116,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,2.9,0.1,1.2
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,114,40,120
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,134,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,108,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,2.8,0.1,1.2
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,113,40,120
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,139,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,112,6,40
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,2.8,0.1,1.2
+ABL-1064,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,107,40,120
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,121,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,92,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,2.6,0.1,1.2
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,182,40,120
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,156,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,119,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,2,0.1,1.2
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,199,40,120
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,186,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,142,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,2.1,0.1,1.2
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,198,40,120
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,166,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,127,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,2,0.1,1.2
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,207,40,120
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,163,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,125,6,40
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,2,0.1,1.2
+ABL-1065,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,190,40,120
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,136,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,116,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,2.8,0.1,1.2
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,100,40,120
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,100,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,85,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.2,0.1,1.2
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,107,40,120
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,100,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,85,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,3.2,0.1,1.2
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,107,40,120
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,106,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,90,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,3.6,0.1,1.2
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,102,40,120
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,100,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,85,6,40
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,3.2,0.1,1.2
+ABL-1066,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,106,40,120
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,147,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,128,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,2.9,0.1,1.2
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,109,40,120
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,192,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,167,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,125,40,120
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,193,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,168,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,114,40,120
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,203,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,177,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,2.4,0.1,1.2
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,109,40,120
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,223,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,194,6,40
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,2.5,0.1,1.2
+ABL-1067,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,110,40,120
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,157,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,139,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,3,0.1,1.2
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,108,40,120
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,77,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,68,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,4.2,0.1,1.2
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,97,40,120
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,73,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,65,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,105,40,120
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,73,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,65,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,100,40,120
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,73,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,65,6,40
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,3.7,0.1,1.2
+ABL-1068,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,102,40,120
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,169,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,153,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,3.2,0.1,1.2
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,184,40,120
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,201,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,182,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,2.7,0.1,1.2
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,186,40,120
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,231,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,209,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,2.9,0.1,1.2
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,180,40,120
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,191,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,172,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,2.7,0.1,1.2
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,190,40,120
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,188,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,170,6,40
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,2.7,0.1,1.2
+ABL-1069,Hepatology ABN-BL Unit (synthetic),801,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,192,40,120
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,183,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,153,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,3.3,0.1,1.2
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,147,40,120
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,127,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,106,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,2.2,0.1,1.2
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,143,40,120
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,127,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,106,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,2.2,0.1,1.2
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,131,40,120
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,135,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,113,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,2.3,0.1,1.2
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,147,40,120
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,127,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,106,6,40
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,2.2,0.1,1.2
+ABL-1070,Hepatology ABN-BL Unit (synthetic),802,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,143,40,120
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,194,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,174,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,166,40,120
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,283,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,254,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,3.9,0.1,1.2
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,187,40,120
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,282,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,253,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,3.8,0.1,1.2
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,168,40,120
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,302,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,271,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,3.9,0.1,1.2
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,189,40,120
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,352,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,316,6,40
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,4.3,0.1,1.2
+ABL-1071,Hepatology ABN-BL Unit (synthetic),803,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,171,40,120
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,204,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,158,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,3.6,0.1,1.2
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,163,40,120
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,108,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,83,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.8,0.1,1.2
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,177,40,120
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,101,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,78,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,3.6,0.1,1.2
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,173,40,120
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,101,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,78,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,3.6,0.1,1.2
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,181,40,120
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,101,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,78,6,40
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,3.6,0.1,1.2
+ABL-1072,Hepatology ABN-BL Unit (synthetic),800,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,170,40,120
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,218,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,169,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,3.7,0.1,1.2
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,143,40,120
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,108,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,84,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,4,0.1,1.2
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,152,40,120
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,115,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,89,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,4.4,0.1,1.2
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,161,40,120
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,108,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,84,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,3.9,0.1,1.2
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,150,40,120
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,108,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,84,6,40
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,3.9,0.1,1.2
+ABL-1073,Hepatology ABN-BL Unit (synthetic),801,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,165,40,120
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,231,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,201,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,3.9,0.1,1.2
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,198,40,120
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,278,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,241,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,194,40,120
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,253,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,220,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,203,40,120
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,296,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,257,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,3.6,0.1,1.2
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,190,40,120
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,265,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,230,6,40
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1074,Hepatology ABN-BL Unit (synthetic),802,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,181,40,120
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,241,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,198,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,4,0.1,1.2
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,185,40,120
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,319,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,262,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,3.5,0.1,1.2
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,168,40,120
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,323,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,265,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,3.5,0.1,1.2
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,177,40,120
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,297,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,244,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,3.5,0.1,1.2
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,165,40,120
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,359,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,295,6,40
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,3.7,0.1,1.2
+ABL-1075,Hepatology ABN-BL Unit (synthetic),803,F,WHITE,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,176,40,120
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,253,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,233,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,4.1,0.1,1.2
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,105,40,120
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,170,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,156,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.3,0.1,1.2
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,107,40,120
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,160,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,147,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,101,40,120
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,160,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,147,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,107,40,120
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,160,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,147,6,40
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1076,Hepatology ABN-BL Unit (synthetic),800,M,BLACK OR AFRICAN AMERICAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,114,40,120
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,265,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,245,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,4.3,0.1,1.2
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,196,40,120
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,292,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,270,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,3,0.1,1.2
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,183,40,120
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,311,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,287,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,3.2,0.1,1.2
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,192,40,120
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,287,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,265,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,3,0.1,1.2
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,182,40,120
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,292,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,270,6,40
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,3,0.1,1.2
+ABL-1077,Hepatology ABN-BL Unit (synthetic),801,F,ASIAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,194,40,120
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,275,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,235,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,4.4,0.1,1.2
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,180,40,120
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,212,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,181,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,177,40,120
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,212,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,181,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,168,40,120
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,225,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,192,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,3.6,0.1,1.2
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,174,40,120
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,212,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,181,6,40
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,3.4,0.1,1.2
+ABL-1078,Hepatology ABN-BL Unit (synthetic),802,M,WHITE,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,160,40,120
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alanine Aminotransferase,U/L,288,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Aspartate Aminotransferase,U/L,235,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Bilirubin,mg/dL,4.6,0.1,1.2
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Baseline,0,Alkaline Phosphatase,U/L,123,40,120
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alanine Aminotransferase,U/L,359,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Aspartate Aminotransferase,U/L,293,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 4,1,Alkaline Phosphatase,U/L,131,40,120
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alanine Aminotransferase,U/L,378,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Aspartate Aminotransferase,U/L,309,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 8,2,Alkaline Phosphatase,U/L,132,40,120
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alanine Aminotransferase,U/L,363,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Aspartate Aminotransferase,U/L,296,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Bilirubin,mg/dL,3.1,0.1,1.2
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 12,3,Alkaline Phosphatase,U/L,129,40,120
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alanine Aminotransferase,U/L,445,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Aspartate Aminotransferase,U/L,363,6,40
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Bilirubin,mg/dL,3.3,0.1,1.2
+ABL-1079,Hepatology ABN-BL Unit (synthetic),803,F,BLACK OR AFRICAN AMERICAN,ABL: Placebo,Week 16,4,Alkaline Phosphatase,U/L,133,40,120
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alanine Aminotransferase,U/L,299,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Aspartate Aminotransferase,U/L,265,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Bilirubin,mg/dL,4.7,0.1,1.2
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Baseline,0,Alkaline Phosphatase,U/L,122,40,120
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alanine Aminotransferase,U/L,156,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Aspartate Aminotransferase,U/L,138,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Bilirubin,mg/dL,5.2,0.1,1.2
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 4,1,Alkaline Phosphatase,U/L,126,40,120
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alanine Aminotransferase,U/L,147,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Aspartate Aminotransferase,U/L,130,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Bilirubin,mg/dL,4.9,0.1,1.2
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 8,2,Alkaline Phosphatase,U/L,122,40,120
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alanine Aminotransferase,U/L,147,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Aspartate Aminotransferase,U/L,130,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Bilirubin,mg/dL,4.9,0.1,1.2
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 12,3,Alkaline Phosphatase,U/L,127,40,120
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alanine Aminotransferase,U/L,147,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Aspartate Aminotransferase,U/L,130,6,40
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Bilirubin,mg/dL,4.9,0.1,1.2
+ABL-1080,Hepatology ABN-BL Unit (synthetic),800,M,ASIAN,ABL: Study Drug,Week 16,4,Alkaline Phosphatase,U/L,133,40,120
