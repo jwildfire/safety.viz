@@ -184,8 +184,9 @@ test.describe('safety.viz histogram module', () => {
     const csvDownload = await download;
     expect(csvDownload.suggestedFilename()).toBe('safety-histogram-listing.csv');
     const csv = fs.readFileSync(await csvDownload.path(), 'utf8');
+    // The harness filters on the participant ID too; it is listed once (#348, SH-LIST-005).
     expect(csv.split('\n')[0]).toBe(
-      'Participant ID,Site ID,Sex,Race,Treatment Group,Participant ID,Result,Lower Limit of Normal,Upper Limit of Normal,Unit'
+      'Participant ID,Site ID,Sex,Race,Treatment Group,Result,Lower Limit of Normal,Upper Limit of Normal,Unit'
     );
     expect(csv).toContain('SUBJ-030');
   });
@@ -303,6 +304,28 @@ test.describe('safety.viz histogram module', () => {
       (pulse[1] - pulse[0]) / 500
     );
     await captureEvidence(page, 'SH-AXIS-001', 'axis-limits-prefilled');
+  });
+
+  test('SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and the grouped panels below it title neither axis (#347) (#359)', async ({
+    page
+  }) => {
+    await setHarnessSettings(page);
+    // The grouped panels are the fixture's own, by treatment group: group_by is
+    // read at first render, and setSettings() does not change the grouping (#353).
+    await expect(page.locator('.sv-multiple').first()).toBeVisible();
+    const titles = await page.evaluate(() =>
+      window.__safetyHistogramInstance.charts.map((chart) => {
+        const title = (axis) => {
+          const { display, text } = chart.options.scales[axis].title || {};
+          return display ? text : null;
+        };
+        return { x: title('x'), y: title('y') };
+      })
+    );
+    expect(titles[0]).toEqual({ x: 'Albumin (g/dL)', y: 'Number of results' });
+    expect(titles.length).toBeGreaterThan(1);
+    titles.slice(1).forEach((panel) => expect(panel).toEqual({ x: null, y: null }));
+    await captureEvidence(page, 'SH-AXIS-005', 'axis-titles');
   });
 
   test('SH-FUNC-005C: x-axis limit inputs support stepper increments of 1 (#2)', async ({
@@ -595,6 +618,21 @@ test.describe('safety.viz histogram module', () => {
       await expect(page.locator('#container .sv-overview-panel')).toHaveCount(3);
     }
 
+    // Wait until every panel's bars have grown to their counts (#361). The
+    // panels title no axis, so a still taken mid-animation misstates the
+    // counts; two identical frames are not enough while the easing is slow.
+    async function barsSettled(page) {
+      await page.waitForFunction(() =>
+        window.__safetyHistogramInstance.charts.every((chart) => {
+          const meta = chart.getDatasetMeta(0);
+          const scale = chart.scales.y;
+          return chart.data.datasets[0].data.every(
+            (value, index) => Math.abs(meta.data[index].y - scale.getPixelForValue(value)) < 0.5
+          );
+        })
+      );
+    }
+
     test('SH-OVW-001: the overview is the default view when start_value is not set (#39)', async ({
       page
     }) => {
@@ -664,6 +702,7 @@ test.describe('safety.viz histogram module', () => {
       expect(binning).toHaveLength(3);
       const domains = new Set(binning.map((panel) => `${panel.lower}:${panel.upper}`));
       expect(domains.size).toBe(3);
+      await barsSettled(page);
       await captureEvidence(page, 'SH-OVW-002', 'overview-panels');
     });
 
@@ -672,7 +711,7 @@ test.describe('safety.viz histogram module', () => {
     }) => {
       await selectAllMeasures(page);
       await expect(page.locator('#container .sv-footnote')).toHaveText(
-        'Click a chart to view that measure.'
+        'Each bar counts results in its range of values. Click a chart to view that measure.'
       );
       await page.locator('#container .sv-overview-panel', { hasText: 'Pulse (bpm)' }).click();
       await expect(measureSelect(page)).toHaveValue('Pulse (bpm)');
@@ -680,6 +719,48 @@ test.describe('safety.viz histogram module', () => {
       await page.waitForFunction(() => window.__safetyHistogramInstance.chart);
       await expect(page.locator('#container .sv-overview-panel')).toHaveCount(0);
       await captureEvidence(page, 'SH-OVW-003', 'click-through-to-pulse');
+    });
+
+    test('SH-AXIS-006: pointing at an overview bar shows its range, with the unit, and its count of results, and the panel still opens its measure (#359) (#361)', async ({
+      page
+    }) => {
+      await selectAllMeasures(page);
+      const panel = page.locator('#container .sv-overview-panel', { hasText: 'Pulse (bpm)' });
+      await panel.scrollIntoViewIfNeeded();
+      await barsSettled(page);
+      const bar = await panel.evaluate((el) => {
+        const chart = window.__safetyHistogramInstance.charts.find((c) => el.contains(c.canvas));
+        const counts = chart.data.datasets[0].data;
+        const index = counts.indexOf(Math.max(...counts));
+        const point = chart.getDatasetMeta(0).data[index];
+        const rect = chart.canvas.getBoundingClientRect();
+        return {
+          x: rect.left + point.x,
+          y: rect.top + (point.y + point.base) / 2,
+          count: counts[index],
+          yTitle: chart.options.scales.y.title.display
+        };
+      });
+      expect(bar.yTitle).toBe(false);
+      await page.mouse.move(bar.x, bar.y);
+      // Wait out the tooltip's fade-in, so the capture is stable.
+      await page.waitForFunction(() =>
+        window.__safetyHistogramInstance.charts.some((c) => c.tooltip && c.tooltip.opacity === 1)
+      );
+      const tip = await panel.evaluate((el) => {
+        const chart = window.__safetyHistogramInstance.charts.find((c) => el.contains(c.canvas));
+        return {
+          opacity: chart.tooltip.opacity,
+          title: chart.tooltip.title,
+          lines: chart.tooltip.body.flatMap((b) => b.lines)
+        };
+      });
+      expect(tip.opacity).toBe(1);
+      expect(tip.title[0]).toMatch(/^[\d.]+–[\d.]+ bpm$/);
+      expect(tip.lines).toEqual([`${bar.count} ${bar.count === 1 ? 'result' : 'results'}`]);
+      await captureEvidence(page, 'SH-AXIS-006', 'overview-hover');
+      await panel.click();
+      await expect(measureSelect(page)).toHaveValue('Pulse (bpm)');
     });
 
     test('SH-OVW-004: selecting All Measures returns from a single-measure view to the overview (#39)', async ({

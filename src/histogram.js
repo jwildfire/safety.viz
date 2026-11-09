@@ -35,12 +35,18 @@ import {
   unique
 } from './histogram/structureData.js';
 import {
+  buildMultipleScales,
   buildScales,
   buildTickLabels,
   normalizeDomain,
   resolveDomain
 } from './histogram/getScales.js';
-import { binDescription, normalRangePlugin, selectionColors } from './histogram/getPlugins.js';
+import {
+  binDescription,
+  countTooltip,
+  normalRangePlugin,
+  selectionColors
+} from './histogram/getPlugins.js';
 import { renderListing } from './histogram/listing.js';
 import {
   buildProfileRows,
@@ -57,6 +63,10 @@ Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, L
 // group control's 'sh_none' precedent. Internally the overview is
 // state.measure == null.
 const OVERVIEW = 'sh_overview';
+
+// The line above the all-measures overview (#359, SH-OVW-003, SH-AXIS-006).
+const OVERVIEW_HINT =
+  'Each bar counts results in its range of values. Click a chart to view that measure.';
 
 /**
  * Interactive safety histogram: a Chart.js bar chart of result
@@ -593,7 +603,9 @@ class SafetyHistogram {
       return;
     }
     if (this.isOverview()) {
-      this.footnote.textContent = 'Click a chart to view that measure.';
+      // The panels carry no count-axis title; this line says what the bars
+      // count, and a bar's tooltip gives its count (#359, SH-AXIS-006).
+      this.footnote.textContent = OVERVIEW_HINT;
       this.drawOverview();
       this.updateNotes();
       return;
@@ -723,7 +735,7 @@ class SafetyHistogram {
             }
           }
         },
-        scales: buildScales(),
+        scales: buildScales(this.state.measure),
         onHover: (event, active) => {
           if (active.length) this.describeBin(inputs.bins[active[0].index], inputs.digits, false);
         },
@@ -803,11 +815,11 @@ class SafetyHistogram {
         options: {
           maintainAspectRatio: false,
           responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } },
-            x: { ticks: { display: false } }
+          plugins: {
+            legend: { display: false },
+            tooltip: countTooltip(inputs.bins, inputs.digits, this.unitOf(rows))
           },
+          scales: buildMultipleScales(),
           onClick: (event, active) => {
             if (active.length) {
               const bin = inputs.bins[active[0].index];
@@ -818,6 +830,7 @@ class SafetyHistogram {
         }
       });
       chart.$shBins = inputs.bins;
+      chart.$shDigits = inputs.digits;
       this.charts.push(chart);
     });
   }
@@ -880,17 +893,32 @@ class SafetyHistogram {
         options: {
           maintainAspectRatio: false,
           responsive: true,
-          events: [],
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } },
-            x: { ticks: { display: false } }
-          }
+          // Hover only: the panel itself is the button that opens the measure.
+          events: ['mousemove', 'mouseout'],
+          plugins: {
+            legend: { display: false },
+            tooltip: countTooltip(bins, digits, this.unitOf(measureRows))
+          },
+          scales: buildMultipleScales()
         }
       });
       chart.$shBins = bins;
+      chart.$shDigits = digits;
       this.charts.push(chart);
     });
+  }
+
+  /**
+   * The unit of a measure's rows, for a small multiple's tooltip; null when
+   * no unit column is mapped or the rows carry none (#359).
+   * @private
+   */
+  unitOf(rows) {
+    const col = this.settings.unit_col;
+    const row = col
+      ? rows.find((r) => r[col] !== undefined && r[col] !== null && r[col] !== '')
+      : null;
+    return row ? String(row[col]) : null;
   }
 
   /**

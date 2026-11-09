@@ -29,9 +29,44 @@ export function buildTickLabels(bins, digits, annotateBoundaries) {
   );
 }
 
-export function buildScales() {
+/**
+ * What each bar counts: the y-axis title of every histogram view (SH-AXIS-005,
+ * SH-AXIS-006, #347). The original titled it "# of Observations"; the panel
+ * titles and the notes call the records results.
+ */
+export const COUNT_TITLE = 'Number of results';
+
+/**
+ * The single-measure chart's scales: an integer count axis from zero, rotated
+ * x ticks, and both axes titled (SH-AXIS-005, #347). The x-axis title is the
+ * measure as the Measure control labels it, with its unit.
+ * @param {?string} measure The selected measure's label.
+ * @returns {Object} The Chart.js `scales` option.
+ */
+export function buildScales(measure) {
+  return {
+    y: {
+      beginAtZero: true,
+      ticks: { precision: 0 },
+      title: { display: true, text: COUNT_TITLE }
+    },
+    x: {
+      ticks: { maxRotation: 45, minRotation: 0 },
+      ...(measure ? { title: { display: true, text: measure } } : {})
+    }
+  };
+}
+
+/**
+ * A small multiple's scales, in the overview and the grouped view: an integer
+ * count axis from zero with no title, and an x-axis without ticks or title.
+ * The count is read on hover instead (SH-AXIS-006, #359; @jwildfire,
+ * 2026-11-08: "One line + Hover. No #.").
+ * @returns {Object} The Chart.js `scales` option.
+ */
+export function buildMultipleScales() {
   return {
     y: { beginAtZero: true, ticks: { precision: 0 } },
-    x: { ticks: { maxRotation: 45, minRotation: 0 } }
+    x: { ticks: { display: false } }
   };
 }

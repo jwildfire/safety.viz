@@ -32,7 +32,7 @@ linked from its page on the site.
 Vendor the committed bundle — no build step, no npm install:
 
 ```html
-<script src="dist/safety.viz-1.11.2/safety.viz.js"></script>
+<script src="dist/safety.viz-1.11.3/safety.viz.js"></script>
 <script>
   SafetyViz.histogram('#container', {
     value_col: 'STRESN',
@@ -45,7 +45,7 @@ Vendor the committed bundle — no build step, no npm install:
 An ESM build is committed alongside:
 
 ```js
-import { histogram } from './dist/safety.viz-1.11.2/safety.viz.esm.js';
+import { histogram } from './dist/safety.viz-1.11.3/safety.viz.esm.js';
 histogram('#container', settings).init(rows);
 ```
 
@@ -201,3 +201,7 @@ safety.viz is part of the safetyGraphics → gsm modernization
 architecture of [gsm.viz](https://github.com/Gilead-BioStats/rbm-viz) behind
 [gsm.kri](https://github.com/Gilead-BioStats/gsm.kri). Full credits are on the
 [about page](https://jwildfire.github.io/safety.viz/about.html).
+
+## License
+
+Apache License 2.0. See [LICENSE](LICENSE).

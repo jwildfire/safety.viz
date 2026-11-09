@@ -7,6 +7,49 @@ export function binDescription(bin, measure, digits) {
   return `${bin.records.length} records with ${measure} values >= ${formatNumber(bin.lower, digits)} and <= ${formatNumber(bin.upper, digits)}`;
 }
 
+/**
+ * "1 result" or "N results": what a bar counts, as a small multiple's tooltip
+ * says it (SH-AXIS-006, #359).
+ * @param {number} count The bar's number of records.
+ * @returns {string} The count in words.
+ */
+export function countLabel(count) {
+  return `${count} ${count === 1 ? 'result' : 'results'}`;
+}
+
+/**
+ * A bin's range for a tooltip title: its bounds at the chart's display digits,
+ * then the unit when there is one, e.g. "13–23 U/L" (SH-AXIS-006, #359).
+ * @param {{lower: number, upper: number}} bin The bin.
+ * @param {number} digits Display digits.
+ * @param {?string} unit The measure's unit.
+ * @returns {string} The range.
+ */
+export function binRange(bin, digits, unit) {
+  const range = `${formatNumber(bin.lower, digits)}–${formatNumber(bin.upper, digits)}`;
+  return unit ? `${range} ${unit}` : range;
+}
+
+/**
+ * The tooltip a small multiple shows on hover, in the overview and the grouped
+ * view: the bar's range as its title and its count of results as its line, in
+ * place of a y-axis title (SH-AXIS-006, #359).
+ * @param {Array<{lower: number, upper: number, records: Array}>} bins The chart's bins.
+ * @param {number} digits Display digits.
+ * @param {?string} unit The measure's unit.
+ * @returns {Object} The Chart.js tooltip plugin options.
+ */
+export function countTooltip(bins, digits, unit) {
+  return {
+    enabled: true,
+    displayColors: false,
+    callbacks: {
+      title: (items) => binRange(bins[items[0].dataIndex], digits, unit),
+      label: (item) => countLabel(bins[item.dataIndex].records.length)
+    }
+  };
+}
+
 // Per-bar colors that keep the selected bar and fade the rest (SH-FUNC-011).
 export function selectionColors(baseColor, count, selectedIndex) {
   const faded = baseColor.replace(/,\s*[\d.]+\)$/, ', 0.15)');
