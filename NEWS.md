@@ -10,7 +10,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 **See it move:** the [annotated v1.11.3 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.11.3-demo/) has captures, try-it steps and the detail behind everything below.
 
-A patch to the Safety Histogram, from a working-group member's review: its axes are titled, and clicking a bar lists each record's visit. No value, bin or count changes; the default listing's CSV download gains the Visit column. safety.viz is now licensed under the Apache License 2.0.
+A patch to the Safety Histogram: its axes are titled, and clicking a bar lists each record's visit. No value, bin or count changes; the default listing's CSV download gains the Visit column. safety.viz is now licensed under the Apache License 2.0.
 
 ## What's new
 
