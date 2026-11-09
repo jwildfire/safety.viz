@@ -1,4 +1,4 @@
-// node_modules/@kurkle/color/dist/color.esm.js
+// ../351-release-prep/node_modules/@kurkle/color/dist/color.esm.js
 function round(v) {
   return v + 0.5 | 0;
 }
@@ -555,7 +555,7 @@ var Color = class _Color {
   }
 };
 
-// node_modules/chart.js/dist/chunks/helpers.dataset.js
+// ../351-release-prep/node_modules/chart.js/dist/chunks/helpers.dataset.js
 function noop() {
 }
 var uid = /* @__PURE__ */ (() => {
@@ -2953,7 +2953,7 @@ function getDatasetClipArea(chart, meta) {
   };
 }
 
-// node_modules/chart.js/dist/chart.js
+// ../351-release-prep/node_modules/chart.js/dist/chart.js
 var Animator = class {
   constructor() {
     this._request = null;
@@ -13561,11 +13561,7 @@ function buildScales(measure) {
 }
 function buildMultipleScales() {
   return {
-    y: {
-      beginAtZero: true,
-      ticks: { precision: 0 },
-      title: { display: true, text: COUNT_TITLE }
-    },
+    y: { beginAtZero: true, ticks: { precision: 0 } },
     x: { ticks: { display: false } }
   };
 }
@@ -13573,6 +13569,23 @@ function buildMultipleScales() {
 // src/histogram/getPlugins.js
 function binDescription(bin, measure, digits) {
   return `${bin.records.length} records with ${measure} values >= ${formatNumber2(bin.lower, digits)} and <= ${formatNumber2(bin.upper, digits)}`;
+}
+function countLabel(count2) {
+  return `${count2} ${count2 === 1 ? "result" : "results"}`;
+}
+function binRange(bin, digits, unit) {
+  const range = `${formatNumber2(bin.lower, digits)}\u2013${formatNumber2(bin.upper, digits)}`;
+  return unit ? `${range} ${unit}` : range;
+}
+function countTooltip(bins, digits, unit) {
+  return {
+    enabled: true,
+    displayColors: false,
+    callbacks: {
+      title: (items) => binRange(bins[items[0].dataIndex], digits, unit),
+      label: (item) => countLabel(bins[item.dataIndex].records.length)
+    }
+  };
 }
 function selectionColors(baseColor, count2, selectedIndex) {
   const faded = baseColor.replace(/,\s*[\d.]+\)$/, ", 0.15)");
@@ -16611,6 +16624,7 @@ function resetProfileRail(host) {
 // src/histogram.js
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, plugin_tooltip, plugin_legend);
 var OVERVIEW = "sh_overview";
+var OVERVIEW_HINT = "Each bar counts results in its range of values. Click a chart to view that measure.";
 var SafetyHistogram = class {
   constructor(element = "body", settings = {}) {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
@@ -17063,7 +17077,7 @@ var SafetyHistogram = class {
       return;
     }
     if (this.isOverview()) {
-      this.footnote.textContent = "Click a chart to view that measure.";
+      this.footnote.textContent = OVERVIEW_HINT;
       this.drawOverview();
       this.updateNotes();
       return;
@@ -17255,7 +17269,10 @@ var SafetyHistogram = class {
         options: {
           maintainAspectRatio: false,
           responsive: true,
-          plugins: { legend: { display: false } },
+          plugins: {
+            legend: { display: false },
+            tooltip: countTooltip(inputs.bins, inputs.digits, this.unitOf(rows))
+          },
           scales: buildMultipleScales(),
           onClick: (event, active) => {
             if (active.length) {
@@ -17267,6 +17284,7 @@ var SafetyHistogram = class {
         }
       });
       chart.$shBins = inputs.bins;
+      chart.$shDigits = inputs.digits;
       this.charts.push(chart);
     });
   }
@@ -17326,14 +17344,29 @@ var SafetyHistogram = class {
         options: {
           maintainAspectRatio: false,
           responsive: true,
-          events: [],
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          // Hover only: the panel itself is the button that opens the measure.
+          events: ["mousemove", "mouseout"],
+          plugins: {
+            legend: { display: false },
+            tooltip: countTooltip(bins, digits, this.unitOf(measureRows2))
+          },
           scales: buildMultipleScales()
         }
       });
       chart.$shBins = bins;
+      chart.$shDigits = digits;
       this.charts.push(chart);
     });
+  }
+  /**
+   * The unit of a measure's rows, for a small multiple's tooltip; null when
+   * no unit column is mapped or the rows carry none (#359).
+   * @private
+   */
+  unitOf(rows) {
+    const col = this.settings.unit_col;
+    const row = col ? rows.find((r) => r[col] !== void 0 && r[col] !== null && r[col] !== "") : null;
+    return row ? String(row[col]) : null;
   }
   /**
    * Describe a hovered or selected bin in the footnote.

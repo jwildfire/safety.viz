@@ -79,7 +79,15 @@ describe('the histogram’s removed p-value settings', () => {
       expect(syncSettings({ [name]: true }), name).not.toHaveProperty(name);
     }
     expect(Object.keys(plugins).sort()).toEqual(
-      ['binDescription', 'normalRangePlugin', 'selectionColors'].sort()
+      // countLabel, binRange and countTooltip word a bar's count on hover (#359).
+      [
+        'binDescription',
+        'binRange',
+        'countLabel',
+        'countTooltip',
+        'normalRangePlugin',
+        'selectionColors'
+      ].sort()
     );
     // Nothing under src/ names the two p-value functions, or documents either setting.
     const files = (directory) =>

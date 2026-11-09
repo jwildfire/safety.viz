@@ -40,6 +40,7 @@ vi.mock('chart.js', () => {
 
 const { Chart } = await import('chart.js');
 const { default: histogram } = await import('../../../src/histogram.js');
+const { formatNumber } = await import('../../../src/histogram/getScales.js');
 const { makeRows, ALT_TEST } = await import('../participant-profile/fixture.js');
 
 const ALT = `${ALT_TEST} (U/L)`;
@@ -91,27 +92,74 @@ describe('histogram axis titles (#347)', () => {
     expect(counts.reduce((sum, n) => sum + n, 0)).toBe(instance.filteredData.length);
   });
 
-  it('SH-AXIS-006: each all-measures overview panel titles its y-axis and leaves its x-axis untitled and unticked (#347)', () => {
+  // Small multiples (#359; @jwildfire, 2026-11-08: "One line + Hover. No #."
+  // and, for the grouped panels, "Yes, same"): no y-axis title; the overview's
+  // line says what the bars count, and a bar's tooltip gives its range and count.
+  const tooltip = (chart) => chart.options.plugins.tooltip;
+  const tipTitle = (chart, index) => tooltip(chart).callbacks.title([{ dataIndex: index }]);
+  const tipLabel = (chart, index) =>
+    tooltip(chart).callbacks.label({ dataIndex: index, raw: chart.data.datasets[0].data[index] });
+  const range = (chart, index) => {
+    const bin = chart.$shBins[index];
+    const digits = chart.$shDigits;
+    return `${formatNumber(bin.lower, digits)}–${formatNumber(bin.upper, digits)} U/L`;
+  };
+
+  it('SH-AXIS-006: no overview panel titles either axis, and the line above the grid says what the bars count (#359)', () => {
     const instance = build();
     expect(instance.isOverview()).toBe(true);
     const panels = drawn(instance);
     expect(panels.length).toBe(instance.measures().length);
     for (const panel of panels) {
-      expect(title(panel, 'y')).toEqual({ display: true, text: COUNT });
+      expect(title(panel, 'y')).toBeUndefined();
       expect(title(panel, 'x')).toBeUndefined();
       expect(panel.options.scales.x.ticks).toEqual({ display: false });
+      expect(panel.options.scales.y.ticks).toEqual({ precision: 0 });
     }
+    expect(instance.footnote.textContent).toBe(
+      'Each bar counts results in its range of values. Click a chart to view that measure.'
+    );
   });
 
-  it('SH-AXIS-006: each grouped small multiple titles its y-axis, under a titled single-measure chart (#347)', () => {
+  it('SH-AXIS-006: hovering an overview bar shows its range, with the unit, and its count of results; the panel stays a button (#359)', () => {
+    const instance = build();
+    for (const panel of drawn(instance)) {
+      expect(tooltip(panel).enabled).toBe(true);
+      expect(panel.options.events).toEqual(['mousemove', 'mouseout']);
+      panel.$shBins.forEach((bin, index) => {
+        expect(tipTitle(panel, index)).toBe(range(panel, index));
+        const n = bin.records.length;
+        expect(tipLabel(panel, index)).toBe(`${n} ${n === 1 ? 'result' : 'results'}`);
+      });
+    }
+    const [first] = instance.multiplesWrap.querySelectorAll('.sv-overview-panel');
+    expect(first.getAttribute('role')).toBe('button');
+    first.onclick();
+    expect(instance.isOverview()).toBe(false);
+  });
+
+  it('SH-AXIS-006: no grouped panel titles either axis, and hovering a bar shows its range and count, under a titled single-measure chart (#359)', () => {
     const instance = build({ start_value: ALT, group_by: 'SEX' });
     const [main, ...multiples] = drawn(instance);
     expect(title(main, 'x').text).toBe(ALT);
+    expect(title(main, 'y').text).toBe(COUNT);
     expect(multiples.length).toBeGreaterThan(1);
     for (const panel of multiples) {
-      expect(title(panel, 'y')).toEqual({ display: true, text: COUNT });
+      expect(title(panel, 'y')).toBeUndefined();
       expect(title(panel, 'x')).toBeUndefined();
       expect(panel.options.scales.x.ticks).toEqual({ display: false });
+      panel.$shBins.forEach((bin, index) => {
+        expect(tipTitle(panel, index)).toBe(range(panel, index));
+        expect(tipLabel(panel, index)).toMatch(/^\d+ results?$/);
+      });
     }
+    expect(instance.footnote.textContent).toBe('Hover over or click a bar for details.');
+  });
+
+  it('SH-AXIS-006: a bar holding one record says "1 result" (#359)', async () => {
+    const { countLabel } = await import('../../../src/histogram/getPlugins.js');
+    expect(countLabel(1)).toBe('1 result');
+    expect(countLabel(0)).toBe('0 results');
+    expect(countLabel(12)).toBe('12 results');
   });
 });
