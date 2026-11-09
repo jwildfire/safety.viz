@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-11-08T14:01:09.190Z",
+  "generatedAt": "2026-11-09T01:21:52.431Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42486516147",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42486516147"
+    "id": "42543791979",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42543791979"
   },
   "records": [
     {
@@ -1472,12 +1472,20 @@
       "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
     },
     {
-      "test": "SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and each grouped panel titles its y-axis (#347)",
+      "test": "SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and the grouped panels below it title neither axis (#347, #359)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["SH-AXIS-005", "SH-AXIS-006"],
-      "issueRefs": [347],
-      "screenshots": ["SH-AXIS-005-axis-titles.png"]
+      "issueRefs": [],
+      "screenshots": ["SH-AXIS-005-axis-titles.png", "SH-AXIS-006-overview-hover.png"]
+    },
+    {
+      "test": "SH-AXIS-006: pointing at an overview bar shows its range, with the unit, and its count of results, and the panel still opens its measure (#359)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-006"],
+      "issueRefs": [359],
+      "screenshots": ["SH-AXIS-006-overview-hover.png"]
     },
     {
       "test": "SH-CHART-003/SH-FUNC-010/SH-FUNC-012: selecting a canvas bar opens a linked listing with record details and count (#2)",
@@ -5104,20 +5112,36 @@
       "screenshots": ["SH-AXIS-005-axis-titles.png"]
     },
     {
-      "test": "histogram axis titles (#347) SH-AXIS-006: each all-measures overview panel titles its y-axis and leaves its x-axis untitled and unticked (#347)",
+      "test": "histogram axis titles (#347) SH-AXIS-006: a bar holding one record says \"1 result\" (#359)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["SH-AXIS-006"],
-      "issueRefs": [347, 347],
-      "screenshots": []
+      "issueRefs": [347, 359],
+      "screenshots": ["SH-AXIS-006-overview-hover.png"]
     },
     {
-      "test": "histogram axis titles (#347) SH-AXIS-006: each grouped small multiple titles its y-axis, under a titled single-measure chart (#347)",
+      "test": "histogram axis titles (#347) SH-AXIS-006: hovering an overview bar shows its range, with the unit, and its count of results; the panel stays a button (#359)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["SH-AXIS-006"],
-      "issueRefs": [347, 347],
-      "screenshots": []
+      "issueRefs": [347, 359],
+      "screenshots": ["SH-AXIS-006-overview-hover.png"]
+    },
+    {
+      "test": "histogram axis titles (#347) SH-AXIS-006: no grouped panel titles either axis, and hovering a bar shows its range and count, under a titled single-measure chart (#359)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-006"],
+      "issueRefs": [347, 359],
+      "screenshots": ["SH-AXIS-006-overview-hover.png"]
+    },
+    {
+      "test": "histogram axis titles (#347) SH-AXIS-006: no overview panel titles either axis, and the line above the grid says what the bars count (#359)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-006"],
+      "issueRefs": [347, 359],
+      "screenshots": ["SH-AXIS-006-overview-hover.png"]
     },
     {
       "test": "histogram axis-limit prefill (SH-AXIS-001) SH-AXIS-001: displaying a limit does not pin it — the overrides stay null until edited (#85)",

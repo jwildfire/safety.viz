@@ -14,7 +14,7 @@ A patch to the Safety Histogram, from a working-group member's review: its axes 
 
 ## What's new
 
-- **The Safety Histogram titles its axes.** The single-measure chart names the measure and its unit under the x-axis and counts results up the y-axis; the overview and grouped panels title their y-axes. [obot.roadmap#430](https://github.com/jwildfire/obot.roadmap/issues/430), [#347](https://github.com/jwildfire/safety.viz/issues/347), PR [#349](https://github.com/jwildfire/safety.viz/pull/349)
+- **The Safety Histogram titles its axes.** The single-measure chart names the measure and its unit under the x-axis and counts results up the y-axis. On the small panels, pointing at a bar gives its range and count, and the overview says what the bars count. [obot.roadmap#430](https://github.com/jwildfire/obot.roadmap/issues/430), [#347](https://github.com/jwildfire/safety.viz/issues/347), PR [#349](https://github.com/jwildfire/safety.viz/pull/349), [#359](https://github.com/jwildfire/safety.viz/issues/359), PR [#360](https://github.com/jwildfire/safety.viz/pull/360)
 - **Clicking a histogram bar lists each record's visit.** A Visit column follows the participant ID when the chart is given `visit_col`, and the participant ID is listed once even when it is also a filter. The CSV download follows; a listing configured with `details` is unchanged. [obot.roadmap#430](https://github.com/jwildfire/obot.roadmap/issues/430), [#348](https://github.com/jwildfire/safety.viz/issues/348), PR [#350](https://github.com/jwildfire/safety.viz/pull/350)
 
 ## Also in this release
@@ -23,7 +23,7 @@ A patch to the Safety Histogram, from a working-group member's review: its axes 
 
 ## Tests and provenance
 
-2,537 unit and 455 browser tests pass. `dist/safety.viz-1.11.3/` is the release bundle, and `dist/safety.viz-1.11.2/` is as v1.11.2 released it. [#351](https://github.com/jwildfire/safety.viz/issues/351), PR [#352](https://github.com/jwildfire/safety.viz/pull/352)
+2,539 unit and 456 browser tests pass. `dist/safety.viz-1.11.3/` is the release bundle, and `dist/safety.viz-1.11.2/` is as v1.11.2 released it. [#351](https://github.com/jwildfire/safety.viz/issues/351), PR [#352](https://github.com/jwildfire/safety.viz/pull/352)
 
 # safety.viz v1.11.2
 

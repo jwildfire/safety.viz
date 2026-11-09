@@ -58,17 +58,15 @@ export function buildScales(measure) {
 }
 
 /**
- * A small multiple's scales, in the overview and the grouped view: the count
- * axis titled, the x-axis without ticks or title (SH-AXIS-006, #347).
+ * A small multiple's scales, in the overview and the grouped view: an integer
+ * count axis from zero with no title, and an x-axis without ticks or title.
+ * The count is read on hover instead (SH-AXIS-006, #359; @jwildfire,
+ * 2026-11-08: "One line + Hover. No #.").
  * @returns {Object} The Chart.js `scales` option.
  */
 export function buildMultipleScales() {
   return {
-    y: {
-      beginAtZero: true,
-      ticks: { precision: 0 },
-      title: { display: true, text: COUNT_TITLE }
-    },
+    y: { beginAtZero: true, ticks: { precision: 0 } },
     x: { ticks: { display: false } }
   };
 }
