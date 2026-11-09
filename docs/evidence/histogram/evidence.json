@@ -1,6 +1,6 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-11-09T01:21:52.431Z",
+  "generatedAt": "2026-11-09T02:05:16.118Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42543791979",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42543791979"
+    "id": "42547979942",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42547979942"
   },
   "records": [
     {
@@ -1472,19 +1472,19 @@
       "screenshots": ["SH-AXIS-001-axis-limits-prefilled.png"]
     },
     {
-      "test": "SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and the grouped panels below it title neither axis (#347, #359)",
+      "test": "SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and the grouped panels below it title neither axis (#347) (#359)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["SH-AXIS-005", "SH-AXIS-006"],
-      "issueRefs": [],
+      "issueRefs": [347, 359],
       "screenshots": ["SH-AXIS-005-axis-titles.png", "SH-AXIS-006-overview-hover.png"]
     },
     {
-      "test": "SH-AXIS-006: pointing at an overview bar shows its range, with the unit, and its count of results, and the panel still opens its measure (#359)",
+      "test": "SH-AXIS-006: pointing at an overview bar shows its range, with the unit, and its count of results, and the panel still opens its measure (#359) (#361)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["SH-AXIS-006"],
-      "issueRefs": [359],
+      "issueRefs": [359, 361],
       "screenshots": ["SH-AXIS-006-overview-hover.png"]
     },
     {
@@ -5117,6 +5117,22 @@
       "status": "pass",
       "requirementIds": ["SH-AXIS-006"],
       "issueRefs": [347, 359],
+      "screenshots": ["SH-AXIS-006-overview-hover.png"]
+    },
+    {
+      "test": "histogram axis titles (#347) SH-AXIS-006: a bar's range reads at the given digits, with the unit when there is one (#359, #361)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-006"],
+      "issueRefs": [347],
+      "screenshots": ["SH-AXIS-006-overview-hover.png"]
+    },
+    {
+      "test": "histogram axis titles (#347) SH-AXIS-006: each overview panel's tooltip carries its own measure's unit, and none when the rows have no unit (#359, #361)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SH-AXIS-006"],
+      "issueRefs": [347],
       "screenshots": ["SH-AXIS-006-overview-hover.png"]
     },
     {
