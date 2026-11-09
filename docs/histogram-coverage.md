@@ -43,9 +43,9 @@ schemes appear:
 | SH-API-001 (module scheme)          | — (see legacy-API note)                               | #2         | lifecycle API supports init, setData, setSettings, render, resize, destroy                   |
 | —                                   | SH-OVW-001                                            | #39        | the overview is the default view when start_value is not set                                 |
 | —                                   | SH-OVW-001                                            | #39        | an unknown start_value warns and falls back to the overview                                  |
-| —                                   | SH-OVW-002                                            | #39        | the overview renders one independently binned panel per measure                              |
+| —                                   | SH-OVW-002                                            | #39, #361  | the overview renders one independently binned panel per measure                              |
 | —                                   | SH-OVW-003                                            | #39        | clicking a small multiple opens that measure in the single-measure view                      |
-| SH-AXIS-006                         | SH-AXIS-006                                           | #359       | pointing at an overview bar shows its range and count, and the panel still opens its measure |
+| SH-AXIS-006                         | SH-AXIS-006                                           | #359, #361 | pointing at an overview bar shows its range and count, and the panel still opens its measure |
 | —                                   | SH-OVW-004                                            | #39        | selecting All Measures returns from a single-measure view to the overview                    |
 | —                                   | SH-OVW-005                                            | #39        | filters stay active in the overview and measure controls hide                                |
 | PPRF-SH-001/PPRF-SH-002             | PPRF-SH-001, PPRF-SH-002 (participant-profile matrix) | #99        | clicking a listing row focuses the participant into the railed profile                       |
@@ -56,27 +56,27 @@ schemes appear:
 
 ## Unit evidence (Vitest — `tests/unit/histogram/`)
 
-| Requirement ID                              | Source matrix rows                                 | Issue      | Test file                                              |
-| ------------------------------------------- | -------------------------------------------------- | ---------- | ------------------------------------------------------ |
-| SH-CFG-004..009 (defaults)                  | SH-CFG-004..009                                    | #2         | `configure.test.js`                                    |
-| SH-CFG-010/011, SH-CHART-004                | SH-CFG-010, SH-CFG-011                             | #2         | `configure.test.js`                                    |
-| SH-LIST-005 (default listing columns)       | SH-LIST-005                                        | #348       | `configure.test.js`                                    |
-| SH-CFG-013/014                              | SH-CFG-013, SH-CFG-014                             | #2         | `configure.test.js`                                    |
-| SH-DATA-001/002                             | SH-CFG-005                                         | #2         | `structureData.test.js`                                |
-| SH-CTRL-002/005/006                         | SH-FUNC-004C (detection)                           | #2         | `structureData.test.js`                                |
-| SH-CTRL-006 (original QC)                   | —                                                  | #19        | `binning.test.js`                                      |
-| SH-CTRL-005/007                             | SH-FUNC-005A, SH-FUNC-005B                         | #2         | `getScales.test.js`                                    |
-| SH-AXIS-001/002/003/004                     | SH-AXIS-001, SH-AXIS-002, SH-AXIS-003, SH-AXIS-004 | #85        | `axis-limits.test.js`                                  |
-| SH-AXIS-005/006 (axis titles, hover counts) | SH-AXIS-005, SH-AXIS-006                           | #347, #359 | `axis-titles.test.js`                                  |
-| SH-CHART-002                                | SH-FUNC-011 (colors)                               | #2         | `getPlugins.test.js`                                   |
-| SH-LIST-002/003/004                         | —                                                  | #2         | `listing.test.js`                                      |
-| SH-DATA-001/003 (schema)                    | SH-DATA-001                                        | #2         | `checkInputs.test.js`                                  |
-| SH-API-001 (module export)                  | —                                                  | #2         | `../main.test.js`                                      |
-| PPRF-SH-001/002/003                         | PPRF-SH-001..003 (participant-profile matrix)      | #99        | `profile-adoption.test.js`                             |
-| SH-MEAS-001/002 (measures whitelist)        | SH-MEAS-001, SH-MEAS-002                           | #136       | `measure-list.test.js`                                 |
-| SH-FILT-001..004 (shared filter contract)   | SH-FILT-001, SH-FILT-002, SH-FILT-003, SH-FILT-004 | #166       | `filters.test.js`, `../shared/filter-contract.test.js` |
-| SH-CTRL-009 (whole-chart reset)             | —                                                  | #136       | `reset.test.js`                                        |
-| SH-CHART-008 (removed p-value settings)     | —                                                  | #188       | `removed-settings.test.js`                             |
+| Requirement ID                              | Source matrix rows                                 | Issue            | Test file                                              |
+| ------------------------------------------- | -------------------------------------------------- | ---------------- | ------------------------------------------------------ |
+| SH-CFG-004..009 (defaults)                  | SH-CFG-004..009                                    | #2               | `configure.test.js`                                    |
+| SH-CFG-010/011, SH-CHART-004                | SH-CFG-010, SH-CFG-011                             | #2               | `configure.test.js`                                    |
+| SH-LIST-005 (default listing columns)       | SH-LIST-005                                        | #348             | `configure.test.js`                                    |
+| SH-CFG-013/014                              | SH-CFG-013, SH-CFG-014                             | #2               | `configure.test.js`                                    |
+| SH-DATA-001/002                             | SH-CFG-005                                         | #2               | `structureData.test.js`                                |
+| SH-CTRL-002/005/006                         | SH-FUNC-004C (detection)                           | #2               | `structureData.test.js`                                |
+| SH-CTRL-006 (original QC)                   | —                                                  | #19              | `binning.test.js`                                      |
+| SH-CTRL-005/007                             | SH-FUNC-005A, SH-FUNC-005B                         | #2               | `getScales.test.js`                                    |
+| SH-AXIS-001/002/003/004                     | SH-AXIS-001, SH-AXIS-002, SH-AXIS-003, SH-AXIS-004 | #85              | `axis-limits.test.js`                                  |
+| SH-AXIS-005/006 (axis titles, hover counts) | SH-AXIS-005, SH-AXIS-006                           | #347, #359, #361 | `axis-titles.test.js`                                  |
+| SH-CHART-002                                | SH-FUNC-011 (colors)                               | #2               | `getPlugins.test.js`                                   |
+| SH-LIST-002/003/004                         | —                                                  | #2               | `listing.test.js`                                      |
+| SH-DATA-001/003 (schema)                    | SH-DATA-001                                        | #2               | `checkInputs.test.js`                                  |
+| SH-API-001 (module export)                  | —                                                  | #2               | `../main.test.js`                                      |
+| PPRF-SH-001/002/003                         | PPRF-SH-001..003 (participant-profile matrix)      | #99              | `profile-adoption.test.js`                             |
+| SH-MEAS-001/002 (measures whitelist)        | SH-MEAS-001, SH-MEAS-002                           | #136             | `measure-list.test.js`                                 |
+| SH-FILT-001..004 (shared filter contract)   | SH-FILT-001, SH-FILT-002, SH-FILT-003, SH-FILT-004 | #166             | `filters.test.js`, `../shared/filter-contract.test.js` |
+| SH-CTRL-009 (whole-chart reset)             | —                                                  | #136             | `reset.test.js`                                        |
+| SH-CHART-008 (removed p-value settings)     | —                                                  | #188             | `removed-settings.test.js`                             |
 
 ## Railed participant profile (#99, PPRF-SH)
 
