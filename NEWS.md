@@ -23,7 +23,7 @@ A patch to the Safety Histogram, from a working-group member's review: its axes 
 
 ## Tests and provenance
 
-2,539 unit and 456 browser tests pass. `dist/safety.viz-1.11.3/` is the release bundle, and `dist/safety.viz-1.11.2/` is as v1.11.2 released it. [#351](https://github.com/jwildfire/safety.viz/issues/351), PR [#352](https://github.com/jwildfire/safety.viz/pull/352)
+2,541 unit and 456 browser tests pass. `dist/safety.viz-1.11.3/` is the release bundle, and `dist/safety.viz-1.11.2/` is as v1.11.2 released it. [#351](https://github.com/jwildfire/safety.viz/issues/351), PR [#352](https://github.com/jwildfire/safety.viz/pull/352)
 
 # safety.viz v1.11.2
 

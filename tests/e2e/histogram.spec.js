@@ -306,7 +306,7 @@ test.describe('safety.viz histogram module', () => {
     await captureEvidence(page, 'SH-AXIS-001', 'axis-limits-prefilled');
   });
 
-  test('SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and the grouped panels below it title neither axis (#347, #359)', async ({
+  test('SH-AXIS-005/SH-AXIS-006: the single-measure chart titles its x-axis with the measure and unit and its y-axis with the count, and the grouped panels below it title neither axis (#347) (#359)', async ({
     page
   }) => {
     await setHarnessSettings(page);
@@ -618,6 +618,21 @@ test.describe('safety.viz histogram module', () => {
       await expect(page.locator('#container .sv-overview-panel')).toHaveCount(3);
     }
 
+    // Wait until every panel's bars have grown to their counts (#361). The
+    // panels title no axis, so a still taken mid-animation misstates the
+    // counts; two identical frames are not enough while the easing is slow.
+    async function barsSettled(page) {
+      await page.waitForFunction(() =>
+        window.__safetyHistogramInstance.charts.every((chart) => {
+          const meta = chart.getDatasetMeta(0);
+          const scale = chart.scales.y;
+          return chart.data.datasets[0].data.every(
+            (value, index) => Math.abs(meta.data[index].y - scale.getPixelForValue(value)) < 0.5
+          );
+        })
+      );
+    }
+
     test('SH-OVW-001: the overview is the default view when start_value is not set (#39)', async ({
       page
     }) => {
@@ -687,6 +702,7 @@ test.describe('safety.viz histogram module', () => {
       expect(binning).toHaveLength(3);
       const domains = new Set(binning.map((panel) => `${panel.lower}:${panel.upper}`));
       expect(domains.size).toBe(3);
+      await barsSettled(page);
       await captureEvidence(page, 'SH-OVW-002', 'overview-panels');
     });
 
@@ -705,12 +721,13 @@ test.describe('safety.viz histogram module', () => {
       await captureEvidence(page, 'SH-OVW-003', 'click-through-to-pulse');
     });
 
-    test('SH-AXIS-006: pointing at an overview bar shows its range, with the unit, and its count of results, and the panel still opens its measure (#359)', async ({
+    test('SH-AXIS-006: pointing at an overview bar shows its range, with the unit, and its count of results, and the panel still opens its measure (#359) (#361)', async ({
       page
     }) => {
       await selectAllMeasures(page);
       const panel = page.locator('#container .sv-overview-panel', { hasText: 'Pulse (bpm)' });
       await panel.scrollIntoViewIfNeeded();
+      await barsSettled(page);
       const bar = await panel.evaluate((el) => {
         const chart = window.__safetyHistogramInstance.charts.find((c) => el.contains(c.canvas));
         const counts = chart.data.datasets[0].data;

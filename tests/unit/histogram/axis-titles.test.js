@@ -1,9 +1,11 @@
 // @vitest-environment jsdom
-// Axis titles for the histogram (SH-AXIS-005/006, #347): the single-measure
-// chart titles its x-axis with the measure and its unit and its y-axis with
-// what each bar counts; each small multiple, in the overview and the grouped
-// view, titles its y-axis. The original safety-histogram titled both axes; the
-// port drew none. Display only: the bins, ticks and counts are unchanged.
+// Axis titles for the histogram (SH-AXIS-005/006, #347, #359): the
+// single-measure chart titles its x-axis with the measure and its unit and its
+// y-axis with what each bar counts. The small multiples, in the overview and
+// the grouped view, title neither axis: a bar's tooltip gives its range and
+// count, and the overview's line says what the bars count. The original
+// safety-histogram titled both axes; the port drew none. Display only: the
+// bins, ticks and counts are unchanged.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 vi.mock('chart.js', () => {
@@ -41,7 +43,7 @@ vi.mock('chart.js', () => {
 const { Chart } = await import('chart.js');
 const { default: histogram } = await import('../../../src/histogram.js');
 const { formatNumber } = await import('../../../src/histogram/getScales.js');
-const { makeRows, ALT_TEST } = await import('../participant-profile/fixture.js');
+const { makeRows, ALT_TEST, TB_TEST } = await import('../participant-profile/fixture.js');
 
 const ALT = `${ALT_TEST} (U/L)`;
 const COUNT = 'Number of results';
@@ -51,13 +53,13 @@ beforeEach(() => {
   Chart.built.length = 0;
 });
 
-function build(settings = {}) {
+function build(settings = {}, rows = makeRows()) {
   const instance = histogram(document.querySelector('#host'), {
     filters: [{ value_col: 'SEX', label: 'Sex' }],
     groups: [{ value_col: 'SEX', label: 'Sex' }],
     ...settings
   });
-  instance.init(makeRows());
+  instance.init(rows);
   return instance;
 }
 
@@ -154,6 +156,33 @@ describe('histogram axis titles (#347)', () => {
       });
     }
     expect(instance.footnote.textContent).toBe('Hover over or click a bar for details.');
+  });
+
+  it("SH-AXIS-006: a bar's range reads at the given digits, with the unit when there is one (#359, #361)", async () => {
+    const { binRange } = await import('../../../src/histogram/getPlugins.js');
+    expect(binRange({ lower: 60, upper: 65 }, 0, 'bpm')).toBe('60–65 bpm');
+    expect(binRange({ lower: 0.25, upper: 0.5 }, 2, 'mg/dL')).toBe('0.25–0.5 mg/dL');
+    expect(binRange({ lower: 0.25, upper: 0.5 }, 1, 'mg/dL')).toBe('0.3–0.5 mg/dL');
+    expect(binRange({ lower: 60, upper: 65 }, 0, null)).toBe('60–65');
+  });
+
+  it("SH-AXIS-006: each overview panel's tooltip carries its own measure's unit, and none when the rows have no unit (#359, #361)", () => {
+    const rows = makeRows().map((row) =>
+      row.TEST === TB_TEST ? { ...row, STRESU: 'mg/dL' } : row
+    );
+    const instance = build({}, rows);
+    const units = drawn(instance).map((panel) =>
+      tipTitle(panel, 0).replace(/^[-\d.]+–[-\d.]+ ?/, '')
+    );
+    expect(new Set(units)).toEqual(new Set(['U/L', 'mg/dL']));
+
+    const bare = build(
+      {},
+      makeRows().map((row) => ({ ...row, STRESU: '' }))
+    );
+    for (const panel of drawn(bare)) {
+      expect(tipTitle(panel, 0)).toMatch(/^[-\d.]+–[-\d.]+$/);
+    }
   });
 
   it('SH-AXIS-006: a bar holding one record says "1 result" (#359)', async () => {
