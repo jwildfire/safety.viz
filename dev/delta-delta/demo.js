@@ -75,11 +75,11 @@
         measure_y: 'Aspartate Aminotransferase',
         add_regression_line: true,
         // Railed participant profile (#99, PPRF-DD): it supersedes the old
-        // bespoke measure table. The data carries no DY column, so VISITNUM
-        // doubles as the study-day axis (the hep-explorer demo precedent) and
-        // measure_values maps the profile's key liver measures onto this
-        // data's TEST names (same mapping as the hep-explorer demo).
-        studyday_col: 'VISITNUM',
+        // bespoke measure table. The profile plots the ADaM study day (DY) the
+        // data carries on every record (#365); measure_values maps the profile's key
+        // liver measures onto this data's TEST names (same mapping as the
+        // hep-explorer demo).
+        studyday_col: 'DY',
         measure_values: {
           ALT: 'Alanine Aminotransferase',
           AST: 'Aspartate Aminotransferase',

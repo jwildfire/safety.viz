@@ -83,12 +83,12 @@
           { value_col: 'RACE', label: 'Race' },
           { value_col: 'ARM', label: 'Treatment Group' }
         ],
-        // Railed participant profile (#99, PPRF-OE): the data carries no DY
-        // column, so VISITNUM doubles as the study-day axis (the hep-explorer
-        // demo precedent); measure_values maps the profile's key liver
-        // measures onto this data's TEST names (same mapping as the
-        // hep-explorer demo); profile_details are the header demographics.
-        studyday_col: 'VISITNUM',
+        // Railed participant profile (#99, PPRF-OE): the profile plots the
+        // ADaM study day (DY) the data carries on every record (#365);
+        // measure_values maps the profile's key liver measures onto this
+        // data's TEST names (same mapping as the hep-explorer demo);
+        // profile_details are the header demographics.
+        studyday_col: 'DY',
         visit_col: 'VISIT',
         visitn_col: 'VISITNUM',
         measure_values: {

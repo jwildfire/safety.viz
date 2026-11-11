@@ -4,18 +4,17 @@
 // scripts/build-demo-data.mjs). Two mappings adapt the module defaults to this
 // dataset: measure_values points the four liver-measure keys at the dataset's
 // TEST strings ("Alanine Aminotransferase" etc. rather than the SDTM-style
-// defaults), and studyday_col maps to the numeric VISITNUM sequence because
-// the distribution set carries no study-day column — the visit sequence stands
-// in for study day in the timing highlight, tooltips, and visit path. Loaded
-// by hep-explorer/index.html after the dist/ bundle.
+// defaults), and studyday_col and baseline_col map to the ADaM study day (DY)
+// and baseline flag (ABLFL) the file carries on every record (#365), which set
+// the 30-day timing highlight, the tooltips, the visit path and the ×Baseline
+// denominator. Loaded by hep-explorer/index.html after the dist/ bundle.
 //
 // Two feature notes for this dataset (#46, #49). The eDISH / mDISH scatter now
 // carries a study-day playback bar — switch the View control to
 // "eDISH / mDISH scatter" and press play to watch each participant walk its own
-// lab trajectory — but because studyday_col maps to VISITNUM here, the playback
-// runs over the visit sequence, not calendar study days. And calculate_palt is
-// deliberately left OFF: the P_ALT estimate integrates ALT over study day × 24
-// hours, which a visit sequence cannot stand in for. This distribution set also
+// lab trajectory, day by day. And calculate_palt is deliberately left OFF: the
+// P_ALT estimate integrates ALT over study day × 24 hours, and has not been
+// reviewed on this dataset. This distribution set also
 // carries no EX (exposure) domain, so the exposure track of sv#49 has nothing
 // to draw here.
 (function () {
@@ -91,7 +90,8 @@
         arm_col: 'ARM',
         placebo_arm: 'CLD: Placebo',
         active_arms: ['CLD: Study Drug'],
-        studyday_col: 'VISITNUM',
+        studyday_col: 'DY',
+        baseline_col: 'ABLFL',
         visit_col: 'VISIT',
         visitn_col: 'VISITNUM',
         measure_values: {
