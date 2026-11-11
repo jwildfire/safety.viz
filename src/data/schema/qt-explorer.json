@@ -65,12 +65,59 @@
         "visitn_col": {
           "type": ["string", "null"],
           "default": "VISITNUM",
-          "description": "Optional numeric visit column ordering the visits; falls back to first-seen order when absent."
+          "description": "Optional numeric visit column ordering the visits; falls back to first-seen order when absent. Also the order of the participant drill-down's Visit view."
+        },
+        "studyday_col": {
+          "type": ["string", "null"],
+          "default": "DY",
+          "description": "Optional numeric study-day column: the participant drill-down's Study day view (QT-XAX-001). null leaves the drill-down Visit only."
+        },
+        "x_axis": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "The participant drill-down's X-axis toggle, the setting every chart that shows change over time takes: { options: [{ key, col, label_col, type, title }], default }. Visit view spaces the visits evenly in visit-number order, so Screening sorts before Baseline; Study day view plots each ECG at its day, so ECGs taken on one day stack. When null it is built from visitn_col and visit_col (Visit) and studyday_col (Study day), opening on Visit; { default: 'day' } keeps those options and opens on Study day. The chart's own views are unchanged (QT-XAX-001..003).",
+          "properties": {
+            "options": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["key", "col"],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "The option's name: `visit` or `day`, or any other."
+                  },
+                  "col": {
+                    "type": "string",
+                    "description": "The column plotted: the visit number for a visit option, the study day for a day option."
+                  },
+                  "label_col": {
+                    "type": ["string", "null"],
+                    "description": "The visit-name column the ticks and tooltips show, for a visit option."
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["ordinal", "linear"],
+                    "description": "ordinal spaces the visits evenly in `col` order; linear plots days. Defaults from the key."
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "The control's button and the axis title. Defaults to \"Visit\" or \"Study day\" from the key."
+                  }
+                }
+              }
+            },
+            "default": {
+              "type": "string",
+              "default": "visit",
+              "description": "The key of the view the drill-down opens on."
+            }
+          }
         },
         "baseline_flag_col": {
           "type": ["string", "null"],
           "default": "ABLFL",
-          "description": "Optional 'Y'-flagged baseline-record column; when present the baseline visit is excluded from the post-baseline extremes and the central-tendency change series (QT-DATA-005)."
+          "description": "Optional 'Y'-flagged baseline-record column; when present the baseline visit is excluded from the post-baseline extremes and the central-tendency change series (QT-DATA-005), and it marks the ECG the drill-down's ×Baseline divides by (QT-XAX-003)."
         },
         "measures": {
           "type": "array",

@@ -693,6 +693,11 @@
           "column": "VISITNUM",
           "required": false
         },
+        "studyday_col": {
+          "domain": "eg",
+          "column": "DY",
+          "required": false
+        },
         "baseline_flag_col": {
           "domain": "eg",
           "column": "ABLFL",

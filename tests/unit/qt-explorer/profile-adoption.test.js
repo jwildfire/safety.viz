@@ -189,14 +189,15 @@ describe('qt-explorer interval-measure mapping (PPRF-QT-002)', () => {
     expect(settings.cuts.QTcB.relative_uln).toBe(450);
     expect(Number.isNaN(settings.cuts.defaults.relative_uln)).toBe(true);
     expect(settings.display_options[0]).toEqual({ value: 'relative_uln', label: 'Observed (ms)' });
-    // Mapping details: unit ULN column, VISITNUM as the day axis (adeg carries
-    // no DY), and NO baseline flag column — the host's BASE is a VALUE column,
-    // not the profile's flag contract; deriveBaseline's earliest-visit rule
-    // lands on the baseline visit instead.
+    // Mapping details: unit ULN column, the study day on DY and the visit as a
+    // visit (#372), and the baseline FLAG column (ABLFL) as the profile's
+    // baseline flag — never the host's BASE, which is a VALUE column.
     expect(settings.normal_col_high).toBe('__qt_profile_uln');
     expect(settings.normal_col_low).toBeNull();
-    expect(settings.studyday_col).toBe('VISITNUM');
-    expect(settings.baseline_col).toBeNull();
+    expect(settings.studyday_col).toBe('DY');
+    expect(settings.visitn_col).toBe('VISITNUM');
+    expect(settings.baseline_col).toBe('ABLFL');
+    expect(settings.baseline_col).not.toBe(instance.settings.baseline_col);
   });
 
   it('PPRF-QT-002: the railed spaghetti carries the 450 ms cut on QTc series and no cut on Heart Rate', () => {
@@ -333,5 +334,103 @@ describe('qt-explorer side panel X-axis (PPRF-XAX-009)', () => {
     clickFirstPoint(instance);
     expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
     expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Visit');
+  });
+});
+
+describe('qt-explorer drill-down by visit or by study day (QT-XAX-001..003)', () => {
+  // One participant's ECGs: Screening before the first dose, Baseline (the
+  // ABLFL record) on day 1, Week 2 on day 15, and an unscheduled ECG taken on
+  // the same day 15 (VISITNUM 2.1). Rows are deliberately out of order.
+  const SCHEDULE = [
+    ['Week 2', 2, 15, '', 412],
+    ['Screening', -1, -14, '', 380],
+    ['Unscheduled', 2.1, 15, '', 431],
+    ['Baseline', 0, 1, 'Y', 400]
+  ];
+  function scheduleRows() {
+    return SCHEDULE.flatMap(([VISIT, VISITNUM, DY, ABLFL, value]) =>
+      ['Placebo', 'High Dose'].map((ARM, armIndex) => ({
+        USUBJID: `S-${armIndex + 1}`,
+        ARM,
+        VISIT,
+        VISITNUM,
+        DY,
+        ABLFL,
+        TEST: 'QTcF',
+        STRESU: 'msec',
+        STRESN: value + armIndex,
+        BASE: 400 + armIndex,
+        CHG: value - 400
+      }))
+    );
+  }
+  function drill(settings = {}) {
+    const instance = qtExplorer(document.querySelector('#host'), settings);
+    instance.init(scheduleRows());
+    instance.root.dispatchEvent(
+      new CustomEvent('participantsSelected', { detail: { data: ['S-1'] } })
+    );
+    return instance;
+  }
+  const qtcf = (instance) =>
+    instance.profile.model.spaghetti.series.find((entry) => entry.key === 'QTcF');
+  const choose = (instance, title) =>
+    [...instance.railWrap.querySelectorAll('.sv-xaxis-option')]
+      .find((button) => button.textContent === title)
+      .click();
+
+  it('QT-XAX-001: the drill-down offers Visit and Study day, the day on DY, and opens on Visit; the visit number is never the study day (#372)', () => {
+    const instance = drill();
+    expect(instance.settings.studyday_col).toBe('DY');
+    const settings = instance.profile.settings;
+    expect(settings.studyday_col).toBe('DY');
+    expect(settings.x_axis.options.map(({ key, col }) => [key, col])).toEqual([
+      ['visit', 'VISITNUM'],
+      ['day', 'DY']
+    ]);
+    expect(settings.x_axis.default).toBe('visit');
+    const buttons = [...instance.railWrap.querySelectorAll('.sv-xaxis-option')];
+    expect(buttons.map((button) => button.textContent)).toEqual(['Visit', 'Study day']);
+    expect(buttons.every((button) => !button.disabled)).toBe(true);
+    expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Visit');
+    // The chart's own x_axis setting names the view it opens on.
+    const byDay = drill({ x_axis: { default: 'day' } });
+    expect(byDay.profile.spaghettiChart.options.scales.x.title.text).toBe('Study day');
+  });
+
+  it('QT-XAX-002: in Visit view Screening sorts before Baseline, and ECGs on one study day sit apart (#372)', () => {
+    const instance = drill();
+    expect(instance.profile.model.axis.ticks.map((tick) => tick.label)).toEqual([
+      'Screening',
+      'Baseline',
+      'Week 2',
+      'Unscheduled'
+    ]);
+    const points = qtcf(instance).points;
+    expect(points.map((point) => point.visit)).toEqual([
+      'Screening',
+      'Baseline',
+      'Week 2',
+      'Unscheduled'
+    ]);
+    expect(points.map((point) => point.x)).toEqual([0, 1, 2, 3]);
+  });
+
+  it('QT-XAX-002: in Study day view the ECGs on one study day stack at that day (#372)', () => {
+    const instance = drill();
+    choose(instance, 'Study day');
+    expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Study day');
+    const points = qtcf(instance).points;
+    expect(points.map((point) => point.x)).toEqual([-14, 1, 15, 15]);
+    const sameDay = points.filter((point) => point.x === 15).map((point) => point.visit);
+    expect(sameDay).toEqual(['Week 2', 'Unscheduled']);
+  });
+
+  it('QT-XAX-003: the drill-down ×Baseline reads the baseline-flag ECG, not the earlier Screening one (#372)', () => {
+    const instance = drill();
+    const baseline = instance.profileRows.filter(
+      (row) => row.USUBJID === 'S-1' && row.TEST === 'QTcF'
+    );
+    expect(baseline.every((row) => row.__hep_baseline === 400)).toBe(true);
   });
 });
