@@ -93,8 +93,10 @@ describe('delta-delta names the visits and study days each point compares', () =
     expect(p1).toContain('Study day: -7 → 169');
     // A blank day says so.
     expect(tooltip({ studyday_col: 'DY' }, 'P2')).toContain('Study day: -2 → —');
+    // The study day is on DY by default (#370).
+    expect(tooltip({}, 'P1')).toContain('Study day: -7 → 169');
     // No study-day column configured: the visits alone.
-    const visitOnly = tooltip({}, 'P1');
+    const visitOnly = tooltip({ studyday_col: null }, 'P1');
     expect(visitOnly).toContain('Visit: Baseline → Week 24');
     expect(visitOnly.some((line) => line.startsWith('Study day'))).toBe(false);
   });

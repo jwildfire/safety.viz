@@ -50,7 +50,7 @@ export const NORMAL_RANGE_METHODS = ['None', 'LLN-ULN', 'Standard Deviation', 'Q
  * @property {string} [width='100%'] Widget width, carried over for the R widget bindings; the shell always spans its container.
  * @property {number} [height=460] Chart-area height in pixels, carried over for the R widget bindings; the shell fixes the chart area height.
  * @property {number} [page_size=10] Rows per page in the linked participant listing.
- * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-OE-001). With neither `x_axis` nor `time_cols` it is also the main axis's Study day option (#371).
+ * @property {?string} [studyday_col='DY'] Numeric study-day column: the side panel's Study day option (#370, PPRF-XAX-011; it defaulted to null before v1.12.0). Set it to null when the data has no study day, and the panel offers Visit only (#99, PPRF-OE-001). With neither `x_axis` nor `time_cols` it is also the main axis's Study day option (#371).
  * @property {?string} [visit_col=null] Visit-name column passed to the docked profile for point tooltips (#99, PPRF-OE-001). With neither `x_axis` nor `time_cols` it labels the main axis's Visit option (#371).
  * @property {?string} [visitn_col=null] Numeric visit column passed to the docked profile for point ordering context (#99, PPRF-OE-001). With neither `x_axis` nor `time_cols` it orders the main axis's Visit option (#371).
  * @property {?Object} [measure_values=null] Optional map of short profile keys (ALT/AST/TB/ALP) to this data's full measure names, passed to the docked profile so the key liver measures resolve; null keeps the profile module's defaults (#99, PPRF-OE-001).
@@ -89,7 +89,7 @@ export const DEFAULT_SETTINGS = {
   width: '100%',
   height: 460,
   page_size: 10,
-  studyday_col: null,
+  studyday_col: 'DY',
   visit_col: null,
   visitn_col: null,
   measure_values: null,

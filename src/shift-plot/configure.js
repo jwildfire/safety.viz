@@ -49,7 +49,7 @@ export const AXIS_TYPES = ['linear', 'log'];
  * @property {number} [page_size=10] Rows per page in the linked participant listing.
  * @property {?string} [normal_col_low='STNRLO'] Lower-limit-of-normal column passed to the docked profile's lab mappings (#99, PPRF-SSP-002).
  * @property {?string} [normal_col_high='STNRHI'] Upper-limit-of-normal column passed to the docked profile; profile feed rows without a finite positive value here are dropped (the ×ULN denominator) (#99, PPRF-SSP-002).
- * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-SSP-002). When set, the default listing also shows each pair's study days in a Study day column (#374, SSP-XAX-001).
+ * @property {?string} [studyday_col='DY'] Numeric study-day column: the side panel's Study day option (#370, PPRF-XAX-011; it defaulted to null before v1.12.0). Set it to null when the data has no study day, and the panel offers Visit only (#99, PPRF-SSP-002). When set, the default listing also shows each pair's study days in a Study day column (#374, SSP-XAX-001).
  * @property {?Object} [measure_values=null] Optional map of short profile keys (ALT/AST/TB/ALP) to this data's full measure names, passed to the docked profile so the key liver measures resolve; null keeps the profile module's defaults (#99, PPRF-SSP-002).
  * @property {boolean} [profile=true] Dock the shared participant-profile module in the shell's profile slot, fed by the brush selection via the participantsSelected event; false restores the pre-#99 behaviour of listing-only detail (#99, PPRF-SSP-002).
  * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null shows none (the host `details` are pair columns, not demographics) (#99, PPRF-SSP-002).
@@ -82,7 +82,7 @@ export const DEFAULT_SETTINGS = {
   page_size: 10,
   normal_col_low: 'STNRLO',
   normal_col_high: 'STNRHI',
-  studyday_col: null,
+  studyday_col: 'DY',
   measure_values: null,
   profile: true,
   profile_details: null,

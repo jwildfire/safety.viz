@@ -78,6 +78,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { normalizeXAxis } from './x-axis.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LineElement, LinearScale, Tooltip, Legend);
@@ -233,6 +234,15 @@ class SafetyQtExplorer {
       studyday_col: settings.visitn_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
+      // No toggle of its own, so the drill-down opens on Visit (#370).
+      x_axis: normalizeXAxis(
+        {
+          visitn_col: settings.visitn_col,
+          visit_col: settings.visit_col,
+          studyday_col: settings.visitn_col
+        },
+        { fallback: 'visit' }
+      ),
       baseline_col: null,
       measure_values: measureValues,
       cuts,

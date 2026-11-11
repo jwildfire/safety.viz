@@ -324,3 +324,14 @@ describe('qt-explorer rail clear paths (PPRF-QT-003, PPRF-11)', () => {
     expect(instance.profile).toBeNull();
   });
 });
+
+describe('qt-explorer side panel X-axis (PPRF-XAX-009)', () => {
+  it('PPRF-XAX-009: the QT explorer, which has no toggle, opens its drill-down on Visit (#370)', () => {
+    const instance = build();
+    expect(instance.profile.settings.x_axis.default).toBe('visit');
+    toOutlierView(instance);
+    clickFirstPoint(instance);
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+    expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Visit');
+  });
+});

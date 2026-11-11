@@ -195,7 +195,8 @@ describe('outlier explorer: the main x-axis', () => {
   });
 
   it('SOE-XAX-007: with no time setting at all there is no Measurement sequence axis, only the message (#371)', () => {
-    const instance = build({});
+    // studyday_col defaults to DY since #370, so "no time setting" sets it to null.
+    const instance = build({ studyday_col: null });
     expect(instance.main.querySelector('.sv-no-time-axis').textContent).toBe(NO_TIME_AXIS);
     expect(live()).toHaveLength(0);
   });

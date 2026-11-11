@@ -147,8 +147,10 @@ describe('outlier-explorer configure', () => {
       ],
       default: 'visit'
     });
-    // Nothing set: no option at all, and so no time axis (no Measurement sequence).
-    expect(xAxisSetting(syncSettings({})).options).toEqual([]);
+    // Nothing set: the study day on DY, the default since #370.
+    expect(xAxisSetting(syncSettings({})).options.map((option) => option.col)).toEqual(['DY']);
+    // No column at all: no option, and so no time axis (no Measurement sequence).
+    expect(xAxisSetting(syncSettings({ studyday_col: null })).options).toEqual([]);
   });
 
   it('SOE-CFG-005: details default to time, id, result, normal limits, and unit when unset (#24)', () => {

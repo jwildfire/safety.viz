@@ -233,6 +233,42 @@ describe('the X-axis control (PPRF-XAX-001)', () => {
   });
 });
 
+describe('the side panel keeps its own toggle (PPRF-XAX-010)', () => {
+  function railFor(settings) {
+    const synced = syncSettings(settings);
+    const { rows } = rowsActual.cleanData(labRows(), synced);
+    rowsActual.deriveBaseline(rows, synced);
+    document.body.innerHTML =
+      '<div class="sv-root"><aside class="sv-rail" id="rail"></aside></div>';
+    const rail = profileRail(document.querySelector('#rail'), settings);
+    rail.show(['S1'], rows);
+    return { rail, rows };
+  }
+  const title = (rail) => rail.spaghettiChart.options.scales.x.title.text;
+
+  it('PPRF-XAX-010: a host re-sync with the same view keeps the view chosen in the panel (#370)', () => {
+    const { rail, rows } = railFor({ x_axis: X_AXIS });
+    [...document.querySelectorAll('#rail .sv-xaxis-control button')][1].click();
+    expect(title(rail)).toBe('Study day');
+    rail.cleanRows = rows;
+    rail.setSettings({ x_axis: { ...X_AXIS, default: 'visit' }, height: 320 });
+    expect(title(rail)).toBe('Study day');
+    rail.clear();
+    rail.show(['S1'], rows);
+    expect(title(rail)).toBe('Study day');
+  });
+
+  it("PPRF-XAX-010: when the host's view changes, the panel opens on the new view (#370)", () => {
+    const { rail, rows } = railFor({ x_axis: X_AXIS });
+    [...document.querySelectorAll('#rail .sv-xaxis-control button')][1].click();
+    rail.applySettings({ x_axis: { ...X_AXIS, default: 'day' } });
+    rail.applySettings({ x_axis: { ...X_AXIS, default: 'visit' } });
+    rail.clear();
+    rail.show(['S1'], rows);
+    expect(title(rail)).toBe('Visit');
+  });
+});
+
 describe('Visit view (PPRF-XAX-002)', () => {
   it('PPRF-XAX-002: Visit view spaces visits evenly in visit-number order, labels the ticks by visit name and titles the axis "Visit" (#369)', () => {
     const profile = mount();

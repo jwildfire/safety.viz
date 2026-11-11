@@ -48,7 +48,7 @@ import {
   unionDomain
 } from './participant-profile/ae.js';
 import { renderAeTracks } from './participant-profile/aeTracks.js';
-import { NO_TIME_AXIS, renderXAxisControl } from './x-axis.js';
+import { NO_TIME_AXIS, normalizeXAxis, renderXAxisControl } from './x-axis.js';
 
 Chart.register(
   LineController,
@@ -142,7 +142,8 @@ class SafetyParticipantProfile {
       expanded: false,
       cohortOpen: false,
       // The X-axis control's choice (#369); null opens on x_axis.default. The
-      // profile's own state: switching it dispatches nothing.
+      // profile's own state: switching it dispatches nothing, and in a side
+      // panel it never changes the host (#370).
       xAxis: null
     };
     // The AE domain is opt-in: without settings.ae the profile is exactly the
@@ -359,7 +360,13 @@ class SafetyParticipantProfile {
    */
   applySettings(settings) {
     if ('display' in settings) this.state.display = settings.display;
+    // A host tells its side panel which view to open on through
+    // x_axis.default (#370, PPRF-XAX-009). The panel's own choice outlives
+    // a re-sync that gives the same view, and gives way when the host's view
+    // changes (PPRF-XAX-010).
+    const opensOn = normalizeXAxis(this.settings).default;
     this.settings = syncSettings({ ...this.settings, ...settings });
+    if (normalizeXAxis(this.settings).default !== opensOn) this.state.xAxis = null;
     return this;
   }
 

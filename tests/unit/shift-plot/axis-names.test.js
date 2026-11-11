@@ -112,7 +112,9 @@ describe('shift plot listing names the visits and study days it compares', () =>
     expect(cells(instance, 'P2').slice(1, 3)).toEqual(['Baseline → Week 12', '-3 → —']);
 
     // No study-day column configured: the Visit column alone.
-    const visitOnly = build({});
+    // studyday_col defaults to DY since #370; null leaves the column out.
+    expect(headers(build({}))).toContain('Study day');
+    const visitOnly = build({ studyday_col: null });
     expect(headers(visitOnly)).not.toContain('Study day');
     expect(cells(visitOnly, 'P1')[1]).toBe('Baseline → Week 8, Week 12');
   });

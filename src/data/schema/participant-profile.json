@@ -65,7 +65,7 @@
         "x_axis": {
           "type": ["object", "null"],
           "default": null,
-          "description": "The x-axis toggle (#369): the views the profile's \"X-axis\" control offers and the one it opens on. Visit view spaces visits evenly in visit-number order, labelled by visit name; Study day view plots each record at its study day, pre-dose records at negative days, with a day-1 line. The axis title, tooltips and measure table name the active view; adverse events are drawn as a track in Study day view and listed in Visit view. An option the data lacks is greyed out with its reason; with neither, a message replaces the labs chart. null builds the setting from visitn_col / visit_col and studyday_col, opening on Visit.",
+          "description": "The x-axis toggle (#369): the views the profile's \"X-axis\" control offers and the one it opens on. Visit view spaces visits evenly in visit-number order, labelled by visit name; Study day view plots each record at its study day, pre-dose records at negative days, with a day-1 line. The axis title, tooltips and measure table name the active view; adverse events are drawn as a track in Study day view and listed in Visit view. An option the data lacks is greyed out with its reason; with neither, a message replaces the labs chart. null builds the setting from visitn_col / visit_col and studyday_col, opening on Visit. As a side panel, the host sets default to its own current view (#370): the panel opens on it and keeps its own toggle, which a later re-sync resets only when that default changes.",
           "properties": {
             "options": {
               "type": "array",

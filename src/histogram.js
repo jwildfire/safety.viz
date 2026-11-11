@@ -55,6 +55,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { normalizeXAxis } from './x-axis.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
@@ -186,6 +187,8 @@ class SafetyHistogram {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
+      // No toggle of its own, so the panel opens on Visit (#370).
+      x_axis: normalizeXAxis(settings, { fallback: 'visit' }),
       details:
         settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
       participantProfileURL: settings.participantProfileURL ?? null,
