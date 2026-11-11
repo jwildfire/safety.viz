@@ -569,6 +569,36 @@ test.describe('demo app on the demo study', () => {
     }
     expect(errors).toEqual([]);
   });
+
+  test('APP-CHART-012: the Outlier Explorer opens on the X-axis view the reader left it on, after another chart and another tab (#373)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    const option = (key) => page.locator(`.sva-chart .sv-xaxis-option[data-key="${key}"]`);
+    await openChart(page, 'outlier-explorer');
+    // The app passes both options, from the demo study's VISITNUM and DY.
+    await expect(option('visit')).toHaveAttribute('aria-pressed', 'true');
+    await expect(option('day')).toBeEnabled();
+    await option('day').click();
+    await expect(option('day')).toHaveAttribute('aria-pressed', 'true');
+    // Another chart, then back.
+    await openChart(page, 'histogram');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await openChart(page, 'outlier-explorer');
+    await expect(option('day')).toHaveAttribute('aria-pressed', 'true');
+    await expect(option('visit')).toHaveAttribute('aria-pressed', 'false');
+    // Another tab, then back.
+    await openChart(page, 'qt-explorer');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await openChart(page, 'outlier-explorer');
+    await expect(option('day')).toHaveAttribute('aria-pressed', 'true');
+    // Not kept across page loads.
+    await openOnDemo(page);
+    await openChart(page, 'outlier-explorer');
+    await expect(option('visit')).toHaveAttribute('aria-pressed', 'true');
+    expect(errors).toEqual([]);
+  });
 });
 
 // ---- the data panel (#151) ---------------------------------------------------
