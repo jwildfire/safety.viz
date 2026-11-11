@@ -131,6 +131,42 @@ export function measureDetails(participantRows, settings, state) {
   });
 }
 
+// The visits a participant's point compares and their study days, baseline
+// first, from the X- and Y-measure records the deltas use (#374,
+// SDD-XAX-001): `visits` reads `Baseline → Week 24` and `days` reads
+// `-7 → 169`. Visits are in visit-number order; a visit whose records carry
+// several days lists each (`169/170`), and one with none shows `—`. `days` is
+// blank when no studyday_col is configured or no used record has a day.
+export function visitSpan(measures, settings) {
+  const records = measures
+    .flatMap((detail) => detail.records)
+    .sort((a, b) => Number(a[settings.visitn_col] ?? 0) - Number(b[settings.visitn_col] ?? 0));
+  const dayCol = settings.studyday_col;
+  const side = (role) => {
+    const byVisit = new Map();
+    records
+      .filter((row) => row[role])
+      .forEach((row) => {
+        const visit = row[settings.visit_col];
+        if (!byVisit.has(visit)) byVisit.set(visit, []);
+        const day = dayCol ? row[dayCol] : undefined;
+        const text = day === undefined || day === null ? '' : String(day).trim();
+        if (text && !byVisit.get(visit).includes(text)) byVisit.get(visit).push(text);
+      });
+    return [...byVisit.entries()];
+  };
+  const sides = [side('baseline'), side('comparison')];
+  const anyDay = sides.some((entries) => entries.some(([, days]) => days.length));
+  return {
+    visits: sides.map((entries) => entries.map(([visit]) => visit).join(', ')).join(' → '),
+    days: anyDay
+      ? sides
+          .map((entries) => entries.map(([, days]) => days.join('/') || '—').join(', '))
+          .join(' → ')
+      : ''
+  };
+}
+
 // Flatten cleaned long-format rows to one object per participant, carrying the
 // per-measure details, the two axis deltas, and the participant-level metadata
 // used by filters and the detail header (SDD-REG-003, SDD-FUNC-006).
@@ -160,6 +196,7 @@ export function buildParticipants(rows, settings, state) {
       measures: details,
       delta_x: xDetail ? xDetail.delta : NaN,
       delta_y: yDetail ? yDetail.delta : NaN,
+      span: visitSpan([xDetail, yDetail].filter(Boolean), settings),
       meta
     };
   });

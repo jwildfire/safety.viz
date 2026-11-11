@@ -296,6 +296,11 @@
           "column": "VISITNUM",
           "required": false
         },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
+          "required": false
+        },
         "id_col": {
           "domain": "bds",
           "column": "USUBJID",

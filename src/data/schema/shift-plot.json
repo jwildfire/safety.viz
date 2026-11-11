@@ -85,7 +85,7 @@
         },
         "details": {
           "$ref": "#/$defs/fieldList",
-          "description": "Optional listing columns; defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005)."
+          "description": "Optional listing columns; defaults to participant ID, Visit, Study day (only when studyday_col is set), baseline, comparison, change, and percent change (SSP-REQ-005). Visit names the visits each pair compares, baseline first (\"Baseline → Week 8, Week 12\"), and Study day their days (\"-7 → 57, 85\"; a blank day shows as \"—\") (#374, SSP-XAX-001)."
         }
       }
     }

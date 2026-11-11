@@ -30,7 +30,7 @@
  * @property {string} [unit_col='STRESU'] Unit column passed to the docked participant profile (#99, PPRF-DD-002).
  * @property {string} [normal_col_low='STNRLO'] Lower-limit-of-normal column passed to the docked participant profile's sparklines (#99, PPRF-DD-002).
  * @property {string} [normal_col_high='STNRHI'] Upper-limit-of-normal column; the docked profile standardizes against it and drops rows without a usable value (#99, PPRF-DD-002).
- * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-DD-002).
+ * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-DD-002). When set, the point tooltip also gives the study days of the baseline and comparison visits ("Study day: -7 → 169") under the visits it always names ("Visit: Baseline → Week 24") (#374, SDD-XAX-001).
  * @property {?Object} [measure_values=null] Optional map of short profile keys (ALT/AST/TB/ALP) to this data's full measure names, passed to the docked profile so the key liver measures resolve; null keeps the profile module's defaults (#99, PPRF-DD-002).
  * @property {boolean} [profile=true] Dock the shared participant-profile module in the shell's profile slot, fed by the point-click selection via the participantsSelected event; it supersedes the removed bespoke measure table (#99, PPRF-12, PPRF-DD-004).
  * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header; null falls back to the host `details` minus the participant id, which the header already shows (#99, PPRF-DD-002).

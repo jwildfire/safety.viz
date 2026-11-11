@@ -287,6 +287,18 @@ export function spanLabel(event, options = {}) {
 }
 
 /**
+ * A lab result's span prefixed with its visit, `Week 8 · Day 57`, so a point
+ * on the one study-day axis also says which visit it belongs to (#374,
+ * PJE-XAX-001). Any other record, or a lab result with no visit, keeps the
+ * span as it is.
+ * @private
+ */
+function withVisit(event, span) {
+  const visit = event.domain === 'LB' ? String(event.visit ?? '').trim() : '';
+  return visit ? `${visit} · ${span}` : span;
+}
+
+/**
  * The lab ratio line, `4.03 × ULN` or `0.61 × LLN`, with the limit chosen by
  * the point's direction (PC-29); null when no ratio resolves.
  * @param {Object} event A lab EventRecord.
@@ -364,7 +376,7 @@ export function tooltipLines(event, settings, { mode, refDate, anchor } = {}) {
   if (!isEvent(event)) return [];
   const options = { mode, refDate };
   const title = titleLine(event);
-  const lines = [title, domainLine(event), spanLabel(event, options)];
+  const lines = [title, domainLine(event), withVisit(event, spanLabel(event, options))];
   if (event.domain === 'AE' && !event.flags?.derived) {
     if (event.flags?.serious) lines.push('SAE');
     if (event.flags?.severity === null) lines.push('severity not recorded');
@@ -425,7 +437,12 @@ export function laneAriaLabel(event, settings, { mode, refDate } = {}) {
     parts.push(event.flags.direction);
   }
   const span = spanLabel(event, options);
-  parts.push(span.replace(/^(Day|No)/, (word) => word.toLowerCase()));
+  parts.push(
+    withVisit(
+      event,
+      span.replace(/^(Day|No)/, (word) => word.toLowerCase())
+    )
+  );
   return `${parts.join(', ')}. ${GESTURE_SENTENCE}`;
 }
 

@@ -17,6 +17,7 @@
  * @property {string} [time_col='VISIT'] Column holding the visit name; required in the data. Distinct visits become the x-axis categories.
  * @property {string} [time_order_col='VISITNUM'] Optional numeric column ordering the visits along the x-axis; falls back to alphanumeric visit order when absent.
  * @property {string} [time_label='Visit'] Axis label for the time (visit) dimension.
+ * @property {?string} [studyday_col='DY'] Optional numeric study-day column. The chart stays by visit; each box's tooltip adds the median study day of the records it summarizes ("Median study day 57"), and says nothing when none of them has a day or the column is null or absent (#374, SROT-XAX-001).
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true whether or not a start is given — pass `all: false` to remove it, and the filter then always holds one value, the first unless `start` names another; a start value the data lacks is dropped with a console warning; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
  * @property {Array<string|Object>} [groups=[]] Group-by options; a "None" option is always offered first. The selected group splits each visit into side-by-side box plots.
  * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
@@ -48,6 +49,7 @@ export const DEFAULT_SETTINGS = {
   time_col: 'VISIT',
   time_order_col: 'VISITNUM',
   time_label: 'Visit',
+  studyday_col: 'DY',
   filters: [],
   groups: [],
   start_value: null,
