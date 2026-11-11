@@ -13191,7 +13191,7 @@ var DEFAULT_SETTINGS = {
   display_normal_range: false,
   annotate_bin_boundaries: false,
   group_by: "sh_none",
-  studyday_col: null,
+  studyday_col: "DY",
   visit_col: null,
   visitn_col: null,
   measure_values: null,
@@ -13308,6 +13308,11 @@ var histogram_default = {
           type: "string",
           default: "STNRHI",
           description: "Optional upper limit of normal."
+        },
+        studyday_col: {
+          type: ["string", "null"],
+          default: "DY",
+          description: "Optional numeric study-day column: the Study day option of the participant profile side panel, which opens on Visit (#370). Defaults to DY since v1.12.0 (it was null); set null when the data has no study day."
         },
         measures: {
           type: ["array", "null"],
@@ -14008,6 +14013,7 @@ var DEFAULT_SETTINGS2 = {
   studyday_col: "DY",
   visit_col: "VISIT",
   visitn_col: "VISITNUM",
+  x_axis: null,
   baseline_col: null,
   baseline_value: "Y",
   details: [],
@@ -14520,7 +14526,162 @@ function calculatePalt(participantRows, settings) {
   };
 }
 
+// src/x-axis.js
+var NO_TIME_AXIS = "This data has no visit or study day, so there is no time axis to plot.";
+var KNOWN = {
+  visit: { type: "ordinal", title: "Visit", reason: "No visit in this data" },
+  day: { type: "linear", title: "Study day", reason: "No study day in this data" }
+};
+var blank = (value) => value === void 0 || value === null || String(value).trim() === "";
+function fillOption(option2) {
+  const known = KNOWN[option2.key] || {};
+  return {
+    key: String(option2.key),
+    col: option2.col ?? null,
+    label_col: option2.label_col ?? null,
+    type: option2.type ?? known.type ?? "ordinal",
+    title: option2.title ?? known.title ?? String(option2.key)
+  };
+}
+function normalizeXAxis(settings = {}, { fallback = "visit" } = {}) {
+  const given = settings.x_axis;
+  if (given && Array.isArray(given.options) && given.options.length) {
+    return {
+      options: given.options.filter((option2) => option2 && !blank(option2.key)).map(fillOption),
+      default: given.default ?? fallback
+    };
+  }
+  const options = [];
+  const visitCol = settings.visitn_col || settings.visit_col || null;
+  if (visitCol)
+    options.push(
+      fillOption({ key: "visit", col: visitCol, label_col: settings.visit_col || null })
+    );
+  if (settings.studyday_col) options.push(fillOption({ key: "day", col: settings.studyday_col }));
+  return { options, default: (given && given.default) ?? fallback };
+}
+function hasValues(option2, rows) {
+  if (blank(option2.col)) return false;
+  return rows.some((row) => {
+    const value = row ? row[option2.col] : void 0;
+    if (blank(value)) return false;
+    return option2.type === "linear" ? Number.isFinite(Number(value)) : true;
+  });
+}
+function resolveXAxis(xAxis, rows, requested = null) {
+  const data = Array.isArray(rows) ? rows : [];
+  const options = (xAxis.options || []).map((option2) => {
+    const available = hasValues(option2, data);
+    const reason = available ? null : KNOWN[option2.key] && KNOWN[option2.key].reason || `No ${option2.title} in this data`;
+    return { ...option2, available, reason };
+  });
+  const usable2 = (key) => options.find((option2) => option2.key === key && option2.available);
+  const pick2 = usable2(requested) || usable2(xAxis.default) || options.find((o) => o.available);
+  return {
+    options,
+    active: pick2 ? pick2.key : null,
+    message: pick2 ? null : NO_TIME_AXIS
+  };
+}
+function activeXAxis(resolved) {
+  return resolved.options.find((option2) => option2.key === resolved.active) || null;
+}
+function xAxisValue(option2, row) {
+  const value = row ? row[option2.col] : void 0;
+  return blank(value) ? NaN : Number(value);
+}
+function xAxisTick(option2, row) {
+  if (option2.type === "linear") {
+    const value = xAxisValue(option2, row);
+    return Number.isFinite(value) ? `Day ${value}` : "";
+  }
+  const label = option2.label_col && row ? row[option2.label_col] : void 0;
+  return blank(label) ? String(row ? row[option2.col] ?? "" : "") : String(label);
+}
+function renderXAxisControl(parent, { resolved, onChange, label = "X-axis" }) {
+  const wrap = createElement("div", "sv-control sv-xaxis-control");
+  const heading = createElement("label", null, label);
+  const group = createElement("div", "sv-xaxis");
+  group.setAttribute("role", "group");
+  group.setAttribute("aria-label", label);
+  resolved.options.forEach((option2) => {
+    const active = option2.key === resolved.active;
+    const button = createElement(
+      "button",
+      `sv-xaxis-option${active ? " is-active" : ""}`,
+      option2.title
+    );
+    button.type = "button";
+    button.dataset.key = option2.key;
+    button.setAttribute("aria-pressed", String(active));
+    if (!option2.available) {
+      button.disabled = true;
+      button.title = option2.reason;
+    }
+    button.onclick = () => {
+      if (active || !option2.available) return;
+      onChange(option2.key);
+    };
+    group.append(button);
+  });
+  wrap.append(heading, group);
+  parent.append(wrap);
+  return wrap;
+}
+
 // src/participant-profile/structureData.js
+var blank2 = (value) => value === void 0 || value === null || String(value).trim() === "";
+function resolveProfileXAxis(cleanRows, settings, requested = null) {
+  return resolveXAxis(normalizeXAxis(settings, { fallback: "visit" }), cleanRows, requested);
+}
+function timeLabel(point) {
+  if (!point) return "";
+  const parts = [];
+  if (!blank2(point.visit)) parts.push(String(point.visit));
+  const day2 = point.studyDay !== void 0 ? point.studyDay : point.day;
+  if (Number.isFinite(day2)) parts.push(`Day ${day2}`);
+  return parts.join(" \xB7 ");
+}
+function timeAxis(option2, participantRows) {
+  if (!option2) return null;
+  if (option2.type === "linear") {
+    return {
+      key: option2.key,
+      type: "linear",
+      title: option2.title,
+      ticks: null,
+      position: (row) => xAxisValue(option2, row)
+    };
+  }
+  const seen = /* @__PURE__ */ new Map();
+  participantRows.slice().sort(dayThenIndex).forEach((row) => {
+    const value = row[option2.col];
+    if (blank2(value)) return;
+    const key = String(value);
+    if (!seen.has(key)) seen.set(key, { value, label: xAxisTick(option2, row) });
+  });
+  const entries2 = [...seen.values()];
+  if (entries2.every((entry) => Number.isFinite(Number(entry.value))))
+    entries2.sort((a, b) => Number(a.value) - Number(b.value));
+  const index = new Map(entries2.map((entry, i) => [String(entry.value), i]));
+  return {
+    key: option2.key,
+    type: "ordinal",
+    title: option2.title,
+    ticks: entries2.map((entry, i) => ({ value: i, label: entry.label })),
+    position: (row) => {
+      const value = row[option2.col];
+      return blank2(value) || !index.has(String(value)) ? NaN : index.get(String(value));
+    }
+  };
+}
+function byPosition(a, b) {
+  const xa = Number.isFinite(a.x) ? a.x : Number.MAX_SAFE_INTEGER;
+  const xb = Number.isFinite(b.x) ? b.x : Number.MAX_SAFE_INTEGER;
+  const da = Number.isFinite(a.day) ? a.day : Number.MAX_SAFE_INTEGER;
+  const db = Number.isFinite(b.day) ? b.day : Number.MAX_SAFE_INTEGER;
+  return xa - xb || da - db || a.index - b.index;
+}
 function yLabelFor(display) {
   return display === "relative_baseline" ? "Standardized Result [xBaseline]" : "Standardized Result [xULN]";
 }
@@ -14564,6 +14725,22 @@ function buildProfileModel(cleanRows, id, settings, state) {
   const participantRows = cleanRows.filter((row) => row[settings.id_col] === id);
   const first = participantRows[0] || {};
   const measures = orderedMeasures(participantRows, settings);
+  const xAxis = resolveProfileXAxis(cleanRows, settings, state ? state.xAxis : null);
+  const option2 = activeXAxis(xAxis);
+  const axis = timeAxis(option2, participantRows);
+  const visitOption = xAxis.options.find((entry) => entry.type !== "linear") || null;
+  const dayOption = xAxis.options.find((entry) => entry.type === "linear") || null;
+  const timeFields = (row) => {
+    const visit = visitOption ? xAxisTick(visitOption, row) : settings.visit_col != null ? row[settings.visit_col] : void 0;
+    const studyDay = dayOption ? xAxisValue(dayOption, row) : row.__hep_day;
+    return {
+      x: axis ? axis.position(row) : NaN,
+      index: row.__hep_index,
+      visit: blank2(visit) ? void 0 : visit,
+      visitn: settings.visitn_col != null ? row[settings.visitn_col] : void 0,
+      studyDay
+    };
+  };
   const colors2 = measureColorScale(measures.map((measure) => measure.key));
   const details = (settings.details || []).map((spec) => ({
     label: spec.label,
@@ -14584,15 +14761,14 @@ function buildProfileModel(cleanRows, id, settings, state) {
     pAlt
   };
   const series = measures.map((measure) => {
-    const points = measure.rows.filter((row) => Number.isFinite(row[field])).sort(dayThenIndex).map((row) => ({
+    const points = measure.rows.filter((row) => Number.isFinite(row[field])).map((row) => ({
       day: row.__hep_day,
       value: row[field],
       // Tooltip context (parity: the original spaghetti addPointTitles):
       // the raw result alongside the adjusted value, plus the visit fields.
       raw: row.__hep_value,
-      visit: settings.visit_col != null ? row[settings.visit_col] : void 0,
-      visitn: settings.visitn_col != null ? row[settings.visitn_col] : void 0
-    }));
+      ...timeFields(row)
+    })).sort(byPosition);
     return {
       key: measure.key,
       label: measure.label,
@@ -14604,7 +14780,7 @@ function buildProfileModel(cleanRows, id, settings, state) {
   });
   const measureModels = measures.map((measure) => {
     const values = measure.rows.map((row) => row.__hep_value).filter(Number.isFinite);
-    const spark = measure.rows.slice().sort(dayThenIndex).map((row) => {
+    const spark = measure.rows.map((row) => {
       const lln = settings.normal_col_low != null ? Number(row[settings.normal_col_low]) : NaN;
       const uln = Number(row[settings.normal_col_high]);
       const value = row.__hep_value;
@@ -14616,10 +14792,9 @@ function buildProfileModel(cleanRows, id, settings, state) {
         lln,
         uln,
         outlier: outlierLow || outlierHigh,
-        visit: settings.visit_col != null ? row[settings.visit_col] : void 0,
-        visitn: settings.visitn_col != null ? row[settings.visitn_col] : void 0
+        ...timeFields(row)
       };
-    });
+    }).sort(byPosition);
     return {
       key: measure.key,
       label: measure.label,
@@ -14633,9 +14808,13 @@ function buildProfileModel(cleanRows, id, settings, state) {
       spark
     };
   });
+  const axisModel = axis ? { key: axis.key, type: axis.type, title: axis.title, ticks: axis.ticks } : null;
   return {
     participant,
+    xAxis,
+    axis: axisModel,
     spaghetti: {
+      axis: axisModel,
       series,
       yLabel: yLabelFor(display),
       display,
@@ -15124,7 +15303,35 @@ function renderTimeline(events, domain, settings) {
   }
   return wrap;
 }
-function renderAeTracks(events, domain, settings) {
+function eventDays(event) {
+  if (!event.__ae_placeable) return "no start day recorded";
+  if (event.__ae_open) return `from study day ${event.__ae_start}, no end date recorded`;
+  if (event.__ae_end === event.__ae_start) return `study day ${event.__ae_start}`;
+  return `study days ${event.__ae_start} to ${event.__ae_end}`;
+}
+function renderEventList(events) {
+  const wrap = createElement("div", "sv-profile-ae-list-wrap");
+  wrap.append(
+    createElement(
+      "p",
+      "sv-profile-ae-list-note",
+      "Listed, not drawn: a visit axis has no days to draw them on. Switch the X-axis to Study day to see the timeline."
+    )
+  );
+  const list2 = createElement("ul", "sv-profile-ae-list");
+  events.forEach((event) => {
+    const item = createElement("li");
+    item.title = eventDescription(event);
+    item.append(
+      createElement("strong", null, event.__ae_term),
+      document.createTextNode(`: ${eventDays(event)}${event.__ae_serious ? " \xB7 serious" : ""}`)
+    );
+    list2.append(item);
+  });
+  wrap.append(list2);
+  return wrap;
+}
+function renderAeTracks(events, domain, settings, { list: asList = false } = {}) {
   const section = createElement("section", "sv-profile-ae");
   section.setAttribute("aria-label", "Adverse events");
   section.append(createElement("h3", "sv-profile-ae-title", "Adverse events"));
@@ -15138,7 +15345,9 @@ function renderAeTracks(events, domain, settings) {
   const summary = summarizeAe(list2, settings);
   section.append(renderTiles(summary));
   section.append(renderMix(summary));
-  if (!domain) {
+  if (asList) {
+    section.append(renderEventList(list2));
+  } else if (!domain) {
     section.append(
       createElement(
         "p",
@@ -15165,6 +15374,65 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, Logarithm
 var FOOTNOTE = "Points are filled for values above the current reference value. Mouseover a line to see the reference line for that lab.";
 var ANNOTATION_GAP = 12;
 var ANNOTATION_FONT = '600 10px system-ui, -apple-system, "Segoe UI", sans-serif';
+var DAY_ONE_COLOR = "#7b8b96";
+function pointX(point) {
+  return point.x !== void 0 ? point.x : point.day;
+}
+function timeScale(axis, domain = null) {
+  if (axis && axis.type === "ordinal") {
+    const ticks = axis.ticks || [];
+    const labels = new Map(ticks.map((tick) => [tick.value, tick.label]));
+    return {
+      type: "linear",
+      min: -0.5,
+      max: Math.max(ticks.length, 1) - 0.5,
+      title: { display: true, text: axis.title },
+      // One tick per visit, whatever Chart.js would have generated.
+      afterBuildTicks: (scale) => {
+        scale.ticks = ticks.map((tick) => ({ value: tick.value }));
+      },
+      ticks: {
+        autoSkip: true,
+        maxRotation: 45,
+        callback: (value) => labels.has(value) ? labels.get(value) : ""
+      }
+    };
+  }
+  return {
+    type: "linear",
+    title: { display: true, text: axis ? axis.title : "Study day" },
+    ...Array.isArray(domain) && domain.length === 2 ? { min: domain[0], max: domain[1] } : {}
+  };
+}
+function dayOnePlugin() {
+  return {
+    id: "sv-profile-day-one",
+    afterDatasetsDraw(chart) {
+      const scale = chart.scales && chart.scales.x;
+      if (!scale) return;
+      if (Number.isFinite(scale.min) && scale.min > 1) return;
+      if (Number.isFinite(scale.max) && scale.max < 1) return;
+      const x = scale.getPixelForValue(1);
+      const { left, right, top, bottom } = chart.chartArea;
+      if (!Number.isFinite(x) || x < left || x > right) return;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.strokeStyle = DAY_ONE_COLOR;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = DAY_ONE_COLOR;
+      ctx.font = ANNOTATION_FONT;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      ctx.fillText("Day 1", x + 3, top + 2);
+      ctx.restore();
+    }
+  };
+}
 function visibleSeries(series, state = {}) {
   const base = state.showExtras ? series.slice() : series.filter((entry) => entry.isKey);
   if (!state.labs) return base;
@@ -15173,12 +15441,12 @@ function visibleSeries(series, state = {}) {
 }
 function spaghettiDatasets(series) {
   return series.map((entry) => {
-    const points = entry.points;
+    const points = entry.points.filter((point) => Number.isFinite(pointX(point)));
     const cut = entry.cut;
     const color2 = entry.color;
     return {
       label: entry.label || entry.key,
-      data: points.map((point) => ({ x: point.day, y: point.value })),
+      data: points.map((point) => ({ x: pointX(point), y: point.value })),
       borderColor: color2,
       backgroundColor: color2,
       pointBorderColor: color2,
@@ -15308,19 +15576,15 @@ function renderSpaghetti(host, model, state = {}, domain = null) {
         legend: { display: true, position: "bottom" },
         tooltip: {
           callbacks: {
-            // Visit context in the title, raw + adjusted pairing in the body
-            // (parity: the original's addPointTitles).
+            // Visit and study day in the title, whichever view is active —
+            // "Week 8 · Day 57" (#369, PPRF-XAX-005) — raw + adjusted pairing
+            // in the body (parity: the original's addPointTitles).
             title: (items) => {
               if (!items.length) return "";
               const item = items[0];
               const point = (item.dataset.svPoints || [])[item.dataIndex];
-              if (!point) return `Study day: ${item.parsed.x}`;
-              const lines = [`Study day: ${point.day}`];
-              if (point.visit !== void 0 && point.visit !== null && point.visit !== "") {
-                const n = point.visitn !== void 0 && point.visitn !== null && point.visitn !== "" ? ` (${point.visitn})` : "";
-                lines.push(`Visit: ${point.visit}${n}`);
-              }
-              return lines;
+              const line = timeLabel(point);
+              return line ? [line] : "";
             },
             label: (ctx) => {
               const point = (ctx.dataset.svPoints || [])[ctx.dataIndex];
@@ -15341,11 +15605,7 @@ function renderSpaghetti(host, model, state = {}, domain = null) {
       // canvas after every render (PPRF-AXIS-002).
       layout: { padding: { right: PLOT_GUTTER_RIGHT } },
       scales: {
-        x: {
-          type: "linear",
-          title: { display: true, text: "Study Day" },
-          ...Array.isArray(domain) && domain.length === 2 ? { min: domain[0], max: domain[1] } : {}
-        },
+        x: timeScale(model.axis || null, domain),
         y: {
           ...yScale,
           afterFit: (scale) => {
@@ -15354,7 +15614,12 @@ function renderSpaghetti(host, model, state = {}, domain = null) {
         }
       }
     },
-    plugins: [cutLinePlugin(), measureAnnotationPlugin()]
+    plugins: [
+      cutLinePlugin(),
+      measureAnnotationPlugin(),
+      // The day-1 line belongs to the day axis only (#369, PPRF-XAX-004).
+      ...model.axis && model.axis.type === "ordinal" ? [] : [dayOnePlugin()]
+    ]
   });
   canvas.addEventListener("focus", () => {
     chart.$svShowCuts = true;
@@ -15435,16 +15700,17 @@ function sparklineSVG(measure) {
     height: SPARK_HEIGHT,
     "aria-hidden": "true"
   });
-  const spark = measure.spark || [];
-  const days = spark.map((point) => point.day).filter(Number.isFinite);
+  const at = (point) => point.x !== void 0 ? point.x : point.day;
+  const spark = (measure.spark || []).filter((point) => Number.isFinite(at(point)));
+  const days = spark.map(at);
   if (!days.length) return svg;
   const x = linear(
     [Math.min(...days), Math.max(...days)],
     [SPARK_OFFSET, SPARK_WIDTH - SPARK_OFFSET]
   );
   const y = linear(sparkDomain(measure), [SPARK_HEIGHT - SPARK_OFFSET, SPARK_OFFSET]);
-  const upper7 = spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x(point.day), y(point.uln)]);
-  const lower = spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x(point.day), y(point.lln)]).reverse();
+  const upper7 = spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x(at(point)), y(point.uln)]);
+  const lower = spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x(at(point)), y(point.lln)]).reverse();
   const band = upper7.concat(lower);
   if (band.length) {
     svg.append(
@@ -15469,7 +15735,7 @@ function sparklineSVG(measure) {
       })
     );
   });
-  const valuePoints = spark.filter((point) => Number.isFinite(point.value)).map((point) => [x(point.day), y(point.value)]);
+  const valuePoints = spark.filter((point) => Number.isFinite(point.value)).map((point) => [x(at(point)), y(point.value)]);
   if (valuePoints.length) {
     svg.append(
       svgElement("polyline", {
@@ -15485,7 +15751,7 @@ function sparklineSVG(measure) {
     svg.append(
       svgElement("circle", {
         class: "sv-spark-outlier",
-        cx: x(point.day),
+        cx: x(at(point)),
         cy: y(point.value),
         r: 2,
         stroke: measure.color,
@@ -15510,8 +15776,8 @@ function bandGuidePlugin(measure) {
       const { x, y } = chart.scales;
       const { left, right } = chart.chartArea;
       const ctx = chart.ctx;
-      const upper7 = measure.spark.filter((point) => Number.isFinite(point.uln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.uln)]);
-      const lower = measure.spark.filter((point) => Number.isFinite(point.lln)).map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.lln)]).reverse();
+      const upper7 = measure.spark.filter((point) => Number.isFinite(point.uln)).filter((point) => Number.isFinite(pointX(point))).map((point) => [x.getPixelForValue(pointX(point)), y.getPixelForValue(point.uln)]);
+      const lower = measure.spark.filter((point) => Number.isFinite(point.lln)).filter((point) => Number.isFinite(pointX(point))).map((point) => [x.getPixelForValue(pointX(point)), y.getPixelForValue(point.lln)]).reverse();
       const band = upper7.concat(lower);
       if (band.length) {
         ctx.save();
@@ -15543,14 +15809,16 @@ function bandGuidePlugin(measure) {
     }
   };
 }
-function renderInset(host, measure) {
+function renderInset(host, measure, axis = null) {
   const card = createElement("div", "sv-profile-inset-card");
   const canvas = createElement("canvas", "sv-profile-inset-canvas");
   canvas.setAttribute("role", "img");
   canvas.setAttribute("aria-label", `${measure.label} over time`);
   card.append(canvas);
   host.append(card);
-  const points = measure.spark.filter((point) => Number.isFinite(point.value));
+  const points = measure.spark.filter(
+    (point) => Number.isFinite(point.value) && Number.isFinite(pointX(point))
+  );
   const color2 = measure.color;
   const [yMin, yMax] = insetYDomain(measure);
   return new Chart(canvas.getContext("2d"), {
@@ -15559,7 +15827,7 @@ function renderInset(host, measure) {
       datasets: [
         {
           label: measure.label,
-          data: points.map((point) => ({ x: point.day, y: point.value })),
+          data: points.map((point) => ({ x: pointX(point), y: point.value })),
           borderColor: color2,
           backgroundColor: color2,
           pointBorderColor: color2,
@@ -15584,25 +15852,19 @@ function renderInset(host, measure) {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            // Visit context in the title (parity: the original lineChart's
-            // addPointTitles: study day, visit, visit number, value).
+            // Visit and study day in the title, whichever view is active —
+            // "Week 8 · Day 57" (#369, PPRF-XAX-005).
             title: (items) => {
               if (!items.length) return "";
-              const point = points[items[0].dataIndex];
-              if (!point) return `Study day: ${items[0].parsed.x}`;
-              const lines = [`Study day: ${point.day}`];
-              if (point.visit !== void 0 && point.visit !== null && point.visit !== "") {
-                const n = point.visitn !== void 0 && point.visitn !== null && point.visitn !== "" ? ` (${point.visitn})` : "";
-                lines.push(`Visit: ${point.visit}${n}`);
-              }
-              return lines;
+              const line = timeLabel(points[items[0].dataIndex]);
+              return line ? [line] : "";
             },
             label: (ctx) => `${measure.label}: ${ctx.parsed.y}`
           }
         }
       },
       scales: {
-        x: { type: "linear", title: { display: true, text: "Study Day" } },
+        x: timeScale(axis),
         y: {
           type: "linear",
           min: yMin,
@@ -15611,12 +15873,19 @@ function renderInset(host, measure) {
         }
       }
     },
-    plugins: [bandGuidePlugin(measure)]
+    plugins: [
+      bandGuidePlugin(measure),
+      ...axis && axis.type === "ordinal" ? [] : [dayOnePlugin()]
+    ]
   });
 }
 
 // src/participant-profile/measureTable.js
 var COLUMNS = ["Measure", "N", "Min", "Median", "Max", "Spark"];
+function tableColumns(axis) {
+  if (!axis || !axis.title) return COLUMNS.slice();
+  return [...COLUMNS.slice(0, -1), `By ${String(axis.title).toLowerCase()}`];
+}
 var insetUid = 0;
 function formatSummary(value) {
   return Number.isFinite(value) ? value.toFixed(2) : "";
@@ -15648,7 +15917,8 @@ function renderMeasureTable(host, measures, settings, state = {}, handlers = {})
   table.setAttribute("aria-label", "Measure summary");
   const thead = createElement("thead");
   const headRow = createElement("tr");
-  COLUMNS.forEach((label) => headRow.append(createElement("th", null, label)));
+  const axis = handlers.axis || null;
+  tableColumns(axis).forEach((label) => headRow.append(createElement("th", null, label)));
   thead.append(headRow);
   const tbody = createElement("tbody");
   table.append(thead, tbody);
@@ -15671,7 +15941,7 @@ function renderMeasureTable(host, measures, settings, state = {}, handlers = {})
     cell2.setAttribute("colspan", String(COLUMNS.length));
     insetRow.append(cell2);
     row.after(insetRow);
-    const chart = renderInset(cell2, measure);
+    const chart = renderInset(cell2, measure, axis);
     button.setAttribute("aria-expanded", "true");
     button.setAttribute("aria-label", `Collapse ${measure.label} chart`);
     button.setAttribute("aria-controls", insetRow.id);
@@ -15885,6 +16155,11 @@ var MODULE_CSS = `
 .sv-profile-ae-tick{position:absolute;top:2px;transform:translateX(-50%);font-size:.65rem;color:#7b8b96;font-variant-numeric:tabular-nums}
 .sv-profile-ae-more,.sv-profile-ae-unplaceable{margin:.4rem 0 0;font-size:.72rem;color:#7b8b96}
 .sv-profile-ae-empty{margin:.3rem 0 .8rem;font-size:.82rem;color:#7b8b96}
+.sv-profile-ae-list-wrap{margin:.6rem 0 0}
+.sv-profile-ae-list-note{margin:0 0 .35rem;font-size:.76rem;color:#7b8b96}
+.sv-profile-ae-list{margin:0;padding:0 0 0 1.1rem;font-size:.8rem;color:#52616f;display:grid;gap:.15rem}
+.sv-profile-ae-list strong{color:#1f2933;font-weight:600}
+.sv-profile-controls .sv-xaxis-control{margin:0}
 .sv-profile-ae-soc-wrap{margin-top:.7rem}
 .sv-profile-ae-soc{list-style:none;margin:0;padding:0}
 .sv-profile-ae-soc li{display:flex;justify-content:space-between;gap:.6rem;font-size:.76rem;padding:.16rem 0;border-bottom:1px dotted #e3e8ee}
@@ -15959,7 +16234,8 @@ function labDomain(spaghetti) {
   const days = [];
   (spaghetti && spaghetti.series || []).forEach((entry) => {
     (entry.points || []).forEach((point) => {
-      if (Number.isFinite(point.day)) days.push(point.day);
+      const day2 = point.x !== void 0 ? point.x : point.day;
+      if (Number.isFinite(day2)) days.push(day2);
     });
   });
   if (!days.length) return null;
@@ -15999,7 +16275,11 @@ var SafetyParticipantProfile = class {
       ids: [],
       index: 0,
       expanded: false,
-      cohortOpen: false
+      cohortOpen: false,
+      // The X-axis control's choice (#369); null opens on x_axis.default. The
+      // profile's own state: switching it dispatches nothing, and in a side
+      // panel it never changes the host (#370).
+      xAxis: null
     };
     this.aeSettings = this.settings.ae ? syncAeSettings(this.settings.ae) : null;
     this.aeEvents = [];
@@ -16187,7 +16467,9 @@ var SafetyParticipantProfile = class {
    */
   applySettings(settings) {
     if ("display" in settings) this.state.display = settings.display;
+    const opensOn = normalizeXAxis(this.settings).default;
     this.settings = syncSettings2({ ...this.settings, ...settings });
+    if (normalizeXAxis(this.settings).default !== opensOn) this.state.xAxis = null;
     return this;
   }
   /**
@@ -16383,17 +16665,23 @@ var SafetyParticipantProfile = class {
     } else if (this.mode === "standalone" && this.controls) {
       this.controls.innerHTML = "";
     }
-    this.domain = this.aeSettings ? unionDomain(labDomain(model.spaghetti), aeDomain(this.aeRows)) : null;
-    if (hasLabs) {
+    const visitView = Boolean(model.axis && model.axis.type === "ordinal");
+    const listEvents = hasLabs && visitView;
+    this.domain = this.aeSettings && !visitView ? unionDomain(labDomain(model.spaghetti), aeDomain(this.aeRows)) : null;
+    if (hasLabs && model.axis) {
       this.spaghettiHost = createElement("div", "sv-profile-spaghetti");
       root.append(this.spaghettiHost);
       this.drawSpaghetti();
+    } else if (hasLabs) {
+      root.append(createElement("div", "sv-no-time-axis", model.xAxis.message || NO_TIME_AXIS));
     }
     if (this.aeSettings) {
-      root.append(renderAeTracks(this.aeRows, this.domain, this.aeSettings));
+      root.append(renderAeTracks(this.aeRows, this.domain, this.aeSettings, { list: listEvents }));
     }
     if (hasLabs)
       this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
+        // The spark column and the insets follow the active view (#369).
+        axis: model.axis,
         // The extras toggle changes both the table AND the control surface
         // (Measures options, spaghetti series), so it re-renders the block;
         // focus restoration keeps the checkbox focused (PPRF-8).
@@ -16482,6 +16770,7 @@ var SafetyParticipantProfile = class {
       displayControl(this.settings, this.state, (value) => this.onDisplayChange(value)),
       displayParent
     );
+    this.xAxisControl(displayParent);
     const labParent = addSection("Labs");
     addControl(
       "Measures",
@@ -16508,8 +16797,43 @@ var SafetyParticipantProfile = class {
       createElement("label", null, "Measures"),
       labControl(keys, this.state, (labs) => this.onLabsChange(labs))
     );
-    strip.append(displayField2, labField);
+    strip.append(displayField2);
+    const xAxisField = this.xAxisControl(strip);
+    if (xAxisField) xAxisField.classList.add("sv-profile-field");
+    strip.append(labField);
     return strip;
+  }
+  /**
+   * The "X-axis" control (#369, PPRF-XAX-001): Visit and Study day, the active
+   * view pressed, an option the data lacks greyed out with its reason. Each
+   * button carries a focus key so the rebuild a switch triggers keeps keyboard
+   * focus on it (PPRF-8).
+   * @param {HTMLElement} parent Where the control goes.
+   * @returns {?HTMLElement} The control, or null when the setting has no options.
+   * @private
+   */
+  xAxisControl(parent) {
+    const resolved = this.model ? this.model.xAxis : null;
+    if (!resolved || !resolved.options.length) return null;
+    const control = renderXAxisControl(parent, {
+      resolved,
+      onChange: (key) => this.onXAxisChange(key)
+    });
+    control.querySelectorAll("button").forEach((button) => {
+      button.setAttribute("data-sv-focus", `xaxis-${button.dataset.key}`);
+    });
+    return control;
+  }
+  /**
+   * X-axis change (#369): switch the view and rebuild the profile — the labs
+   * chart, the insets, the measure table and the adverse events all follow
+   * it. The choice is the profile's own state; no selection event is sent.
+   * @param {string} key The chosen option's key.
+   * @private
+   */
+  onXAxisChange(key) {
+    this.state.xAxis = key;
+    this.renderProfile();
   }
   /**
    * Display-toggle change (PPRF-3): switch the standardization field and
@@ -16725,6 +17049,8 @@ var SafetyHistogram = class {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
+      // No toggle of its own, so the panel opens on Visit (#370).
+      x_axis: normalizeXAxis(settings, { fallback: "visit" }),
       details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
       participantProfileURL: settings.participantProfileURL ?? null,
       on_clear: () => {
@@ -17509,7 +17835,7 @@ var DEFAULT_SETTINGS4 = {
   page_size: 10,
   normal_col_low: "STNRLO",
   normal_col_high: "STNRHI",
-  studyday_col: null,
+  studyday_col: "DY",
   measure_values: null,
   profile: true,
   profile_details: null,
@@ -17536,6 +17862,10 @@ function syncSettings4(settings) {
   if (!synced.details.length) {
     synced.details = [
       { value_col: synced.id_col, label: "Participant ID" },
+      // The visits each pair compares and their study days (#374,
+      // SSP-XAX-001); the day column only when one is configured.
+      ...synced.visit_col ? [{ value_col: "__ssp_visit", label: "Visit" }] : [],
+      ...synced.studyday_col ? [{ value_col: "__ssp_day", label: "Study day" }] : [],
       { value_col: "__ssp_baseline", label: "Baseline" },
       { value_col: "__ssp_comparison", label: "Comparison" },
       { value_col: "__ssp_chg", label: "Change" },
@@ -17587,6 +17917,11 @@ var shift_plot_default = {
           default: "VISITNUM",
           description: "Optional numeric column that orders the visits; when absent the visits sort alphanumerically (SSP-REG-013/014)."
         },
+        studyday_col: {
+          type: ["string", "null"],
+          default: "DY",
+          description: "Optional numeric study-day column: the Study day option of the participant profile side panel, which opens on Visit, and the listing's Study day column (#370, #374). Defaults to DY since v1.12.0 (it was null); set null when the data has no study day."
+        },
         id_col: {
           type: "string",
           default: "USUBJID",
@@ -17635,7 +17970,7 @@ var shift_plot_default = {
         },
         details: {
           $ref: "#/$defs/fieldList",
-          description: "Optional listing columns; defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005)."
+          description: 'Optional listing columns; defaults to participant ID, Visit, Study day (only when studyday_col is set), baseline, comparison, change, and percent change (SSP-REQ-005). Visit names the visits each pair compares, baseline first ("Baseline \u2192 Week 8, Week 12"), and Study day their days ("-7 \u2192 57, 85"; a blank day shows as "\u2014") (#374, SSP-XAX-001).'
         }
       }
     }
@@ -17772,6 +18107,22 @@ function applyFilters2(rows, filters) {
     (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
+function pairVisits(byVisit, baselineVisits, comparisonVisits, settings) {
+  const dayCol = settings.studyday_col;
+  const dayOf = (visit) => {
+    const value = dayCol ? byVisit.get(visit)[dayCol] : void 0;
+    return value === void 0 || value === null || String(value).trim() === "" ? null : String(value).trim();
+  };
+  const sides = [baselineVisits || [], comparisonVisits || []].map(
+    (visits) => [...new Set(visits)].filter((visit) => byVisit.has(visit))
+  );
+  const days = sides.map((visits) => visits.map(dayOf));
+  const anyDay = days.some((side) => side.some((day2) => day2 !== null));
+  return {
+    __ssp_visit: sides.map((visits) => visits.join(", ")).join(" \u2192 "),
+    __ssp_day: anyDay ? days.map((side) => side.map((day2) => day2 === null ? "\u2014" : day2).join(", ")).join(" \u2192 ") : ""
+  };
+}
 function computeShiftPairs({
   rows,
   measure,
@@ -17792,15 +18143,15 @@ function computeShiftPairs({
     if (!participants.has(id)) participants.set(id, { firstRow: row, byVisit: /* @__PURE__ */ new Map() });
     const byVisit = participants.get(id).byVisit;
     const visit = row[visitCol];
-    if (!byVisit.has(visit)) byVisit.set(visit, row.__ssp_value);
+    if (!byVisit.has(visit)) byVisit.set(visit, row);
   });
   const pairs = [];
   participants.forEach(({ firstRow, byVisit }, id) => {
     const baselineValues = [];
     const comparisonValues = [];
-    byVisit.forEach((value, visit) => {
-      if (baseline.has(visit)) baselineValues.push(value);
-      if (comparison.has(visit)) comparisonValues.push(value);
+    byVisit.forEach((visitRow, visit) => {
+      if (baseline.has(visit)) baselineValues.push(visitRow.__ssp_value);
+      if (comparison.has(visit)) comparisonValues.push(visitRow.__ssp_value);
     });
     if (!baselineValues.length || !comparisonValues.length) return;
     const shiftx = applyStat(baselineValues, baselineStat);
@@ -17816,7 +18167,8 @@ function computeShiftPairs({
       __ssp_baseline: roundValue(shiftx),
       __ssp_comparison: roundValue(shifty),
       __ssp_chg: roundValue(chg),
-      __ssp_pchg: formatPercent(pchg)
+      __ssp_pchg: formatPercent(pchg),
+      ...pairVisits(byVisit, baselineVisits, comparisonVisits, settings)
     });
   });
   return pairs;
@@ -18002,6 +18354,11 @@ var SafetyShiftPlot = class {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visit_order_col,
+      // No toggle of its own, so the panel opens on Visit (#370).
+      x_axis: normalizeXAxis(
+        { ...settings, visitn_col: settings.visit_order_col },
+        { fallback: "visit" }
+      ),
       details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
       participantProfileURL: settings.participantProfileURL ?? null,
       on_clear: () => this.clearSelection(),
@@ -18590,7 +18947,7 @@ var DEFAULT_SETTINGS5 = {
   unit_col: "STRESU",
   normal_col_low: "STNRLO",
   normal_col_high: "STNRHI",
-  studyday_col: null,
+  studyday_col: "DY",
   measure_values: null,
   profile: true,
   profile_details: null,
@@ -18671,6 +19028,11 @@ var delta_delta_default = {
           type: "string",
           default: "VISITNUM",
           description: "Optional numeric visit column; orders the visit selectors and the sparkline (SDD-CFG-008)."
+        },
+        studyday_col: {
+          type: ["string", "null"],
+          default: "DY",
+          description: "Optional numeric study-day column: the Study day option of the participant profile side panel, which opens on Visit, and the study days in the point tooltip (#370, #374). Defaults to DY since v1.12.0 (it was null); set null when the data has no study day."
         },
         measure_x: {
           type: ["string", "null"],
@@ -18858,6 +19220,27 @@ function measureDetails(participantRows, settings, state) {
     return a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
   });
 }
+function visitSpan(measures, settings) {
+  const records = measures.flatMap((detail) => detail.records).sort((a, b) => Number(a[settings.visitn_col] ?? 0) - Number(b[settings.visitn_col] ?? 0));
+  const dayCol = settings.studyday_col;
+  const side = (role) => {
+    const byVisit = /* @__PURE__ */ new Map();
+    records.filter((row) => row[role]).forEach((row) => {
+      const visit = row[settings.visit_col];
+      if (!byVisit.has(visit)) byVisit.set(visit, []);
+      const day2 = dayCol ? row[dayCol] : void 0;
+      const text3 = day2 === void 0 || day2 === null ? "" : String(day2).trim();
+      if (text3 && !byVisit.get(visit).includes(text3)) byVisit.get(visit).push(text3);
+    });
+    return [...byVisit.entries()];
+  };
+  const sides = [side("baseline"), side("comparison")];
+  const anyDay = sides.some((entries2) => entries2.some(([, days]) => days.length));
+  return {
+    visits: sides.map((entries2) => entries2.map(([visit]) => visit).join(", ")).join(" \u2192 "),
+    days: anyDay ? sides.map((entries2) => entries2.map(([, days]) => days.join("/") || "\u2014").join(", ")).join(" \u2192 ") : ""
+  };
+}
 function buildParticipants(rows, settings, state) {
   const metaCols = unique3([
     ...settings.filters.map((filter) => filter.value_col),
@@ -18883,6 +19266,7 @@ function buildParticipants(rows, settings, state) {
       measures: details,
       delta_x: xDetail ? xDetail.delta : NaN,
       delta_y: yDetail ? yDetail.delta : NaN,
+      span: visitSpan([xDetail, yDetail].filter(Boolean), settings),
       meta
     };
   });
@@ -19128,6 +19512,8 @@ var SafetyDeltaDelta = class {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
+      // No toggle of its own, so the panel opens on Visit (#370).
+      x_axis: normalizeXAxis(settings, { fallback: "visit" }),
       details: settings.profile_details && settings.profile_details.length ? settings.profile_details : (settings.details || []).filter((detail) => detail.value_col !== settings.id_col),
       participantProfileURL: settings.participantProfileURL ?? null,
       on_clear: () => this.clearSelection(),
@@ -19461,8 +19847,13 @@ var SafetyDeltaDelta = class {
               label: (ctx) => `Participant: ${points[ctx.dataIndex].id}`,
               afterLabel: (ctx) => {
                 const point = points[ctx.dataIndex];
-                return `Change in ${this.state.measureX}: ${formatDelta(point.delta_x)}
-Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`;
+                const span = point.span || {};
+                return [
+                  `Change in ${this.state.measureX}: ${formatDelta(point.delta_x)}`,
+                  `Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`,
+                  ...span.visits ? [`Visit: ${span.visits}`] : [],
+                  ...span.days ? [`Study day: ${span.days}`] : []
+                ].join("\n");
               }
             }
           }
@@ -19579,6 +19970,7 @@ var DEFAULT_SETTINGS6 = {
   time_col: "VISIT",
   time_order_col: "VISITNUM",
   time_label: "Visit",
+  studyday_col: "DY",
   filters: [],
   groups: [],
   start_value: null,
@@ -19659,6 +20051,11 @@ var results_over_time_default = {
           type: "string",
           default: "VISITNUM",
           description: "Optional numeric column ordering the visits; falls back to alphanumeric order when absent."
+        },
+        studyday_col: {
+          type: ["string", "null"],
+          default: "DY",
+          description: `Optional numeric study-day column. The chart stays by visit; each box's tooltip adds the median study day of the records it summarizes ("Median study day 57"), and nothing when none of them has a day or the column is null or absent (#374, SROT-XAX-001).`
         },
         id_col: {
           type: "string",
@@ -19847,19 +20244,28 @@ function groupKey(row, groupCol) {
   if (!groupCol || groupCol === "srot_none") return "All";
   return String(row[groupCol]);
 }
-function summarizeVisitGroups(rows, { timeCol, valueCol, groupCol }) {
+function summarizeVisitGroups(rows, { timeCol, valueCol, groupCol, dayCol = null }) {
   const nested = {};
   const buckets = /* @__PURE__ */ new Map();
   for (const row of rows) {
     const visit = row[timeCol];
     const group = groupKey(row, groupCol);
     const key = `${visit}\0${group}`;
-    if (!buckets.has(key)) buckets.set(key, { visit, group, values: [] });
-    buckets.get(key).values.push(Number(row[valueCol]));
+    if (!buckets.has(key)) buckets.set(key, { visit, group, values: [], days: [] });
+    const bucket = buckets.get(key);
+    bucket.values.push(Number(row[valueCol]));
+    const day2 = dayCol ? row[dayCol] : void 0;
+    if (day2 !== void 0 && day2 !== null && String(day2).trim() !== "" && Number.isFinite(+day2)) {
+      bucket.days.push(Number(day2));
+    }
   }
-  for (const { visit, group, values } of buckets.values()) {
+  for (const { visit, group, values, days } of buckets.values()) {
     if (!nested[visit]) nested[visit] = {};
     nested[visit][group] = summarize(values);
+    nested[visit][group].median_day = days.length ? quantile3(
+      [...days].sort((a, b) => a - b),
+      0.5
+    ) : null;
   }
   return nested;
 }
@@ -19985,8 +20391,10 @@ function groupColors(groups) {
   return Object.fromEntries(groups.map((group, index) => [group, PALETTE[index % PALETTE.length]]));
 }
 function summaryTooltip(group, visit, stats, { p0, p1, p2 }) {
+  const day2 = Number.isFinite(stats.median_day) ? [`Median study day ${stats.median_day}`] : [];
   return [
     `${group} at ${visit}:`,
+    ...day2,
     `N = ${stats.n}`,
     `Min = ${formatFixed(stats.min, p0)}`,
     `5th % = ${formatFixed(stats.q5, p1)}`,
@@ -20370,7 +20778,8 @@ var SafetyResultsOverTime = class {
     const stats = summarizeVisitGroups(filtered, {
       timeCol: this.settings.time_col,
       valueCol: "__srot_value",
-      groupCol: grouping
+      groupCol: grouping,
+      dayCol: this.settings.studyday_col
     });
     flagOutliers(filtered, stats, { ...this.settings, outliers: this.state.outliers }, grouping);
     const visits = this.displayVisits(filtered);
@@ -20555,7 +20964,6 @@ function resultsOverTime(element = "body", settings = {}) {
 }
 
 // src/outlier-explorer/configure.js
-var OE_SEQ = "__oe_seq";
 var GROUP_NONE2 = "oe_none";
 var NORMAL_RANGE_METHODS = ["None", "LLN-ULN", "Standard Deviation", "Quantiles"];
 var DEFAULT_SETTINGS7 = {
@@ -20569,6 +20977,7 @@ var DEFAULT_SETTINGS7 = {
   normal_range_sd: 1.96,
   normal_range_quantile_low: 0.05,
   normal_range_quantile_high: 0.95,
+  x_axis: null,
   time_cols: [],
   start_value: null,
   measures: null,
@@ -20582,7 +20991,7 @@ var DEFAULT_SETTINGS7 = {
   width: "100%",
   height: 460,
   page_size: 10,
-  studyday_col: null,
+  studyday_col: "DY",
   visit_col: null,
   visitn_col: null,
   measure_values: null,
@@ -20608,6 +21017,32 @@ function timeSpec(value) {
     order_col: base.order_col || base.value_col
   };
 }
+function timeColsToXAxisOptions(timeCols) {
+  const count2 = (type) => timeCols.filter((spec) => spec.type === type).length;
+  const keyFor = (spec) => {
+    const known = spec.type === "ordinal" ? "visit" : "day";
+    return count2(spec.type) === 1 ? known : spec.value_col;
+  };
+  return timeCols.map((spec) => ({
+    key: keyFor(spec),
+    col: spec.value_col,
+    type: spec.type,
+    title: spec.label,
+    ...spec.type === "ordinal" ? { order_col: spec.order_col } : {}
+  }));
+}
+function xAxisSetting(settings) {
+  const given = settings.x_axis;
+  const timeCols = arrayify7(settings.time_cols).map(timeSpec).filter((d) => d.value_col);
+  const source = given && Array.isArray(given.options) && given.options.length ? settings : timeCols.length ? { x_axis: { options: timeColsToXAxisOptions(timeCols), default: given?.default } } : settings;
+  const xAxis = normalizeXAxis(source, { fallback: "visit" });
+  const raw = source.x_axis ? source.x_axis.options : [];
+  xAxis.options = xAxis.options.map((option2) => {
+    const from2 = (raw || []).find((candidate) => candidate && String(candidate.key) === option2.key);
+    return from2 && from2.order_col ? { ...option2, order_col: from2.order_col } : option2;
+  });
+  return xAxis;
+}
 function syncSettings7(settings) {
   const synced = { ...DEFAULT_SETTINGS7, ...settings };
   synced.measures = arrayify7(synced.measures);
@@ -20622,11 +21057,6 @@ function syncSettings7(settings) {
   }
   synced.group_by = synced.groups.some((group) => group.value_col === synced.group_by) ? synced.group_by : synced.groups[0].value_col;
   synced.time_cols = arrayify7(synced.time_cols).map(timeSpec).filter((d) => d.value_col);
-  if (!synced.time_cols.length) {
-    synced.time_cols = [
-      { value_col: OE_SEQ, label: "Measurement", type: "linear", order_col: OE_SEQ }
-    ];
-  }
   synced.tooltip_cols = arrayify7(synced.tooltip_cols).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
   synced.details = arrayify7(synced.details).map((value) => fieldSpec7(value)).filter((d) => d.value_col);
   if (!synced.details.length) {
@@ -20657,7 +21087,7 @@ var outlier_explorer_default = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   $id: "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/outlier-explorer.json",
   title: "safety.viz outlier-explorer data contract",
-  description: "Long-format results data: one record per participant per time point per measure (SOE-DATA-001). Column names are supplied by the settings mapping; the outlier-explorer removes missing/non-numeric results with a reported count (SOE-REG-037) and derives a per-participant measurement sequence when the data carries no visit/study-day column.",
+  description: "Long-format results data: one record per participant per time point per measure (SOE-DATA-001). Column names are supplied by the settings mapping; the outlier-explorer removes missing/non-numeric results with a reported count (SOE-REG-037) and plots it by visit or by study day (x_axis); data with neither shows a message instead of a chart.",
   type: "object",
   required: ["data", "settings"],
   properties: {
@@ -20702,14 +21132,61 @@ var outlier_explorer_default = {
           default: "STNRHI",
           description: "Optional upper limit of normal; feeds the LLN-ULN normal-range band."
         },
+        studyday_col: {
+          type: ["string", "null"],
+          default: "DY",
+          description: "Optional numeric study-day column: the Study day option of the participant profile side panel and, with neither x_axis nor time_cols, of the main axis (#370, #371). Defaults to DY since v1.12.0 (it was null); set null when the data has no study day."
+        },
         normal_range_method: {
           type: "string",
           default: "LLN-ULN",
           description: "Normal-range method: None, LLN-ULN, Standard Deviation, or Quantiles (SOE-FUNC-007)."
         },
+        x_axis: {
+          type: ["object", "null"],
+          default: null,
+          description: "The main x-axis, the setting every chart that shows change over time takes: { options: [{ key, col, label_col, type, title }], default }. Each option is a button of the X-axis control, shown even when only one is available; an option whose column the data lacks is greyed and says why. The chart opens on `default` (Visit when unset). When null, the options are read from `time_cols`, or else built from `visitn_col`, `visit_col` and `studyday_col`. With neither a visit nor a study day in the data the chart shows a message instead of a chart (SOE-XAX-001..007).",
+          properties: {
+            options: {
+              type: "array",
+              items: {
+                type: "object",
+                required: ["key", "col"],
+                properties: {
+                  key: {
+                    type: "string",
+                    description: "The option's name: `visit` or `day`, or any other."
+                  },
+                  col: {
+                    type: "string",
+                    description: "The column plotted: the visit number for a visit option, the study day for a day option."
+                  },
+                  label_col: {
+                    type: ["string", "null"],
+                    description: "The visit-name column the ticks and tooltips show, for a visit option."
+                  },
+                  type: {
+                    type: "string",
+                    enum: ["ordinal", "linear"],
+                    description: "ordinal spaces the visits evenly in `col` order; linear plots days. Defaults from the key."
+                  },
+                  title: {
+                    type: "string",
+                    description: `The control's button and the axis title. Defaults to "Visit" or "Study day" from the key.`
+                  }
+                }
+              }
+            },
+            default: {
+              type: "string",
+              default: "visit",
+              description: "The key of the view the chart opens on."
+            }
+          }
+        },
         time_cols: {
           $ref: "#/$defs/fieldList",
-          description: "Optional time-axis options ({ value_col, label, type, order_col }); when omitted a derived Measurement sequence is used (SOE-FUNC-004)."
+          description: "The original chart's time-axis setting, kept as a synonym of `x_axis` and read only when `x_axis` is not given: { value_col, label, type, order_col } specs. Each becomes an x_axis option (value_col its column, label its title, type kept, an ordinal entry's order_col ordering its visits), the ordinal one keyed `visit` and the linear one `day`, so the chart opens on the visit entry (SOE-FUNC-004, SOE-XAX-002)."
         },
         measures: {
           type: ["array", "null"],
@@ -20850,40 +21327,36 @@ function applyFilters5(rows, filters) {
     (row) => Object.entries(filters || {}).every(([key, value]) => filterMatches(row[key], value))
   );
 }
-function assignSequence2(rows, idCol) {
-  const counts = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const id = row[idCol];
-    const next = (counts.get(id) || 0) + 1;
-    counts.set(id, next);
-    row[OE_SEQ] = next;
-  });
-  return rows;
+var blank3 = (value) => value === void 0 || value === null || String(value).trim() === "";
+function hasPosition(row, option2) {
+  if (option2.type === "linear") return Number.isFinite(xAxisValue(option2, row));
+  return !blank3(row[option2.col]);
 }
-function timeValue(row, timeCol) {
-  if (timeCol.value_col === OE_SEQ) return row[OE_SEQ];
-  const raw = row[timeCol.value_col];
-  return timeCol.type === "ordinal" ? raw : Number(raw);
+function timeValue(row, option2) {
+  return option2.type === "ordinal" ? xAxisTick(option2, row) : xAxisValue(option2, row);
 }
-function timeOrder(row, timeCol) {
-  if (timeCol.value_col === OE_SEQ) return row[OE_SEQ];
-  return Number(row[timeCol.order_col]);
+function timeOrder(row, option2) {
+  if (option2.type !== "ordinal" || !option2.order_col) return xAxisValue(option2, row);
+  return xAxisValue({ ...option2, col: option2.order_col }, row);
 }
-function timeLabel(row, timeCol) {
-  if (timeCol.value_col === OE_SEQ) return `#${row[OE_SEQ]}`;
-  return String(row[timeCol.value_col]);
+function timeLabels(row, options) {
+  return options.filter((option2) => hasPosition(row, option2)).map((option2) => {
+    const tick = xAxisTick(option2, row);
+    return option2.type === "linear" && option2.key !== "day" ? `${option2.title} ${xAxisValue(option2, row)}` : tick;
+  }).filter((label) => !blank3(label)).join(" \xB7 ");
 }
-function orderedCategories(rows, timeCol) {
+function orderedCategories(rows, option2) {
   const seen = /* @__PURE__ */ new Map();
-  rows.forEach((row) => {
-    const label = String(row[timeCol.value_col]);
-    if (!seen.has(label)) seen.set(label, timeOrder(row, timeCol));
+  rows.filter((row) => hasPosition(row, option2)).forEach((row) => {
+    const label = xAxisTick(option2, row);
+    if (!seen.has(label)) seen.set(label, timeOrder(row, option2));
   });
   return [...seen.entries()].sort((a, b) => a[1] - b[1]).map(([label]) => label);
 }
-function buildSeries(rows, settings, timeCol, groupBy2) {
+function buildSeries(rows, settings, option2, groupBy2) {
   const byId = /* @__PURE__ */ new Map();
   rows.forEach((row) => {
+    if (!hasPosition(row, option2)) return;
     const id = row[settings.id_col];
     if (!byId.has(id)) byId.set(id, []);
     byId.get(id).push(row);
@@ -20891,13 +21364,13 @@ function buildSeries(rows, settings, timeCol, groupBy2) {
   const series = [];
   byId.forEach((records, id) => {
     const points = records.map((row) => ({
-      x: timeValue(row, timeCol),
+      x: timeValue(row, option2),
       y: row.__oe_value,
-      order: timeOrder(row, timeCol),
-      label: timeLabel(row, timeCol),
+      order: timeOrder(row, option2),
+      label: row.__oe_timeLabel ?? "",
       raw: row
     })).sort((a, b) => a.order - b.order);
-    const group = groupBy2 && groupBy2 !== OE_SEQ ? records[0][groupBy2] : null;
+    const group = groupBy2 ? records[0][groupBy2] : null;
     series.push({ id, group, points });
   });
   return series.sort(
@@ -20955,19 +21428,19 @@ function axisStep(range) {
   const raw = range / 15;
   return Math.pow(10, Math.floor(Math.log10(raw)));
 }
-function buildXScale(timeCol, categories) {
-  if (timeCol.type === "ordinal") {
+function buildXScale(option2, categories) {
+  if (option2.type === "ordinal") {
     return {
       type: "category",
       labels: categories,
       offset: true,
-      title: { display: true, text: timeCol.label },
+      title: { display: true, text: option2.title },
       ticks: { maxRotation: 45, minRotation: 45, autoSkip: true }
     };
   }
   return {
     type: "linear",
-    title: { display: true, text: timeCol.label },
+    title: { display: true, text: option2.title },
     ticks: { maxRotation: 0, minRotation: 0 }
   };
 }
@@ -21008,11 +21481,8 @@ function groupColorScale(groupValues) {
   return scale;
 }
 function pointTooltip(point, settings, measureText) {
-  const lines = [
-    String(point.raw[settings.id_col]),
-    `${measureText}: ${point.y}`,
-    `Time: ${point.label}`
-  ];
+  const lines = [String(point.raw[settings.id_col]), `${measureText}: ${point.y}`];
+  if (point.label) lines.push(point.label);
   settings.tooltip_cols.forEach((col) => {
     const value = point.raw[col.value_col];
     if (value !== void 0 && value !== null && value !== "") {
@@ -21067,6 +21537,7 @@ var SafetyOutlierExplorer = class {
     this.element = typeof element === "string" ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Outlier Explorer target not found: ${element}`);
     this.settings = syncSettings7(settings);
+    this.xAxis = xAxisSetting(this.settings);
     this.rawData = [];
     this.cleanData = [];
     this.availableMeasures = [];
@@ -21098,7 +21569,9 @@ var SafetyOutlierExplorer = class {
     return {
       measure: this.settings.start_value,
       filters: {},
-      timeIndex: 0,
+      // The x-axis view asked for with the X-axis control; null opens on the
+      // setting's default, by key (#371).
+      xView: null,
       groupBy: this.settings.group_by,
       // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
       // auto), `axisDomain` the [lower, upper] the last render resolved — what
@@ -21152,6 +21625,7 @@ var SafetyOutlierExplorer = class {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
+      x_axis: this.profileXAxis(),
       details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
       participantProfileURL: settings.participantProfileURL ?? null,
       on_clear: () => {
@@ -21228,6 +21702,20 @@ var SafetyOutlierExplorer = class {
     this.profileRows = this.settings.profile ? buildProfileRows(this.rawData, this.profileSettings()) : [];
   }
   /**
+   * The x_axis the side panel takes (#370, PPRF-XAX-009): the chart's own
+   * options, opening on the view the chart shows now. A visit option ordered
+   * by another column (time_cols' order_col) hands the panel that column to
+   * order by, labelled from its own.
+   * @returns {{options: Object[], default: ?string}} The panel's x_axis.
+   * @private
+   */
+  profileXAxis() {
+    const options = this.xAxis.options.map(
+      ({ order_col: order, ...option2 }) => order && order !== option2.col ? { ...option2, col: order, label_col: option2.label_col || option2.col } : option2
+    );
+    return { options, default: this.resolveXAxis().active || this.xAxis.default };
+  }
+  /**
    * Merge setting overrides onto the current settings, re-normalize them (same
    * rules as the factory), rebuild the controls, and re-render.
    * @param {OutlierExplorerSettings} settings Setting overrides to merge.
@@ -21235,6 +21723,7 @@ var SafetyOutlierExplorer = class {
    */
   setSettings(settings) {
     this.settings = syncSettings7({ ...this.settings, ...settings });
+    this.xAxis = xAxisSetting(this.settings);
     this.state.normalMethod = this.settings.normal_range_method;
     this.state.groupBy = this.settings.group_by;
     this.initFilterState();
@@ -21293,22 +21782,22 @@ var SafetyOutlierExplorer = class {
     return this.availableMeasures;
   }
   /**
-   * The active time-axis column spec.
+   * The x-axis setting checked against the data (#371): each option with
+   * whether the data can draw it and why not, the active view (the one asked
+   * for with the control, else the default, else the first the data can draw)
+   * and, with neither a visit nor a study day, the message shown instead of a
+   * chart.
    * @private
    */
-  activeTimeCol() {
-    return this.settings.time_cols[this.state.timeIndex] || this.settings.time_cols[0];
+  resolveXAxis() {
+    return resolveXAxis(this.xAxis, this.cleanData, this.state.xView);
   }
   /**
-   * Cleaned rows for the selected measure, tagged with the derived measurement
-   * sequence.
+   * Cleaned rows for the selected measure.
    * @private
    */
   currentMeasureData() {
-    const rows = this.cleanData.filter(
-      (row) => measureLabel4(row, this.settings) === this.state.measure
-    );
-    return assignSequence2(rows, this.settings.id_col);
+    return this.cleanData.filter((row) => measureLabel4(row, this.settings) === this.state.measure);
   }
   /**
    * Cleaned rows for the selected measure after the active filters.
@@ -21360,16 +21849,16 @@ var SafetyOutlierExplorer = class {
         filterParent
       );
     });
-    if (this.settings.time_cols.length > 1) {
-      const xParent = addSection("X-axis");
-      const xAxis = addControl("Plot by", document.createElement("select"), xParent);
-      this.settings.time_cols.forEach(
-        (spec, index) => option(xAxis, String(index), spec.label, index === this.state.timeIndex)
-      );
-      xAxis.onchange = () => {
-        this.state.timeIndex = Number(xAxis.value);
-        this.render();
-      };
+    const resolvedXAxis = this.resolveXAxis();
+    if (resolvedXAxis.options.length) {
+      renderXAxisControl(addSection("X-axis"), {
+        resolved: resolvedXAxis,
+        onChange: (key) => {
+          this.state.xView = key;
+          this.buildControls();
+          this.render();
+        }
+      });
     }
     const yParent = addSection("Y-axis Limits");
     const yRow = addRow(yParent);
@@ -21498,28 +21987,55 @@ var SafetyOutlierExplorer = class {
     this.state.selectedId = null;
     this.participantsSelected = [];
     resetProfileRail(this);
+    if (this.profile) this.profile.applySettings({ x_axis: this.profileXAxis() });
     this.notes.innerHTML = "";
     this.footnote.textContent = "Hover a point for details; click a point to highlight a participant.";
     this.filteredData = this.currentFilteredData();
+    const resolvedXAxis = this.resolveXAxis();
+    this.showTimeAxisMessage(resolvedXAxis.message);
+    if (resolvedXAxis.message) {
+      this.state.normalRange = null;
+      this.updateNotes();
+      return;
+    }
     if (!this.filteredData.length) {
       this.updateNotes();
       this.notes.innerHTML = "<span>No records match the current filters.</span>" + this.notes.innerHTML;
       return;
     }
-    this.drawChart();
+    this.drawChart(resolvedXAxis);
     this.drawLegend();
     this.updateNotes();
   }
   /**
-   * Draw the main Chart.js line chart: one population line dataset (null-gap
-   * separated per participant) plus an empty selection-overlay dataset, with
-   * the normal-range band plugin, tooltips, and click-to-select.
+   * Show the no-time-axis message in place of the chart, or take it away
+   * (#371).
+   * @param {?string} message The message, or null when the chart can be drawn.
    * @private
    */
-  drawChart() {
-    const timeCol = this.activeTimeCol();
+  showTimeAxisMessage(message) {
+    if (this.noTimeAxisEl) {
+      this.noTimeAxisEl.remove();
+      this.noTimeAxisEl = null;
+    }
+    this.chartWrap.hidden = Boolean(message);
+    this.chartWrap.style.display = message ? "none" : "";
+    if (!message) return;
+    this.noTimeAxisEl = createElement("div", "sv-no-time-axis", message);
+    this.main.insertBefore(this.noTimeAxisEl, this.chartWrap);
+  }
+  /**
+   * Draw the main Chart.js line chart: one population line dataset (null-gap
+   * separated per participant) plus an empty selection-overlay dataset, with
+   * the normal-range band plugin, tooltips, and click-to-select, along the
+   * active x-axis option (#371).
+   * @param {{options: Object[], active: string}} resolvedXAxis The resolved x-axis setting.
+   * @private
+   */
+  drawChart(resolvedXAxis) {
+    const xOption = activeXAxis(resolvedXAxis);
     this.filteredData.forEach((row) => {
-      row.__oe_timeLabel = timeLabel(row, timeCol);
+      row.__oe_timeLabel = timeLabels(row, resolvedXAxis.options);
     });
     this.state.normalRange = computeNormalRange(this.filteredData, {
       ...this.settings,
@@ -21531,8 +22047,8 @@ var SafetyOutlierExplorer = class {
     const values = this.filteredData.map((row) => row.__oe_value);
     const domain = resolveYDomain2(values, this.state.lower, this.state.upper);
     syncAxisLimits(this.state, domain, { lower: this.lowerInput, upper: this.upperInput });
-    const categories = timeCol.type === "ordinal" ? orderedCategories(this.currentMeasureData(), timeCol) : [];
-    this.series = buildSeries(this.filteredData, this.settings, timeCol, this.state.groupBy);
+    const categories = xOption.type === "ordinal" ? orderedCategories(this.currentMeasureData(), xOption) : [];
+    this.series = buildSeries(this.filteredData, this.settings, xOption, this.state.groupBy);
     const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE2;
     this.groupValues = grouped ? unique5(this.filteredData.map((row) => row[this.state.groupBy])).sort() : [];
     this.colorScale = groupColorScale(this.groupValues);
@@ -21626,7 +22142,7 @@ var SafetyOutlierExplorer = class {
           }
         },
         scales: {
-          x: buildXScale(timeCol, categories),
+          x: buildXScale(xOption, categories),
           y: buildYScale(domain, this.state.measure)
         },
         onClick: (event, elements) => {
@@ -22320,6 +22836,9 @@ var AETimelines = class {
       id_col: this.settings.id_col,
       details: this.settings.profile_details,
       on_clear: () => this.backToTimelines(),
+      // Adverse events only: they have study days and no visits, so the panel
+      // opens on Study day (#370); with no options given it builds its own.
+      x_axis: { options: [], default: "day" },
       ae: {
         data: this.rawData,
         id_col: this.settings.id_col,
@@ -26494,6 +27013,9 @@ var SafetyHepExplorer = class {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
+      // The panel opens on Study day (#370) until hep-explorer has a toggle of
+      // its own, whose view it will forward instead.
+      x_axis: { ...normalizeXAxis(settings), default: "day" },
       baseline_col: settings.baseline_col,
       baseline_value: settings.baseline_value,
       measure_values: settings.measure_values,
@@ -27778,6 +28300,9 @@ var AEExplorer = class {
       id_col: this.settings.id_col,
       details: this.settings.profile_details || [],
       on_clear: () => this.focusParticipant(null),
+      // Adverse events only: they have study days and no visits, so the panel
+      // opens on Study day (#370); with no options given it builds its own.
+      x_axis: { options: [], default: "day" },
       ae: {
         data: this.rawData,
         id_col: this.settings.id_col,
@@ -28548,12 +29073,59 @@ var qt_explorer_default = {
         visitn_col: {
           type: ["string", "null"],
           default: "VISITNUM",
-          description: "Optional numeric visit column ordering the visits; falls back to first-seen order when absent."
+          description: "Optional numeric visit column ordering the visits; falls back to first-seen order when absent. Also the order of the participant drill-down's Visit view."
+        },
+        studyday_col: {
+          type: ["string", "null"],
+          default: "DY",
+          description: "Optional numeric study-day column: the participant drill-down's Study day view (QT-XAX-001). null leaves the drill-down Visit only."
+        },
+        x_axis: {
+          type: ["object", "null"],
+          default: null,
+          description: "The participant drill-down's X-axis toggle, the setting every chart that shows change over time takes: { options: [{ key, col, label_col, type, title }], default }. Visit view spaces the visits evenly in visit-number order, so Screening sorts before Baseline; Study day view plots each ECG at its day, so ECGs taken on one day stack. When null it is built from visitn_col and visit_col (Visit) and studyday_col (Study day), opening on Visit; { default: 'day' } keeps those options and opens on Study day. The chart's own views are unchanged (QT-XAX-001..003).",
+          properties: {
+            options: {
+              type: "array",
+              items: {
+                type: "object",
+                required: ["key", "col"],
+                properties: {
+                  key: {
+                    type: "string",
+                    description: "The option's name: `visit` or `day`, or any other."
+                  },
+                  col: {
+                    type: "string",
+                    description: "The column plotted: the visit number for a visit option, the study day for a day option."
+                  },
+                  label_col: {
+                    type: ["string", "null"],
+                    description: "The visit-name column the ticks and tooltips show, for a visit option."
+                  },
+                  type: {
+                    type: "string",
+                    enum: ["ordinal", "linear"],
+                    description: "ordinal spaces the visits evenly in `col` order; linear plots days. Defaults from the key."
+                  },
+                  title: {
+                    type: "string",
+                    description: `The control's button and the axis title. Defaults to "Visit" or "Study day" from the key.`
+                  }
+                }
+              }
+            },
+            default: {
+              type: "string",
+              default: "visit",
+              description: "The key of the view the drill-down opens on."
+            }
+          }
         },
         baseline_flag_col: {
           type: ["string", "null"],
           default: "ABLFL",
-          description: "Optional 'Y'-flagged baseline-record column; when present the baseline visit is excluded from the post-baseline extremes and the central-tendency change series (QT-DATA-005)."
+          description: "Optional 'Y'-flagged baseline-record column; when present the baseline visit is excluded from the post-baseline extremes and the central-tendency change series (QT-DATA-005), and it marks the ECG the drill-down's \xD7Baseline divides by (QT-XAX-003)."
         },
         measures: {
           type: "array",
@@ -28699,6 +29271,8 @@ var DEFAULT_SETTINGS10 = {
   placebo_arm: null,
   visit_col: "VISIT",
   visitn_col: "VISITNUM",
+  studyday_col: "DY",
+  x_axis: null,
   baseline_flag_col: "ABLFL",
   measures: ["QTcF", "QTcB", "Heart Rate"],
   qtc_measures: ["QTcF", "QTcB"],
@@ -29416,9 +29990,12 @@ var SafetyQtExplorer = class {
    *   change-from-baseline thresholds are not representable in the dock — see
    *   docs/qt-explorer-coverage.md.
    * - the host's `baseline_col` ('BASE') is a VALUE column, not the profile's
-   *   baseline FLAG contract, so the profile's `baseline_col` stays null and
-   *   deriveBaseline's earliest-visit rule lands on the baseline visit.
-   * - `studyday_col` maps from `visitn_col` (ADEG-style data carries no DY).
+   *   baseline FLAG contract; the profile's `baseline_col` is the host's
+   *   `baseline_flag_col` (ABLFL), so ×Baseline reads the flagged ECG rather
+   *   than the earliest one (a Screening ECG comes before it on the day axis).
+   * - `x_axis` (#372): the chart's x_axis setting, or Visit on `visitn_col` /
+   *   `visit_col` and Study day on `studyday_col` (DY); the visit is passed as
+   *   a visit and the day option's column as the profile's `studyday_col`.
    * @private
    */
   profileSettings() {
@@ -29428,6 +30005,8 @@ var SafetyQtExplorer = class {
       measureValues[measure] = measure;
     });
     const qtcCut = settings.absolute_thresholds.length ? settings.absolute_thresholds[0] : NaN;
+    const xAxis = normalizeXAxis(settings, { fallback: "visit" });
+    const dayOption = xAxis.options.find((option2) => option2.type === "linear");
     const cuts = { defaults: { relative_uln: NaN, relative_baseline: NaN } };
     (settings.qtc_measures || []).forEach((measure) => {
       cuts[measure] = { relative_uln: qtcCut, relative_baseline: NaN };
@@ -29439,10 +30018,14 @@ var SafetyQtExplorer = class {
       unit_col: settings.unit_col,
       normal_col_high: "__qt_profile_uln",
       normal_col_low: null,
-      studyday_col: settings.visitn_col,
+      // The visit as a visit and the study day as a day (#372): the drill-down
+      // plots by either, opening on the chart's x_axis default, Visit when
+      // unset (#370).
+      studyday_col: dayOption ? dayOption.col : null,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
-      baseline_col: null,
+      x_axis: xAxis,
+      baseline_col: settings.baseline_flag_col ?? null,
       measure_values: measureValues,
       cuts,
       display_options: [
@@ -34350,6 +34933,7 @@ var DEFAULT_SETTINGS14 = {
   lb_nrind_col: "LBNRIND",
   lb_unit_col: "LBSTRESU",
   lb_dtc_col: "LBDTC",
+  lb_visit_col: "VISIT",
   lb_tests: [
     "Alanine Aminotransferase",
     "Aspartate Aminotransferase",
@@ -34709,7 +35293,7 @@ var patient_journey_explorer_default = {
       type: "array",
       items: { $ref: "#/$defs/lbRow" },
       requiredSettings: ["id_col", "lb_test_col", "lb_value_col", "lb_day_col"],
-      description: "Lab records (an ADLB or LB projection), one row per result: the participant id, the test name and code (lb_test_col, lb_testcd_col \u2014 lb_tests matches either), the numeric result and unit (lb_value_col, lb_unit_col), the reference range (lb_lo_col, lb_hi_col), the normal-range indicator (lb_nrind_col), the study day (lb_day_col \u2014 LBDY/ADY by default), the analysis-baseline flag (lb_baseline_flag_col, consulted first when resolving a test's baseline, D17) and optionally the collection date (lb_dtc_col). Each configured test draws as a small multiple with its reference band (PJE-LANE-005); a point is abnormal by flag when the indicator is present and not normal, or by change when it is at least lb_change_factor times, or at most 1/lb_change_factor of, the baseline (PJE-CTX-002). A row with a blank test name or a non-numeric result is dropped with a named reason."
+      description: "Lab records (an ADLB or LB projection), one row per result: the participant id, the test name and code (lb_test_col, lb_testcd_col \u2014 lb_tests matches either), the numeric result and unit (lb_value_col, lb_unit_col), the reference range (lb_lo_col, lb_hi_col), the normal-range indicator (lb_nrind_col), the study day (lb_day_col \u2014 LBDY/ADY by default), the analysis-baseline flag (lb_baseline_flag_col, consulted first when resolving a test's baseline, D17) and optionally the collection date (lb_dtc_col) and the visit name (lb_visit_col \u2014 VISIT by default, shown beside the day in the tooltip). Each configured test draws as a small multiple with its reference band (PJE-LANE-005); a point is abnormal by flag when the indicator is present and not normal, or by change when it is at least lb_change_factor times, or at most 1/lb_change_factor of, the baseline (PJE-CTX-002). A row with a blank test name or a non-numeric result is dropped with a named reason."
     },
     cm: {
       type: "array",
@@ -34914,6 +35498,11 @@ var patient_journey_explorer_default = {
           type: "string",
           default: "LBDTC",
           description: "Lab collection date column (--DTC), shown as recorded."
+        },
+        lb_visit_col: {
+          type: ["string", "null"],
+          default: "VISIT",
+          description: `Optional lab visit-name column. The chart stays on its one study-day axis; a lab result's tooltip and accessible name name its visit beside the day ("Week 8 \xB7 Day 57"), and a record with no visit, or null here, shows the day alone (#374, PJE-XAX-001).`
         },
         lb_tests: {
           type: "array",
@@ -35194,7 +35783,7 @@ var patient_journey_explorer_default = {
     },
     lbRow: {
       type: "object",
-      description: "One lab result as passed to init: the participant id, test name and code, numeric result and unit, reference range, normal-range indicator, study day, baseline flag and optionally the collection date, under the columns named by the lb_* settings. Retained by reference and shown verbatim in the source drawer."
+      description: "One lab result as passed to init: the participant id, test name and code, numeric result and unit, reference range, normal-range indicator, study day, baseline flag and optionally the collection date and visit name, under the columns named by the lb_* settings. Retained by reference and shown verbatim in the source drawer."
     },
     cmRow: {
       type: "object",
@@ -35597,6 +36186,7 @@ function deriveFields(row, domain, settings) {
         category: test,
         test,
         testCode: text(row[s.lb_testcd_col]),
+        visit: s.lb_visit_col ? text(row[s.lb_visit_col]) : null,
         value,
         unit,
         lln,
@@ -35717,6 +36307,7 @@ function normalizeDomain3(rows, domain, settings) {
       outcome: rest.outcome || "",
       test: rest.test ?? null,
       testCode: rest.testCode ?? null,
+      visit: rest.visit || null,
       lln: rest.lln ?? null,
       uln: rest.uln ?? null,
       flags: {
@@ -36854,6 +37445,10 @@ function spanLabel(event, options = {}) {
   if (endBeforeStart(event)) return `${start}, end day precedes start; shown as a single day`;
   return `${start}, end not recorded`;
 }
+function withVisit(event, span) {
+  const visit = event.domain === "LB" ? String(event.visit ?? "").trim() : "";
+  return visit ? `${visit} \xB7 ${span}` : span;
+}
 function ratioLine(event) {
   if (!isEvent(event) || event.domain !== "LB") return null;
   const ratio = referenceRatio(event);
@@ -36891,7 +37486,7 @@ function tooltipLines3(event, settings, { mode, refDate, anchor } = {}) {
   if (!isEvent(event)) return [];
   const options = { mode, refDate };
   const title = titleLine(event);
-  const lines = [title, domainLine(event), spanLabel(event, options)];
+  const lines = [title, domainLine(event), withVisit(event, spanLabel(event, options))];
   if (event.domain === "AE" && !event.flags?.derived) {
     if (event.flags?.serious) lines.push("SAE");
     if (event.flags?.severity === null) lines.push("severity not recorded");
@@ -36938,7 +37533,12 @@ function laneAriaLabel(event, settings, { mode, refDate } = {}) {
     parts.push(event.flags.direction);
   }
   const span = spanLabel(event, options);
-  parts.push(span.replace(/^(Day|No)/, (word) => word.toLowerCase()));
+  parts.push(
+    withVisit(
+      event,
+      span.replace(/^(Day|No)/, (word) => word.toLowerCase())
+    )
+  );
   return `${parts.join(", ")}. ${GESTURE_SENTENCE}`;
 }
 function emphasisOf(event, bounds, settings) {
@@ -40681,6 +41281,11 @@ var portfolio_default = {
           domain: "bds",
           column: "STNRHI",
           required: false
+        },
+        studyday_col: {
+          domain: "bds",
+          column: "DY",
+          required: false
         }
       }
     },
@@ -40718,6 +41323,11 @@ var portfolio_default = {
           domain: "bds",
           column: "STNRHI",
           required: false
+        },
+        studyday_col: {
+          domain: "bds",
+          column: "DY",
+          required: false
         }
       }
     },
@@ -40744,6 +41354,11 @@ var portfolio_default = {
         time_order_col: {
           domain: "bds",
           column: "VISITNUM",
+          required: false
+        },
+        studyday_col: {
+          domain: "bds",
+          column: "DY",
           required: false
         },
         id_col: {
@@ -40781,6 +41396,11 @@ var portfolio_default = {
         visit_order_col: {
           domain: "bds",
           column: "VISITNUM",
+          required: false
+        },
+        studyday_col: {
+          domain: "bds",
+          column: "DY",
           required: false
         },
         id_col: {
@@ -40823,6 +41443,11 @@ var portfolio_default = {
         visitn_col: {
           domain: "bds",
           column: "VISITNUM",
+          required: false
+        },
+        studyday_col: {
+          domain: "bds",
+          column: "DY",
           required: false
         }
       }
@@ -41118,6 +41743,11 @@ var portfolio_default = {
           column: "VISITNUM",
           required: false
         },
+        studyday_col: {
+          domain: "eg",
+          column: "DY",
+          required: false
+        },
         baseline_flag_col: {
           domain: "eg",
           column: "ABLFL",
@@ -41239,109 +41869,6 @@ var portfolio_default = {
     }
   }
 };
-
-// src/x-axis.js
-var NO_TIME_AXIS = "This data has no visit or study day, so there is no time axis to plot.";
-var KNOWN = {
-  visit: { type: "ordinal", title: "Visit", reason: "No visit in this data" },
-  day: { type: "linear", title: "Study day", reason: "No study day in this data" }
-};
-var blank = (value) => value === void 0 || value === null || String(value).trim() === "";
-function fillOption(option2) {
-  const known = KNOWN[option2.key] || {};
-  return {
-    key: String(option2.key),
-    col: option2.col ?? null,
-    label_col: option2.label_col ?? null,
-    type: option2.type ?? known.type ?? "ordinal",
-    title: option2.title ?? known.title ?? String(option2.key)
-  };
-}
-function normalizeXAxis(settings = {}, { fallback = "visit" } = {}) {
-  const given = settings.x_axis;
-  if (given && Array.isArray(given.options) && given.options.length) {
-    return {
-      options: given.options.filter((option2) => option2 && !blank(option2.key)).map(fillOption),
-      default: given.default ?? fallback
-    };
-  }
-  const options = [];
-  const visitCol = settings.visitn_col || settings.visit_col || null;
-  if (visitCol)
-    options.push(
-      fillOption({ key: "visit", col: visitCol, label_col: settings.visit_col || null })
-    );
-  if (settings.studyday_col) options.push(fillOption({ key: "day", col: settings.studyday_col }));
-  return { options, default: (given && given.default) ?? fallback };
-}
-function hasValues(option2, rows) {
-  if (blank(option2.col)) return false;
-  return rows.some((row) => {
-    const value = row ? row[option2.col] : void 0;
-    if (blank(value)) return false;
-    return option2.type === "linear" ? Number.isFinite(Number(value)) : true;
-  });
-}
-function resolveXAxis(xAxis, rows, requested = null) {
-  const data = Array.isArray(rows) ? rows : [];
-  const options = (xAxis.options || []).map((option2) => {
-    const available = hasValues(option2, data);
-    const reason = available ? null : KNOWN[option2.key] && KNOWN[option2.key].reason || `No ${option2.title} in this data`;
-    return { ...option2, available, reason };
-  });
-  const usable2 = (key) => options.find((option2) => option2.key === key && option2.available);
-  const pick2 = usable2(requested) || usable2(xAxis.default) || options.find((o) => o.available);
-  return {
-    options,
-    active: pick2 ? pick2.key : null,
-    message: pick2 ? null : NO_TIME_AXIS
-  };
-}
-function activeXAxis(resolved) {
-  return resolved.options.find((option2) => option2.key === resolved.active) || null;
-}
-function xAxisValue(option2, row) {
-  const value = row ? row[option2.col] : void 0;
-  return blank(value) ? NaN : Number(value);
-}
-function xAxisTick(option2, row) {
-  if (option2.type === "linear") {
-    const value = xAxisValue(option2, row);
-    return Number.isFinite(value) ? `Day ${value}` : "";
-  }
-  const label = option2.label_col && row ? row[option2.label_col] : void 0;
-  return blank(label) ? String(row ? row[option2.col] ?? "" : "") : String(label);
-}
-function renderXAxisControl(parent, { resolved, onChange, label = "X-axis" }) {
-  const wrap = createElement("div", "sv-control sv-xaxis-control");
-  const heading = createElement("label", null, label);
-  const group = createElement("div", "sv-xaxis");
-  group.setAttribute("role", "group");
-  group.setAttribute("aria-label", label);
-  resolved.options.forEach((option2) => {
-    const active = option2.key === resolved.active;
-    const button = createElement(
-      "button",
-      `sv-xaxis-option${active ? " is-active" : ""}`,
-      option2.title
-    );
-    button.type = "button";
-    button.dataset.key = option2.key;
-    button.setAttribute("aria-pressed", String(active));
-    if (!option2.available) {
-      button.disabled = true;
-      button.title = option2.reason;
-    }
-    button.onclick = () => {
-      if (active || !option2.available) return;
-      onChange(option2.key);
-    };
-    group.append(button);
-  });
-  wrap.append(heading, group);
-  parent.append(wrap);
-  return wrap;
-}
 
 // src/kit.js
 var kit = Object.freeze({
