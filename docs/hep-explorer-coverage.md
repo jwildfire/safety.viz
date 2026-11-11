@@ -64,6 +64,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-MIG-017                                         | —                  | #92   | hovering a ribbon highlights it with both endpoint nodes and opens an HTML tooltip                           |
 | HEP-ARM-007                                         | —                  | #92   | arm designation scopes the migration cohort only, not the scatter or composite views                         |
 | HEP-CTRL-019 (Reset Chart)                          | HEP-CTRL-019       | #136  | reset restores the controls, preserving the view and measures                                                |
+| HEP-XAX-004/005                                     | —                  | #375  | the time slider steps by study day, then by visit after a switch                                             |
 
 ## Unit evidence (Vitest — `tests/unit/hep-explorer/`)
 
@@ -98,6 +99,9 @@ pending; each row lists the module IDs its test covers.
 | HEP-DOC-001 (the Clinical guide links its R / nR primary sources)                          | —                                                      | #54   | `guide.test.js`                                   |
 | HEP-FILT-001..004 (shared filter contract)                                                 | HEP-FILT-001, HEP-FILT-002, HEP-FILT-003, HEP-FILT-004 | #166  | `../shared/filter-contract.test.js`               |
 | HEP-CTRL-018, HEP-DATA-013 (unscheduled visits)                                            | HEP-CTRL-018, HEP-DATA-013                             | #136  | `unscheduled.test.js`, `unscheduled-note.test.js` |
+| HEP-XAX-001..005 (the slider steps by visit or by study day, its label and its reset)      | —                                                      | #375  | `x-axis-slider.test.js`                           |
+| HEP-XAX-006/007 (timing within, outside or not evaluated; crosses and the footnote)        | —                                                      | #376  | `timing.test.js`, `demo-timing.test.js`           |
+| HEP-XAX-008 (Visit and Study day columns in the listing)                                   | —                                                      | #377  | `listing.test.js`                                 |
 
 ## Source-matrix routing status
 

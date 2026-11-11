@@ -71,6 +71,7 @@ synthetic demo cohort must keep for the figure to be demonstrable at all).
 | HWF-API-001 (module export)                                                            | HWF-API-001                                            | #93   | `export.test.js`                    |
 | HWF-COHORT-001..011 (the synthetic demo cohort's invariants)                           | HWF-COHORT-001..011                                    | #93   | `abnbl.test.js`                     |
 | HWF-FILT-001..004 (shared filter contract)                                             | HWF-FILT-001, HWF-FILT-002, HWF-FILT-003, HWF-FILT-004 | #166  | `../shared/filter-contract.test.js` |
+| HWF-SELECT-004 (Visit and Study day columns in the listing)                            | HWF-SELECT-004                                         | #377  | `listing.test.js`                   |
 
 ## Source-matrix routing status
 
