@@ -90,7 +90,7 @@ describe('hep-explorer getPlugins', () => {
     ]);
   });
 
-  it('HEP-CHART-004: pointTooltip shows NA for a missing R Ratio or day and omits an unknown day gap (port)', () => {
+  it('HEP-CHART-004: pointTooltip shows NA for a missing R Ratio, leaves out a missing day and an unknown day gap (port, #384)', () => {
     const state = { measureX: 'ALT', measureY: 'TB' };
     const lines = pointTooltip(
       {
@@ -109,8 +109,8 @@ describe('hep-explorer getPlugins', () => {
       'Participant: P2',
       'R Ratio: NA',
       'nR Ratio: NA',
-      'ALT: 0.75 @ day NA',
-      'TB: 0.8 @ day NA'
+      'ALT: 0.75',
+      'TB: 0.8'
     ]);
   });
 

@@ -75,7 +75,7 @@ import migrationView from './hep-explorer/views/migration.js';
 import compositeView from './hep-explorer/views/composite.js';
 import { renderListing } from './histogram/listing.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
-import { normalizeXAxis } from './x-axis.js';
+import { normalizeXAxis, resolveXAxis } from './x-axis.js';
 
 Chart.register(
   ScatterController,
@@ -345,11 +345,11 @@ class SafetyHepExplorer {
    * @private
    */
   profileXAxis() {
-    const active = this.timeAxis ? this.timeAxis.active : null;
-    return {
-      ...normalizeXAxis(this.settings),
-      default: this.state.xAxis || active || timeAxis(this.settings).default
-    };
+    // Resolved now, not read from the last render, so a setSettings({ x_axis })
+    // reaches the panel at once (#384).
+    const axis = timeAxis(this.settings);
+    const { active } = resolveXAxis(axis, this.cleanRows || [], this.state.xAxis);
+    return { ...normalizeXAxis(this.settings), default: active || axis.default };
   }
 
   /**

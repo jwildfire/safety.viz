@@ -174,8 +174,11 @@ export function groupColorScale(groupValues) {
  * Human-readable study day for a tooltip, 'NA' when the day is unknown.
  * @private
  */
-function dayText(day) {
-  return Number.isFinite(day) ? String(day) : 'NA';
+// The peak's study day after its value, or nothing when it has none: "@ day
+// NA" under "Timing not evaluated (no study day)" said the same thing twice
+// (#384).
+function atDay(day) {
+  return Number.isFinite(day) ? ` @ day ${day}` : '';
 }
 
 /**
@@ -195,12 +198,8 @@ export function pointTooltip(point, state, measureValues) {
     `Participant: ${point.id}`,
     `R Ratio: ${Number.isFinite(point.rRatio) ? formatNumber(point.rRatio) : 'NA'}`,
     `nR Ratio: ${Number.isFinite(point.nrRatio) ? formatNumber(point.nrRatio) : 'NA'}`,
-    `${measureLabel(state.measureX, measureValues)}: ${formatNumber(point.x)} @ day ${dayText(
-      point.days_x
-    )}`,
-    `${measureLabel(state.measureY, measureValues)}: ${formatNumber(point.y)} @ day ${dayText(
-      point.days_y
-    )}`
+    `${measureLabel(state.measureX, measureValues)}: ${formatNumber(point.x)}${atDay(point.days_x)}`,
+    `${measureLabel(state.measureY, measureValues)}: ${formatNumber(point.y)}${atDay(point.days_y)}`
   ];
   if (point.timing === 'not_evaluated') {
     // Nobody measured the gap, so the tooltip says so rather than giving a

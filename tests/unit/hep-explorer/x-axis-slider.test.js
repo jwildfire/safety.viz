@@ -195,8 +195,16 @@ describe('hep-explorer slider timeline (HEP-XAX-002, HEP-XAX-003)', () => {
     expect(playbackSchedule(timeline, 2).positions).toEqual([2, 3]);
   });
 
-  it('HEP-XAX-003: a visit column that is not numeric steps in the order the visits first appear (#375)', () => {
-    const named = syncSettings({ ...BASE, visitn_col: null });
+  it('HEP-XAX-003: a visit column given in x_axis that is not numeric steps in the order the visits first appear (#375)', () => {
+    const named = syncSettings({
+      ...BASE,
+      x_axis: {
+        options: [
+          { key: 'visit', col: 'VISIT' },
+          { key: 'day', col: 'DAY' }
+        ]
+      }
+    });
     const axis = timeAxis(named);
     const timeline = animationTimeline(
       rows(),
@@ -209,6 +217,14 @@ describe('hep-explorer slider timeline (HEP-XAX-002, HEP-XAX-003)', () => {
       'Unscheduled',
       'Week 8'
     ]);
+  });
+});
+
+describe('hep-explorer slider without a visit number (#384)', () => {
+  it('HEP-XAX-003: without x_axis, a visit name with no visit number builds no Visit view (#384)', () => {
+    const named = syncSettings({ ...BASE, visitn_col: null });
+    const visit = resolveXAxis(timeAxis(named), rows()).options.find((o) => o.key === 'visit');
+    expect(visit.available).toBe(false);
   });
 });
 
