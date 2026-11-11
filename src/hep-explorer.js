@@ -232,6 +232,10 @@ class SafetyHepExplorer {
       // plugin reads `playing` to suppress labels that do not describe a moving
       // cloud (HEP-ANIM-006).
       animation: { day: null, playing: false },
+      // The time slider's view (HEP-XAX-001): the x-axis option the reader
+      // chose with the "Step by" control; null opens on the setting's default
+      // (Study day unless x_axis names another).
+      xAxis: null,
       selectedId: null,
       hoverId: null,
       xCut: null,
@@ -517,6 +521,7 @@ class SafetyHepExplorer {
     if ('x_default' in settings) this.state.measureX = this.settings.x_default;
     if ('y_default' in settings) this.state.measureY = this.settings.y_default;
     if ('visit_window' in settings) this.state.visitWindow = this.settings.visit_window;
+    if ('x_axis' in settings) this.state.xAxis = null;
     if ('group_by' in settings) this.state.groupBy = this.settings.group_by;
     if ('cuts' in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
     if ('r_ratio' in settings) this.state.rRatio = [...this.settings.r_ratio];

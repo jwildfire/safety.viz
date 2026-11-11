@@ -10,6 +10,16 @@
 
 /** The "no grouping" sentinel value for the color-by control (HEP-CTRL-009). */
 import { normalizeFilterSpec } from '../filters.js';
+import { normalizeXAxis } from '../x-axis.js';
+
+/**
+ * The view the time slider opens on when `x_axis` names no default
+ * (HEP-XAX-001): Study day, because the playback was a study-day animation
+ * before the toggle and a reviewer watching a liver event unfold reads it in
+ * days.
+ * @type {string}
+ */
+export const X_AXIS_DEFAULT = 'day';
 
 export const GROUP_NONE = 'hep_none';
 
@@ -92,6 +102,7 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {?string} [studyday_col='DY'] Optional study-day column; drives the day_diff timing test and the visit-path ordering. When absent, a per-participant per-measure input-order sequence is derived (HEP-SELECT-004, HEP-DATA-004).
  * @property {?string} [visit_col='VISIT'] Optional categorical visit column; labels the visit-path overlay and pairs the X/Y trajectory points (HEP-SELECT-003).
  * @property {?string} [visitn_col='VISITNUM'] Optional numeric visit column; orders visit-keyed series when present.
+ * @property {?Object} [x_axis=null] The x-axis toggle for the time slider beneath the scatter, the same shape every chart takes: `{ options: [{ key: 'visit', col: 'VISITNUM', label_col: 'VISIT', type: 'ordinal', title: 'Visit' }, { key: 'day', col: 'DY', type: 'linear', title: 'Study day' }], default: 'day' }`. In Visit view the slider and the play-through step through the visits in visit-number order; in Study day view they step through the study days. The default view is Study day. When null it is built from `visitn_col`, `visit_col` and `studyday_col`; when given, its day option's column is the study-day column every day-based reading uses — the 30-day timing test whatever the view, the tooltips and the visit path — falling back to `studyday_col` when it has no day option (HEP-XAX-001..003).
  * @property {?string} [arm_col='ARM'] Treatment-arm column, structural for the migration view — it decides which side of the centre column a participant's flow leaves from. Auto-detected across ARM, ACTARM, TRT01A, TREATMENT and TRTA when the named column is absent; deliberately not a globally required column, so arm-less data still renders the scatter and composite views (HEP-ARM-001).
  * @property {?string} [placebo_arm=null] Arm value plotted on the left (placebo) side of the migration Sankey; when null it is auto-detected by matching the arm values against /placebo|control/i (HEP-ARM-002).
  * @property {?Array<string>} [active_arms=null] Arm values plotted on the right (active) side; when null every non-placebo arm pools right and the pooled arms are named in the notes (HEP-ARM-003).
@@ -152,6 +163,7 @@ export const DEFAULT_SETTINGS = {
   studyday_col: 'DY',
   visit_col: 'VISIT',
   visitn_col: 'VISITNUM',
+  x_axis: null,
   arm_col: 'ARM',
   placebo_arm: null,
   active_arms: null,
@@ -316,5 +328,23 @@ export function syncSettings(settings) {
   const bounds = arrayify(synced.measureBounds).map(Number).filter(Number.isFinite);
   synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS.measureBounds];
 
+  // The x-axis toggle (HEP-XAX-001): a given x_axis names the study-day column
+  // through its day option, so every day-based reading — the timing test, the
+  // tooltips, the playback in Study day view — reads the column the toggle
+  // plots, never one beside it. Without a day option, studyday_col stands.
+  const day = timeAxis(synced).options.find((entry) => entry.key === 'day');
+  if (synced.x_axis && day && day.col) synced.studyday_col = day.col;
+
   return synced;
+}
+
+/**
+ * The time slider's x-axis setting in its full shape (HEP-XAX-001): the
+ * caller's `x_axis`, or one built from `visitn_col`, `visit_col` and
+ * `studyday_col`, defaulting to Study day.
+ * @param {HepExplorerSettings} settings Normalized settings.
+ * @returns {{options: Object[], default: string}} The normalized x-axis setting.
+ */
+export function timeAxis(settings) {
+  return normalizeXAxis(settings, { fallback: X_AXIS_DEFAULT });
 }

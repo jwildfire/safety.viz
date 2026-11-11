@@ -37,7 +37,8 @@ import {
   GROUP_NONE,
   LOG_BASES,
   POINT_SIZE_OPTIONS,
-  cutFor
+  cutFor,
+  timeAxis
 } from '../configure.js';
 import { applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
 import { cutHandleAt, cutValueFor } from '../cutDrag.js';
@@ -70,12 +71,13 @@ import {
 } from '../getPlugins.js';
 import { HIGHLIGHT } from '../selection.js';
 import {
-  animationDuration,
+  animationTimeline,
   buildAnimationFrames,
+  playbackSchedule,
   pointsAtDay,
-  studyDayRange,
   trailSegments
 } from '../animation.js';
+import { activeXAxis, renderXAxisControl, resolveXAxis } from '../../x-axis.js';
 
 // Base point color when no grouping is active (HEP-CTRL-009 default).
 const BASE_POINT_COLOR = GROUP_COLORS[0];
@@ -85,9 +87,6 @@ const BASE_POINT_COLOR = GROUP_COLORS[0];
 // permanent scribble across the plot — the original fades each trail out over
 // ten frame-durations.
 const TRAIL_FRAMES = 10;
-// Frames per second the play-through advances at; the day step is derived from
-// this and the duration so a long study skips days instead of slowing down.
-const ANIMATION_FPS = 20;
 
 /**
  * Add a reference-line (cutpoint) number input for one axis; edits write the
@@ -489,8 +488,14 @@ function animatedAt(host, index) {
  * @private
  */
 function rebuildAnimationFrames(host) {
-  host.animationRange = studyDayRange(host.cleanRows, host.settings);
-  const frames = buildAnimationFrames(host.cleanRows, host.settings, host.state);
+  // The x-axis toggle (HEP-XAX-001..003): the playback steps by visit or by
+  // study day, whichever the reader chose and the data can draw.
+  host.timeAxis = resolveXAxis(timeAxis(host.settings), host.cleanRows, host.state.xAxis);
+  const option = activeXAxis(host.timeAxis);
+  const timeline = option ? animationTimeline(host.cleanRows, host.settings, option) : null;
+  host.animationTimeline = timeline;
+  host.animationRange = timeline ? [timeline.min, timeline.max] : null;
+  const frames = buildAnimationFrames(host.cleanRows, host.settings, host.state, timeline);
   const byId = new Map(frames.map((frame) => [String(frame.id), frame]));
   host.animationFrames = host.points.map((point) => byId.get(String(point.id)) || null);
   host.animationPositions = null;
@@ -540,8 +545,34 @@ function showDay(host, day) {
     chart.data.datasets[2].data = trailData(host);
     chart.update('none');
   }
-  if (host.animationSlider) host.animationSlider.value = String(day);
-  if (host.animationLabel) host.animationLabel.textContent = `Showing data from: Day ${day}`;
+  syncSlider(host, day);
+}
+
+/**
+ * What the readout says at a position on the timeline: "Showing data from:
+ * Day 57" in Study day view, "Showing data from: Week 8" in Visit view
+ * (HEP-XAX-004).
+ * @private
+ */
+function positionText(host, position) {
+  const timeline = host.animationTimeline;
+  return `Showing data from: ${timeline ? timeline.label(position) : `Day ${position}`}`;
+}
+
+/** What the readout says over the static peak-vs-peak scatter. @private */
+function peakText(host) {
+  const timeline = host.animationTimeline;
+  return `Showing peak values (all ${timeline && timeline.steps ? 'visits' : 'days'})`;
+}
+
+/** Keep the slider's value, its spoken value and the readout on a position. @private */
+function syncSlider(host, position) {
+  const timeline = host.animationTimeline;
+  if (host.animationSlider) {
+    host.animationSlider.value = String(position);
+    if (timeline) host.animationSlider.setAttribute('aria-valuetext', timeline.label(position));
+  }
+  if (host.animationLabel) host.animationLabel.textContent = positionText(host, position);
 }
 
 /**
@@ -601,33 +632,31 @@ function stopPlayback(host) {
 }
 
 /**
- * Start (or restart) the play-through from the current day to the end of the
- * study-day range (HEP-ANIM-005). The step size is derived from the ported
- * duration formula and a fixed frame rate, so a long study skips days rather
- * than crawling.
+ * Start (or restart) the play-through from the current position to the end of
+ * the timeline (HEP-ANIM-005, HEP-XAX-002, HEP-XAX-003). In Study day view the
+ * step size is derived from the ported duration formula and a fixed frame
+ * rate, so a long study skips days rather than crawling; in Visit view every
+ * visit is shown in visit-number order.
  * @private
  */
 function startPlayback(host) {
-  const range = host.animationRange;
-  if (!range) return;
+  const timeline = host.animationTimeline;
+  if (!timeline) return;
   stopPlayback(host);
-  const start = host.state.animation.day == null ? range[0] : host.state.animation.day;
-  const from = start >= range[1] ? range[0] : start;
-  const duration = animationDuration(from, range[1]);
-  const frameCount = Math.max(1, Math.round((duration / 1000) * ANIMATION_FPS));
-  const step = (range[1] - from) / frameCount;
+  const start = host.state.animation.day == null ? timeline.min : host.state.animation.day;
+  const from = start >= timeline.max ? timeline.min : start;
+  const { positions, interval } = playbackSchedule(timeline, from);
   host.state.animation.playing = true;
   host.animationTrail = [];
   syncPlayButton(host);
   if (host.quadrantWrap) host.quadrantWrap.style.opacity = '0.35';
-  showDay(host, from);
+  showDay(host, positions[0]);
   let frame = 0;
   host.animationTimer = setInterval(() => {
     frame += 1;
-    const day = frame >= frameCount ? range[1] : Math.round(from + step * frame);
-    showDay(host, day);
-    if (frame >= frameCount) stopPlayback(host);
-  }, 1000 / ANIMATION_FPS);
+    showDay(host, positions[Math.min(frame, positions.length - 1)]);
+    if (frame >= positions.length - 1) stopPlayback(host);
+  }, interval);
 }
 
 /**
@@ -642,7 +671,7 @@ function resetPlayback(host) {
   host.state.animation.day = null;
   host.animationPositions = null;
   host.animationTrail = [];
-  if (host.animationLabel) host.animationLabel.textContent = 'Showing peak values (all days)';
+  if (host.animationLabel) host.animationLabel.textContent = peakText(host);
   if (host.chart) {
     host.chart.data.datasets[0].data = host.points.map((point) => ({ x: point.x, y: point.y }));
     host.chart.data.datasets[2].data = [];
@@ -656,17 +685,39 @@ function syncPlayButton(host) {
   if (!button) return;
   const playing = Boolean(host.state.animation && host.state.animation.playing);
   button.textContent = playing ? '■' : '▶';
-  button.title = playing ? 'Stop the study-day playback' : 'Play the study-day animation';
+  const what = host.animationTimeline && host.animationTimeline.steps ? 'visit' : 'study-day';
+  button.title = playing ? `Stop the ${what} playback` : `Play the ${what} animation`;
   button.setAttribute('aria-label', button.title);
   button.setAttribute('aria-pressed', String(playing));
 }
 
 /**
- * Render the study-day playback bar beneath the plot (HEP-ANIM-001): a play /
- * stop button, a day slider annotated with the range endpoints, the day
- * readout, and the reset back to the peak-vs-peak view. Drawn only when the
- * data carries usable study days — an animation over undated records would move
- * points along an axis that does not exist (HEP-ANIM-008).
+ * Switch the playback between Visit and Study day (HEP-XAX-005): stop and
+ * reset any play-through — a position on one timeline means nothing on the
+ * other — rebuild the frames on the new timeline and redraw the bar, keeping
+ * keyboard focus on the option just chosen. The scatter itself, the selection
+ * and every other control are untouched.
+ * @private
+ */
+function switchTimeAxis(host, key) {
+  resetPlayback(host);
+  host.state.xAxis = key;
+  rebuildAnimationFrames(host);
+  host.animationWrap.innerHTML = '';
+  drawAnimationBar(host);
+  const chosen = host.animationWrap.querySelector(`.sv-xaxis-option[data-key="${key}"]`);
+  if (chosen) chosen.focus();
+}
+
+/**
+ * Render the playback bar beneath the plot (HEP-ANIM-001, HEP-XAX-001..005): a
+ * play / stop button, a slider annotated with the timeline's endpoints, the
+ * readout, the reset back to the peak-vs-peak view, and the "Step by" control
+ * that chooses whether the slider steps by visit or by study day. The bar is
+ * drawn only when the active timeline has more than one position — an
+ * animation over undated records would move points along an axis that does
+ * not exist (HEP-ANIM-008) — but the control stays, so a reader can switch to
+ * the view that can play.
  * @private
  */
 function drawAnimationBar(host) {
@@ -674,17 +725,32 @@ function drawAnimationBar(host) {
   host.animationSlider = null;
   host.animationLabel = null;
   if (!host.animationWrap) return;
-  const range = host.animationRange;
-  if (!range || range[0] === range[1]) {
-    if (range) {
+  const timeline = host.animationTimeline;
+  const axis = host.timeAxis;
+  const drawControl = () => {
+    if (!axis || !axis.options.length) return;
+    // Beside the slider rather than in the sidebar: it changes only the
+    // playback, and the sidebar's "X-axis Measure" already names the scatter's
+    // own x-axis (ALT), which this control does not touch.
+    renderXAxisControl(host.animationWrap, {
+      resolved: axis,
+      label: 'Step by',
+      onChange: (key) => switchTimeAxis(host, key)
+    }).classList.add('hep-animation-axis');
+  };
+  if (!timeline || timeline.min === timeline.max) {
+    if (timeline) {
       host.animationWrap.append(
         createElement(
           'span',
           'hep-animation-note',
-          'Study-day playback needs records on more than one study day.'
+          timeline.steps
+            ? 'Visit playback needs records at more than one visit.'
+            : 'Study-day playback needs records on more than one study day.'
         )
       );
     }
+    drawControl();
     return;
   }
 
@@ -697,14 +763,18 @@ function drawAnimationBar(host) {
     else startPlayback(host);
   };
 
-  bar.append(play, createElement('span', 'hep-animation-end', String(range[0])));
+  bar.append(play, createElement('span', 'hep-animation-end', timeline.end(timeline.min)));
   const slider = createElement('input', 'hep-animation-slider');
   slider.type = 'range';
-  slider.min = String(range[0]);
-  slider.max = String(range[1]);
+  slider.min = String(timeline.min);
+  slider.max = String(timeline.max);
   slider.step = '1';
-  slider.value = String(host.state.animation.day == null ? range[0] : host.state.animation.day);
-  slider.setAttribute('aria-label', 'Study day');
+  const position = host.state.animation.day == null ? timeline.min : host.state.animation.day;
+  slider.value = String(position);
+  // The slider is named for what it steps through (HEP-XAX-004), and speaks
+  // the position as the readout shows it: "Week 8", not "3".
+  slider.setAttribute('aria-label', timeline.title);
+  slider.setAttribute('aria-valuetext', timeline.label(position));
   // Scrubbing is the same gesture as playing, one frame at a time, so it stops
   // a running play-through rather than fighting it for the day.
   slider.oninput = () => {
@@ -712,7 +782,7 @@ function drawAnimationBar(host) {
     showDay(host, Number(slider.value));
   };
   host.animationSlider = slider;
-  bar.append(slider, createElement('span', 'hep-animation-end', String(range[1])));
+  bar.append(slider, createElement('span', 'hep-animation-end', timeline.end(timeline.max)));
 
   const reset = createElement('button', 'hep-animation-reset', 'Reset');
   reset.type = 'button';
@@ -723,12 +793,11 @@ function drawAnimationBar(host) {
   const label = createElement(
     'div',
     'hep-animation-label',
-    host.state.animation.day == null
-      ? 'Showing peak values (all days)'
-      : `Showing data from: Day ${host.state.animation.day}`
+    host.state.animation.day == null ? peakText(host) : positionText(host, host.state.animation.day)
   );
   host.animationLabel = label;
   host.animationWrap.append(bar, label);
+  drawControl();
   syncPlayButton(host);
 }
 

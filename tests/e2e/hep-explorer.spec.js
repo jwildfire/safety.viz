@@ -1102,6 +1102,38 @@ test.describe('safety.viz hep-explorer module', () => {
     expect(afterReset.trails).toBe(0);
   });
 
+  test('HEP-XAX-004/HEP-XAX-005: the time slider steps by study day, then by visit after a switch, and is named for what it steps through (#375)', async ({
+    page
+  }) => {
+    // Opens on Study day (HEP-XAX-001): the slider is named for it.
+    const control = page.locator('.hep-animation .hep-animation-axis');
+    await expect(control.locator('label')).toHaveText('Step by');
+    await expect(control.getByRole('button', { name: 'Study day' })).toHaveAttribute(
+      'aria-pressed',
+      'true'
+    );
+    await expect(page.getByRole('slider', { name: 'Study day' })).toHaveAttribute('max', '112');
+
+    // Switch to Visit: the slider is renamed and steps through the four visits
+    // the liver records carry (Baseline, Week 4, Week 8, Week 16).
+    await control.getByRole('button', { name: 'Visit' }).click();
+    const visit = page.getByRole('slider', { name: 'Visit' });
+    await expect(visit).toHaveAccessibleName('Visit');
+    await expect(visit).toHaveAttribute('min', '0');
+    await expect(visit).toHaveAttribute('max', '3');
+    await expect(page.locator('.hep-animation-label')).toHaveText(
+      'Showing peak values (all visits)'
+    );
+    await visit.fill('2');
+    await visit.dispatchEvent('input');
+    await expect(page.locator('.hep-animation-label')).toHaveText('Showing data from: Week 8');
+    await expect(visit).toHaveAttribute('aria-valuetext', 'Week 8');
+
+    // And back: the slider is named Study day again.
+    await control.getByRole('button', { name: 'Study day' }).click();
+    await expect(page.getByRole('slider', { name: 'Study day' })).toHaveAccessibleName('Study day');
+  });
+
   test('HEP-ANIM-004/HEP-ANIM-005/HEP-ANIM-008: the play control runs the animation, leaves motion trails, and yields to a scrub (#46)', async ({
     page
   }) => {
