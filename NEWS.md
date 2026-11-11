@@ -6,7 +6,7 @@ functionality-first account of what a user can now do. The GitHub release publis
 from the section here when the release-candidate PR (dev -> main) merges and is tagged.
 -->
 
-# safety.viz v1.12.0
+# safety.viz v1.12.0 (Upcoming)
 
 **See it move:** the [annotated v1.12.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.12.0-demo/) has captures, try-it steps and the detail behind everything below.
 
