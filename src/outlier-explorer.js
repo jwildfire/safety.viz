@@ -181,6 +181,7 @@ class SafetyOutlierExplorer {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
+      x_axis: this.profileXAxis(),
       details:
         settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
       participantProfileURL: settings.participantProfileURL ?? null,
@@ -271,6 +272,23 @@ class SafetyOutlierExplorer {
     this.profileRows = this.settings.profile
       ? buildProfileRows(this.rawData, this.profileSettings())
       : [];
+  }
+
+  /**
+   * The x_axis the side panel takes (#370, PPRF-XAX-009): the chart's own
+   * options, opening on the view the chart shows now. A visit option ordered
+   * by another column (time_cols' order_col) hands the panel that column to
+   * order by, labelled from its own.
+   * @returns {{options: Object[], default: ?string}} The panel's x_axis.
+   * @private
+   */
+  profileXAxis() {
+    const options = this.xAxis.options.map(({ order_col: order, ...option }) =>
+      order && order !== option.col
+        ? { ...option, col: order, label_col: option.label_col || option.col }
+        : option
+    );
+    return { options, default: this.resolveXAxis().active || this.xAxis.default };
   }
 
   /**
@@ -576,6 +594,9 @@ class SafetyOutlierExplorer {
     // The selection resets silently on every render, so the rail must empty in
     // the same preamble (#99, PPRF-OE-003).
     resetProfileRail(this);
+    // ...and the next participant opens on the view this render draws (#370,
+    // PPRF-XAX-009): after the X-axis control, Reset chart or new data.
+    if (this.profile) this.profile.applySettings({ x_axis: this.profileXAxis() });
     this.notes.innerHTML = '';
     this.footnote.textContent =
       'Hover a point for details; click a point to highlight a participant.';

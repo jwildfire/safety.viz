@@ -214,3 +214,27 @@ describe('delta-delta bespoke measure table removal (PPRF-DD-004, PPRF-12)', () 
     expect(Object.keys(modules).some((path) => path.endsWith('listing.js'))).toBe(false);
   });
 });
+
+describe('delta-delta side panel X-axis (PPRF-XAX-009, PPRF-XAX-011)', () => {
+  function openPanel(instance, id = 'P1') {
+    instance.root.dispatchEvent(
+      new CustomEvent('participantsSelected', { detail: { data: [id] } })
+    );
+  }
+
+  it('PPRF-XAX-009: delta-delta, which has no toggle, opens its side panel on Visit (#370)', () => {
+    const instance = build();
+    expect(instance.profile.settings.x_axis.default).toBe('visit');
+    openPanel(instance);
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+    expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Visit');
+  });
+
+  it("PPRF-XAX-011: delta-delta's studyday_col defaults to DY, the panel's Study day option (#370)", () => {
+    const instance = build();
+    expect(instance.settings.studyday_col).toBe('DY');
+    openPanel(instance);
+    const day = instance.railWrap.querySelector('.sv-xaxis-control button[data-key="day"]');
+    expect(day.disabled).toBe(false);
+  });
+});

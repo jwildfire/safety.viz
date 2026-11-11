@@ -47,6 +47,11 @@
           "default": "STNRHI",
           "description": "Optional upper limit of normal; feeds the LLN-ULN normal-range band."
         },
+        "studyday_col": {
+          "type": ["string", "null"],
+          "default": "DY",
+          "description": "Optional numeric study-day column: the Study day option of the participant profile side panel and, with neither x_axis nor time_cols, of the main axis (#370, #371). Defaults to DY since v1.12.0 (it was null); set null when the data has no study day."
+        },
         "normal_range_method": {
           "type": "string",
           "default": "LLN-ULN",

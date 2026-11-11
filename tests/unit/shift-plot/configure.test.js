@@ -73,9 +73,11 @@ describe('shift-plot configure', () => {
   // The Visit column joined the defaults in #374 (SSP-XAX-001).
   it('SSP-REQ-005: details default to id, baseline, comparison, change, and percent change (#14)', () => {
     const settings = syncSettings({});
+    // The Study day column joins by default since studyday_col defaults to DY (#370).
     expect(settings.details).toEqual([
       { value_col: 'USUBJID', label: 'Participant ID' },
       { value_col: '__ssp_visit', label: 'Visit' },
+      { value_col: '__ssp_day', label: 'Study day' },
       { value_col: '__ssp_baseline', label: 'Baseline' },
       { value_col: '__ssp_comparison', label: 'Comparison' },
       { value_col: '__ssp_chg', label: 'Change' },

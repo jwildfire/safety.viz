@@ -92,8 +92,10 @@ export const TIMEPOINT_MAX = '__qt_max';
  * @property {string} [arm_col='ARM'] Treatment-arm column; required in the data. Drives per-arm lines, point colors, ΔΔ correction, and the exceedance columns (QT-CT-001, QT-OUT-004, QT-CAT-001).
  * @property {?string} [placebo_arm=null] Arm treated as placebo for ΔΔ and the ICH-E14 metric; when null, /placebo/i is auto-detected (QT-CT-004).
  * @property {string} [visit_col='VISIT'] Categorical visit column; the central-tendency x-axis and the scatter timepoint selector (QT-CT-001, QT-OUT-002).
- * @property {?string} [visitn_col='VISITNUM'] Optional numeric visit column ordering the visits; falls back to first-seen order.
- * @property {?string} [baseline_flag_col='ABLFL'] Optional 'Y'-flagged baseline-record column; excludes the baseline visit from post-baseline extremes and the change series (QT-DATA-005).
+ * @property {?string} [visitn_col='VISITNUM'] Optional numeric visit column ordering the visits; falls back to first-seen order. It is also the order of the participant drill-down's Visit view.
+ * @property {?string} [studyday_col='DY'] Optional numeric study-day column: the participant drill-down's Study day view, where ECGs taken on one day stack at that day (#372). null leaves the drill-down Visit only.
+ * @property {?Object} [x_axis=null] The participant drill-down's X-axis toggle, the setting every chart that shows change over time takes (#372): `{ options: [{ key, col, label_col, type: 'ordinal'|'linear', title }], default }`. null builds it from `visitn_col` / `visit_col` (Visit, which spaces the visits evenly in visit-number order, so Screening sorts before Baseline) and `studyday_col` (Study day), opening on Visit; `{ default: 'day' }` keeps those options and opens on Study day. The chart's own views are unchanged.
+ * @property {?string} [baseline_flag_col='ABLFL'] Optional 'Y'-flagged baseline-record column; excludes the baseline visit from post-baseline extremes and the change series (QT-DATA-005), and marks the record the drill-down's ×Baseline divides by (#372).
  * @property {string[]} [measures=['QTcF','QTcB','Heart Rate']] Correction / parameter options offered by the Correction control (QT-CTRL-002).
  * @property {string[]} [qtc_measures=['QTcF','QTcB']] Which measures are QTc corrections; absolute cut-lines/rows apply only to these (QT-OUT-003).
  * @property {?string} [start_measure='QTcF'] Correction selected on first render; falls back to the first available measure (QT-CTRL-002).
@@ -128,6 +130,8 @@ export const DEFAULT_SETTINGS = {
   placebo_arm: null,
   visit_col: 'VISIT',
   visitn_col: 'VISITNUM',
+  studyday_col: 'DY',
+  x_axis: null,
   baseline_flag_col: 'ABLFL',
   measures: ['QTcF', 'QTcB', 'Heart Rate'],
   qtc_measures: ['QTcF', 'QTcB'],

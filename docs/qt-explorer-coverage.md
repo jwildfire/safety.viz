@@ -93,10 +93,13 @@ View coverage and mapping caveats:
   change thresholds apply to Δ, not the observed series. They stay on the
   scatter and the categorical table.
 - **The host's `baseline_col` ('BASE') is a VALUE column**, not the profile's
-  baseline FLAG contract, so the profile receives `baseline_col: null` and its
-  `deriveBaseline` earliest-visit rule resolves the baseline record (VISITNUM
-  orders the day axis; ADEG-style data carries no DY — the profile's "Study
-  Day" axis titles and tooltips therefore show visit numbers, not days).
+  baseline FLAG contract, so the profile receives the host's
+  `baseline_flag_col` (ABLFL) as its `baseline_col` instead, and ×Baseline
+  divides by the flagged ECG rather than the earliest one (QT-XAX-003).
+- **The drill-down plots by visit or by study day (#372, QT-XAX-001/002).**
+  It takes `x_axis` — by default Visit on VISITNUM / VISIT and Study day on
+  the ECG data's DY (`studyday_col`) — and opens on Visit. Before #372 it
+  passed the visit number as the study day.
 - **Module-surface (#98): the synthesized unit ULN poisons the measure table's
   normal-range semantics.** The sparkline/inset outlier flags compare each
   observed value against `__qt_profile_uln = 1`, so every ECG value renders as
