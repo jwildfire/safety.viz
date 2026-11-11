@@ -39,7 +39,7 @@ var SafetyViz = (() => {
     timeToEvent: () => timeToEvent
   });
 
-  // ../351-release-prep/node_modules/@kurkle/color/dist/color.esm.js
+  // node_modules/@kurkle/color/dist/color.esm.js
   function round(v) {
     return v + 0.5 | 0;
   }
@@ -596,7 +596,7 @@ var SafetyViz = (() => {
     }
   };
 
-  // ../351-release-prep/node_modules/chart.js/dist/chunks/helpers.dataset.js
+  // node_modules/chart.js/dist/chunks/helpers.dataset.js
   function noop() {
   }
   var uid = /* @__PURE__ */ (() => {
@@ -2994,7 +2994,7 @@ var SafetyViz = (() => {
     };
   }
 
-  // ../351-release-prep/node_modules/chart.js/dist/chart.js
+  // node_modules/chart.js/dist/chart.js
   var Animator = class {
     constructor() {
       this._request = null;
@@ -13962,8 +13962,10 @@ var SafetyViz = (() => {
     });
     groups.forEach((records) => {
       const ordered = [...records].sort(dayThenIndex);
+      const flag = settings.baseline_col;
+      const flagged = flag ? ordered.find((row) => String(row[flag]) === String(settings.baseline_value ?? "Y")) : null;
       const zero = ordered.find((row) => row.__hep_day === 0);
-      const baselineRow = zero || ordered[0];
+      const baselineRow = flagged || zero || ordered[0];
       const baselineValue = baselineRow ? baselineRow.__hep_value : NaN;
       records.forEach((row) => {
         row.__hep_baseline = baselineValue;
@@ -40670,6 +40672,10 @@ ${CONCERN_PHRASE[ribbon.concern]}`;
           VISITNUM: {
             label: "Visit order",
             description: "Numeric visit order."
+          },
+          DY: {
+            label: "Study day",
+            description: "Study day of the ECG (day 1 = first dose)."
           }
         }
       }

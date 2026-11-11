@@ -35,7 +35,8 @@ import { fileURLToPath } from 'node:url';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const dataPath = path.join(rootDir, 'site', 'data', 'adbds.csv');
 
-const HEADER = 'USUBJID,SITE,SITEID,SEX,RACE,ARM,VISIT,VISITNUM,TEST,STRESU,STRESN,STNRLO,STNRHI';
+const HEADER =
+  'USUBJID,SITE,SITEID,SEX,RACE,ARM,VISIT,VISITNUM,TEST,STRESU,STRESN,STNRLO,STNRHI,DY,ABLFL';
 
 const PREFIX = 'AKI-';
 const CREATININE = 'Creatinine';
@@ -143,12 +144,17 @@ describe('synthetic AKI demo cohort', () => {
     );
   });
 
-  it('NEP-COHORT-004: the cohort ships no baseline flag, so the demo runs on the D7 fallback (#120)', () => {
-    // adbds.csv has no baseline-flag column at all, which is the point: the
-    // path most real studies take is the earliest-record fallback, so it is the
-    // path the demo exercises.
-    expect(columns).not.toContain('ABLFL');
-    expect(columns.some((column) => /^(ABLFL|BASELINE|BLFL)$/i.test(column))).toBe(false);
+  it('NEP-COHORT-004: the demo sets no baseline flag, so it runs on the D7 fallback (#120, #366)', () => {
+    // The shared extract flags each baseline row (ABLFL, #366) for the charts
+    // that read it, but the nep-explorer demo does not pass it: the path most
+    // real studies take is the earliest-record fallback, so it is the path the
+    // demo exercises.
+    expect(columns).toContain('ABLFL');
+    const demo = readFileSync(
+      new URL('../../../site/demo/nep-explorer.js', import.meta.url),
+      'utf8'
+    );
+    expect(demo).not.toMatch(/baseline_col/);
   });
 
   it('NEP-COHORT-005: all four fold-change stages are populated (#120)', () => {

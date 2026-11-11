@@ -39,7 +39,7 @@
     "NEP-COHORT-001": "The synthetic acute-kidney-injury cohort is present in the shared demo extract, labelled synthetic by participant id, site and arm, and carries the file's measure contract with creatinine as its only measure.",
     "NEP-COHORT-002": "Every cohort participant has a day-0 baseline record and enough distinct post-baseline visits to trace a path.",
     "NEP-COHORT-003": "Cohort creatinine is written in µmol/L, in the single unit spelling the rest of the file uses for that measure.",
-    "NEP-COHORT-004": "The demo extract carries no baseline-flag column, so the demo runs on the baseline fallback.",
+    "NEP-COHORT-004": "The nep-explorer demo sets no baseline-flag column, so it runs on the baseline fallback, although the shared extract flags each baseline row (ABLFL) for the charts that read it.",
     "NEP-COHORT-005": "All four fold-change stages are populated, with enough participants per stage that the summary table's percentages mean something.",
     "NEP-COHORT-006": "The cohort's absolute-change staging carries Stage 1 and no-stage participants only.",
     "NEP-COHORT-007": "The fold and absolute stagings disagree in BOTH directions: some participants are Stage 1 on absolute change alone, and some on fold change alone.",

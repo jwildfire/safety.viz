@@ -503,3 +503,36 @@ describe('hep-core stats — boxStats', () => {
     expect(Number.isNaN(empty.mean)).toBe(true);
   });
 });
+
+describe('hep-core rows — deriveBaseline reads the baseline flag', () => {
+  // Real ADaM study days have no day 0: the baseline draw is pre-dose (day -8,
+  // say) and a screening draw comes before it. Without the flag the ×Baseline
+  // denominator falls back to the earliest record — the screening draw (#367).
+  const flagged = (extra) => ({ ...extra, ABLFL: 'Y' });
+  const records = [
+    row('FL', 'ALT', -20, 80, 40),
+    row('FL', 'ALT', -8, 40, 40, flagged()),
+    row('FL', 'ALT', 15, 120, 40)
+  ];
+
+  it('HEP-CORE-003: the ×Baseline denominator is the flagged record when baseline_col is given (#367)', () => {
+    const withFlag = syncSettings({ baseline_col: 'ABLFL' });
+    const rows = deriveBaseline(cleanData(records, withFlag).rows, withFlag);
+    expect(rows.map((r) => r.__hep_baseline)).toEqual([40, 40, 40]);
+    expect(rows.find((r) => r.__hep_day === 15).__hep_relative_baseline).toBe(3);
+  });
+
+  it('HEP-CORE-003: without baseline_col the day-0-else-earliest rule still holds (#367)', () => {
+    const rows = deriveBaseline(cleanData(records, settings).rows, settings);
+    expect(rows.map((r) => r.__hep_baseline)).toEqual([80, 80, 80]);
+  });
+
+  it('HEP-CORE-003: a participant with no flagged record falls back to day 0, else the earliest (#367)', () => {
+    const withFlag = syncSettings({ baseline_col: 'ABLFL' });
+    const rows = deriveBaseline(
+      cleanData([row('NF', 'ALT', 0, 50, 40), row('NF', 'ALT', 14, 100, 40)], withFlag).rows,
+      withFlag
+    );
+    expect(rows.map((r) => r.__hep_baseline)).toEqual([50, 50]);
+  });
+});

@@ -27,6 +27,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { syntheticStudyDay } from './demo-data-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // `--out-dir` points the script at another copy of the extract — how
@@ -60,6 +61,9 @@ const MEASURES = {
   ALP: { test: 'Alkaline Phosphatase', unit: 'U/L', lo: 40, hi: 120 }
 };
 
+// Week N = N, the numbering every extract shares (#366); each row's study day
+// comes from the planned schedule (syntheticStudyDay) and the baseline row
+// carries ABLFL (#365).
 const VISITS = [
   { visit: 'Baseline', visitn: 0 },
   { visit: 'Week 4', visitn: 4 },
@@ -211,7 +215,9 @@ function buildCohort() {
             meta.unit,
             series[mKey][i],
             meta.lo,
-            meta.hi
+            meta.hi,
+            syntheticStudyDay(visit.visit),
+            visit.visitn === 0 ? 'Y' : ''
           ]);
         }
       });

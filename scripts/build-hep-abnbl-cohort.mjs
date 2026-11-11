@@ -37,6 +37,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { syntheticStudyDay } from './demo-data-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // `--out-dir` points the script at another copy of the extract — how
@@ -50,7 +51,8 @@ const dataPath = path.join(dataDir, 'adbds-abnbl.csv');
 
 // The measure contract shared with site/data/adbds.csv — same columns, same
 // order, so any renderer that reads one file reads the other unchanged.
-const HEADER = 'USUBJID,SITE,SITEID,SEX,RACE,ARM,VISIT,VISITNUM,TEST,STRESU,STRESN,STNRLO,STNRHI';
+const HEADER =
+  'USUBJID,SITE,SITEID,SEX,RACE,ARM,VISIT,VISITNUM,TEST,STRESU,STRESN,STNRLO,STNRHI,DY,ABLFL';
 
 const PREFIX = 'ABL-';
 const SITE = 'Hepatology ABN-BL Unit (synthetic)';
@@ -92,15 +94,15 @@ const MEASURES = {
 // the bars-below-baseline signal the waterfall is built around. This cohort
 // must not reproduce that defect.
 //
-// VISITNUM is the visit SEQUENCE (0 = baseline), the study-day surrogate the
-// hep demos map through `studyday_col: 'VISITNUM'`; the VISIT label carries the
-// clinical schedule.
+// VISITNUM is the week, the numbering every extract shares (Week N = N, #366);
+// DY is the planned study day (syntheticStudyDay) and the baseline row carries
+// ABLFL (#365).
 const VISITS = [
   { visit: 'Baseline', visitn: 0 },
-  { visit: 'Week 4', visitn: 1 },
-  { visit: 'Week 8', visitn: 2 },
-  { visit: 'Week 12', visitn: 3 },
-  { visit: 'Week 16', visitn: 4 }
+  { visit: 'Week 4', visitn: 4 },
+  { visit: 'Week 8', visitn: 8 },
+  { visit: 'Week 12', visitn: 12 },
+  { visit: 'Week 16', visitn: 16 }
 ];
 const ON_TREATMENT = VISITS.length - 1;
 
@@ -328,7 +330,9 @@ function buildCohort() {
           meta.unit,
           series[key][i],
           meta.lo,
-          meta.hi
+          meta.hi,
+          syntheticStudyDay(visit.visit),
+          visit.visitn === 0 ? 'Y' : ''
         ]);
       }
     });
@@ -352,8 +356,9 @@ function summarize(rows) {
   for (const [, p] of byParticipant) {
     const key = p.arm === ARM_ACTIVE ? 'active' : 'placebo';
     stats[key] = stats[key] || { n: 0, down: 0, up: 0, jaundice: 0, cohort: 0 };
-    const peakAlt = Math.max(...[1, 2, 3, 4].map((v) => p.alt[v]));
-    const peakTb = Math.max(...[1, 2, 3, 4].map((v) => p.tb[v]));
+    const onTreatment = VISITS.slice(1).map((v) => v.visitn);
+    const peakAlt = Math.max(...onTreatment.map((v) => p.alt[v]));
+    const peakTb = Math.max(...onTreatment.map((v) => p.tb[v]));
     stats[key].n += 1;
     if (peakAlt < p.alt[0]) stats[key].down += 1;
     else stats[key].up += 1;

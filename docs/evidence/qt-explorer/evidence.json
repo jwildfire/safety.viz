@@ -1,6 +1,6 @@
 {
   "module": "qt-explorer",
-  "generatedAt": "2026-11-09T02:05:16.118Z",
+  "generatedAt": "2026-11-11T04:01:07.056Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42547979942",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42547979942"
+    "id": "42954819246",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42954819246"
   },
   "records": [
     {
@@ -3296,6 +3296,14 @@
       "screenshots": []
     },
     {
+      "test": "analysisVisit shows a flagged baseline with no analysis visit as Baseline, numbered 0 (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
+      "screenshots": []
+    },
+    {
       "test": "buildAdslRecords derives EOSDY = EOSDT − TRTSDT + 1 and carries the end-of-study status (#128)",
       "suite": "unit",
       "status": "pass",
@@ -4533,6 +4541,38 @@
       "status": "pass",
       "requirementIds": ["APP-STAT-008"],
       "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataContract fails a lab row with no study day, naming the file and row (#365)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [365],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataContract fails an extract that lacks a required column (#365)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [365],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataContract fails one visit label numbered two ways across the extracts (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataContract passes extracts that carry the visit, the study day and the baseline flag (#365)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [365],
       "screenshots": []
     },
     {
@@ -6940,6 +6980,14 @@
       "screenshots": []
     },
     {
+      "test": "scheduledVisitNum numbers Baseline 0, Week N as N and Screening before Baseline (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
+      "screenshots": []
+    },
+    {
       "test": "schemas: a filter spec AE-FILT-001: the ae-explorer schema lists start, all and multiple on a filter spec (#166)",
       "suite": "unit",
       "status": "pass",
@@ -8169,6 +8217,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOCAL-008"],
       "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "syntheticStudyDay gives the synthetic cohorts a planned study day: Baseline day 1, Week N day 7N + 1 (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
       "screenshots": []
     },
     {
@@ -10089,6 +10145,30 @@
       "status": "pass",
       "requirementIds": ["API-SCHEMA-006"],
       "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "visitNumberer puts an unscheduled visit 0.1 after the visit it follows (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
+      "screenshots": []
+    },
+    {
+      "test": "visitNumberer refuses a visit it cannot place, rather than guessing (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
+      "screenshots": []
+    },
+    {
+      "test": "visitNumberer renumbers a scheduled visit from its label, whatever the domain numbered it (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
       "screenshots": []
     },
     {

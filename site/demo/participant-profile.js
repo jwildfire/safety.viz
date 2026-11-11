@@ -61,29 +61,12 @@
     });
   }
 
-  // The distribution lab file carries visits, not study days, while the AE file
-  // is in study days — and v2 draws both tracks against one clock. So derive a
-  // nominal day per lab record from the visit label (Baseline = day 1, "Week N"
-  // = day 7N + 1) for the demo. In real use the lab domain carries a study-day
-  // column; this is the demo dataset standing in for one.
-  function deriveStudyDay(rows) {
-    rows.forEach(function (row) {
-      var label = String(row.VISIT || '').trim();
-      var week = label.match(/^Week\s+(\d+)$/i);
-      var day = null;
-      if (/^Baseline$/i.test(label)) day = 1;
-      else if (week) day = Number(week[1]) * 7 + 1;
-      row.__day = day === null ? '' : day;
-    });
-    return rows;
-  }
-
   // The shared adbds.csv mapping the hep-explorer demo established: TEST
-  // strings for the four liver measures, and the numeric visit sequence
-  // standing in for study day (the distribution set carries no study-day
-  // column).
+  // strings for the four liver measures, the ADaM study day (DY) and the
+  // baseline flag (ABLFL) the file carries on every record (#365).
   var mapping = {
-    studyday_col: '__day',
+    studyday_col: 'DY',
+    baseline_col: 'ABLFL',
     visit_col: 'VISIT',
     visitn_col: 'VISITNUM',
     measure_values: {
@@ -135,7 +118,7 @@
     })
   ])
     .then(function (texts) {
-      var rows = deriveStudyDay(parseCsv(texts[0]));
+      var rows = parseCsv(texts[0]);
       var aeRows = parseCsv(texts[1]);
 
       // Top: the host chart, with its built-in profile disabled so the wiring
@@ -147,6 +130,7 @@
         placebo_arm: 'CLD: Placebo',
         active_arms: ['CLD: Study Drug'],
         studyday_col: mapping.studyday_col,
+        baseline_col: mapping.baseline_col,
         visit_col: mapping.visit_col,
         visitn_col: mapping.visitn_col,
         measure_values: mapping.measure_values,
@@ -171,6 +155,7 @@
         // same study-day axis as the labs chart above them (decisions D5/D7).
         ae: { data: aeRows },
         studyday_col: mapping.studyday_col,
+        baseline_col: mapping.baseline_col,
         visit_col: mapping.visit_col,
         visitn_col: mapping.visitn_col,
         measure_values: mapping.measure_values,

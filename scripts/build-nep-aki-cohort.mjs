@@ -52,6 +52,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { syntheticStudyDay } from './demo-data-lib.mjs';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 // `--out-dir` points the script at another copy of the extract — how
@@ -78,18 +79,20 @@ const ABSOLUTE_RULE = 4.0;
 // reference band for this measure.
 const REFERENCE = { F: { lo: 62, hi: 124 }, M: { lo: 71, hi: 141 } };
 
-// The pilot's own visit vocabulary, verbatim (label AND number), so the cohort
-// adds no new visit to the eight other renderers that read this file — the
-// injected rows must not perturb their displays beyond the new participants.
+// The pilot's own visit labels, numbered as every extract numbers them (Week N =
+// N, #366), so the cohort adds no new visit to the eight other renderers that
+// read this file — the injected rows must not perturb their displays beyond the
+// new participants. Each row's study day comes from the planned schedule
+// (syntheticStudyDay) and the baseline row carries ABLFL (#365).
 const VISITS = [
   { visit: 'Baseline', visitn: 0 },
-  { visit: 'Week 2', visitn: 4 },
-  { visit: 'Week 4', visitn: 5 },
-  { visit: 'Week 6', visitn: 7 },
+  { visit: 'Week 2', visitn: 2 },
+  { visit: 'Week 4', visitn: 4 },
+  { visit: 'Week 6', visitn: 6 },
   { visit: 'Week 8', visitn: 8 },
-  { visit: 'Week 12', visitn: 9 },
-  { visit: 'Week 16', visitn: 10 },
-  { visit: 'Week 24', visitn: 12 }
+  { visit: 'Week 12', visitn: 12 },
+  { visit: 'Week 16', visitn: 16 },
+  { visit: 'Week 24', visitn: 24 }
 ];
 
 // Archetypes, in mg/dL. `fold` is the ratio of the participant's MAXIMUM
@@ -259,7 +262,9 @@ function buildCohort() {
           UNIT,
           umol[index],
           REFERENCE[sex].lo,
-          REFERENCE[sex].hi
+          REFERENCE[sex].hi,
+          syntheticStudyDay(visit.visit),
+          visit.visitn === 0 ? 'Y' : ''
         ]);
       });
     });
