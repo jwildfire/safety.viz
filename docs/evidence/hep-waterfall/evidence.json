@@ -1,6 +1,6 @@
 {
   "module": "hep-waterfall",
-  "generatedAt": "2026-11-11T04:40:35.188Z",
+  "generatedAt": "2026-11-11T05:19:59.922Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42959291755",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42959291755"
+    "id": "42963209370",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42963209370"
   },
   "records": [
     {
@@ -5546,6 +5546,22 @@
       "status": "pass",
       "requirementIds": ["HWF-API-001"],
       "issueRefs": [93],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall participant listing (HWF-SELECT-004) HWF-SELECT-004: a column that is not configured is left out (#377)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-004"],
+      "issueRefs": [377],
+      "screenshots": []
+    },
+    {
+      "test": "hep-waterfall participant listing (HWF-SELECT-004) HWF-SELECT-004: the listing shows a Visit and a Study day column, each holding its own column (#377)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HWF-SELECT-004"],
+      "issueRefs": [377],
       "screenshots": []
     },
     {

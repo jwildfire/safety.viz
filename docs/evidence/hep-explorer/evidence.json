@@ -1,6 +1,6 @@
 {
   "module": "hep-explorer",
-  "generatedAt": "2026-11-11T04:40:35.188Z",
+  "generatedAt": "2026-11-11T05:19:59.922Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42959291755",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42959291755"
+    "id": "42963209370",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42963209370"
   },
   "records": [
     {
@@ -1728,6 +1728,14 @@
       "requirementIds": ["HEP-STEP-005"],
       "issueRefs": [92],
       "screenshots": ["HEP-STEP-005-migration-hys-law-caution.png"]
+    },
+    {
+      "test": "HEP-XAX-004/HEP-XAX-005: the time slider steps by study day, then by visit after a switch, and is named for what it steps through (#375)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-004", "HEP-XAX-005"],
+      "issueRefs": [375],
+      "screenshots": []
     },
     {
       "test": "HEP-XTAB-001/HEP-XTAB-002/HEP-XTAB-004/HEP-XTAB-005: per-arm cross tables agree with the ribbons and select the same participants (#92)",
@@ -7098,6 +7106,30 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer participant listing (HEP-XAX-008) HEP-XAX-008: a column that is not configured, or not in the data, is left out (#377)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-008"],
+      "issueRefs": [377],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant listing (HEP-XAX-008) HEP-XAX-008: the listing shows a Visit and a Study day column, each holding its own column (#377)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-008"],
+      "issueRefs": [377],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer participant listing (HEP-XAX-008) HEP-XAX-008: the Study day column reads the x_axis day option's column (#377)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-008"],
+      "issueRefs": [377],
+      "screenshots": []
+    },
+    {
       "test": "hep-explorer participant-profile adoption (PPRF-7, PPRF-HEP-001) a control-driven redraw re-feeds the rail with fresh rows (the guard resets per render)",
       "suite": "unit",
       "status": "pass",
@@ -7266,11 +7298,99 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer side panel X-axis (PPRF-XAX-009) PPRF-XAX-009: after the slider switches to Visit, the next participant opens on Visit (#370)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-009"],
+      "issueRefs": [370],
+      "screenshots": []
+    },
+    {
       "test": "hep-explorer side panel X-axis (PPRF-XAX-009) PPRF-XAX-009: hep-explorer opens its side panel on Study day (#370)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["PPRF-XAX-009"],
       "issueRefs": [370],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer side panel X-axis (PPRF-XAX-009) PPRF-XAX-009: the side panel opens on the view the time slider opens on (#370)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-009"],
+      "issueRefs": [370],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer slider in the chart (HEP-XAX-004, HEP-XAX-005) HEP-XAX-004: after a switch to Visit the slider is named Visit and reads \"Showing data from: Week 8\" (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-004", "HEP-XAX-005"],
+      "issueRefs": [375],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer slider in the chart (HEP-XAX-004, HEP-XAX-005) HEP-XAX-004: the slider opens on Study day, is named for it, and reads \"Showing data from: Day 57\" (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-004", "HEP-XAX-005"],
+      "issueRefs": [375],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer slider in the chart (HEP-XAX-004, HEP-XAX-005) HEP-XAX-005: the \"Step by\" control sits with the slider, marks the active view, and a switch returns the scatter to its peaks (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-004", "HEP-XAX-005"],
+      "issueRefs": [375],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer slider in the chart (HEP-XAX-004, HEP-XAX-005) HEP-XAX-005: x_axis can open the slider on Visit (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-004", "HEP-XAX-005"],
+      "issueRefs": [375],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer slider timeline (HEP-XAX-002, HEP-XAX-003) HEP-XAX-002: a Study day play-through runs the ported duration at 20 frames a second, ending on the last day (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-002", "HEP-XAX-003"],
+      "issueRefs": [375],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer slider timeline (HEP-XAX-002, HEP-XAX-003) HEP-XAX-002: in Study day view the slider spans the study days, one day a step, and frames sit on their days (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-002", "HEP-XAX-003"],
+      "issueRefs": [375],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer slider timeline (HEP-XAX-002, HEP-XAX-003) HEP-XAX-003: a visit column that is not numeric steps in the order the visits first appear (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-002", "HEP-XAX-003"],
+      "issueRefs": [375],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer slider timeline (HEP-XAX-002, HEP-XAX-003) HEP-XAX-003: a Visit play-through shows every visit once, in order, from where it starts (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-002", "HEP-XAX-003"],
+      "issueRefs": [375],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer slider timeline (HEP-XAX-002, HEP-XAX-003) HEP-XAX-003: in Visit view the slider steps through the visits in visit-number order, an unscheduled visit after the one it follows (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-002", "HEP-XAX-003"],
+      "issueRefs": [375],
       "screenshots": []
     },
     {
@@ -7346,11 +7466,11 @@
       "screenshots": []
     },
     {
-      "test": "hep-explorer structureData HEP-DATA-004: without a study-day column __hep_day is NaN and timing falls back to filled points (port)",
+      "test": "hep-explorer structureData HEP-DATA-004: without a study-day column __hep_day is NaN and the timing test is marked not evaluated (#376)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["HEP-DATA-004"],
-      "issueRefs": [],
+      "issueRefs": [376],
       "screenshots": []
     },
     {
@@ -7490,6 +7610,30 @@
       "screenshots": []
     },
     {
+      "test": "hep-explorer timing on study days (HEP-XAX-006) HEP-XAX-006: in Visit view the test still measures study days, never visit numbers (#376)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-006"],
+      "issueRefs": [376],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer timing on study days (HEP-XAX-006) HEP-XAX-006: peaks 45 study days apart are drawn hollow, peaks on one day filled (#376)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-006"],
+      "issueRefs": [376],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer timing on study days (HEP-XAX-006) HEP-XAX-006: the test reads the x_axis day option's column, not studyday_col (#376)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-006"],
+      "issueRefs": [376],
+      "screenshots": []
+    },
+    {
       "test": "hep-explorer timing on the demo data HEP-DISPLAY-005: on the demo data with study days, 131 of 318 participants are hollow (#365)",
       "suite": "unit",
       "status": "pass",
@@ -7503,6 +7647,54 @@
       "status": "pass",
       "requirementIds": ["HEP-DISPLAY-005"],
       "issueRefs": [365],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer timing on the demo data HEP-XAX-006: on the demo data every participant is evaluated, none drawn as a cross (#376)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-006"],
+      "issueRefs": [376],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer timing without study days (HEP-XAX-007) HEP-XAX-007: a participant whose peak has no study day is not evaluated, and the notes count them (#376)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-007"],
+      "issueRefs": [376],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer timing without study days (HEP-XAX-007) HEP-XAX-007: the footnote says timing was not evaluated and why (#376)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-007"],
+      "issueRefs": [376],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer timing without study days (HEP-XAX-007) HEP-XAX-007: the Study day option is greyed out and says why (#376)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-007"],
+      "issueRefs": [376],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer timing without study days (HEP-XAX-007) HEP-XAX-007: the tooltip leaves out \"days apart\" and says the timing was not evaluated (#376)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-007"],
+      "issueRefs": [376],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer timing without study days (HEP-XAX-007) HEP-XAX-007: with no study day every point is not evaluated and drawn as a cross, neither filled nor hollow (#376)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-007"],
+      "issueRefs": [376],
       "screenshots": []
     },
     {
@@ -7527,6 +7719,22 @@
       "status": "pass",
       "requirementIds": ["HEP-CORE-019"],
       "issueRefs": [91],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer x-axis setting (HEP-XAX-001) HEP-XAX-001: a given x_axis is read as given, and its day option names the study-day column (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-001"],
+      "issueRefs": [375],
+      "screenshots": []
+    },
+    {
+      "test": "hep-explorer x-axis setting (HEP-XAX-001) HEP-XAX-001: without x_axis the slider offers Visit and Study day from the old settings and opens on Study day (#375)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["HEP-XAX-001"],
+      "issueRefs": [375],
       "screenshots": []
     },
     {
