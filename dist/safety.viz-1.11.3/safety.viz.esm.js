@@ -40631,6 +40631,10 @@ var portfolio_default = {
         VISITNUM: {
           label: "Visit order",
           description: "Numeric visit order."
+        },
+        DY: {
+          label: "Study day",
+          description: "Study day of the ECG (day 1 = first dose)."
         }
       }
     }
