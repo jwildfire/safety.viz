@@ -62,7 +62,7 @@ const rows = [
   row('P2', 'Week 12', 12, 42, null)
 ];
 
-function build(settings) {
+function build(settings, data = rows) {
   document.body.innerHTML = '<div id="host"></div>';
   const instance = shiftPlot(document.querySelector('#host'), {
     baseline_visits: ['Baseline'],
@@ -70,7 +70,7 @@ function build(settings) {
     profile: false,
     ...settings
   });
-  instance.init(rows);
+  instance.init(data);
   // Select every pair, as a brush over the whole plot does; the brush's pixel
   // geometry needs a real canvas, so this enters past it.
   instance.showSelection(new Set(instance.chartPairs.map((_, index) => index)), null);
@@ -117,5 +117,15 @@ describe('shift plot listing names the visits and study days it compares', () =>
     const visitOnly = build({ studyday_col: null });
     expect(headers(visitOnly)).not.toContain('Study day');
     expect(cells(visitOnly, 'P1')[1]).toBe('Baseline → Week 8, Week 12');
+  });
+
+  it('SSP-XAX-001: with no study day in the data, the default listing leaves the Study day column out (#384)', () => {
+    const noDay = rows.map(({ DY, ...rest }) => rest);
+    expect(headers(build({}, noDay))).not.toContain('Study day');
+    // Data with a study day brings it back.
+    const instance = build({}, noDay);
+    instance.setData(rows);
+    instance.showSelection(new Set(instance.chartPairs.map((_, index) => index)), null);
+    expect(headers(instance)).toContain('Study day');
   });
 });
