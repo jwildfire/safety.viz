@@ -231,6 +231,11 @@
           "domain": "bds",
           "column": "STNRHI",
           "required": false
+        },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
+          "required": false
         }
       }
     },
@@ -268,6 +273,11 @@
           "domain": "bds",
           "column": "STNRHI",
           "required": false
+        },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
+          "required": false
         }
       }
     },
@@ -294,6 +304,11 @@
         "time_order_col": {
           "domain": "bds",
           "column": "VISITNUM",
+          "required": false
+        },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
           "required": false
         },
         "id_col": {
@@ -331,6 +346,11 @@
         "visit_order_col": {
           "domain": "bds",
           "column": "VISITNUM",
+          "required": false
+        },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
           "required": false
         },
         "id_col": {
@@ -373,6 +393,11 @@
         "visitn_col": {
           "domain": "bds",
           "column": "VISITNUM",
+          "required": false
+        },
+        "studyday_col": {
+          "domain": "bds",
+          "column": "DY",
           "required": false
         }
       }
@@ -666,6 +691,11 @@
         "visitn_col": {
           "domain": "eg",
           "column": "VISITNUM",
+          "required": false
+        },
+        "studyday_col": {
+          "domain": "eg",
+          "column": "DY",
           "required": false
         },
         "baseline_flag_col": {
