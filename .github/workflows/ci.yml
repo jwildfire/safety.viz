@@ -60,11 +60,14 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
-      - name: Build
-        run: npm run build
-
+      # Before the build, not after it: the build writes into the committed
+      # dist/ folder, so checking afterwards compared a fresh build with
+      # itself (#384).
       - name: Check dist/ matches a fresh build
         run: npm run build:check-dist
+
+      - name: Build
+        run: npm run build
 
       # bio.viz's script-tag bundle is vendored for the demo app (#182): the
       # copy must equal the file at the bio.viz commit its record names, and
