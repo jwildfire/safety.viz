@@ -1,12 +1,10 @@
 // Demo mount for the outlier-explorer page (#24): recreates the original
 // safety-outlier-explorer test page (RhoInc/safety-outlier-explorer/test-page)
 // call shape against the real ADBDS example data vendored in ./adbds.csv
-// (built from pharmaverseadam by scripts/build-demo-data.mjs). The demo leaves
-// time_cols unset to exercise the module's derived per-participant
-// "Measurement" sequence axis; the data also carries real VISIT/VISITNUM
-// columns, which a real deployment would map via time_cols (as the
-// results-over-time demo does). Loaded by outlier-explorer/index.html after
-// the dist/ bundle.
+// (built from pharmaverseadam by scripts/build-demo-data.mjs). The data carries
+// a visit (VISITNUM/VISIT) and the ADaM study day (DY) on every record, so the
+// main axis offers both through x_axis and opens on Visit (#371). Loaded by
+// outlier-explorer/index.html after the dist/ bundle.
 (function () {
   // Quote-aware CSV parser: the real data quotes fields with embedded commas
   // (e.g. "Aminotransferase, alanine (ALT)").
@@ -63,6 +61,14 @@
     })
     .then(function (text) {
       const instance = SafetyViz.outlierExplorer('#container', {
+        // The main x-axis (#371): Visit or Study day, opening on Visit.
+        x_axis: {
+          options: [
+            { key: 'visit', col: 'VISITNUM', label_col: 'VISIT', type: 'ordinal', title: 'Visit' },
+            { key: 'day', col: 'DY', type: 'linear', title: 'Study day' }
+          ],
+          default: 'visit'
+        },
         filters: [
           { value_col: 'SITEID', label: 'Site ID' },
           { value_col: 'SEX', label: 'Sex' },
@@ -76,19 +82,19 @@
           { value_col: 'SITE', label: 'Site' }
         ],
         details: [
-          { value_col: '__oe_timeLabel', label: 'Measurement' },
+          { value_col: '__oe_timeLabel', label: 'Time' },
           { value_col: 'USUBJID', label: 'Participant ID' },
           { value_col: 'STRESN', label: 'Result' },
           { value_col: 'SEX', label: 'Sex' },
           { value_col: 'RACE', label: 'Race' },
           { value_col: 'ARM', label: 'Treatment Group' }
         ],
-        // Railed participant profile (#99, PPRF-OE): the data carries no DY
-        // column, so VISITNUM doubles as the study-day axis (the hep-explorer
-        // demo precedent); measure_values maps the profile's key liver
-        // measures onto this data's TEST names (same mapping as the
-        // hep-explorer demo); profile_details are the header demographics.
-        studyday_col: 'VISITNUM',
+        // Railed participant profile (#99, PPRF-OE): the profile plots the
+        // ADaM study day (DY) the data carries on every record (#365);
+        // measure_values maps the profile's key liver measures onto this
+        // data's TEST names (same mapping as the hep-explorer demo);
+        // profile_details are the header demographics.
+        studyday_col: 'DY',
         visit_col: 'VISIT',
         visitn_col: 'VISITNUM',
         measure_values: {
