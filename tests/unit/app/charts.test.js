@@ -97,7 +97,7 @@ describe('demo app: chart recipes', () => {
       visitn_col: 'VISITNUM',
       profile_details: demographics.slice(1),
       // The labs extract has no study day; the rail reads visit order instead.
-      studyday_col: 'VISITNUM'
+      studyday_col: 'DY'
     });
   });
 
@@ -152,7 +152,7 @@ describe('demo app: chart recipes', () => {
     const ae = setColumn(demoMappings().ae, 'AESER', null, files.ae);
     expect(chartSettings('ae-timelines', { ae }, manifest).highlight).toEqual({ value_col: null });
     // With neither a study day nor a visit order there is no study day to pass.
-    const noDay = setColumn(bds, 'VISITNUM', null, files.bds);
+    const noDay = setColumn(setColumn(bds, 'DY', null, files.bds), 'VISITNUM', null, files.bds);
     expect(chartSettings('hep-explorer', { bds: noDay }, manifest).studyday_col).toBeNull();
     // The user's rows are untouched: the chart is handed the file's own.
     expect(chartData('hep-explorer', files, { bds }, manifest)).toBe(files.bds.rows);
@@ -235,11 +235,14 @@ describe('demo app: chart recipes', () => {
   });
 
   it('APP-CHART-006: the study day is the mapped column, else visit order, else nothing for a chart that would print it (#150)', () => {
+    // The demo study carries the study day (DY, #365), so it is the mapped column.
     const mappings = demoMappings();
-    expect(chartSettings('hep-waterfall', mappings, manifest).studyday_col).toBe('VISITNUM');
-    expect(chartSettings('nep-explorer', mappings, manifest).studyday_col).toBeNull();
-    const withDay = { ...mappings, bds: setColumn(mappings.bds, 'DY', 'VISITNUM', files.bds) };
-    expect(chartSettings('nep-explorer', withDay, manifest).studyday_col).toBe('VISITNUM');
+    expect(chartSettings('hep-waterfall', mappings, manifest).studyday_col).toBe('DY');
+    expect(chartSettings('nep-explorer', mappings, manifest).studyday_col).toBe('DY');
+    // Cleared by hand: visit order, else nothing for a chart that would print it.
+    const noDay = { ...mappings, bds: setColumn(mappings.bds, 'DY', null, files.bds) };
+    expect(chartSettings('hep-waterfall', noDay, manifest).studyday_col).toBe('VISITNUM');
+    expect(chartSettings('nep-explorer', noDay, manifest).studyday_col).toBeNull();
     // A chart with no use for the study day is not passed one.
     expect(chartSettings('results-over-time', mappings, manifest)).not.toHaveProperty(
       'studyday_col'

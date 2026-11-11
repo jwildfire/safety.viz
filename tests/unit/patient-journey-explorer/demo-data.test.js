@@ -197,6 +197,11 @@ describe('buildPjeLbRecords', () => {
     ADY: '27',
     ADT: '2014-01-11',
     TRTSDT: '2013-12-16',
+    // The pilot's labs number Week 4 as SDTM visit 5; the extract renumbers it (#365).
+    AVISIT: 'Week 4',
+    AVISITN: '5',
+    VISIT: 'WEEK 4',
+    VISITNUM: '5',
     ...over
   });
 
@@ -222,7 +227,9 @@ describe('buildPjeLbRecords', () => {
       'ABLFL',
       'LBDY',
       'LBDTC',
-      'TRTSDT'
+      'TRTSDT',
+      'VISIT',
+      'VISITNUM'
     ]);
     expect(records.map((r) => r.LBDY)).toEqual(['27', '-10']);
     expect(records[1]).toMatchObject({ ABLFL: 'Y', LBSTRESN: '29' });
@@ -242,7 +249,9 @@ describe('buildPjeLbRecords', () => {
       ABLFL: '',
       LBDY: '27',
       LBDTC: '2014-01-11',
-      TRTSDT: '2013-12-16'
+      TRTSDT: '2013-12-16',
+      VISIT: 'Week 4',
+      VISITNUM: 4
     });
     expect(records[1].LBNRIND).toBe('LOW');
   });

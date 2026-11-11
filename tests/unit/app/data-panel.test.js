@@ -110,7 +110,7 @@ describe('demo app: the data panel', () => {
       subject: ['dm.csv', 'subject', '3 of 7 columns found', '24 rows'],
       ae: ['ae.csv', 'ae', '9 of 10 columns found', '136 rows'],
       bds: ['labs_final.csv', 'bds', '7 of 13 columns found', '2,223 rows'],
-      eg: ['ecg.json', 'eg', '9 of 10 columns found', '516 rows']
+      eg: ['ecg.json', 'eg', '9 of 11 columns found', '516 rows']
     });
     expect(tag('data')).toBe('Your 4 files');
   });

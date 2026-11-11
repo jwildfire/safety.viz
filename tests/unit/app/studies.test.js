@@ -103,22 +103,24 @@ describe('demo app: the demo studies', () => {
     // The checksums of the files on `dev` at 4e8bad8, before this change. A file
     // regenerated on purpose later is a change to this list, made with it: the
     // pilot's adsl.csv gained SITEID (#253, at @jwildfire's word of 2026-10-07),
-    // and a test below holds every other column of it to what it was.
+    // and a test below holds every other column of it to what it was; the labs,
+    // ECG and abnormal-baseline files gained the study day and baseline flag and
+    // one visit numbering (#365, #366, at @jwildfire's word of 2026-11-11).
     const before = {
       'site/data/adsl.csv': '898d324b198ce76f01f28b2be2b890ea4f0d77f357a3d5f0a49440625b176aac',
       'site/data/adae.csv': '6615467075651a3d56ebeb561ccced98450521cf84c127060146d8cde1e9c9a7',
-      'site/data/adbds.csv': '8d35ce8a4727e4bcfb26481ebdfba50c2d666c3c7d39a6092b53a860962140c6',
-      'site/data/adeg.csv': '3ff1ecb915df817b0a937b0c9fc59a9566d49b1f4544dca5b2fe0b4b803b152d',
+      'site/data/adbds.csv': 'e362e4d7a3cfd1cd88863d84b46c75d90b716e3ae629ffbe88b3769b07f1cb18',
+      'site/data/adeg.csv': '08c0e52c18089c86dc3b523756d791bfaee6cbd49dcff5c9c10c9dc02c0a193f',
       'tests/e2e/fixtures/app/dm.csv':
         '6bce41f6fd61569283f4a7b5ff9b3c3908101a6f7de5d54781221f467c631bfa',
       'tests/e2e/fixtures/app/ae.csv':
         'd0401aa762bcd17790cc67c19c913460edcf2a71e2e1cccefc96de4b76eeaf0d',
       'tests/e2e/fixtures/app/labs_final.csv':
-        '85305ea71520fd6fa6b3e2af0ebc5a40de8c8527618f47e902785e00d5faf7ff',
+        'df0e1ba92035fc9bd578da94180990690e8d3c430df54d9ee589e92ecae379ba',
       'tests/e2e/fixtures/app/ecg.json':
         'f802410605bde305d3d073382c36c4c653cdd43f9736340e373c74e14e2039a4',
       'site/data/adbds-abnbl.csv':
-        'b6155eb8e1303a75d21ae91fbb230e0c52d8927d09385788e27414d6563e5270'
+        'd484eb819345b6289d43d30bf0dccf2f76d1dd87d0f4d6f9fc5553b9de853f24'
     };
     const now = {};
     for (const study of DEMO_STUDIES.slice(0, 3)) {

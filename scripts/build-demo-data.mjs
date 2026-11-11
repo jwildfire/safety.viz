@@ -62,7 +62,9 @@ import {
   isBlank,
   isNum,
   num,
-  safetySubjects
+  analysisVisit,
+  safetySubjects,
+  visitNumberer
 } from './demo-data-lib.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -227,7 +229,10 @@ async function loadSource(name, sourceDir) {
 // `name`/`unit` are resolved per-domain by the caller (labs use LBTEST/LBSTRESU;
 // vitals derive both from PARAM, whose VSTEST is not populated). AVAL is the
 // standardized numeric result, consistent with the unit and ANRLO/ANRHI range.
-function mapMeasure(rec, name, unit) {
+// `visitNum` renumbers the record's visit into the one numbering every extract
+// shares (#366); DY is the ADaM analysis study day (ADY) and ABLFL the baseline
+// flag, both kept so the charts can plot by visit or by study day (#365).
+function mapMeasure(rec, name, unit, visitNum) {
   return {
     USUBJID: clean(rec.USUBJID),
     SITE: isBlank(rec.SITEID) ? '' : `Clinical Site ${rec.SITEID}`,
@@ -235,13 +240,15 @@ function mapMeasure(rec, name, unit) {
     SEX: clean(rec.SEX),
     RACE: clean(rec.RACE),
     ARM: clean(rec.ARM),
-    VISIT: clean(rec.AVISIT) || clean(rec.VISIT),
-    VISITNUM: clean(rec.AVISITN) || clean(rec.VISITNUM),
+    VISIT: analysisVisit(rec),
+    VISITNUM: visitNum(rec),
     TEST: name,
     STRESU: unit,
     STRESN: rec.AVAL,
     STNRLO: num(rec.ANRLO),
-    STNRHI: num(rec.ANRHI)
+    STNRHI: num(rec.ANRHI),
+    DY: num(rec.ADY),
+    ABLFL: clean(rec.ABLFL)
   };
 }
 
@@ -255,14 +262,18 @@ const isAnalysisMeasure = (rec) =>
   isBlank(rec.DTYPE) && isNum(rec.AVAL) && (rec.ANL01FL === 'Y' || rec.ABLFL === 'Y');
 
 function buildBds(adlbText, advsText) {
-  const labs = toRecords(adlbText)
+  const labSource = toRecords(adlbText);
+  const labVisit = visitNumberer(labSource);
+  const labs = labSource
     .filter((r) => isAnalysisMeasure(r) && ALLOWED.has(clean(r.LBTEST)))
-    .map((r) => mapMeasure(r, clean(r.LBTEST), clean(r.LBSTRESU)));
-  const vitals = toRecords(advsText)
+    .map((r) => mapMeasure(r, clean(r.LBTEST), clean(r.LBSTRESU), labVisit));
+  const vitalSource = toRecords(advsText);
+  const vitalVisit = visitNumberer(vitalSource);
+  const vitals = vitalSource
     .filter((r) => isAnalysisMeasure(r) && ALLOWED.has(splitParamUnit(r.PARAM).name))
     .map((r) => {
       const { name, unit } = splitParamUnit(r.PARAM);
-      return mapMeasure(r, name, clean(r.VSSTRESU) || unit);
+      return mapMeasure(r, name, clean(r.VSSTRESU) || unit, vitalVisit);
     });
   const columns = [
     'USUBJID',
@@ -277,7 +288,9 @@ function buildBds(adlbText, advsText) {
     'STRESU',
     'STRESN',
     'STNRLO',
-    'STNRHI'
+    'STNRHI',
+    'DY',
+    'ABLFL'
   ];
   const records = [...labs, ...vitals];
 

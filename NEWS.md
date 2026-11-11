@@ -8,7 +8,10 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.12.0 (Upcoming)
 
-_Nothing merged yet._
+## What's new
+
+- **The demo data carries both the visit and the study day.** Every lab, vital-sign and ECG record in the gallery's data keeps its ADaM study day (`DY`) and baseline flag (`ABLFL`) beside its visit, and every file numbers visits one way (Week 26 = 26). The gallery demos plot real study days, so the participant profile shows a late result late, and hep-explorer's 30-day timing test measures days. The Patient Journey's lab extract gains the visit. [obot.roadmap#435](https://github.com/jwildfire/obot.roadmap/issues/435), [#365](https://github.com/jwildfire/safety.viz/issues/365), [#366](https://github.com/jwildfire/safety.viz/issues/366)
+- **The ×Baseline display reads the baseline flag.** Given `baseline_col`, the participant profile, hep-explorer and hep-waterfall divide by the flagged record, not by a screening draw. Without the setting nothing changes. [#367](https://github.com/jwildfire/safety.viz/issues/367)
 
 # safety.viz v1.11.3
 
