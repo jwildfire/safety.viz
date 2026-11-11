@@ -115,6 +115,26 @@ describe('outlier-explorer structureData', () => {
     expect(names.get('2')).toBe('Week 2');
   });
 
+  it('SOE-XAX-006: numbered visits sort by number, then visits with no number in the order they first appear, never named NaN (#384)', () => {
+    const fromTimeCols = { key: 'visit', col: 'VISIT', type: 'ordinal', order_col: 'VISITNUM' };
+    const rows = [
+      ['Week 4', 3],
+      ['Unscheduled', ''],
+      ['Baseline', 1],
+      ['Unscheduled', 2.1],
+      ['Early Term', ''],
+      ['Week 2', 2]
+    ].map(([visit, number]) => ({ VISIT: visit, VISITNUM: number }));
+    expect(orderedCategories(rows, fromTimeCols)).toEqual([
+      'Baseline',
+      'Week 2',
+      'Unscheduled (2.1)',
+      'Week 4',
+      'Unscheduled',
+      'Early Term'
+    ]);
+  });
+
   it('SOE-XAX-006: the tooltip and listing name both the visit and the study day where the row has them (#371)', () => {
     const options = [VISIT, DAY];
     expect(timeLabels({ VISIT: 'Week 8', VISITNUM: '8', DY: '57' }, options)).toBe(

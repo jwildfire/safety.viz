@@ -69,6 +69,7 @@ adoption is this module's behaviour even though the fixtures drive hep-explorer.
 | PPRF-EVT-002 (programmatic selection + on_clear/on_step callbacks)                                                                                   | PPRF-EVT-002       | #98   | `events.test.js`                                |
 | PPRF-XAX-001..008 (the X-axis control, Visit and Study day views, day-1 line, tooltip, table column, AE track, greyed options, no-time-axis message) | PPRF-XAX-001..008  | #369  | `xaxis.test.js`, `spaghetti.test.js`            |
 | PPRF-XAX-010 (a host re-sync keeps the view chosen in the panel)                                                                                     | PPRF-XAX-010       | #370  | `xaxis.test.js`                                 |
+| PPRF-XAX-009 (`panelXAxis`: the x_axis a host hands its side panel, the host's order kept, no column twice)                                          | PPRF-XAX-009       | #384  | `configure.test.js`                             |
 
 ## Source-matrix routing status
 

@@ -14026,12 +14026,16 @@ function hasValues(option2, rows) {
     return option2.type === "linear" ? Number.isFinite(Number(value)) : true;
   });
 }
+function unavailableReason(option2, rows) {
+  const labelled = option2.key === "visit" && !blank(option2.label_col) && rows.some((row) => row && !blank(row[option2.label_col]));
+  if (labelled && !blank(option2.col)) return `No visit number (${option2.col}) in this data`;
+  return KNOWN[option2.key] && KNOWN[option2.key].reason || `No ${option2.title} in this data`;
+}
 function resolveXAxis(xAxis, rows, requested = null) {
   const data = Array.isArray(rows) ? rows : [];
   const options = (xAxis.options || []).map((option2) => {
     const available = hasValues(option2, data);
-    const reason = available ? null : KNOWN[option2.key] && KNOWN[option2.key].reason || `No ${option2.title} in this data`;
-    return { ...option2, available, reason };
+    return { ...option2, available, reason: available ? null : unavailableReason(option2, data) };
   });
   const usable2 = (key) => options.find((option2) => option2.key === key && option2.available);
   const pick2 = usable2(requested) || usable2(xAxis.default) || options.find((o) => o.available);
@@ -14192,23 +14196,22 @@ function measureColorScale(keys) {
 }
 function panelXAxis(settings = {}, { fallback = "visit" } = {}) {
   const own = normalizeXAxis(settings, { fallback });
+  const visitNameGiven = Boolean(settings.visit_col);
   const built = normalizeXAxis(
     {
-      visitn_col: settings.visitn_col || DEFAULT_SETTINGS2.visitn_col,
+      visitn_col: settings.visitn_col || (visitNameGiven ? null : DEFAULT_SETTINGS2.visitn_col),
       visit_col: settings.visit_col || DEFAULT_SETTINGS2.visit_col,
       studyday_col: settings.studyday_col
     },
     { fallback }
   );
+  const given = settings.x_axis;
+  if (!(given && Array.isArray(given.options) && given.options.length))
+    return { options: built.options, default: own.default };
   const keys = new Set(own.options.map((option2) => option2.key));
-  const options = [...own.options, ...built.options.filter((option2) => !keys.has(option2.key))];
-  const order = ["visit", "day"];
-  options.sort((a, b) => {
-    const ia = order.indexOf(a.key);
-    const ib = order.indexOf(b.key);
-    return (ia < 0 ? order.length : ia) - (ib < 0 ? order.length : ib);
-  });
-  return { options, default: own.default };
+  const columns = new Set(own.options.map((option2) => option2.col));
+  const added = built.options.filter((option2) => !keys.has(option2.key) && !columns.has(option2.col));
+  return { options: [...own.options, ...added], default: own.default };
 }
 
 // src/participant-profile/checkInputs.js
@@ -18865,8 +18868,9 @@ var SafetyShiftPlot = class {
     });
   }
   /**
-   * The listing's columns: the configured details, less the default Study day
-   * column when the data has no study day (#384, SSP-XAX-001).
+   * The listing's columns: the configured details, less the Study day column
+   * (`__ssp_day`, the default listing's, or a caller's who named it) when the
+   * data has no study day (#384, SSP-XAX-001).
    * @returns {Object[]} The column specs.
    * @private
    */
@@ -21417,7 +21421,7 @@ function categoryNames(rows, option2) {
   visits.forEach(({ label }) => uses.set(label, (uses.get(label) || 0) + 1));
   const names2 = /* @__PURE__ */ new Map();
   visits.forEach(
-    ({ label, order }, key) => names2.set(key, uses.get(label) > 1 ? `${label} (${order})` : label)
+    ({ label, order }, key) => names2.set(key, uses.get(label) > 1 && Number.isFinite(order) ? `${label} (${order})` : label)
   );
   return names2;
 }
@@ -21427,8 +21431,10 @@ function orderedCategories(rows, option2, names2 = categoryNames(rows, option2))
     const key = categoryKey(row, option2);
     if (!order.has(key)) order.set(key, timeOrder(row, option2));
   });
-  const byOrder = (a, b) => Number.isFinite(a[1]) && Number.isFinite(b[1]) ? a[1] - b[1] : 0;
-  return [...order.entries()].sort(byOrder).map(([key]) => names2.get(key));
+  const entries2 = [...order.entries()];
+  const numbered = entries2.filter(([, value]) => Number.isFinite(value)).sort((a, b) => a[1] - b[1]);
+  const unnumbered = entries2.filter(([, value]) => !Number.isFinite(value));
+  return [...numbered, ...unnumbered].map(([key]) => names2.get(key));
 }
 function buildSeries(rows, settings, option2, groupBy2, names2 = null) {
   const byId = /* @__PURE__ */ new Map();

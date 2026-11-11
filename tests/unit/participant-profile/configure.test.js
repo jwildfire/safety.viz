@@ -3,6 +3,7 @@ import {
   DEFAULT_SETTINGS,
   MEASURE_COLORS,
   measureColorScale,
+  panelXAxis,
   syncSettings,
   templateProfileURL
 } from '../../../src/participant-profile/configure.js';
@@ -110,5 +111,63 @@ describe('measure color palette (PPRF-3, PPRF-SPAG-003)', () => {
       Array.from({ length: MEASURE_COLORS.length + 1 }, (_, i) => `M${i}`)
     );
     expect(many.get(`M${MEASURE_COLORS.length}`)).toBe(MEASURE_COLORS[0]);
+  });
+});
+
+describe('panelXAxis: the x_axis a host hands its side panel (PPRF-XAX-009)', () => {
+  const cols = (axis) => axis.options.map((option) => [option.key, option.col]);
+
+  it("PPRF-XAX-009: the host's own options keep their order, and what it lacks comes after them (#384)", () => {
+    const axis = panelXAxis({
+      x_axis: {
+        options: [
+          { key: 'day', col: 'ADY' },
+          { key: 'visit', col: 'AVISITN', label_col: 'AVISIT' }
+        ],
+        default: 'day'
+      },
+      studyday_col: 'ADY'
+    });
+    expect(cols(axis)).toEqual([
+      ['day', 'ADY'],
+      ['visit', 'AVISITN']
+    ]);
+    expect(axis.default).toBe('day');
+    const custom = panelXAxis({
+      x_axis: { options: [{ key: 'week', col: 'WEEK', type: 'ordinal', title: 'Week' }] },
+      studyday_col: 'DY'
+    });
+    expect(cols(custom)).toEqual([
+      ['week', 'WEEK'],
+      ['visit', 'VISITNUM'],
+      ['day', 'DY']
+    ]);
+  });
+
+  it('PPRF-XAX-009: an option drawing a column the host already offers is not added again (#384)', () => {
+    const axis = panelXAxis({
+      x_axis: {
+        options: [
+          { key: 'ADY', col: 'ADY', type: 'linear' },
+          { key: 'DY', col: 'DY', type: 'linear' }
+        ]
+      },
+      studyday_col: 'DY'
+    });
+    expect(cols(axis)).toEqual([
+      ['ADY', 'ADY'],
+      ['DY', 'DY'],
+      ['visit', 'VISITNUM']
+    ]);
+  });
+
+  it("PPRF-XAX-009: a host's own visit name is not paired with the profile's default visit number (#384)", () => {
+    expect(cols(panelXAxis({ visit_col: 'AVISIT', studyday_col: 'ADY' }))).toEqual([
+      ['day', 'ADY']
+    ]);
+    expect(cols(panelXAxis({ studyday_col: 'DY' }))).toEqual([
+      ['visit', 'VISITNUM'],
+      ['day', 'DY']
+    ]);
   });
 });

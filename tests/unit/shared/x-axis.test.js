@@ -86,6 +86,20 @@ describe('resolveXAxis', () => {
     expect(resolveXAxis(axis, both, 'day').active).toBe('day');
   });
 
+  it('KIT-XAX-004: data with visit names but no visit number greys Visit and names the missing column (#384)', () => {
+    const axis = normalizeXAxis({
+      visitn_col: 'VISITNUM',
+      visit_col: 'VISIT',
+      studyday_col: 'ADY'
+    });
+    const resolved = resolveXAxis(axis, [{ VISIT: 'Week 2', ADY: 14 }]);
+    expect(resolved.options[0]).toMatchObject({
+      available: false,
+      reason: 'No visit number (VISITNUM) in this data'
+    });
+    expect(resolved.active).toBe('day');
+  });
+
   it('KIT-XAX-004: a missing column greys its option out and says why (#368)', () => {
     const noDay = resolveXAxis(axis, visitsOnly);
     expect(noDay.options[1]).toMatchObject({

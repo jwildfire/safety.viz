@@ -231,21 +231,26 @@ export function measureColorScale(keys) {
  */
 export function panelXAxis(settings = {}, { fallback = 'visit' } = {}) {
   const own = normalizeXAxis(settings, { fallback });
+  // The profile's own visit number only beside its own visit name: a host's
+  // visit name (an ADaM AVISIT, say) need not match an SDTM VISITNUM row for
+  // row (#384).
+  const visitNameGiven = Boolean(settings.visit_col);
   const built = normalizeXAxis(
     {
-      visitn_col: settings.visitn_col || DEFAULT_SETTINGS.visitn_col,
+      visitn_col: settings.visitn_col || (visitNameGiven ? null : DEFAULT_SETTINGS.visitn_col),
       visit_col: settings.visit_col || DEFAULT_SETTINGS.visit_col,
       studyday_col: settings.studyday_col
     },
     { fallback }
   );
+  // A host with no x_axis of its own: its columns, filled out, Visit first.
+  const given = settings.x_axis;
+  if (!(given && Array.isArray(given.options) && given.options.length))
+    return { options: built.options, default: own.default };
+  // A host with one: its options in its order, then what it lacks, by key and
+  // by column, so no two buttons draw the same column.
   const keys = new Set(own.options.map((option) => option.key));
-  const options = [...own.options, ...built.options.filter((option) => !keys.has(option.key))];
-  const order = ['visit', 'day'];
-  options.sort((a, b) => {
-    const ia = order.indexOf(a.key);
-    const ib = order.indexOf(b.key);
-    return (ia < 0 ? order.length : ia) - (ib < 0 ? order.length : ib);
-  });
-  return { options, default: own.default };
+  const columns = new Set(own.options.map((option) => option.col));
+  const added = built.options.filter((option) => !keys.has(option.key) && !columns.has(option.col));
+  return { options: [...own.options, ...added], default: own.default };
 }

@@ -683,8 +683,9 @@ class SafetyShiftPlot {
   }
 
   /**
-   * The listing's columns: the configured details, less the default Study day
-   * column when the data has no study day (#384, SSP-XAX-001).
+   * The listing's columns: the configured details, less the Study day column
+   * (`__ssp_day`, the default listing's, or a caller's who named it) when the
+   * data has no study day (#384, SSP-XAX-001).
    * @returns {Object[]} The column specs.
    * @private
    */

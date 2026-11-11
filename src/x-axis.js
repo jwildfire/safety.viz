@@ -87,6 +87,18 @@ function hasValues(option, rows) {
   });
 }
 
+// Why an option cannot be drawn. A visit option whose names are in the data
+// but whose visit number is not says which column is missing, since the data
+// plainly has visits (#384).
+function unavailableReason(option, rows) {
+  const labelled =
+    option.key === 'visit' &&
+    !blank(option.label_col) &&
+    rows.some((row) => row && !blank(row[option.label_col]));
+  if (labelled && !blank(option.col)) return `No visit number (${option.col}) in this data`;
+  return (KNOWN[option.key] && KNOWN[option.key].reason) || `No ${option.title} in this data`;
+}
+
 /**
  * Check each option against the data and pick the view to show: the one asked
  * for when the data can draw it, else the setting's default, else the first
@@ -101,10 +113,7 @@ export function resolveXAxis(xAxis, rows, requested = null) {
   const data = Array.isArray(rows) ? rows : [];
   const options = (xAxis.options || []).map((option) => {
     const available = hasValues(option, data);
-    const reason = available
-      ? null
-      : (KNOWN[option.key] && KNOWN[option.key].reason) || `No ${option.title} in this data`;
-    return { ...option, available, reason };
+    return { ...option, available, reason: available ? null : unavailableReason(option, data) };
   });
   const usable = (key) => options.find((option) => option.key === key && option.available);
   const pick = usable(requested) || usable(xAxis.default) || options.find((o) => o.available);
