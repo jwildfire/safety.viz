@@ -301,4 +301,16 @@ describe('shift-plot side panel X-axis (PPRF-XAX-009, PPRF-XAX-011)', () => {
     const day = instance.railWrap.querySelector('.sv-xaxis-control button[data-key="day"]');
     expect(day.disabled).toBe(false);
   });
+
+  it("PPRF-XAX-009: with no study day the shift plot's panel opens on Visit, ordered by the profile's own visit number (#384)", () => {
+    const instance = shiftPlot(document.querySelector('#host'), {});
+    instance.init(makeRows().map(({ DY, ...row }) => row));
+    openPanel(instance);
+    expect(instance.railWrap.querySelector('.sv-no-time-axis')).toBeNull();
+    expect(instance.profile.settings.x_axis.options[0]).toMatchObject({
+      key: 'visit',
+      col: 'VISITNUM',
+      label_col: 'VISIT'
+    });
+  });
 });

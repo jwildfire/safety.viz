@@ -319,4 +319,17 @@ describe('histogram side panel X-axis (PPRF-XAX-009, PPRF-XAX-011)', () => {
     openPanel(none);
     expect(panelButtons(none).map((button) => button.textContent)).toEqual(['Visit']);
   });
+
+  it("PPRF-XAX-009: with no visit settings and no study day, the panel still opens on Visit, from the profile's own visit columns (#384)", () => {
+    const instance = histogram(document.querySelector('#host'), { start_value: ALT_TEST });
+    instance.init(makeRows().map(({ DY, ...row }) => row));
+    openPanel(instance);
+    expect(instance.railWrap.querySelector('.sv-no-time-axis')).toBeNull();
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+    // studyday_col: null on data with a study day: the visit still draws.
+    const noDayCol = build({ studyday_col: null });
+    openPanel(noDayCol);
+    expect(noDayCol.railWrap.querySelector('.sv-no-time-axis')).toBeNull();
+    expect(panelButtons(noDayCol).map((button) => button.textContent)).toEqual(['Visit']);
+  });
 });

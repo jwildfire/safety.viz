@@ -11,7 +11,7 @@
 //   }
 //
 // When a chart is given no `x_axis`, it is built from the settings the charts
-// took before the toggle — `visitn_col` and `visit_col` for the visit option,
+// took before the toggle — `visitn_col` (labelled by `visit_col`) for the visit option,
 // `studyday_col` for the day option — so nothing a host passes today stops
 // working. The axis title and tooltips always name what is plotted; an option
 // whose column the data lacks is greyed out and says why; with neither, the
@@ -45,7 +45,8 @@ function fillOption(option) {
 /**
  * Read a chart's `x_axis` setting into its full shape: each option with its key,
  * column, label column, type and title, and the default view. Without `x_axis`,
- * the setting is built from `visitn_col`, `visit_col` and `studyday_col`.
+ * the setting is built from `visitn_col` (the visit option, labelled from
+ * `visit_col`) and `studyday_col` (the day option).
  * @param {Object} settings The chart's settings.
  * @param {Object} [options] Reading options.
  * @param {string} [options.fallback='visit'] The chart's own default view, when the setting names none.
@@ -54,16 +55,24 @@ function fillOption(option) {
 export function normalizeXAxis(settings = {}, { fallback = 'visit' } = {}) {
   const given = settings.x_axis;
   if (given && Array.isArray(given.options) && given.options.length) {
+    // A key given twice is read once, the first time: two buttons for one
+    // key would both show as pressed, and the second could never be chosen.
+    const seen = new Set();
     return {
-      options: given.options.filter((option) => option && !blank(option.key)).map(fillOption),
+      options: given.options
+        .filter((option) => option && !blank(option.key))
+        .filter((option) => !seen.has(option.key) && seen.add(option.key))
+        .map(fillOption),
       default: given.default ?? fallback
     };
   }
   const options = [];
-  const visitCol = settings.visitn_col || settings.visit_col || null;
-  if (visitCol)
+  // The visit option needs the visit number, which orders it; the visit name
+  // only labels it. A name alone has no order but the file's, so it builds no
+  // option (#384).
+  if (settings.visitn_col)
     options.push(
-      fillOption({ key: 'visit', col: visitCol, label_col: settings.visit_col || null })
+      fillOption({ key: 'visit', col: settings.visitn_col, label_col: settings.visit_col || null })
     );
   if (settings.studyday_col) options.push(fillOption({ key: 'day', col: settings.studyday_col }));
   return { options, default: (given && given.default) ?? fallback };

@@ -67,6 +67,7 @@ blank them.
 | QT-FILT-001..004 (shared filter contract)                                                  | QT-FILT-001, QT-FILT-002, QT-FILT-003, QT-FILT-004 | #166  | `../shared/filter-contract.test.js`     |
 | QT-CTRL-004 (whole-chart reset, back to the central view)                                  | QT-CTRL-004                                        | #136  | `reset.test.js`                         |
 | QT-XAX-001..003 (drill-down Visit and Study day views, ECGs on one day, baseline-flag ECG) | QT-XAX-001..003                                    | #372  | `profile-adoption.test.js`              |
+| PPRF-XAX-009 (the drill-down opens on Visit)                                               | PPRF-XAX-009 (participant-profile matrix)          | #370  | `profile-adoption.test.js`              |
 
 ## Railed participant profile (#99, PPRF-QT)
 

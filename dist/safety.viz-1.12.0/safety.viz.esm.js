@@ -1,4 +1,4 @@
-// ../365-demo-data/node_modules/@kurkle/color/dist/color.esm.js
+// node_modules/@kurkle/color/dist/color.esm.js
 function round(v) {
   return v + 0.5 | 0;
 }
@@ -555,7 +555,7 @@ var Color = class _Color {
   }
 };
 
-// ../365-demo-data/node_modules/chart.js/dist/chunks/helpers.dataset.js
+// node_modules/chart.js/dist/chunks/helpers.dataset.js
 function noop() {
 }
 var uid = /* @__PURE__ */ (() => {
@@ -2953,7 +2953,7 @@ function getDatasetClipArea(chart, meta) {
   };
 }
 
-// ../365-demo-data/node_modules/chart.js/dist/chart.js
+// node_modules/chart.js/dist/chart.js
 var Animator = class {
   constructor() {
     this._request = null;
@@ -13690,7 +13690,7 @@ function exportCsv(rows, cols) {
   URL.revokeObjectURL(url);
 }
 function renderListing(instance) {
-  const cols = instance.settings.details;
+  const cols = instance.listingColumns ? instance.listingColumns() : instance.settings.details;
   const pageSize = instance.settings.page_size;
   let rows = searchRows([...instance.currentTableData], cols, instance.listingSearch);
   if (instance.listingSort) rows = sortRows(rows, instance.listingSort);
@@ -13984,6 +13984,109 @@ function computeNRRatio(participantRows, settings) {
   return Math.max(...peaks.map((peak) => peak.value)) / alpPeak.value;
 }
 
+// src/x-axis.js
+var NO_TIME_AXIS = "This data has no visit or study day, so there is no time axis to plot.";
+var KNOWN = {
+  visit: { type: "ordinal", title: "Visit", reason: "No visit in this data" },
+  day: { type: "linear", title: "Study day", reason: "No study day in this data" }
+};
+var blank = (value) => value === void 0 || value === null || String(value).trim() === "";
+function fillOption(option2) {
+  const known = KNOWN[option2.key] || {};
+  return {
+    key: String(option2.key),
+    col: option2.col ?? null,
+    label_col: option2.label_col ?? null,
+    type: option2.type ?? known.type ?? "ordinal",
+    title: option2.title ?? known.title ?? String(option2.key)
+  };
+}
+function normalizeXAxis(settings = {}, { fallback = "visit" } = {}) {
+  const given = settings.x_axis;
+  if (given && Array.isArray(given.options) && given.options.length) {
+    const seen = /* @__PURE__ */ new Set();
+    return {
+      options: given.options.filter((option2) => option2 && !blank(option2.key)).filter((option2) => !seen.has(option2.key) && seen.add(option2.key)).map(fillOption),
+      default: given.default ?? fallback
+    };
+  }
+  const options = [];
+  if (settings.visitn_col)
+    options.push(
+      fillOption({ key: "visit", col: settings.visitn_col, label_col: settings.visit_col || null })
+    );
+  if (settings.studyday_col) options.push(fillOption({ key: "day", col: settings.studyday_col }));
+  return { options, default: (given && given.default) ?? fallback };
+}
+function hasValues(option2, rows) {
+  if (blank(option2.col)) return false;
+  return rows.some((row) => {
+    const value = row ? row[option2.col] : void 0;
+    if (blank(value)) return false;
+    return option2.type === "linear" ? Number.isFinite(Number(value)) : true;
+  });
+}
+function resolveXAxis(xAxis, rows, requested = null) {
+  const data = Array.isArray(rows) ? rows : [];
+  const options = (xAxis.options || []).map((option2) => {
+    const available = hasValues(option2, data);
+    const reason = available ? null : KNOWN[option2.key] && KNOWN[option2.key].reason || `No ${option2.title} in this data`;
+    return { ...option2, available, reason };
+  });
+  const usable2 = (key) => options.find((option2) => option2.key === key && option2.available);
+  const pick2 = usable2(requested) || usable2(xAxis.default) || options.find((o) => o.available);
+  return {
+    options,
+    active: pick2 ? pick2.key : null,
+    message: pick2 ? null : NO_TIME_AXIS
+  };
+}
+function activeXAxis(resolved) {
+  return resolved.options.find((option2) => option2.key === resolved.active) || null;
+}
+function xAxisValue(option2, row) {
+  const value = row ? row[option2.col] : void 0;
+  return blank(value) ? NaN : Number(value);
+}
+function xAxisTick(option2, row) {
+  if (option2.type === "linear") {
+    const value = xAxisValue(option2, row);
+    return Number.isFinite(value) ? `Day ${value}` : "";
+  }
+  const label = option2.label_col && row ? row[option2.label_col] : void 0;
+  return blank(label) ? String(row ? row[option2.col] ?? "" : "") : String(label);
+}
+function renderXAxisControl(parent, { resolved, onChange, label = "X-axis" }) {
+  const wrap = createElement("div", "sv-control sv-xaxis-control");
+  const heading = createElement("label", null, label);
+  const group = createElement("div", "sv-xaxis");
+  group.setAttribute("role", "group");
+  group.setAttribute("aria-label", label);
+  resolved.options.forEach((option2) => {
+    const active = option2.key === resolved.active;
+    const button = createElement(
+      "button",
+      `sv-xaxis-option${active ? " is-active" : ""}`,
+      option2.title
+    );
+    button.type = "button";
+    button.dataset.key = option2.key;
+    button.setAttribute("aria-pressed", String(active));
+    if (!option2.available) {
+      button.disabled = true;
+      button.title = option2.reason;
+    }
+    button.onclick = () => {
+      if (active || !option2.available) return;
+      onChange(option2.key);
+    };
+    group.append(button);
+  });
+  wrap.append(heading, group);
+  parent.append(wrap);
+  return wrap;
+}
+
 // src/participant-profile/configure.js
 function arrayify2(value) {
   if (value === void 0 || value === null || value === "") return [];
@@ -14087,6 +14190,26 @@ function measureColorScale(keys) {
   });
   return scale;
 }
+function panelXAxis(settings = {}, { fallback = "visit" } = {}) {
+  const own = normalizeXAxis(settings, { fallback });
+  const built = normalizeXAxis(
+    {
+      visitn_col: settings.visitn_col || DEFAULT_SETTINGS2.visitn_col,
+      visit_col: settings.visit_col || DEFAULT_SETTINGS2.visit_col,
+      studyday_col: settings.studyday_col
+    },
+    { fallback }
+  );
+  const keys = new Set(own.options.map((option2) => option2.key));
+  const options = [...own.options, ...built.options.filter((option2) => !keys.has(option2.key))];
+  const order = ["visit", "day"];
+  options.sort((a, b) => {
+    const ia = order.indexOf(a.key);
+    const ib = order.indexOf(b.key);
+    return (ia < 0 ? order.length : ia) - (ib < 0 ? order.length : ib);
+  });
+  return { options, default: own.default };
+}
 
 // src/participant-profile/checkInputs.js
 var REQUIRED_COLUMN_SETTINGS2 = ["id_col", "measure_col", "value_col", "normal_col_high"];
@@ -14098,109 +14221,6 @@ function checkInputs2(data, settings) {
   if (missing.length) {
     throw new Error(`Required variable(s) missing: ${missing.join(", ")}`);
   }
-}
-
-// src/x-axis.js
-var NO_TIME_AXIS = "This data has no visit or study day, so there is no time axis to plot.";
-var KNOWN = {
-  visit: { type: "ordinal", title: "Visit", reason: "No visit in this data" },
-  day: { type: "linear", title: "Study day", reason: "No study day in this data" }
-};
-var blank = (value) => value === void 0 || value === null || String(value).trim() === "";
-function fillOption(option2) {
-  const known = KNOWN[option2.key] || {};
-  return {
-    key: String(option2.key),
-    col: option2.col ?? null,
-    label_col: option2.label_col ?? null,
-    type: option2.type ?? known.type ?? "ordinal",
-    title: option2.title ?? known.title ?? String(option2.key)
-  };
-}
-function normalizeXAxis(settings = {}, { fallback = "visit" } = {}) {
-  const given = settings.x_axis;
-  if (given && Array.isArray(given.options) && given.options.length) {
-    return {
-      options: given.options.filter((option2) => option2 && !blank(option2.key)).map(fillOption),
-      default: given.default ?? fallback
-    };
-  }
-  const options = [];
-  const visitCol = settings.visitn_col || settings.visit_col || null;
-  if (visitCol)
-    options.push(
-      fillOption({ key: "visit", col: visitCol, label_col: settings.visit_col || null })
-    );
-  if (settings.studyday_col) options.push(fillOption({ key: "day", col: settings.studyday_col }));
-  return { options, default: (given && given.default) ?? fallback };
-}
-function hasValues(option2, rows) {
-  if (blank(option2.col)) return false;
-  return rows.some((row) => {
-    const value = row ? row[option2.col] : void 0;
-    if (blank(value)) return false;
-    return option2.type === "linear" ? Number.isFinite(Number(value)) : true;
-  });
-}
-function resolveXAxis(xAxis, rows, requested = null) {
-  const data = Array.isArray(rows) ? rows : [];
-  const options = (xAxis.options || []).map((option2) => {
-    const available = hasValues(option2, data);
-    const reason = available ? null : KNOWN[option2.key] && KNOWN[option2.key].reason || `No ${option2.title} in this data`;
-    return { ...option2, available, reason };
-  });
-  const usable2 = (key) => options.find((option2) => option2.key === key && option2.available);
-  const pick2 = usable2(requested) || usable2(xAxis.default) || options.find((o) => o.available);
-  return {
-    options,
-    active: pick2 ? pick2.key : null,
-    message: pick2 ? null : NO_TIME_AXIS
-  };
-}
-function activeXAxis(resolved) {
-  return resolved.options.find((option2) => option2.key === resolved.active) || null;
-}
-function xAxisValue(option2, row) {
-  const value = row ? row[option2.col] : void 0;
-  return blank(value) ? NaN : Number(value);
-}
-function xAxisTick(option2, row) {
-  if (option2.type === "linear") {
-    const value = xAxisValue(option2, row);
-    return Number.isFinite(value) ? `Day ${value}` : "";
-  }
-  const label = option2.label_col && row ? row[option2.label_col] : void 0;
-  return blank(label) ? String(row ? row[option2.col] ?? "" : "") : String(label);
-}
-function renderXAxisControl(parent, { resolved, onChange, label = "X-axis" }) {
-  const wrap = createElement("div", "sv-control sv-xaxis-control");
-  const heading = createElement("label", null, label);
-  const group = createElement("div", "sv-xaxis");
-  group.setAttribute("role", "group");
-  group.setAttribute("aria-label", label);
-  resolved.options.forEach((option2) => {
-    const active = option2.key === resolved.active;
-    const button = createElement(
-      "button",
-      `sv-xaxis-option${active ? " is-active" : ""}`,
-      option2.title
-    );
-    button.type = "button";
-    button.dataset.key = option2.key;
-    button.setAttribute("aria-pressed", String(active));
-    if (!option2.available) {
-      button.disabled = true;
-      button.title = option2.reason;
-    }
-    button.onclick = () => {
-      if (active || !option2.available) return;
-      onChange(option2.key);
-    };
-    group.append(button);
-  });
-  wrap.append(heading, group);
-  parent.append(wrap);
-  return wrap;
 }
 
 // src/hep-explorer/configure.js
@@ -17068,8 +17088,9 @@ var SafetyHistogram = class {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
-      // No toggle of its own, so the panel opens on Visit (#370).
-      x_axis: normalizeXAxis(settings, { fallback: "visit" }),
+      // No toggle of its own, so the panel opens on Visit (#370), with the
+      // profile's own visit columns where the chart names none (#384).
+      x_axis: panelXAxis(settings, { fallback: "visit" }),
       details: settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
       participantProfileURL: settings.participantProfileURL ?? null,
       on_clear: () => {
@@ -18373,8 +18394,9 @@ var SafetyShiftPlot = class {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visit_order_col,
-      // No toggle of its own, so the panel opens on Visit (#370).
-      x_axis: normalizeXAxis(
+      // No toggle of its own, so the panel opens on Visit (#370), with the
+      // profile's own visit columns where the chart names none (#384).
+      x_axis: panelXAxis(
         { ...settings, visitn_col: settings.visit_order_col },
         { fallback: "visit" }
       ),
@@ -18491,6 +18513,10 @@ var SafetyShiftPlot = class {
     }
     const { rows, removed } = cleanData3(this.rawData, this.settings);
     this.cleanData = rows;
+    const day2 = this.settings.studyday_col;
+    this.hasStudyDay = !!day2 && this.rawData.some(
+      (row) => row && String(row[day2] ?? "").trim() !== "" && Number.isFinite(Number(row[day2]))
+    );
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
     this.availableMeasures = resolveMeasureList(
@@ -18837,6 +18863,16 @@ var SafetyShiftPlot = class {
       top: scales.y.getPixelForValue(Math.max(y0, y1)),
       bottom: scales.y.getPixelForValue(Math.min(y0, y1))
     });
+  }
+  /**
+   * The listing's columns: the configured details, less the default Study day
+   * column when the data has no study day (#384, SSP-XAX-001).
+   * @returns {Object[]} The column specs.
+   * @private
+   */
+  listingColumns() {
+    const details = this.settings.details;
+    return this.hasStudyDay === false ? details.filter((detail) => detail.value_col !== "__ssp_day") : details;
   }
   /**
    * Record the selection, de-emphasize the unselected points, draw the gray
@@ -19532,7 +19568,7 @@ var SafetyDeltaDelta = class {
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
       // No toggle of its own, so the panel opens on Visit (#370).
-      x_axis: normalizeXAxis(settings, { fallback: "visit" }),
+      x_axis: panelXAxis(settings, { fallback: "visit" }),
       details: settings.profile_details && settings.profile_details.length ? settings.profile_details : (settings.details || []).filter((detail) => detail.value_col !== settings.id_col),
       participantProfileURL: settings.participantProfileURL ?? null,
       on_clear: () => this.clearSelection(),
@@ -21011,8 +21047,8 @@ var DEFAULT_SETTINGS7 = {
   height: 460,
   page_size: 10,
   studyday_col: "DY",
-  visit_col: null,
-  visitn_col: null,
+  visit_col: "VISIT",
+  visitn_col: "VISITNUM",
   measure_values: null,
   profile: true,
   profile_details: null,
@@ -21351,8 +21387,10 @@ function hasPosition(row, option2) {
   if (option2.type === "linear") return Number.isFinite(xAxisValue(option2, row));
   return !blank3(row[option2.col]);
 }
-function timeValue(row, option2) {
-  return option2.type === "ordinal" ? xAxisTick(option2, row) : xAxisValue(option2, row);
+function timeValue(row, option2, names2 = null) {
+  if (option2.type !== "ordinal") return xAxisValue(option2, row);
+  const name = names2 ? names2.get(categoryKey(row, option2)) : void 0;
+  return name ?? xAxisTick(option2, row);
 }
 function timeOrder(row, option2) {
   if (option2.type !== "ordinal" || !option2.order_col) return xAxisValue(option2, row);
@@ -21364,15 +21402,35 @@ function timeLabels(row, options) {
     return option2.type === "linear" && option2.key !== "day" ? `${option2.title} ${xAxisValue(option2, row)}` : tick;
   }).filter((label) => !blank3(label)).join(" \xB7 ");
 }
-function orderedCategories(rows, option2) {
-  const seen = /* @__PURE__ */ new Map();
-  rows.filter((row) => hasPosition(row, option2)).forEach((row) => {
-    const label = xAxisTick(option2, row);
-    if (!seen.has(label)) seen.set(label, timeOrder(row, option2));
-  });
-  return [...seen.entries()].sort((a, b) => a[1] - b[1]).map(([label]) => label);
+function categoryKey(row, option2) {
+  const order = timeOrder(row, option2);
+  return Number.isFinite(order) ? String(order) : xAxisTick(option2, row);
 }
-function buildSeries(rows, settings, option2, groupBy2) {
+function categoryNames(rows, option2) {
+  const visits = /* @__PURE__ */ new Map();
+  rows.filter((row) => hasPosition(row, option2)).forEach((row) => {
+    const key = categoryKey(row, option2);
+    if (!visits.has(key))
+      visits.set(key, { label: xAxisTick(option2, row), order: timeOrder(row, option2) });
+  });
+  const uses = /* @__PURE__ */ new Map();
+  visits.forEach(({ label }) => uses.set(label, (uses.get(label) || 0) + 1));
+  const names2 = /* @__PURE__ */ new Map();
+  visits.forEach(
+    ({ label, order }, key) => names2.set(key, uses.get(label) > 1 ? `${label} (${order})` : label)
+  );
+  return names2;
+}
+function orderedCategories(rows, option2, names2 = categoryNames(rows, option2)) {
+  const order = /* @__PURE__ */ new Map();
+  rows.filter((row) => hasPosition(row, option2)).forEach((row) => {
+    const key = categoryKey(row, option2);
+    if (!order.has(key)) order.set(key, timeOrder(row, option2));
+  });
+  const byOrder = (a, b) => Number.isFinite(a[1]) && Number.isFinite(b[1]) ? a[1] - b[1] : 0;
+  return [...order.entries()].sort(byOrder).map(([key]) => names2.get(key));
+}
+function buildSeries(rows, settings, option2, groupBy2, names2 = null) {
   const byId = /* @__PURE__ */ new Map();
   rows.forEach((row) => {
     if (!hasPosition(row, option2)) return;
@@ -21383,7 +21441,7 @@ function buildSeries(rows, settings, option2, groupBy2) {
   const series = [];
   byId.forEach((records, id) => {
     const points = records.map((row) => ({
-      x: timeValue(row, option2),
+      x: timeValue(row, option2, names2),
       y: row.__oe_value,
       order: timeOrder(row, option2),
       label: row.__oe_timeLabel ?? "",
@@ -21732,7 +21790,8 @@ var SafetyOutlierExplorer = class {
     const options = this.xAxis.options.map(
       ({ order_col: order, ...option2 }) => order && order !== option2.col ? { ...option2, col: order, label_col: option2.label_col || option2.col } : option2
     );
-    return { options, default: this.resolveXAxis().active || this.xAxis.default };
+    const panel = panelXAxis({ ...this.settings, x_axis: { options } });
+    return { options: panel.options, default: this.resolveXAxis().active || this.xAxis.default };
   }
   /**
    * Merge setting overrides onto the current settings, re-normalize them (same
@@ -22066,8 +22125,9 @@ var SafetyOutlierExplorer = class {
     const values = this.filteredData.map((row) => row.__oe_value);
     const domain = resolveYDomain2(values, this.state.lower, this.state.upper);
     syncAxisLimits(this.state, domain, { lower: this.lowerInput, upper: this.upperInput });
-    const categories = xOption.type === "ordinal" ? orderedCategories(this.currentMeasureData(), xOption) : [];
-    this.series = buildSeries(this.filteredData, this.settings, xOption, this.state.groupBy);
+    const names2 = xOption.type === "ordinal" ? categoryNames(this.currentMeasureData(), xOption) : null;
+    const categories = names2 ? orderedCategories(this.currentMeasureData(), xOption, names2) : [];
+    this.series = buildSeries(this.filteredData, this.settings, xOption, this.state.groupBy, names2);
     const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE2;
     this.groupValues = grouped ? unique5(this.filteredData.map((row) => row[this.state.groupBy])).sort() : [];
     this.colorScale = groupColorScale(this.groupValues);
@@ -23696,20 +23756,16 @@ function groupColorScale2(groupValues) {
   });
   return scale;
 }
-function dayText(day2) {
-  return Number.isFinite(day2) ? String(day2) : "NA";
+function atDay(day2) {
+  return Number.isFinite(day2) ? ` @ day ${day2}` : "";
 }
 function pointTooltip2(point, state, measureValues) {
   const lines = [
     `Participant: ${point.id}`,
     `R Ratio: ${Number.isFinite(point.rRatio) ? formatNumber4(point.rRatio) : "NA"}`,
     `nR Ratio: ${Number.isFinite(point.nrRatio) ? formatNumber4(point.nrRatio) : "NA"}`,
-    `${measureLabel5(state.measureX, measureValues)}: ${formatNumber4(point.x)} @ day ${dayText(
-      point.days_x
-    )}`,
-    `${measureLabel5(state.measureY, measureValues)}: ${formatNumber4(point.y)} @ day ${dayText(
-      point.days_y
-    )}`
+    `${measureLabel5(state.measureX, measureValues)}: ${formatNumber4(point.x)}${atDay(point.days_x)}`,
+    `${measureLabel5(state.measureY, measureValues)}: ${formatNumber4(point.y)}${atDay(point.days_y)}`
   ];
   if (point.timing === "not_evaluated") {
     lines.push("Timing not evaluated (no study day)");
@@ -27189,11 +27245,9 @@ var SafetyHepExplorer = class {
    * @private
    */
   profileXAxis() {
-    const active = this.timeAxis ? this.timeAxis.active : null;
-    return {
-      ...normalizeXAxis(this.settings),
-      default: this.state.xAxis || active || timeAxis(this.settings).default
-    };
+    const axis = timeAxis(this.settings);
+    const { active } = resolveXAxis(axis, this.cleanRows || [], this.state.xAxis);
+    return { ...normalizeXAxis(this.settings), default: active || axis.default };
   }
   /**
    * The settings handed to the railed participant-profile module (#98,
@@ -36343,13 +36397,13 @@ function deriveFields(row, domain, settings) {
       const unit = text(row[s.ex_dosu_col]);
       const interval = resolveInterval(row, s, "ex", "ex_endy_col");
       const doseText = [dose === null ? text(row[s.ex_dose_col]) : String(dose), unit].filter(Boolean).join(" ");
-      const dayText2 = interval.start === null ? "" : interval.end === null ? `from day ${interval.start}` : `days ${interval.start}\u2013${interval.end}`;
+      const dayText = interval.start === null ? "" : interval.end === null ? `from day ${interval.start}` : `days ${interval.start}\u2013${interval.end}`;
       return {
         kind: "interval",
         ...interval,
         rawDate: resolveText(row, s.ex_stdtc_col),
         label: trt,
-        detail: [doseText, dayText2].filter(Boolean).join(" "),
+        detail: [doseText, dayText].filter(Boolean).join(" "),
         category: trt,
         value: dose,
         unit

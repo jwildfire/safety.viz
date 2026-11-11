@@ -67,7 +67,8 @@ export function exportCsv(rows, cols) {
 }
 
 export function renderListing(instance) {
-  const cols = instance.settings.details;
+  // A chart may narrow its listing to the columns its data can fill (#384).
+  const cols = instance.listingColumns ? instance.listingColumns() : instance.settings.details;
   const pageSize = instance.settings.page_size;
   let rows = searchRows([...instance.currentTableData], cols, instance.listingSearch);
   if (instance.listingSort) rows = sortRows(rows, instance.listingSort);

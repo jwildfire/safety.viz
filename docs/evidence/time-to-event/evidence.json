@@ -1,6 +1,6 @@
 {
   "module": "time-to-event",
-  "generatedAt": "2026-11-11T05:19:59.922Z",
+  "generatedAt": "2026-11-11T06:41:56.956Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42963209370",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42963209370"
+    "id": "42972949008",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42972949008"
   },
   "records": [
     {
@@ -6045,11 +6045,27 @@
       "screenshots": []
     },
     {
+      "test": "normalizeXAxis KIT-XAX-001: an option key given twice is read once, the first time (#384)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-001"],
+      "issueRefs": [384],
+      "screenshots": []
+    },
+    {
       "test": "normalizeXAxis KIT-XAX-001: x_axis is read as given, each option filled from its key (#368)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["KIT-XAX-001"],
       "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeXAxis KIT-XAX-002: a visit name with no visit number builds no Visit option, since nothing orders it (#384)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-002"],
+      "issueRefs": [384],
       "screenshots": []
     },
     {

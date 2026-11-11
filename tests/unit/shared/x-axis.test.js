@@ -51,11 +51,25 @@ describe('normalizeXAxis', () => {
     ).toEqual(NORMAL);
     // A chart's own default view, when the setting names none.
     expect(normalizeXAxis({ studyday_col: 'DY' }, { fallback: 'day' }).default).toBe('day');
-    // A visit label alone orders the visit option by its label.
-    expect(normalizeXAxis({ visit_col: 'VISIT' }).options[0]).toMatchObject({
-      col: 'VISIT',
-      label_col: 'VISIT'
+  });
+
+  it('KIT-XAX-002: a visit name with no visit number builds no Visit option, since nothing orders it (#384)', () => {
+    expect(normalizeXAxis({ visit_col: 'VISIT' }).options).toEqual([]);
+    expect(
+      normalizeXAxis({ visit_col: 'VISIT', studyday_col: 'DY' }).options.map((o) => o.key)
+    ).toEqual(['day']);
+  });
+
+  it('KIT-XAX-001: an option key given twice is read once, the first time (#384)', () => {
+    const axis = normalizeXAxis({
+      x_axis: {
+        options: [
+          { key: 'day', col: 'DY' },
+          { key: 'day', col: 'ADY' }
+        ]
+      }
     });
+    expect(axis.options.map((o) => o.col)).toEqual(['DY']);
   });
 });
 

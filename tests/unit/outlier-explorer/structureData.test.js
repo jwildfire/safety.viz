@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { syncSettings } from '../../../src/outlier-explorer/configure.js';
 import {
   buildSeries,
+  categoryNames,
   cleanData,
   computeNormalRange,
   countInliers,
@@ -80,6 +81,38 @@ describe('outlier-explorer structureData', () => {
     // not plotted at day 0.
     const byDay = buildSeries(rows, settings, DAY, null)[0].points;
     expect(byDay.map((p) => p.x)).toEqual([15]);
+  });
+
+  it('SOE-XAX-006: visits that share a name but not a number stay apart, each named with its number (#384)', () => {
+    const rows = [
+      ['Baseline', 0],
+      ['Week 2', 2],
+      ['UNSCHEDULED', 2.1],
+      ['Week 4', 4],
+      ['UNSCHEDULED', 4.1],
+      ['Week 6', 6]
+    ].map(([visit, number], i) => ({
+      USUBJID: 'P1',
+      __oe_value: i,
+      VISIT: visit,
+      VISITNUM: number
+    }));
+    const expected = [
+      'Baseline',
+      'Week 2',
+      'UNSCHEDULED (2.1)',
+      'Week 4',
+      'UNSCHEDULED (4.1)',
+      'Week 6'
+    ];
+    expect(orderedCategories(rows, VISIT)).toEqual(expected);
+    // The line runs left to right through both, never back to the first.
+    const names = categoryNames(rows, VISIT);
+    expect(buildSeries(rows, settings, VISIT, null, names)[0].points.map((p) => p.x)).toEqual(
+      expected
+    );
+    // A name used once keeps its own label.
+    expect(names.get('2')).toBe('Week 2');
   });
 
   it('SOE-XAX-006: the tooltip and listing name both the visit and the study day where the row has them (#371)', () => {

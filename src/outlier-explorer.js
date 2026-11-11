@@ -11,6 +11,7 @@
 // participant count, rather than one dataset per participant (which is slow at
 // the hundreds of participants a study carries).
 
+import { panelXAxis } from './participant-profile/configure.js';
 import {
   Chart,
   LineController,
@@ -39,6 +40,7 @@ import {
   countInliers,
   measureLabel,
   orderedCategories,
+  categoryNames,
   timeLabels,
   unique
 } from './outlier-explorer/structureData.js';
@@ -288,7 +290,10 @@ class SafetyOutlierExplorer {
         ? { ...option, col: order, label_col: option.label_col || option.col }
         : option
     );
-    return { options, default: this.resolveXAxis().active || this.xAxis.default };
+    // What the main axis lacks, the panel still offers: a Study day option
+    // from studyday_col, a Visit option from the visit columns (#384).
+    const panel = panelXAxis({ ...this.settings, x_axis: { options } });
+    return { options: panel.options, default: this.resolveXAxis().active || this.xAxis.default };
   }
 
   /**
@@ -671,9 +676,12 @@ class SafetyOutlierExplorer {
     // The Y-axis Limits inputs mirror the domain this render resolved (#85,
     // AXIS-1) — the padded default (SOE-REG-034) unless a limit was edited.
     syncAxisLimits(this.state, domain, { lower: this.lowerInput, upper: this.upperInput });
-    const categories =
-      xOption.type === 'ordinal' ? orderedCategories(this.currentMeasureData(), xOption) : [];
-    this.series = buildSeries(this.filteredData, this.settings, xOption, this.state.groupBy);
+    // One category per visit, named so visits sharing a name stay apart (#384);
+    // the series take the same names so every point lands on its category.
+    const names =
+      xOption.type === 'ordinal' ? categoryNames(this.currentMeasureData(), xOption) : null;
+    const categories = names ? orderedCategories(this.currentMeasureData(), xOption, names) : [];
+    this.series = buildSeries(this.filteredData, this.settings, xOption, this.state.groupBy, names);
 
     const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE;
     this.groupValues = grouped

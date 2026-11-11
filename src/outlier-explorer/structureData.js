@@ -88,9 +88,12 @@ export function hasPosition(row, option) {
 }
 
 // The x value a row plots at on an x-axis option: its study day on a linear
-// axis, its visit name (the category) on an ordinal one.
-export function timeValue(row, option) {
-  return option.type === 'ordinal' ? xAxisTick(option, row) : xAxisValue(option, row);
+// axis, its visit's category on an ordinal one — the visit name, or the name
+// with its number when `names` (from categoryNames) tells it apart.
+export function timeValue(row, option, names = null) {
+  if (option.type !== 'ordinal') return xAxisValue(option, row);
+  const name = names ? names.get(categoryKey(row, option)) : undefined;
+  return name ?? xAxisTick(option, row);
 }
 
 // The sort key ordering a participant's points along the axis: the study day,
@@ -116,17 +119,48 @@ export function timeLabels(row, options) {
     .join(' · ');
 }
 
-// Ordered category labels for an ordinal axis: unique visit names sorted by
-// the visit number (SOE-REG-028 axis ordering).
-export function orderedCategories(rows, option) {
-  const seen = new Map();
+// One category per visit: keyed by the visit number where there is one, else
+// by the visit name.
+function categoryKey(row, option) {
+  const order = timeOrder(row, option);
+  return Number.isFinite(order) ? String(order) : xAxisTick(option, row);
+}
+
+// The category name for each visit on an ordinal axis (#384): the visit name,
+// unless visits with different numbers share it (real data often labels every
+// unscheduled visit "UNSCHEDULED"), when each is named with its number —
+// "UNSCHEDULED (2.1)" — so the two never collapse into one category.
+export function categoryNames(rows, option) {
+  const visits = new Map();
   rows
     .filter((row) => hasPosition(row, option))
     .forEach((row) => {
-      const label = xAxisTick(option, row);
-      if (!seen.has(label)) seen.set(label, timeOrder(row, option));
+      const key = categoryKey(row, option);
+      if (!visits.has(key))
+        visits.set(key, { label: xAxisTick(option, row), order: timeOrder(row, option) });
     });
-  return [...seen.entries()].sort((a, b) => a[1] - b[1]).map(([label]) => label);
+  const uses = new Map();
+  visits.forEach(({ label }) => uses.set(label, (uses.get(label) || 0) + 1));
+  const names = new Map();
+  visits.forEach(({ label, order }, key) =>
+    names.set(key, uses.get(label) > 1 ? `${label} (${order})` : label)
+  );
+  return names;
+}
+
+// Ordered category labels for an ordinal axis: one per visit, sorted by the
+// visit number (SOE-REG-028 axis ordering); visits with no number keep the
+// order they first appear in.
+export function orderedCategories(rows, option, names = categoryNames(rows, option)) {
+  const order = new Map();
+  rows
+    .filter((row) => hasPosition(row, option))
+    .forEach((row) => {
+      const key = categoryKey(row, option);
+      if (!order.has(key)) order.set(key, timeOrder(row, option));
+    });
+  const byOrder = (a, b) => (Number.isFinite(a[1]) && Number.isFinite(b[1]) ? a[1] - b[1] : 0);
+  return [...order.entries()].sort(byOrder).map(([key]) => names.get(key));
 }
 
 // Builds one series per participant: points sorted along the active x-axis
@@ -135,7 +169,7 @@ export function orderedCategories(rows, option) {
 // Study day view) is left out rather than drawn at zero (#371). This is the
 // model the single null-separated Chart.js line dataset is built from (one
 // line per participant without one dataset per participant).
-export function buildSeries(rows, settings, option, groupBy) {
+export function buildSeries(rows, settings, option, groupBy, names = null) {
   const byId = new Map();
   rows.forEach((row) => {
     if (!hasPosition(row, option)) return;
@@ -147,7 +181,7 @@ export function buildSeries(rows, settings, option, groupBy) {
   byId.forEach((records, id) => {
     const points = records
       .map((row) => ({
-        x: timeValue(row, option),
+        x: timeValue(row, option, names),
         y: row.__oe_value,
         order: timeOrder(row, option),
         label: row.__oe_timeLabel ?? '',
