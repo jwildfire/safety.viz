@@ -239,16 +239,65 @@ function renderTimeline(events, domain, settings) {
 }
 
 /**
+ * The days one event ran, in words, for the Visit-view list (#369,
+ * PPRF-XAX-007).
+ * @param {Object} event A cleaned event.
+ * @returns {string} The days.
+ * @private
+ */
+function eventDays(event) {
+  if (!event.__ae_placeable) return 'no start day recorded';
+  if (event.__ae_open) return `from study day ${event.__ae_start}, no end date recorded`;
+  if (event.__ae_end === event.__ae_start) return `study day ${event.__ae_start}`;
+  return `study days ${event.__ae_start} to ${event.__ae_end}`;
+}
+
+/**
+ * List the events with their study days in place of the timeline (#369,
+ * PPRF-XAX-007): the labs chart is on a visit axis, which has no days to draw
+ * them on, and drawing a day track under a visit axis would put two clocks on
+ * one vertical. A line above the list says so.
+ * @param {Object[]} events The participant's events, worst first.
+ * @returns {HTMLElement} The list block.
+ * @private
+ */
+function renderEventList(events) {
+  const wrap = createElement('div', 'sv-profile-ae-list-wrap');
+  wrap.append(
+    createElement(
+      'p',
+      'sv-profile-ae-list-note',
+      'Listed, not drawn: a visit axis has no days to draw them on. Switch the X-axis to Study day to see the timeline.'
+    )
+  );
+  const list = createElement('ul', 'sv-profile-ae-list');
+  events.forEach((event) => {
+    const item = createElement('li');
+    item.title = eventDescription(event);
+    item.append(
+      createElement('strong', null, event.__ae_term),
+      document.createTextNode(`: ${eventDays(event)}${event.__ae_serious ? ' · serious' : ''}`)
+    );
+    list.append(item);
+  });
+  wrap.append(list);
+  return wrap;
+}
+
+/**
  * Render the adverse-event block for one participant (PPRF-AESUM-001,
- * PPRF-AETL-001): summary first, then the timeline on the shared axis. Returns
- * the section element so the caller places it — the profile inserts it directly
- * after the labs chart (design decision D5).
+ * PPRF-AETL-001): summary first, then the timeline on the shared axis — or, in
+ * the profile's Visit view, the events listed with their study days (#369,
+ * PPRF-XAX-007). Returns the section element so the caller places it — the
+ * profile inserts it directly after the labs chart (design decision D5).
  * @param {Object[]} events The participant's cleaned events, in row order.
  * @param {?number[]} domain The shared day domain, or null when no study day resolves.
  * @param {Object} settings Normalized AE settings.
+ * @param {Object} [options] Rendering options.
+ * @param {boolean} [options.list=false] List the events instead of drawing the timeline (the labs chart is on a visit axis).
  * @returns {HTMLElement} The adverse-events section.
  */
-export function renderAeTracks(events, domain, settings) {
+export function renderAeTracks(events, domain, settings, { list: asList = false } = {}) {
   const section = createElement('section', 'sv-profile-ae');
   section.setAttribute('aria-label', 'Adverse events');
   section.append(createElement('h3', 'sv-profile-ae-title', 'Adverse events'));
@@ -265,7 +314,9 @@ export function renderAeTracks(events, domain, settings) {
   section.append(renderTiles(summary));
   section.append(renderMix(summary));
 
-  if (!domain) {
+  if (asList) {
+    section.append(renderEventList(list));
+  } else if (!domain) {
     // Without a study day there is no shared clock to draw against, and
     // inventing one would be worse than saying so (design decision D7).
     section.append(

@@ -1,6 +1,6 @@
 {
   "module": "participant-profile",
-  "generatedAt": "2026-11-11T04:01:07.056Z",
+  "generatedAt": "2026-11-11T04:40:35.188Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42954819246",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42954819246"
+    "id": "42959291755",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42959291755"
   },
   "records": [
     {
@@ -146,6 +146,14 @@
       "status": "pass",
       "requirementIds": ["APP-CHART-010"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "APP-CHART-012: the Outlier Explorer opens on the X-axis view the reader left it on, after another chart and another tab (#373)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-012"],
+      "issueRefs": [373],
       "screenshots": []
     },
     {
@@ -3197,6 +3205,22 @@
       "screenshots": []
     },
     {
+      "test": "adverse events follow the view (PPRF-XAX-007) PPRF-XAX-007: Study day view draws the adverse-event track on the labs chart day axis (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-007"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "adverse events follow the view (PPRF-XAX-007) PPRF-XAX-007: Visit view lists the adverse events with their study days under a line saying why, and draws no track (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-007"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
       "test": "aeDomain / unionDomain — the shared study-day axis (PPRF-AXIS-001) falls back to whichever domain exists",
       "suite": "unit",
       "status": "pass",
@@ -3997,11 +4021,11 @@
       "screenshots": []
     },
     {
-      "test": "demo app: chart recipes APP-CHART-006: the study day is the mapped column, else visit order, else nothing for a chart that would print it (#150)",
+      "test": "demo app: chart recipes APP-CHART-006: the study day passed to a chart is the mapped column or none, never the visit number (#150, #373)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-CHART-006"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -4034,6 +4058,14 @@
       "status": "pass",
       "requirementIds": ["APP-CHART-010"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: chart recipes APP-CHART-011: every chart with the X-axis toggle is passed x_axis from the mapped visit and study-day columns; an unmapped one leaves its option with no column (#373)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-011"],
+      "issueRefs": [373],
       "screenshots": []
     },
     {
@@ -4802,6 +4834,22 @@
       "status": "pass",
       "requirementIds": ["APP-MAP-007"],
       "issueRefs": [149],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the remembered X-axis view APP-CHART-012: a chart opens on the X-axis view the reader left it on, after another chart or tab, while the page is open (#373)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-012"],
+      "issueRefs": [373],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the remembered X-axis view APP-CHART-012: the remembered view is not kept across page loads (#373)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-012"],
+      "issueRefs": [373],
       "screenshots": []
     },
     {
@@ -5749,6 +5797,14 @@
       "screenshots": []
     },
     {
+      "test": "kit: the shared chart parts as one export KIT-API-017: the x-axis toggle members are the ones src/x-axis.js exports (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-017"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
       "test": "labControl (PPRF-3, PPRF-SPAG-002) reflects a subset and reports selection changes",
       "suite": "unit",
       "status": "pass",
@@ -6170,6 +6226,38 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-019"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "neither column, or one missing (PPRF-XAX-008) PPRF-XAX-008: an option the data lacks is greyed out with its reason (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-008"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "neither column, or one missing (PPRF-XAX-008) PPRF-XAX-008: with neither a visit nor a study day the profile shows the no-time-axis message in place of the labs chart, without an error (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-008"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeXAxis KIT-XAX-001: x_axis is read as given, each option filled from its key (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-001"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeXAxis KIT-XAX-002: without x_axis it is built from visitn_col, visit_col and studyday_col (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-002"],
+      "issueRefs": [368],
       "screenshots": []
     },
     {
@@ -7205,6 +7293,14 @@
       "screenshots": ["PPRF-STEP-001-composite-stepper.png"]
     },
     {
+      "test": "renderXAxisControl KIT-XAX-008: the X-axis control offers Visit and Study day, greys out an unavailable one with its reason, and reports a switch (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-008"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
       "test": "repo hygiene no source or test file carries a machine-specific absolute path (#136)",
       "suite": "unit",
       "status": "pass",
@@ -7298,6 +7394,38 @@
       "status": "pass",
       "requirementIds": ["APP-LOCAL-004"],
       "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-003: with both columns both options are available and the default is active (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-003"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-004: a missing column greys its option out and says why (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-004"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-005: a default naming an unavailable option falls back to the available one (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-005"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-006: with neither column no option is active and the message says why (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-006"],
+      "issueRefs": [368],
       "screenshots": []
     },
     {
@@ -8789,6 +8917,14 @@
       "screenshots": []
     },
     {
+      "test": "Study day view (PPRF-XAX-003) PPRF-XAX-003: Study day view plots each record at its study day on a linear axis titled \"Study day\", pre-dose records at negative days (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-003"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
       "test": "summarizeAe — four figures, a mix and a rollup (PPRF-AESUM-001) builds the severity mix worst-first, dropping empty levels",
       "suite": "unit",
       "status": "pass",
@@ -9157,6 +9293,22 @@
       "screenshots": []
     },
     {
+      "test": "the day-1 line (PPRF-XAX-004) PPRF-XAX-004: Study day view draws a vertical day-1 line marked \"Day 1\"; Visit view draws none (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-004"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "the day-1 line (PPRF-XAX-004) PPRF-XAX-004: the day-1 line is not drawn when day 1 is off the axis (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-004"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
       "test": "the demo app’s own label APP-TIER-012: how many charts stand on each rung is said in a sentence or two, with a tab named as a tab (#273)",
       "suite": "unit",
       "status": "pass",
@@ -9442,6 +9594,14 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-067"],
       "issueRefs": [279],
+      "screenshots": []
+    },
+    {
+      "test": "the measure table names the view (PPRF-XAX-006) PPRF-XAX-006: the measure table time column header names the active view (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-006"],
+      "issueRefs": [369],
       "screenshots": []
     },
     {
@@ -10517,6 +10677,22 @@
       "screenshots": []
     },
     {
+      "test": "the side panel keeps its own toggle (PPRF-XAX-010) PPRF-XAX-010: a host re-sync with the same view keeps the view chosen in the panel (#370)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-010"],
+      "issueRefs": [370],
+      "screenshots": []
+    },
+    {
+      "test": "the side panel keeps its own toggle (PPRF-XAX-010) PPRF-XAX-010: when the host's view changes, the panel opens on the new view (#370)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-010"],
+      "issueRefs": [370],
+      "screenshots": []
+    },
+    {
       "test": "the single file with the biomarker charts APP-BIO-009: each library’s bundle is inlined after the app’s, and the app is mounted with it; nothing points at another URL (#182)",
       "suite": "unit",
       "status": "pass",
@@ -10797,6 +10973,38 @@
       "screenshots": []
     },
     {
+      "test": "the X-axis control (PPRF-XAX-001) PPRF-XAX-001: switching the X-axis redraws the labs chart and the table in the chosen view and dispatches no selection event (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-001"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "the X-axis control (PPRF-XAX-001) PPRF-XAX-001: the profile shows an X-axis control with Visit and Study day and opens on Visit (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-001"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "the X-axis control (PPRF-XAX-001) PPRF-XAX-001: without x_axis the setting is built from studyday_col, visit_col and visitn_col, so a host that passes only those still works (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-001"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "the X-axis control (PPRF-XAX-001) PPRF-XAX-001: x_axis.default picks the view the profile opens on (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-001"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
       "test": "timelineGeometry — bars as percentages of the shared domain (PPRF-AETL-001) clamps and flags an event running past the domain",
       "suite": "unit",
       "status": "pass",
@@ -10850,6 +11058,30 @@
       "status": "pass",
       "requirementIds": ["PPRF-SPAG-001"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "tooltips name both (PPRF-XAX-005) PPRF-XAX-005: the expanded inset carries the same tooltip line and its axis follows the view (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-005"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "tooltips name both (PPRF-XAX-005) PPRF-XAX-005: the tooltip first line reads \"Week 8 · Day 57\" in Visit view and in Study day view (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-005"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "tooltips name both (PPRF-XAX-005) PPRF-XAX-005: the tooltip uses whatever of the two a row has, and never pairs \"Study day\" with \"Visit\" (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-005"],
+      "issueRefs": [369],
       "screenshots": []
     },
     {
@@ -10973,6 +11205,14 @@
       "screenshots": []
     },
     {
+      "test": "values and ticks KIT-XAX-007: a row reads as its visit number or its study day, labelled by visit name or day (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-007"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
       "test": "visibleSeries — extras and lab subsetting (PPRF-3, PPRF-SPAG-001) filters datasets through the lab subsetter",
       "suite": "unit",
       "status": "pass",
@@ -11002,6 +11242,22 @@
       "status": "pass",
       "requirementIds": ["PPRF-SPAG-001"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "Visit view (PPRF-XAX-002) PPRF-XAX-002: an unscheduled visit sits right after the visit it follows (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-002"],
+      "issueRefs": [369],
+      "screenshots": []
+    },
+    {
+      "test": "Visit view (PPRF-XAX-002) PPRF-XAX-002: Visit view spaces visits evenly in visit-number order, labels the ticks by visit name and titles the axis \"Visit\" (#369)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-002"],
+      "issueRefs": [369],
       "screenshots": []
     },
     {

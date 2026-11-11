@@ -450,7 +450,8 @@ class SafetyResultsOverTime {
     const stats = summarizeVisitGroups(filtered, {
       timeCol: this.settings.time_col,
       valueCol: '__srot_value',
-      groupCol: grouping
+      groupCol: grouping,
+      dayCol: this.settings.studyday_col
     });
     flagOutliers(filtered, stats, { ...this.settings, outliers: this.state.outliers }, grouping);
 

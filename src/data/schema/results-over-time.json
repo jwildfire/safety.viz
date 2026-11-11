@@ -37,6 +37,11 @@
           "default": "VISITNUM",
           "description": "Optional numeric column ordering the visits; falls back to alphanumeric order when absent."
         },
+        "studyday_col": {
+          "type": ["string", "null"],
+          "default": "DY",
+          "description": "Optional numeric study-day column. The chart stays by visit; each box's tooltip adds the median study day of the records it summarizes (\"Median study day 57\"), and nothing when none of them has a day or the column is null or absent (#374, SROT-XAX-001)."
+        },
         "id_col": {
           "type": "string",
           "default": "USUBJID",

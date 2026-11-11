@@ -10,6 +10,7 @@ import * as profileHost from '../../../src/profile-host.js';
 import * as boxWhisker from '../../../src/box-whisker.js';
 import * as measureList from '../../../src/measure-list.js';
 import * as km from '../../../src/time-to-event/km.js';
+import * as xAxis from '../../../src/x-axis.js';
 
 // The kit (#154, obot.roadmap#354): the parts every chart already shares,
 // exposed on the bundle as one export so a second chart library on the same
@@ -79,7 +80,20 @@ const MEMBERS = [
   ],
   ['src/box-whisker.js', boxWhisker, ['drawBoxWhisker', 'boxWhiskerPlugin']],
   ['src/measure-list.js', measureList, ['resolveMeasureList', 'presentMeasures']],
-  ['src/time-to-event/km.js', km, ['kmEstimate']]
+  ['src/time-to-event/km.js', km, ['kmEstimate']],
+  [
+    'src/x-axis.js',
+    xAxis,
+    [
+      'NO_TIME_AXIS',
+      'normalizeXAxis',
+      'resolveXAxis',
+      'activeXAxis',
+      'xAxisValue',
+      'xAxisTick',
+      'renderXAxisControl'
+    ]
+  ]
 ];
 
 const EXPECTED_NAMES = ['Chart', ...MEMBERS.flatMap(([, , names]) => names)];
@@ -124,7 +138,7 @@ describe('kit: the shared chart parts as one export', () => {
   it('KIT-API-002: the kit holds exactly the listed members, flat, under the names their modules export (#154)', () => {
     expect(Object.keys(kit)).toEqual(EXPECTED_NAMES);
     expect(new Set(EXPECTED_NAMES).size).toBe(EXPECTED_NAMES.length);
-    expect(EXPECTED_NAMES).toHaveLength(36);
+    expect(EXPECTED_NAMES).toHaveLength(43);
   });
 
   it('KIT-API-003: the shell members are the functions src/shell.js exports (#154)', () => {
@@ -160,6 +174,10 @@ describe('kit: the shared chart parts as one export', () => {
     expectIdentical('src/time-to-event/km.js');
   });
 
+  it('KIT-API-017: the x-axis toggle members are the ones src/x-axis.js exports (#368)', () => {
+    expectIdentical('src/x-axis.js');
+  });
+
   it('KIT-API-011: kit.Chart is the Chart.js constructor the charts import (#154)', () => {
     expect(kit.Chart).toBe(Chart);
     expect(typeof kit.Chart.register).toBe('function');
@@ -175,7 +193,7 @@ describe('kit: the shared chart parts as one export', () => {
     expect(kit).not.toHaveProperty('statusLabel');
     expect(kit).not.toHaveProperty('chartStatus');
     expect(kit).not.toHaveProperty('hexToRgba');
-    // Every other export of the eight modules is a kit member.
+    // Every other export of the nine modules is a kit member.
     for (const [file, module, names] of MEMBERS) {
       const unlisted = Object.keys(module).filter((name) => !names.includes(name));
       const allowed =

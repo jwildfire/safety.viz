@@ -1,8 +1,9 @@
 // The expandable inset line chart behind each measure-table sparkline (#98,
-// PPRF-4): a Chart.js line chart of the measure's absolute values by study day,
-// with a custom beforeDatasetsDraw plugin painting the LLN–ULN normal-range
-// band and the dashed population-extent guides in chart space, outlier points
-// filled and in-range points hollow. Parity target: the original renderer's
+// PPRF-4): a Chart.js line chart of the measure's absolute values in the
+// active view (by visit or by study day, #369), with a custom
+// beforeDatasetsDraw plugin painting the LLN–ULN normal-range band and the
+// dashed population-extent guides in chart space, outlier points filled and
+// in-range points hollow. Parity target: the original renderer's
 // measureTable/lineChart/* (setDomain, drawNormalRange, drawPopulationExtent,
 // updatePointFill). The measure table owns the expand/collapse lifecycle — this
 // file only builds the chart; the caller destroys it on collapse and on any
@@ -11,6 +12,8 @@
 import { Chart, LineController, LineElement, PointElement, LinearScale, Tooltip } from 'chart.js';
 
 import { createElement } from '../shell.js';
+import { dayOnePlugin, pointX, timeScale } from './spaghetti.js';
+import { timeLabel } from './structureData.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip);
 
@@ -49,10 +52,12 @@ export function bandGuidePlugin(measure) {
 
       const upper = measure.spark
         .filter((point) => Number.isFinite(point.uln))
-        .map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.uln)]);
+        .filter((point) => Number.isFinite(pointX(point)))
+        .map((point) => [x.getPixelForValue(pointX(point)), y.getPixelForValue(point.uln)]);
       const lower = measure.spark
         .filter((point) => Number.isFinite(point.lln))
-        .map((point) => [x.getPixelForValue(point.day), y.getPixelForValue(point.lln)])
+        .filter((point) => Number.isFinite(pointX(point)))
+        .map((point) => [x.getPixelForValue(pointX(point)), y.getPixelForValue(point.lln)])
         .reverse();
       const band = upper.concat(lower);
 
@@ -90,14 +95,16 @@ export function bandGuidePlugin(measure) {
 
 /**
  * Render the inset line chart for one measure into a host element (PPRF-4):
- * absolute values by study day, outliers filled, band + guides painted by the
- * plugin, y-domain unioned with both. Returns the live Chart.js instance so the
- * measure table owns its teardown.
+ * absolute values in the active view (by visit or by study day, #369),
+ * outliers filled, band + guides painted by the plugin, y-domain unioned with
+ * both. Returns the live Chart.js instance so the measure table owns its
+ * teardown.
  * @param {HTMLElement} host The element to render into (the inset row's cell).
  * @param {Object} measure The measure model from buildProfileModel.
+ * @param {?Object} [axis=null] The profile's time axis (#369); null for a day-indexed inset.
  * @returns {Object} The Chart.js instance.
  */
-export function renderInset(host, measure) {
+export function renderInset(host, measure, axis = null) {
   const card = createElement('div', 'sv-profile-inset-card');
   const canvas = createElement('canvas', 'sv-profile-inset-canvas');
   // Text alternative for the inset canvas (PPRF-8).
@@ -106,7 +113,9 @@ export function renderInset(host, measure) {
   card.append(canvas);
   host.append(card);
 
-  const points = measure.spark.filter((point) => Number.isFinite(point.value));
+  const points = measure.spark.filter(
+    (point) => Number.isFinite(point.value) && Number.isFinite(pointX(point))
+  );
   const color = measure.color;
   const [yMin, yMax] = insetYDomain(measure);
 
@@ -116,7 +125,7 @@ export function renderInset(host, measure) {
       datasets: [
         {
           label: measure.label,
-          data: points.map((point) => ({ x: point.day, y: point.value })),
+          data: points.map((point) => ({ x: pointX(point), y: point.value })),
           borderColor: color,
           backgroundColor: color,
           pointBorderColor: color,
@@ -141,28 +150,19 @@ export function renderInset(host, measure) {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            // Visit context in the title (parity: the original lineChart's
-            // addPointTitles: study day, visit, visit number, value).
+            // Visit and study day in the title, whichever view is active —
+            // "Week 8 · Day 57" (#369, PPRF-XAX-005).
             title: (items) => {
               if (!items.length) return '';
-              const point = points[items[0].dataIndex];
-              if (!point) return `Study day: ${items[0].parsed.x}`;
-              const lines = [`Study day: ${point.day}`];
-              if (point.visit !== undefined && point.visit !== null && point.visit !== '') {
-                const n =
-                  point.visitn !== undefined && point.visitn !== null && point.visitn !== ''
-                    ? ` (${point.visitn})`
-                    : '';
-                lines.push(`Visit: ${point.visit}${n}`);
-              }
-              return lines;
+              const line = timeLabel(points[items[0].dataIndex]);
+              return line ? [line] : '';
             },
             label: (ctx) => `${measure.label}: ${ctx.parsed.y}`
           }
         }
       },
       scales: {
-        x: { type: 'linear', title: { display: true, text: 'Study Day' } },
+        x: timeScale(axis),
         y: {
           type: 'linear',
           min: yMin,
@@ -171,6 +171,9 @@ export function renderInset(host, measure) {
         }
       }
     },
-    plugins: [bandGuidePlugin(measure)]
+    plugins: [
+      bandGuidePlugin(measure),
+      ...(axis && axis.type === 'ordinal' ? [] : [dayOnePlugin()])
+    ]
   });
 }

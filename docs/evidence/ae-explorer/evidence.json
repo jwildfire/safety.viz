@@ -1,6 +1,6 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-11-11T04:01:07.056Z",
+  "generatedAt": "2026-11-11T04:40:35.188Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42954819246",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42954819246"
+    "id": "42959291755",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42959291755"
   },
   "records": [
     {
@@ -314,6 +314,14 @@
       "status": "pass",
       "requirementIds": ["APP-CHART-010"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "APP-CHART-012: the Outlier Explorer opens on the X-axis view the reader left it on, after another chart and another tab (#373)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-012"],
+      "issueRefs": [373],
       "screenshots": []
     },
     {
@@ -3573,6 +3581,14 @@
       "screenshots": []
     },
     {
+      "test": "ae-explorer side panel X-axis (PPRF-XAX-009) PPRF-XAX-009: the AE explorer opens its adverse-event side panel on Study day (#370)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-009"],
+      "issueRefs": [370],
+      "screenshots": []
+    },
+    {
       "test": "ae-explorer structureData AE-CFG-005: groups derive sorted from the data, and configured levels missing from the data drop with a warning (#60)",
       "suite": "unit",
       "status": "pass",
@@ -4085,11 +4101,11 @@
       "screenshots": []
     },
     {
-      "test": "demo app: chart recipes APP-CHART-006: the study day is the mapped column, else visit order, else nothing for a chart that would print it (#150)",
+      "test": "demo app: chart recipes APP-CHART-006: the study day passed to a chart is the mapped column or none, never the visit number (#150, #373)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-CHART-006"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -4122,6 +4138,14 @@
       "status": "pass",
       "requirementIds": ["APP-CHART-010"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: chart recipes APP-CHART-011: every chart with the X-axis toggle is passed x_axis from the mapped visit and study-day columns; an unmapped one leaves its option with no column (#373)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-011"],
+      "issueRefs": [373],
       "screenshots": []
     },
     {
@@ -4893,6 +4917,22 @@
       "screenshots": []
     },
     {
+      "test": "demo app: the remembered X-axis view APP-CHART-012: a chart opens on the X-axis view the reader left it on, after another chart or tab, while the page is open (#373)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-012"],
+      "issueRefs": [373],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the remembered X-axis view APP-CHART-012: the remembered view is not kept across page loads (#373)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-012"],
+      "issueRefs": [373],
+      "screenshots": []
+    },
+    {
       "test": "demo app: the renamed-column study APP-LOAD-016: scripts/build-app-fixture.mjs reproduces the committed files byte for byte (#151)",
       "suite": "unit",
       "status": "pass",
@@ -5661,6 +5701,14 @@
       "screenshots": []
     },
     {
+      "test": "kit: the shared chart parts as one export KIT-API-017: the x-axis toggle members are the ones src/x-axis.js exports (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-017"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
       "test": "letting go of R (#258) APP-R-048: closing never waits on R: an R that stopped answering while it started is closed at once, the run that was waiting on it is left to itself, and the next run starts another; an R that was still being fetched is never made (#261)",
       "suite": "unit",
       "status": "pass",
@@ -6010,6 +6058,22 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-019"],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeXAxis KIT-XAX-001: x_axis is read as given, each option filled from its key (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-001"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeXAxis KIT-XAX-002: without x_axis it is built from visitn_col, visit_col and studyday_col (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-002"],
+      "issueRefs": [368],
       "screenshots": []
     },
     {
@@ -6437,6 +6501,14 @@
       "screenshots": []
     },
     {
+      "test": "renderXAxisControl KIT-XAX-008: the X-axis control offers Visit and Study day, greys out an unavailable one with its reason, and reports a switch (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-008"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
       "test": "repo hygiene no source or test file carries a machine-specific absolute path (#136)",
       "suite": "unit",
       "status": "pass",
@@ -6530,6 +6602,38 @@
       "status": "pass",
       "requirementIds": ["APP-LOCAL-004"],
       "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-003: with both columns both options are available and the default is active (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-003"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-004: a missing column greys its option out and says why (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-004"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-005: a default naming an unavailable option falls back to the available one (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-005"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-006: with neither column no option is active and the message says why (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-006"],
+      "issueRefs": [368],
       "screenshots": []
     },
     {
@@ -9818,6 +9922,14 @@
       "status": "pass",
       "requirementIds": ["API-SCHEMA-006"],
       "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "values and ticks KIT-XAX-007: a row reads as its visit number or its study day, labelled by visit name or day (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-007"],
+      "issueRefs": [368],
       "screenshots": []
     },
     {

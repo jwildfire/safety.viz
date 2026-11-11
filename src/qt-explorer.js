@@ -78,6 +78,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { normalizeXAxis } from './x-axis.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 
 Chart.register(ScatterController, PointElement, LineElement, LinearScale, Tooltip, Legend);
@@ -207,9 +208,12 @@ class SafetyQtExplorer {
    *   change-from-baseline thresholds are not representable in the dock — see
    *   docs/qt-explorer-coverage.md.
    * - the host's `baseline_col` ('BASE') is a VALUE column, not the profile's
-   *   baseline FLAG contract, so the profile's `baseline_col` stays null and
-   *   deriveBaseline's earliest-visit rule lands on the baseline visit.
-   * - `studyday_col` maps from `visitn_col` (ADEG-style data carries no DY).
+   *   baseline FLAG contract; the profile's `baseline_col` is the host's
+   *   `baseline_flag_col` (ABLFL), so ×Baseline reads the flagged ECG rather
+   *   than the earliest one (a Screening ECG comes before it on the day axis).
+   * - `x_axis` (#372): the chart's x_axis setting, or Visit on `visitn_col` /
+   *   `visit_col` and Study day on `studyday_col` (DY); the visit is passed as
+   *   a visit and the day option's column as the profile's `studyday_col`.
    * @private
    */
   profileSettings() {
@@ -219,6 +223,8 @@ class SafetyQtExplorer {
       measureValues[measure] = measure;
     });
     const qtcCut = settings.absolute_thresholds.length ? settings.absolute_thresholds[0] : NaN;
+    const xAxis = normalizeXAxis(settings, { fallback: 'visit' });
+    const dayOption = xAxis.options.find((option) => option.type === 'linear');
     const cuts = { defaults: { relative_uln: NaN, relative_baseline: NaN } };
     (settings.qtc_measures || []).forEach((measure) => {
       cuts[measure] = { relative_uln: qtcCut, relative_baseline: NaN };
@@ -230,10 +236,14 @@ class SafetyQtExplorer {
       unit_col: settings.unit_col,
       normal_col_high: '__qt_profile_uln',
       normal_col_low: null,
-      studyday_col: settings.visitn_col,
+      // The visit as a visit and the study day as a day (#372): the drill-down
+      // plots by either, opening on the chart's x_axis default, Visit when
+      // unset (#370).
+      studyday_col: dayOption ? dayOption.col : null,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
-      baseline_col: null,
+      x_axis: xAxis,
+      baseline_col: settings.baseline_flag_col ?? null,
       measure_values: measureValues,
       cuts,
       display_options: [

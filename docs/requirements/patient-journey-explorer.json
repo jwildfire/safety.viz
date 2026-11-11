@@ -62,6 +62,7 @@
     "PJE-ACC-003": "Module text meets AA at its rendered size: every text node the module renders measures at least 4.5:1 against its computed background in the browser, and the library's `#7b8b96` muted ink, which measures 3.51:1, appears nowhere in the module's source.",
     "PJE-DEMO-001": "The vendored demo extracts are reproducible and guarded: the exposure extract keeps only dosing records, the con-med extract is de-duplicated to one row per distinct course, the medical-history day is the collection day, and the subject count and seeded subjects' key values are asserted.",
     "PJE-DEMO-002": "The built demo page mounts against the vendored extracts with no console errors and opens on the seeded subject.",
-    "PJE-DEMO-003": "Against the vendored CDISC Pilot 01 extracts, anchoring the seeded participant's day-30 adverse event produces the panel counts the guide documents, with each item linking back to its source row — the Definition of Done, executed."
+    "PJE-DEMO-003": "Against the vendored CDISC Pilot 01 extracts, anchoring the seeded participant's day-30 adverse event produces the panel counts the guide documents, with each item linking back to its source row — the Definition of Done, executed.",
+    "PJE-XAX-001": "A lab result names its visit beside its study day: the tooltip's span line and the mark's accessible name read \"Week 8 · Day 57\", from the optional `lb_visit_col` (default `VISIT`). A lab record with no visit, or with `lb_visit_col` null, keeps the day alone (\"Day 57\"); other domains are unchanged."
   }
 }

@@ -63,8 +63,12 @@ export function sparklineSVG(measure) {
     'aria-hidden': 'true'
   });
 
-  const spark = measure.spark || [];
-  const days = spark.map((point) => point.day).filter(Number.isFinite);
+  // Each point at its position on the active axis — visit position or study
+  // day (#369) — and a point built without one at its study day. A record
+  // with no position in the active view is not drawn.
+  const at = (point) => (point.x !== undefined ? point.x : point.day);
+  const spark = (measure.spark || []).filter((point) => Number.isFinite(at(point)));
+  const days = spark.map(at);
   if (!days.length) return svg;
 
   const x = linear(
@@ -77,10 +81,10 @@ export function sparklineSVG(measure) {
   // (parity: the original's merged upper + lower path).
   const upper = spark
     .filter((point) => Number.isFinite(point.uln))
-    .map((point) => [x(point.day), y(point.uln)]);
+    .map((point) => [x(at(point)), y(point.uln)]);
   const lower = spark
     .filter((point) => Number.isFinite(point.lln))
-    .map((point) => [x(point.day), y(point.lln)])
+    .map((point) => [x(at(point)), y(point.lln)])
     .reverse();
   const band = upper.concat(lower);
   if (band.length) {
@@ -112,7 +116,7 @@ export function sparklineSVG(measure) {
   // The value path, in the measure color.
   const valuePoints = spark
     .filter((point) => Number.isFinite(point.value))
-    .map((point) => [x(point.day), y(point.value)]);
+    .map((point) => [x(at(point)), y(point.value)]);
   if (valuePoints.length) {
     svg.append(
       svgElement('polyline', {
@@ -132,7 +136,7 @@ export function sparklineSVG(measure) {
       svg.append(
         svgElement('circle', {
           class: 'sv-spark-outlier',
-          cx: x(point.day),
+          cx: x(at(point)),
           cy: y(point.value),
           r: 2,
           stroke: measure.color,

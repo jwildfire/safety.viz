@@ -48,6 +48,7 @@ Playwright).
 | SROT-MEAS-001/002 (measures whitelist)        | SROT-MEAS-001, SROT-MEAS-002                               | #136  | `measure-list.test.js`                          |
 | SROT-FILT-001..004 (shared filter contract)   | SROT-FILT-001, SROT-FILT-002, SROT-FILT-003, SROT-FILT-004 | #166  | `../shared/filter-contract.test.js`             |
 | SROT-CTRL-001 (whole-chart reset)             | —                                                          | #136  | `reset.test.js`                                 |
+| SROT-XAX-001 (median study day)               | SROT-XAX-001                                               | #374  | `axis-names.test.js`                            |
 
 ## Source-matrix routing status (58 rows)
 

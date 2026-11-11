@@ -56,6 +56,7 @@ matrix row → failing test → minimal implementation.
 | SSP-FILT-001..004 (shared filter contract) | SSP-FILT-001, SSP-FILT-002, SSP-FILT-003, SSP-FILT-004 | #166  | `../shared/filter-contract.test.js`                              |
 | SSP-MEAS-001/002 (measures whitelist)      | SSP-MEAS-001, SSP-MEAS-002                             | #136  | `measure-list.test.js`                                           |
 | SSP-CTRL-004 (whole-chart reset)           | SSP-CTRL-004                                           | #136  | `reset.test.js`                                                  |
+| SSP-XAX-001 (Visit and Study day)          | SSP-XAX-001                                            | #374  | `axis-names.test.js`                                             |
 
 ## Source-matrix routing status (45 rows)
 

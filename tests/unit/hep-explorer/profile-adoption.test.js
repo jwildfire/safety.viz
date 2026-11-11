@@ -193,3 +193,15 @@ describe('dock coordination follows live control state (PPRF-7, PPRF-HEP-001)', 
     expect(instance.profile.settings.details).toEqual([{ value_col: 'SEX', label: 'Sex' }]);
   });
 });
+
+describe('hep-explorer side panel X-axis (PPRF-XAX-009)', () => {
+  it('PPRF-XAX-009: hep-explorer opens its side panel on Study day (#370)', () => {
+    const instance = build();
+    expect(instance.profile.settings.x_axis.default).toBe('day');
+    instance.selectParticipant('P1');
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe(
+      'Study day'
+    );
+    expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Study day');
+  });
+});

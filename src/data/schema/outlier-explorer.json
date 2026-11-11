@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/jwildfire/safety.viz/main/src/data/schema/outlier-explorer.json",
   "title": "safety.viz outlier-explorer data contract",
-  "description": "Long-format results data: one record per participant per time point per measure (SOE-DATA-001). Column names are supplied by the settings mapping; the outlier-explorer removes missing/non-numeric results with a reported count (SOE-REG-037) and derives a per-participant measurement sequence when the data carries no visit/study-day column.",
+  "description": "Long-format results data: one record per participant per time point per measure (SOE-DATA-001). Column names are supplied by the settings mapping; the outlier-explorer removes missing/non-numeric results with a reported count (SOE-REG-037) and plots it by visit or by study day (x_axis); data with neither shows a message instead of a chart.",
   "type": "object",
   "required": ["data", "settings"],
   "properties": {
@@ -47,14 +47,61 @@
           "default": "STNRHI",
           "description": "Optional upper limit of normal; feeds the LLN-ULN normal-range band."
         },
+        "studyday_col": {
+          "type": ["string", "null"],
+          "default": "DY",
+          "description": "Optional numeric study-day column: the Study day option of the participant profile side panel and, with neither x_axis nor time_cols, of the main axis (#370, #371). Defaults to DY since v1.12.0 (it was null); set null when the data has no study day."
+        },
         "normal_range_method": {
           "type": "string",
           "default": "LLN-ULN",
           "description": "Normal-range method: None, LLN-ULN, Standard Deviation, or Quantiles (SOE-FUNC-007)."
         },
+        "x_axis": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "The main x-axis, the setting every chart that shows change over time takes: { options: [{ key, col, label_col, type, title }], default }. Each option is a button of the X-axis control, shown even when only one is available; an option whose column the data lacks is greyed and says why. The chart opens on `default` (Visit when unset). When null, the options are read from `time_cols`, or else built from `visitn_col`, `visit_col` and `studyday_col`. With neither a visit nor a study day in the data the chart shows a message instead of a chart (SOE-XAX-001..007).",
+          "properties": {
+            "options": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["key", "col"],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "The option's name: `visit` or `day`, or any other."
+                  },
+                  "col": {
+                    "type": "string",
+                    "description": "The column plotted: the visit number for a visit option, the study day for a day option."
+                  },
+                  "label_col": {
+                    "type": ["string", "null"],
+                    "description": "The visit-name column the ticks and tooltips show, for a visit option."
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["ordinal", "linear"],
+                    "description": "ordinal spaces the visits evenly in `col` order; linear plots days. Defaults from the key."
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "The control's button and the axis title. Defaults to \"Visit\" or \"Study day\" from the key."
+                  }
+                }
+              }
+            },
+            "default": {
+              "type": "string",
+              "default": "visit",
+              "description": "The key of the view the chart opens on."
+            }
+          }
+        },
         "time_cols": {
           "$ref": "#/$defs/fieldList",
-          "description": "Optional time-axis options ({ value_col, label, type, order_col }); when omitted a derived Measurement sequence is used (SOE-FUNC-004)."
+          "description": "The original chart's time-axis setting, kept as a synonym of `x_axis` and read only when `x_axis` is not given: { value_col, label, type, order_col } specs. Each becomes an x_axis option (value_col its column, label its title, type kept, an ordinal entry's order_col ordering its visits), the ordinal one keyed `visit` and the linear one `day`, so the chart opens on the visit entry (SOE-FUNC-004, SOE-XAX-002)."
         },
         "measures": {
           "type": ["array", "null"],

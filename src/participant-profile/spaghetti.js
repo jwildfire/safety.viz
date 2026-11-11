@@ -19,6 +19,7 @@ import {
 
 import { createElement } from '../shell.js';
 import { PLOT_GUTTER_LEFT, PLOT_GUTTER_RIGHT } from './aeTracks.js';
+import { timeLabel } from './structureData.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, LogarithmicScale, Tooltip);
 
@@ -40,6 +41,94 @@ const FOOTNOTE =
 const ANNOTATION_GAP = 12;
 const ANNOTATION_FONT = '600 10px system-ui, -apple-system, "Segoe UI", sans-serif';
 
+// The day-1 line (#369, PPRF-XAX-004): first dose, in the muted ink the
+// profile's other annotations use, so it reads as a reference, not as data.
+const DAY_ONE_COLOR = '#7b8b96';
+
+/**
+ * A point's position on the active axis: its `x` (visit position or study
+ * day, #369), or its study day for a point built without one.
+ * @param {Object} point A spaghetti or spark point.
+ * @returns {number} The position.
+ */
+export function pointX(point) {
+  return point.x !== undefined ? point.x : point.day;
+}
+
+/**
+ * The x scale for a profile chart in the active view (#369, PPRF-XAX-002/003).
+ * Visit view is an ordinal axis drawn on a linear scale: one evenly spaced
+ * position per visit, a tick at each labelled by the visit name, half a step
+ * of padding either end. Study day view is linear in days, pinned to the
+ * shared domain when one is given. The title always names the view.
+ * @param {?Object} axis The profile's time axis ({ type, title, ticks }), or null for a day-indexed chart.
+ * @param {?number[]} [domain=null] The shared study-day domain (Study day view only).
+ * @returns {Object} The Chart.js scale options.
+ */
+export function timeScale(axis, domain = null) {
+  if (axis && axis.type === 'ordinal') {
+    const ticks = axis.ticks || [];
+    const labels = new Map(ticks.map((tick) => [tick.value, tick.label]));
+    return {
+      type: 'linear',
+      min: -0.5,
+      max: Math.max(ticks.length, 1) - 0.5,
+      title: { display: true, text: axis.title },
+      // One tick per visit, whatever Chart.js would have generated.
+      afterBuildTicks: (scale) => {
+        scale.ticks = ticks.map((tick) => ({ value: tick.value }));
+      },
+      ticks: {
+        autoSkip: true,
+        maxRotation: 45,
+        callback: (value) => (labels.has(value) ? labels.get(value) : '')
+      }
+    };
+  }
+  return {
+    type: 'linear',
+    title: { display: true, text: axis ? axis.title : 'Study day' },
+    ...(Array.isArray(domain) && domain.length === 2 ? { min: domain[0], max: domain[1] } : {})
+  };
+}
+
+/**
+ * Chart.js plugin drawing the day-1 line in Study day view (#369,
+ * PPRF-XAX-004): a dashed vertical line at study day 1 — the first dose; there
+ * is no day 0 — marked "Day 1", so pre-dose records read as pre-dose. Nothing
+ * is drawn when day 1 is off the axis.
+ * @returns {Object} The Chart.js plugin.
+ */
+export function dayOnePlugin() {
+  return {
+    id: 'sv-profile-day-one',
+    afterDatasetsDraw(chart) {
+      const scale = chart.scales && chart.scales.x;
+      if (!scale) return;
+      if (Number.isFinite(scale.min) && scale.min > 1) return;
+      if (Number.isFinite(scale.max) && scale.max < 1) return;
+      const x = scale.getPixelForValue(1);
+      const { left, right, top, bottom } = chart.chartArea;
+      if (!Number.isFinite(x) || x < left || x > right) return;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.strokeStyle = DAY_ONE_COLOR;
+      ctx.setLineDash([2, 3]);
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = DAY_ONE_COLOR;
+      ctx.font = ANNOTATION_FONT;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText('Day 1', x + 3, top + 2);
+      ctx.restore();
+    }
+  };
+}
+
 /**
  * The measures to draw for the current control state (PPRF-3): key measures only
  * by default; the extras toggle adds the non-key measures; an explicit lab
@@ -59,7 +148,8 @@ export function visibleSeries(series, state = {}) {
 }
 
 /**
- * Build one Chart.js line dataset per series (PPRF-3): day-indexed points, the
+ * Build one Chart.js line dataset per series (PPRF-3): points at their position
+ * on the active axis (visit position or study day, #369), the
  * measure color, and a scriptable pointBackgroundColor that fills points at or
  * above the measure's cut and hollows the rest. The cut travels on `svCut` for
  * the cut-line plugin.
@@ -74,12 +164,14 @@ export function visibleSeries(series, state = {}) {
  */
 export function spaghettiDatasets(series) {
   return series.map((entry) => {
-    const points = entry.points;
+    // A record with no position in the active view (no visit in Visit view,
+    // no study day in Study day view) is not drawn (#369).
+    const points = entry.points.filter((point) => Number.isFinite(pointX(point)));
     const cut = entry.cut;
     const color = entry.color;
     return {
       label: entry.label || entry.key,
-      data: points.map((point) => ({ x: point.day, y: point.value })),
+      data: points.map((point) => ({ x: pointX(point), y: point.value })),
       borderColor: color,
       backgroundColor: color,
       pointBorderColor: color,
@@ -228,9 +320,9 @@ export function measureAnnotationPlugin() {
  * chart of the visible series plus the filled-points footnote. Returns the live
  * Chart.js instance so the caller owns its teardown.
  * @param {HTMLElement} host The element to render into.
- * @param {Object} model The spaghetti model ({ series, yLabel, display }).
+ * @param {Object} model The spaghetti model ({ series, yLabel, display, axis }); `axis` is the active view (#369), absent for a day-indexed chart.
  * @param {Object} state The live state ({ showExtras, labs }).
- * @param {?number[]} [domain=null] The shared study-day domain (decision D7); null lets the chart autoscale.
+ * @param {?number[]} [domain=null] The shared study-day domain (decision D7), Study day view only; null lets the chart autoscale.
  * @returns {Object} The Chart.js instance.
  */
 export function renderSpaghetti(host, model, state = {}, domain = null) {
@@ -278,22 +370,15 @@ export function renderSpaghetti(host, model, state = {}, domain = null) {
         legend: { display: true, position: 'bottom' },
         tooltip: {
           callbacks: {
-            // Visit context in the title, raw + adjusted pairing in the body
-            // (parity: the original's addPointTitles).
+            // Visit and study day in the title, whichever view is active —
+            // "Week 8 · Day 57" (#369, PPRF-XAX-005) — raw + adjusted pairing
+            // in the body (parity: the original's addPointTitles).
             title: (items) => {
               if (!items.length) return '';
               const item = items[0];
               const point = (item.dataset.svPoints || [])[item.dataIndex];
-              if (!point) return `Study day: ${item.parsed.x}`;
-              const lines = [`Study day: ${point.day}`];
-              if (point.visit !== undefined && point.visit !== null && point.visit !== '') {
-                const n =
-                  point.visitn !== undefined && point.visitn !== null && point.visitn !== ''
-                    ? ` (${point.visitn})`
-                    : '';
-                lines.push(`Visit: ${point.visit}${n}`);
-              }
-              return lines;
+              const line = timeLabel(point);
+              return line ? [line] : '';
             },
             label: (ctx) => {
               const point = (ctx.dataset.svPoints || [])[ctx.dataIndex];
@@ -315,13 +400,7 @@ export function renderSpaghetti(host, model, state = {}, domain = null) {
       // canvas after every render (PPRF-AXIS-002).
       layout: { padding: { right: PLOT_GUTTER_RIGHT } },
       scales: {
-        x: {
-          type: 'linear',
-          title: { display: true, text: 'Study Day' },
-          ...(Array.isArray(domain) && domain.length === 2
-            ? { min: domain[0], max: domain[1] }
-            : {})
-        },
+        x: timeScale(model.axis || null, domain),
         y: {
           ...yScale,
           afterFit: (scale) => {
@@ -330,7 +409,12 @@ export function renderSpaghetti(host, model, state = {}, domain = null) {
         }
       }
     },
-    plugins: [cutLinePlugin(), measureAnnotationPlugin()]
+    plugins: [
+      cutLinePlugin(),
+      measureAnnotationPlugin(),
+      // The day-1 line belongs to the day axis only (#369, PPRF-XAX-004).
+      ...(model.axis && model.axis.type === 'ordinal' ? [] : [dayOnePlugin()])
+    ]
   });
 
   canvas.addEventListener('focus', () => {

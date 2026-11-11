@@ -74,6 +74,7 @@ import migrationView from './hep-explorer/views/migration.js';
 import compositeView from './hep-explorer/views/composite.js';
 import { renderListing } from './histogram/listing.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
+import { normalizeXAxis } from './x-axis.js';
 
 Chart.register(
   ScatterController,
@@ -351,6 +352,9 @@ class SafetyHepExplorer {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
+      // The panel opens on Study day (#370) until hep-explorer has a toggle of
+      // its own, whose view it will forward instead.
+      x_axis: { ...normalizeXAxis(settings), default: 'day' },
       baseline_col: settings.baseline_col,
       baseline_value: settings.baseline_value,
       measure_values: settings.measure_values,

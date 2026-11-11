@@ -64,6 +64,7 @@ import { normalizeFilterSpec } from '../filters.js';
  * @property {string} [lb_nrind_col='LBNRIND'] Lab normal-range indicator column: a present value other than `lb_normal_value` marks the point abnormal by flag (PJE-CTX-002); `HIGH`/`LOW` pick the glyph and `HH`/`LL` add the escalation ring.
  * @property {string} [lb_unit_col='LBSTRESU'] Lab result unit column, appended to values in labels and the panel.
  * @property {string} [lb_dtc_col='LBDTC'] Lab collection date column (`--DTC`), shown as recorded.
+ * @property {?string} [lb_visit_col='VISIT'] Optional lab visit-name column. The chart stays on its one study-day axis; a lab result's tooltip and accessible name name its visit beside the day ("Week 8 · Day 57"), and a record with no visit, or null here, shows the day alone (#374, PJE-XAX-001).
  * @property {string[]} [lb_tests=['Alanine Aminotransferase','Aspartate Aminotransferase','Bilirubin','Alkaline Phosphatase']] The lab tests drawn as small multiples, in this order, matched case-insensitively against the test name or code; an empty list means every test present. The plan's `labTests` and lane-level `tests` are aliases.
  * @property {string} [lb_normal_value='NORMAL'] The `lb_nrind_col` value meaning within range; any other non-blank value is abnormal by flag, and a blank value is not abnormal.
  * @property {?string} [lb_baseline_flag_col='ABLFL'] Analysis-baseline flag column, consulted first when resolving a test's baseline (D17); null skips the flag rule.
@@ -179,6 +180,7 @@ export const DEFAULT_SETTINGS = {
   lb_nrind_col: 'LBNRIND',
   lb_unit_col: 'LBSTRESU',
   lb_dtc_col: 'LBDTC',
+  lb_visit_col: 'VISIT',
   lb_tests: [
     'Alanine Aminotransferase',
     'Aspartate Aminotransferase',

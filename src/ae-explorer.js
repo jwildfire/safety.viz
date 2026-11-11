@@ -225,6 +225,9 @@ class AEExplorer {
       id_col: this.settings.id_col,
       details: this.settings.profile_details || [],
       on_clear: () => this.focusParticipant(null),
+      // Adverse events only: they have study days and no visits, so the panel
+      // opens on Study day (#370); with no options given it builds its own.
+      x_axis: { options: [], default: 'day' },
       ae: {
         data: this.rawData,
         id_col: this.settings.id_col,

@@ -386,6 +386,30 @@ export function mountApp(
   // The page shows a chart's status label itself, on the corner of its card,
   // so a chart drawn here draws none of its own (#274, src/shell.js).
   content.dataset.svStatusHost = '';
+  // Each chart's X-axis view, kept while the page is open (#373, design 436
+  // "Remembered choice"): the key of the option the reader last pressed in a
+  // chart's X-axis control, read from the click in the open chart's card, and
+  // passed back as the chart's `x_axis.default` when it is drawn again. Read
+  // in the capture phase, before the control redraws itself. The participant
+  // panel's toggle is the panel's own in a chart with a toggle of its own, and
+  // the chart's view in one without. Not stored: a new page opens on each
+  // chart's own default.
+  const xAxisViews = new Map();
+  content.addEventListener(
+    'click',
+    (event) => {
+      const option = event.target.closest && event.target.closest('.sv-xaxis-option');
+      const card = option && option.closest('.sva-chart');
+      if (!card || option.disabled || option.getAttribute('aria-pressed') === 'true') return;
+      const inRail = Boolean(option.closest('.sv-rail'));
+      const ownToggle = [...card.querySelectorAll('.sv-xaxis-control')].some(
+        (control) => !control.closest('.sv-rail')
+      );
+      if (inRail && ownToggle) return;
+      xAxisViews.set(state.selected, option.dataset.key);
+    },
+    true
+  );
   main.append(head);
   // A library the page asked for whose charts are not listed says so in every
   // view, with why: it is not left out without a word (#193).
@@ -1033,8 +1057,12 @@ export function mountApp(
       placeNote(module, entry);
     }
     try {
+      const settings = chartSettings(module, state.mappings, manifest);
+      if (settings.x_axis && xAxisViews.has(module)) {
+        settings.x_axis = { ...settings.x_axis, default: xAxisViews.get(module) };
+      }
       instance = factoryOf(module)(mount, {
-        ...chartSettings(module, state.mappings, manifest),
+        ...settings,
         ...extraSettings(module, entry)
       });
       instance.init(chartData(module, state.files, state.mappings, manifest));

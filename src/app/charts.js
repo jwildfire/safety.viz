@@ -27,11 +27,11 @@ const LIVER = ['ALT', 'AST', 'TB', 'ALP'];
  *   visit, study-day, unit and normal-range columns and the liver panel. A host
  *   forwards them to the rail whether or not it has a setting of its own for
  *   them (the shift plot and delta-delta list no normal range), so they are
- *   passed to every host.
- * - `studyDay`: what to pass when the study day is unmapped. `'visit order'`
- *   passes the visit-order column instead, as the site's demos do for a labs
- *   extract with no study day; `'none'` passes null, for a chart that would
- *   otherwise print a visit number as a study day.
+ *   passed to every host, with the study day: the mapped column or null,
+ *   never the visit number (#373).
+ * - `xAxis`: the chart has the X-axis toggle (#373), so it is passed `x_axis`
+ *   built from the mapped columns (see xAxisSetting). A rail host is passed
+ *   it too, for the participant profile's toggle beside it.
  */
 export const RECIPES = {
   histogram: { filters: true, groups: true, rail: true, measures: LIVER },
@@ -39,16 +39,10 @@ export const RECIPES = {
   'results-over-time': { filters: true, groups: true },
   'shift-plot': { filters: true, rail: true, measures: LIVER },
   'delta-delta': { filters: true, rail: true, measures: LIVER },
-  'hep-explorer': {
-    filters: true,
-    groups: true,
-    rail: true,
-    measures: LIVER,
-    studyDay: 'visit order'
-  },
-  'hep-waterfall': { filters: true, measures: LIVER, studyDay: 'visit order' },
-  'nep-explorer': { filters: true, measures: ['CREAT'], studyDay: 'none' },
-  'qt-explorer': {},
+  'hep-explorer': { filters: true, groups: true, rail: true, measures: LIVER },
+  'hep-waterfall': { filters: true, measures: LIVER },
+  'nep-explorer': { filters: true, measures: ['CREAT'] },
+  'qt-explorer': { xAxis: true },
   'ae-explorer': {},
   'ae-timelines': {},
   'time-to-event': {}
@@ -71,6 +65,31 @@ const mappedMeasure = (mappings, key) => {
   const row = mappings[domain] && mappings[domain].measures[key];
   return row ? row.value : null;
 };
+
+/**
+ * The X-axis setting for a chart with the toggle (#373, design 436): the Visit
+ * option from the mapped visit number, labelled by the visit name, and the
+ * Study day option from the mapped study day. An option whose column is
+ * unmapped keeps its place with no column, so the chart greys it out and says
+ * why; a visit number is never passed as a study day. The default view is left
+ * to the chart, or to the page, which passes the view the reader last chose.
+ * @private
+ */
+function xAxisSetting(domain, mappings) {
+  const visit = mapped(mappings, domain, 'VISIT');
+  return {
+    options: [
+      {
+        key: 'visit',
+        col: mapped(mappings, domain, 'VISITNUM') || visit,
+        label_col: visit,
+        type: 'ordinal',
+        title: 'Visit'
+      },
+      { key: 'day', col: mapped(mappings, domain, 'DY'), type: 'linear', title: 'Study day' }
+    ]
+  };
+}
 
 /**
  * Filter or group specs for the mapped columns among `columns`, labelled from
@@ -165,13 +184,10 @@ export function chartSettings(module, mappings, manifest) {
       settings[key] = mapped(mappings, domain, column);
     }
     settings.profile_details = fieldSpecs(['SEX', 'RACE', 'ARM'], domain, mappings, manifest);
+    settings.studyday_col = mapped(mappings, domain, 'DY');
   }
 
-  if (recipe.rail || recipe.studyDay) {
-    settings.studyday_col =
-      mapped(mappings, domain, 'DY') ||
-      (recipe.studyDay === 'none' ? null : mapped(mappings, domain, 'VISITNUM'));
-  }
+  if (recipe.rail || recipe.xAxis) settings.x_axis = xAxisSetting(domain, mappings);
 
   if (own && module === 'qt-explorer') {
     const measures = ['QTcF', 'QTcB', 'HR'].map((key) => mappedMeasure(mappings, key));
