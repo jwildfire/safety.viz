@@ -170,8 +170,8 @@ export function assignSequence(rows, settings) {
 
 /**
  * Whether the cleaned rows carry any usable (finite) study day. When false the
- * timing test degrades gracefully: day_diff is unavailable and points render
- * filled by default rather than all-hollow (HEP-DATA-004).
+ * hep-explorer's timing test is not evaluated: day_diff is unavailable and no
+ * point is drawn filled or hollow (HEP-DATA-004, HEP-XAX-007).
  * @param {Object[]} rows Cleaned rows.
  * @returns {boolean} True when at least one row has a finite study day.
  */

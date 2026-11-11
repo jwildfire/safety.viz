@@ -204,4 +204,23 @@ describe('hep-explorer side panel X-axis (PPRF-XAX-009)', () => {
     );
     expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Study day');
   });
+
+  it('PPRF-XAX-009: the side panel opens on the view the time slider opens on (#370)', () => {
+    const instance = build({
+      visit_col: 'VISIT',
+      visitn_col: 'VISITNUM',
+      x_axis: { default: 'visit' }
+    });
+    expect(instance.profile.settings.x_axis.default).toBe('visit');
+    instance.selectParticipant('P1');
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+  });
+
+  it('PPRF-XAX-009: after the slider switches to Visit, the next participant opens on Visit (#370)', () => {
+    const instance = build({ visit_col: 'VISIT', visitn_col: 'VISITNUM' });
+    instance.animationWrap.querySelector('.sv-xaxis-option[data-key="visit"]').click();
+    expect(instance.profile.settings.x_axis.default).toBe('visit');
+    instance.selectParticipant('P1');
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+  });
 });

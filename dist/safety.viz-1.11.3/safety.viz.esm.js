@@ -14100,7 +14100,111 @@ function checkInputs2(data, settings) {
   }
 }
 
+// src/x-axis.js
+var NO_TIME_AXIS = "This data has no visit or study day, so there is no time axis to plot.";
+var KNOWN = {
+  visit: { type: "ordinal", title: "Visit", reason: "No visit in this data" },
+  day: { type: "linear", title: "Study day", reason: "No study day in this data" }
+};
+var blank = (value) => value === void 0 || value === null || String(value).trim() === "";
+function fillOption(option2) {
+  const known = KNOWN[option2.key] || {};
+  return {
+    key: String(option2.key),
+    col: option2.col ?? null,
+    label_col: option2.label_col ?? null,
+    type: option2.type ?? known.type ?? "ordinal",
+    title: option2.title ?? known.title ?? String(option2.key)
+  };
+}
+function normalizeXAxis(settings = {}, { fallback = "visit" } = {}) {
+  const given = settings.x_axis;
+  if (given && Array.isArray(given.options) && given.options.length) {
+    return {
+      options: given.options.filter((option2) => option2 && !blank(option2.key)).map(fillOption),
+      default: given.default ?? fallback
+    };
+  }
+  const options = [];
+  const visitCol = settings.visitn_col || settings.visit_col || null;
+  if (visitCol)
+    options.push(
+      fillOption({ key: "visit", col: visitCol, label_col: settings.visit_col || null })
+    );
+  if (settings.studyday_col) options.push(fillOption({ key: "day", col: settings.studyday_col }));
+  return { options, default: (given && given.default) ?? fallback };
+}
+function hasValues(option2, rows) {
+  if (blank(option2.col)) return false;
+  return rows.some((row) => {
+    const value = row ? row[option2.col] : void 0;
+    if (blank(value)) return false;
+    return option2.type === "linear" ? Number.isFinite(Number(value)) : true;
+  });
+}
+function resolveXAxis(xAxis, rows, requested = null) {
+  const data = Array.isArray(rows) ? rows : [];
+  const options = (xAxis.options || []).map((option2) => {
+    const available = hasValues(option2, data);
+    const reason = available ? null : KNOWN[option2.key] && KNOWN[option2.key].reason || `No ${option2.title} in this data`;
+    return { ...option2, available, reason };
+  });
+  const usable2 = (key) => options.find((option2) => option2.key === key && option2.available);
+  const pick2 = usable2(requested) || usable2(xAxis.default) || options.find((o) => o.available);
+  return {
+    options,
+    active: pick2 ? pick2.key : null,
+    message: pick2 ? null : NO_TIME_AXIS
+  };
+}
+function activeXAxis(resolved) {
+  return resolved.options.find((option2) => option2.key === resolved.active) || null;
+}
+function xAxisValue(option2, row) {
+  const value = row ? row[option2.col] : void 0;
+  return blank(value) ? NaN : Number(value);
+}
+function xAxisTick(option2, row) {
+  if (option2.type === "linear") {
+    const value = xAxisValue(option2, row);
+    return Number.isFinite(value) ? `Day ${value}` : "";
+  }
+  const label = option2.label_col && row ? row[option2.label_col] : void 0;
+  return blank(label) ? String(row ? row[option2.col] ?? "" : "") : String(label);
+}
+function renderXAxisControl(parent, { resolved, onChange, label = "X-axis" }) {
+  const wrap = createElement("div", "sv-control sv-xaxis-control");
+  const heading = createElement("label", null, label);
+  const group = createElement("div", "sv-xaxis");
+  group.setAttribute("role", "group");
+  group.setAttribute("aria-label", label);
+  resolved.options.forEach((option2) => {
+    const active = option2.key === resolved.active;
+    const button = createElement(
+      "button",
+      `sv-xaxis-option${active ? " is-active" : ""}`,
+      option2.title
+    );
+    button.type = "button";
+    button.dataset.key = option2.key;
+    button.setAttribute("aria-pressed", String(active));
+    if (!option2.available) {
+      button.disabled = true;
+      button.title = option2.reason;
+    }
+    button.onclick = () => {
+      if (active || !option2.available) return;
+      onChange(option2.key);
+    };
+    group.append(button);
+  });
+  wrap.append(heading, group);
+  parent.append(wrap);
+  return wrap;
+}
+
 // src/hep-explorer/configure.js
+var X_AXIS_DEFAULT = "day";
 var GROUP_NONE = "hep_none";
 var DISPLAY_MODES = [
   { value: "relative_uln", label: "Upper limit of normal adjusted (eDISH)" },
@@ -14127,6 +14231,7 @@ var DEFAULT_SETTINGS3 = {
   studyday_col: "DY",
   visit_col: "VISIT",
   visitn_col: "VISITNUM",
+  x_axis: null,
   arm_col: "ARM",
   placebo_arm: null,
   active_arms: null,
@@ -14234,7 +14339,24 @@ function syncSettings3(settings) {
   synced.profile_details = synced.profile_details === void 0 || synced.profile_details === null ? null : arrayify3(synced.profile_details).map((value) => fieldSpec3(value)).filter((d) => d.value_col);
   const bounds = arrayify3(synced.measureBounds).map(Number).filter(Number.isFinite);
   synced.measureBounds = bounds.length === 2 ? bounds : [...DEFAULT_SETTINGS3.measureBounds];
+  const day2 = timeAxis(synced).options.find((entry) => entry.key === "day");
+  if (synced.x_axis && day2 && day2.col) synced.studyday_col = day2.col;
   return synced;
+}
+function timeAxis(settings) {
+  const axis = normalizeXAxis(settings, { fallback: X_AXIS_DEFAULT });
+  ["visit", "day"].forEach((key, index) => {
+    if (axis.options.some((entry) => entry.key === key)) return;
+    const missing = {
+      key,
+      col: null,
+      label_col: null,
+      type: key === "day" ? "linear" : "ordinal",
+      title: key === "day" ? "Study day" : "Visit"
+    };
+    axis.options.splice(index === 0 ? 0 : axis.options.length, 0, missing);
+  });
+  return axis;
 }
 
 // src/hep-core/arms.js
@@ -14526,109 +14648,6 @@ function calculatePalt(participantRows, settings) {
   };
 }
 
-// src/x-axis.js
-var NO_TIME_AXIS = "This data has no visit or study day, so there is no time axis to plot.";
-var KNOWN = {
-  visit: { type: "ordinal", title: "Visit", reason: "No visit in this data" },
-  day: { type: "linear", title: "Study day", reason: "No study day in this data" }
-};
-var blank = (value) => value === void 0 || value === null || String(value).trim() === "";
-function fillOption(option2) {
-  const known = KNOWN[option2.key] || {};
-  return {
-    key: String(option2.key),
-    col: option2.col ?? null,
-    label_col: option2.label_col ?? null,
-    type: option2.type ?? known.type ?? "ordinal",
-    title: option2.title ?? known.title ?? String(option2.key)
-  };
-}
-function normalizeXAxis(settings = {}, { fallback = "visit" } = {}) {
-  const given = settings.x_axis;
-  if (given && Array.isArray(given.options) && given.options.length) {
-    return {
-      options: given.options.filter((option2) => option2 && !blank(option2.key)).map(fillOption),
-      default: given.default ?? fallback
-    };
-  }
-  const options = [];
-  const visitCol = settings.visitn_col || settings.visit_col || null;
-  if (visitCol)
-    options.push(
-      fillOption({ key: "visit", col: visitCol, label_col: settings.visit_col || null })
-    );
-  if (settings.studyday_col) options.push(fillOption({ key: "day", col: settings.studyday_col }));
-  return { options, default: (given && given.default) ?? fallback };
-}
-function hasValues(option2, rows) {
-  if (blank(option2.col)) return false;
-  return rows.some((row) => {
-    const value = row ? row[option2.col] : void 0;
-    if (blank(value)) return false;
-    return option2.type === "linear" ? Number.isFinite(Number(value)) : true;
-  });
-}
-function resolveXAxis(xAxis, rows, requested = null) {
-  const data = Array.isArray(rows) ? rows : [];
-  const options = (xAxis.options || []).map((option2) => {
-    const available = hasValues(option2, data);
-    const reason = available ? null : KNOWN[option2.key] && KNOWN[option2.key].reason || `No ${option2.title} in this data`;
-    return { ...option2, available, reason };
-  });
-  const usable2 = (key) => options.find((option2) => option2.key === key && option2.available);
-  const pick2 = usable2(requested) || usable2(xAxis.default) || options.find((o) => o.available);
-  return {
-    options,
-    active: pick2 ? pick2.key : null,
-    message: pick2 ? null : NO_TIME_AXIS
-  };
-}
-function activeXAxis(resolved) {
-  return resolved.options.find((option2) => option2.key === resolved.active) || null;
-}
-function xAxisValue(option2, row) {
-  const value = row ? row[option2.col] : void 0;
-  return blank(value) ? NaN : Number(value);
-}
-function xAxisTick(option2, row) {
-  if (option2.type === "linear") {
-    const value = xAxisValue(option2, row);
-    return Number.isFinite(value) ? `Day ${value}` : "";
-  }
-  const label = option2.label_col && row ? row[option2.label_col] : void 0;
-  return blank(label) ? String(row ? row[option2.col] ?? "" : "") : String(label);
-}
-function renderXAxisControl(parent, { resolved, onChange, label = "X-axis" }) {
-  const wrap = createElement("div", "sv-control sv-xaxis-control");
-  const heading = createElement("label", null, label);
-  const group = createElement("div", "sv-xaxis");
-  group.setAttribute("role", "group");
-  group.setAttribute("aria-label", label);
-  resolved.options.forEach((option2) => {
-    const active = option2.key === resolved.active;
-    const button = createElement(
-      "button",
-      `sv-xaxis-option${active ? " is-active" : ""}`,
-      option2.title
-    );
-    button.type = "button";
-    button.dataset.key = option2.key;
-    button.setAttribute("aria-pressed", String(active));
-    if (!option2.available) {
-      button.disabled = true;
-      button.title = option2.reason;
-    }
-    button.onclick = () => {
-      if (active || !option2.available) return;
-      onChange(option2.key);
-    };
-    group.append(button);
-  });
-  wrap.append(heading, group);
-  parent.append(wrap);
-  return wrap;
-}
-
 // src/participant-profile/structureData.js
 var blank2 = (value) => value === void 0 || value === null || String(value).trim() === "";
 function resolveProfileXAxis(cleanRows, settings, requested = null) {
@@ -14642,7 +14661,7 @@ function timeLabel(point) {
   if (Number.isFinite(day2)) parts.push(`Day ${day2}`);
   return parts.join(" \xB7 ");
 }
-function timeAxis(option2, participantRows) {
+function timeAxis2(option2, participantRows) {
   if (!option2) return null;
   if (option2.type === "linear") {
     return {
@@ -14727,7 +14746,7 @@ function buildProfileModel(cleanRows, id, settings, state) {
   const measures = orderedMeasures(participantRows, settings);
   const xAxis = resolveProfileXAxis(cleanRows, settings, state ? state.xAxis : null);
   const option2 = activeXAxis(xAxis);
-  const axis = timeAxis(option2, participantRows);
+  const axis = timeAxis2(option2, participantRows);
   const visitOption = xAxis.options.find((entry) => entry.type !== "linear") || null;
   const dayOption = xAxis.options.find((entry) => entry.type === "linear") || null;
   const timeFields = (row) => {
@@ -23297,6 +23316,28 @@ var hep_explorer_default = {
           default: "VISITNUM",
           description: "Optional numeric visit column; orders visit-keyed series when present."
         },
+        x_axis: {
+          type: ["object", "null"],
+          default: null,
+          description: "The x-axis toggle for the time slider beneath the scatter, the shape every chart takes: { options: [{ key: 'visit', col, label_col, type: 'ordinal', title: 'Visit' }, { key: 'day', col, type: 'linear', title: 'Study day' }], default }. In Visit view the slider and play-through step through visits in visit-number order; in Study day view, through study days. Defaults to Study day. When null it is built from visitn_col, visit_col and studyday_col; when given, its day option's column is the study-day column the 30-day timing test reads in either view (HEP-XAX-001..003).",
+          properties: {
+            options: {
+              type: "array",
+              items: {
+                type: "object",
+                required: ["key"],
+                properties: {
+                  key: { type: "string" },
+                  col: { type: ["string", "null"] },
+                  label_col: { type: ["string", "null"] },
+                  type: { type: "string", enum: ["ordinal", "linear"] },
+                  title: { type: "string" }
+                }
+              }
+            },
+            default: { type: "string" }
+          }
+        },
         arm_col: {
           type: ["string", "null"],
           default: "ARM",
@@ -23670,7 +23711,9 @@ function pointTooltip2(point, state, measureValues) {
       point.days_y
     )}`
   ];
-  if (Number.isFinite(point.day_diff)) {
+  if (point.timing === "not_evaluated") {
+    lines.push("Timing not evaluated (no study day)");
+  } else if (Number.isFinite(point.day_diff)) {
     lines.push(`${formatNumber4(point.day_diff)} days apart`);
   }
   return lines;
@@ -23799,6 +23842,11 @@ function maxRRatio(cleanRows, settings) {
   });
   return max;
 }
+var TIMING = Object.freeze({
+  WITHIN: "within",
+  OUTSIDE: "outside",
+  NOT_EVALUATED: "not_evaluated"
+});
 function buildPoints(cleanRows, settings, state) {
   const { measureX, measureY, display, visitWindow, groupBy: groupBy2 } = state;
   const timed = hasStudyDay(cleanRows);
@@ -23846,7 +23894,11 @@ function buildPoints(cleanRows, settings, state) {
     const daysX = peakX.day;
     const daysY = peakY.day;
     const dayDiff = Number.isFinite(daysX) && Number.isFinite(daysY) ? Math.abs(daysX - daysY) : NaN;
-    const withinWindow = Number.isFinite(dayDiff) ? dayDiff <= visitWindow : !timed;
+    let timing = TIMING.NOT_EVALUATED;
+    if (timed && Number.isFinite(dayDiff)) {
+      timing = dayDiff <= visitWindow ? TIMING.WITHIN : TIMING.OUTSIDE;
+    }
+    const withinWindow = timing === TIMING.NOT_EVALUATED ? null : timing === TIMING.WITHIN;
     const groupValue = groupBy2 && groupBy2 !== GROUP_NONE ? participantRows[0][groupBy2] : null;
     const meta = {};
     metaCols.forEach((col) => {
@@ -23860,6 +23912,7 @@ function buildPoints(cleanRows, settings, state) {
       days_y: daysY,
       day_diff: dayDiff,
       withinWindow,
+      timing,
       rRatio: computeRRatio(participantRows, settings),
       nrRatio: computeNRRatio(participantRows, settings),
       group: groupValue === null || groupValue === void 0 ? null : String(groupValue),
@@ -24295,6 +24348,8 @@ var MODULE_CSS2 = `
 .safety-hep-explorer .hep-animation-reset{padding:.2rem .5rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.75rem;cursor:pointer}
 .safety-hep-explorer .hep-animation-label{margin-top:.2rem;font-size:.78rem;color:#52616f;font-variant-numeric:tabular-nums}
 .safety-hep-explorer .hep-animation-note{font-size:.78rem;color:#7b8794;font-style:italic}
+.safety-hep-explorer .hep-animation-axis{display:flex;align-items:center;gap:.5rem;margin:.35rem 0 0}
+.safety-hep-explorer .hep-animation-axis>label{margin:0}
 .safety-hep-explorer .hep-quadrant-summary{transition:opacity .15s ease}`;
 function applyModuleStyles() {
   if (typeof document === "undefined" || document.getElementById(STYLE_ID3)) return;
@@ -24520,6 +24575,12 @@ function csvDownloadLink(buildCsv2, fileCore, label) {
 // src/hep-explorer/animation.js
 var ANIMATION_MAX_DURATION = 3e4;
 var MS_PER_DAY = 100;
+var ANIMATION_FPS = 20;
+var MS_PER_VISIT = 500;
+var blank4 = (value) => value === void 0 || value === null || String(value).trim() === "";
+function liverRows(cleanRows, settings) {
+  return MEASURE_KEYS.flatMap((key) => resolveMeasureRows(cleanRows, settings, key));
+}
 function studyDayRange(cleanRows, settings) {
   const days = [];
   MEASURE_KEYS.forEach((key) => {
@@ -24530,11 +24591,60 @@ function studyDayRange(cleanRows, settings) {
   if (!days.length) return null;
   return [Math.min(...days), Math.max(...days)];
 }
-function measureSeries(participantRows, settings, key, field) {
-  return resolveMeasureRows(participantRows, settings, key).filter((row) => Number.isFinite(row[field]) && Number.isFinite(row.__hep_day)).map((row) => ({ day: row.__hep_day, value: row[field] })).sort((a, b) => a.day - b.day);
+function visitSteps(rows, option2) {
+  const seen = /* @__PURE__ */ new Map();
+  rows.forEach((row) => {
+    const raw = row[option2.col];
+    if (blank4(raw)) return;
+    const key = String(raw).trim();
+    if (!seen.has(key)) seen.set(key, { raw, label: xAxisTick(option2, row) });
+  });
+  const entries2 = [...seen.entries()];
+  const numeric = entries2.every(([key]) => Number.isFinite(Number(key)));
+  if (numeric) entries2.sort((a, b) => Number(a[0]) - Number(b[0]));
+  return entries2.map(([key, entry]) => ({ key, label: entry.label }));
 }
-function buildAnimationFrames(cleanRows, settings, state) {
+function animationTimeline(cleanRows, settings, option2 = null) {
+  if (!option2 || option2.type === "linear") {
+    const range = studyDayRange(cleanRows, settings);
+    if (!range) return null;
+    return {
+      key: option2 ? option2.key : "day",
+      title: option2 ? option2.title : "Study day",
+      min: range[0],
+      max: range[1],
+      steps: null,
+      position: (row) => row.__hep_day,
+      label: (day2) => `Day ${day2}`,
+      end: (day2) => String(day2)
+    };
+  }
+  const steps2 = visitSteps(liverRows(cleanRows, settings), option2);
+  if (!steps2.length) return null;
+  const index = new Map(steps2.map((step, i) => [step.key, i]));
+  return {
+    key: option2.key,
+    title: option2.title,
+    min: 0,
+    max: steps2.length - 1,
+    steps: steps2,
+    position: (row) => {
+      const raw = row ? row[option2.col] : void 0;
+      if (blank4(raw)) return NaN;
+      const at = index.get(String(raw).trim());
+      return at === void 0 ? NaN : at;
+    },
+    label: (step) => steps2[step] ? steps2[step].label : "",
+    end: (step) => steps2[step] ? steps2[step].label : ""
+  };
+}
+function measureSeries(participantRows, settings, key, field, position) {
+  return resolveMeasureRows(participantRows, settings, key).map((row) => ({ day: position(row), value: row[field] })).filter((entry) => Number.isFinite(entry.value) && Number.isFinite(entry.day)).sort((a, b) => a.day - b.day);
+}
+var studyDayOf = (row) => row.__hep_day;
+function buildAnimationFrames(cleanRows, settings, state, timeline = null) {
   const { measureX, measureY, display, groupBy: groupBy2 } = state;
+  const position = timeline ? timeline.position : studyDayOf;
   const field = displayField(display);
   const byId = /* @__PURE__ */ new Map();
   cleanRows.forEach((row) => {
@@ -24544,10 +24654,10 @@ function buildAnimationFrames(cleanRows, settings, state) {
   });
   const frames = [];
   byId.forEach((participantRows, id) => {
-    const x = measureSeries(participantRows, settings, measureX, field);
-    const y = measureSeries(participantRows, settings, measureY, field);
+    const x = measureSeries(participantRows, settings, measureX, field, position);
+    const y = measureSeries(participantRows, settings, measureY, field, position);
     if (!x.length || !y.length) return;
-    const days = participantRows.map((row) => row.__hep_day).filter(Number.isFinite);
+    const days = participantRows.map(position).filter(Number.isFinite);
     const groupValue = groupBy2 && groupBy2 !== "hep_none" ? participantRows[0][groupBy2] ?? null : null;
     frames.push({
       id,
@@ -24605,11 +24715,28 @@ function animationDuration(fromDay, toDay) {
   if (!Number.isFinite(dayCount) || dayCount <= 0) return MS_PER_DAY;
   return dayCount < 100 ? dayCount * MS_PER_DAY : ANIMATION_MAX_DURATION;
 }
+function playbackSchedule(timeline, from2) {
+  if (timeline.steps) {
+    const positions3 = [];
+    for (let step2 = Math.max(timeline.min, Math.round(from2)); step2 <= timeline.max; step2 += 1) {
+      positions3.push(step2);
+    }
+    const interval = Math.min(MS_PER_VISIT, ANIMATION_MAX_DURATION / Math.max(1, positions3.length));
+    return { positions: positions3, interval };
+  }
+  const duration = animationDuration(from2, timeline.max);
+  const frameCount = Math.max(1, Math.round(duration / 1e3 * ANIMATION_FPS));
+  const step = (timeline.max - from2) / frameCount;
+  const positions2 = [from2];
+  for (let frame = 1; frame <= frameCount; frame += 1) {
+    positions2.push(frame >= frameCount ? timeline.max : Math.round(from2 + step * frame));
+  }
+  return { positions: positions2, interval: 1e3 / ANIMATION_FPS };
+}
 
 // src/hep-explorer/views/scatter.js
 var BASE_POINT_COLOR = GROUP_COLORS2[0];
 var TRAIL_FRAMES = 10;
-var ANIMATION_FPS = 20;
 function addCutControl(host, addControl, parent, axisKey) {
   const measureKey = host.state[axisKey];
   const input = addControl(`${measureKey} Reference Line`, document.createElement("input"), parent);
@@ -24763,6 +24890,16 @@ function updateNotes(host) {
     }
     host.notes.append(note);
   }
+  const unevaluated = host.timingEvaluated ? host.points.filter((point) => point.timing === TIMING.NOT_EVALUATED).length : 0;
+  if (unevaluated) {
+    host.notes.append(
+      createElement(
+        "span",
+        null,
+        `${unevaluated} participant${unevaluated === 1 ? "" : "s"} not evaluated for timing: a peak has no study day (drawn as a cross).`
+      )
+    );
+  }
   if (host.droppedParticipants) {
     const dropReason2 = host.state.display === "relative_baseline" ? `missing ${host.state.measureX}/${host.state.measureY} peak or baseline` : `missing ${host.state.measureX}/${host.state.measureY} peak`;
     const note = createElement(
@@ -24845,8 +24982,12 @@ function animatedAt(host, index) {
   return animating(host) && host.animationPositions ? host.animationPositions[index] : null;
 }
 function rebuildAnimationFrames(host) {
-  host.animationRange = studyDayRange(host.cleanRows, host.settings);
-  const frames = buildAnimationFrames(host.cleanRows, host.settings, host.state);
+  host.timeAxis = resolveXAxis(timeAxis(host.settings), host.cleanRows, host.state.xAxis);
+  const option2 = activeXAxis(host.timeAxis);
+  const timeline = option2 ? animationTimeline(host.cleanRows, host.settings, option2) : null;
+  host.animationTimeline = timeline;
+  host.animationRange = timeline ? [timeline.min, timeline.max] : null;
+  const frames = buildAnimationFrames(host.cleanRows, host.settings, host.state, timeline);
   const byId = new Map(frames.map((frame) => [String(frame.id), frame]));
   host.animationFrames = host.points.map((point) => byId.get(String(point.id)) || null);
   host.animationPositions = null;
@@ -24878,8 +25019,23 @@ function showDay(host, day2) {
     chart.data.datasets[2].data = trailData(host);
     chart.update("none");
   }
-  if (host.animationSlider) host.animationSlider.value = String(day2);
-  if (host.animationLabel) host.animationLabel.textContent = `Showing data from: Day ${day2}`;
+  syncSlider(host, day2);
+}
+function positionText(host, position) {
+  const timeline = host.animationTimeline;
+  return `Showing data from: ${timeline ? timeline.label(position) : `Day ${position}`}`;
+}
+function peakText(host) {
+  const timeline = host.animationTimeline;
+  return `Showing peak values (all ${timeline && timeline.steps ? "visits" : "days"})`;
+}
+function syncSlider(host, position) {
+  const timeline = host.animationTimeline;
+  if (host.animationSlider) {
+    host.animationSlider.value = String(position);
+    if (timeline) host.animationSlider.setAttribute("aria-valuetext", timeline.label(position));
+  }
+  if (host.animationLabel) host.animationLabel.textContent = positionText(host, position);
 }
 function trailData(host) {
   const data = [];
@@ -24915,33 +25071,30 @@ function stopPlayback(host) {
   if (host.chart) host.chart.update("none");
 }
 function startPlayback(host) {
-  const range = host.animationRange;
-  if (!range) return;
+  const timeline = host.animationTimeline;
+  if (!timeline) return;
   stopPlayback(host);
-  const start = host.state.animation.day == null ? range[0] : host.state.animation.day;
-  const from2 = start >= range[1] ? range[0] : start;
-  const duration = animationDuration(from2, range[1]);
-  const frameCount = Math.max(1, Math.round(duration / 1e3 * ANIMATION_FPS));
-  const step = (range[1] - from2) / frameCount;
+  const start = host.state.animation.day == null ? timeline.min : host.state.animation.day;
+  const from2 = start >= timeline.max ? timeline.min : start;
+  const { positions: positions2, interval } = playbackSchedule(timeline, from2);
   host.state.animation.playing = true;
   host.animationTrail = [];
   syncPlayButton(host);
   if (host.quadrantWrap) host.quadrantWrap.style.opacity = "0.35";
-  showDay(host, from2);
+  showDay(host, positions2[0]);
   let frame = 0;
   host.animationTimer = setInterval(() => {
     frame += 1;
-    const day2 = frame >= frameCount ? range[1] : Math.round(from2 + step * frame);
-    showDay(host, day2);
-    if (frame >= frameCount) stopPlayback(host);
-  }, 1e3 / ANIMATION_FPS);
+    showDay(host, positions2[Math.min(frame, positions2.length - 1)]);
+    if (frame >= positions2.length - 1) stopPlayback(host);
+  }, interval);
 }
 function resetPlayback(host) {
   stopPlayback(host);
   host.state.animation.day = null;
   host.animationPositions = null;
   host.animationTrail = [];
-  if (host.animationLabel) host.animationLabel.textContent = "Showing peak values (all days)";
+  if (host.animationLabel) host.animationLabel.textContent = peakText(host);
   if (host.chart) {
     host.chart.data.datasets[0].data = host.points.map((point) => ({ x: point.x, y: point.y }));
     host.chart.data.datasets[2].data = [];
@@ -24953,26 +25106,47 @@ function syncPlayButton(host) {
   if (!button) return;
   const playing = Boolean(host.state.animation && host.state.animation.playing);
   button.textContent = playing ? "\u25A0" : "\u25B6";
-  button.title = playing ? "Stop the study-day playback" : "Play the study-day animation";
+  const what = host.animationTimeline && host.animationTimeline.steps ? "visit" : "study-day";
+  button.title = playing ? `Stop the ${what} playback` : `Play the ${what} animation`;
   button.setAttribute("aria-label", button.title);
   button.setAttribute("aria-pressed", String(playing));
+}
+function switchTimeAxis(host, key) {
+  resetPlayback(host);
+  host.state.xAxis = key;
+  if (host.profile) host.profile.applySettings({ x_axis: host.profileXAxis() });
+  rebuildAnimationFrames(host);
+  host.animationWrap.innerHTML = "";
+  drawAnimationBar(host);
+  const chosen = host.animationWrap.querySelector(`.sv-xaxis-option[data-key="${key}"]`);
+  if (chosen) chosen.focus();
 }
 function drawAnimationBar(host) {
   host.animationPlayBtn = null;
   host.animationSlider = null;
   host.animationLabel = null;
   if (!host.animationWrap) return;
-  const range = host.animationRange;
-  if (!range || range[0] === range[1]) {
-    if (range) {
+  const timeline = host.animationTimeline;
+  const axis = host.timeAxis;
+  const drawControl = () => {
+    if (!axis || !axis.options.length) return;
+    renderXAxisControl(host.animationWrap, {
+      resolved: axis,
+      label: "Step by",
+      onChange: (key) => switchTimeAxis(host, key)
+    }).classList.add("hep-animation-axis");
+  };
+  if (!timeline || timeline.min === timeline.max) {
+    if (timeline) {
       host.animationWrap.append(
         createElement(
           "span",
           "hep-animation-note",
-          "Study-day playback needs records on more than one study day."
+          timeline.steps ? "Visit playback needs records at more than one visit." : "Study-day playback needs records on more than one study day."
         )
       );
     }
+    drawControl();
     return;
   }
   const bar = createElement("div", "hep-animation-bar");
@@ -24983,20 +25157,22 @@ function drawAnimationBar(host) {
     if (host.state.animation.playing) stopPlayback(host);
     else startPlayback(host);
   };
-  bar.append(play, createElement("span", "hep-animation-end", String(range[0])));
+  bar.append(play, createElement("span", "hep-animation-end", timeline.end(timeline.min)));
   const slider = createElement("input", "hep-animation-slider");
   slider.type = "range";
-  slider.min = String(range[0]);
-  slider.max = String(range[1]);
+  slider.min = String(timeline.min);
+  slider.max = String(timeline.max);
   slider.step = "1";
-  slider.value = String(host.state.animation.day == null ? range[0] : host.state.animation.day);
-  slider.setAttribute("aria-label", "Study day");
+  const position = host.state.animation.day == null ? timeline.min : host.state.animation.day;
+  slider.value = String(position);
+  slider.setAttribute("aria-label", timeline.title);
+  slider.setAttribute("aria-valuetext", timeline.label(position));
   slider.oninput = () => {
     stopPlayback(host);
     showDay(host, Number(slider.value));
   };
   host.animationSlider = slider;
-  bar.append(slider, createElement("span", "hep-animation-end", String(range[1])));
+  bar.append(slider, createElement("span", "hep-animation-end", timeline.end(timeline.max)));
   const reset = createElement("button", "hep-animation-reset", "Reset");
   reset.type = "button";
   reset.title = "Return to the peak-value scatter";
@@ -25005,10 +25181,11 @@ function drawAnimationBar(host) {
   const label = createElement(
     "div",
     "hep-animation-label",
-    host.state.animation.day == null ? "Showing peak values (all days)" : `Showing data from: Day ${host.state.animation.day}`
+    host.state.animation.day == null ? peakText(host) : positionText(host, host.state.animation.day)
   );
   host.animationLabel = label;
   host.animationWrap.append(bar, label);
+  drawControl();
   syncPlayButton(host);
 }
 function drawScatter(host) {
@@ -25041,7 +25218,7 @@ function drawScatter(host) {
       if (!moving.enrolled) return "rgba(0,0,0,0)";
       return hexToRgba3(color2, anyActive(host) ? active ? 1 : HIGHLIGHT.DIM_FILL : 0.5);
     }
-    if (!point.withinWindow && !active) return "rgba(0,0,0,0)";
+    if (point.timing === TIMING.OUTSIDE && !active) return "rgba(0,0,0,0)";
     const opacity = anyActive(host) ? active ? 1 : HIGHLIGHT.DIM_FILL : 0.75;
     return hexToRgba3(color2, opacity);
   };
@@ -25054,6 +25231,7 @@ function drawScatter(host) {
     const opacity = anyActive(host) ? HIGHLIGHT.DIM_BORDER : 0.9;
     return hexToRgba3(colorFor2(host, point), opacity);
   };
+  const notEvaluated = (index) => points[index] && points[index].timing === TIMING.NOT_EVALUATED && !animatedAt(host, index);
   const animatedRadius = (index) => {
     const moving = animatedAt(host, index);
     const base = radiusFor(host, points[index]);
@@ -25068,7 +25246,11 @@ function drawScatter(host) {
           data,
           pointBackgroundColor: fill,
           pointBorderColor: border,
-          pointBorderWidth: (ctx) => traced(points[ctx.dataIndex]) ? HIGHLIGHT.BORDER_WIDTH : 1.25,
+          pointStyle: (ctx) => notEvaluated(ctx.dataIndex) ? "crossRot" : "circle",
+          pointBorderWidth: (ctx) => {
+            if (traced(points[ctx.dataIndex])) return HIGHLIGHT.BORDER_WIDTH;
+            return notEvaluated(ctx.dataIndex) ? 2 : 1.25;
+          },
           pointRadius: (ctx) => animatedRadius(ctx.dataIndex) + (traced(points[ctx.dataIndex]) ? HIGHLIGHT.RADIUS_BOOST : 0),
           pointHoverRadius: (ctx) => animatedRadius(ctx.dataIndex) + 2
         },
@@ -25330,6 +25512,10 @@ var scatterView = {
     window2.min = "0";
     window2.step = "1";
     window2.value = host.state.visitWindow;
+    if (!host.timingEvaluated) {
+      window2.disabled = true;
+      window2.title = "No study day in this data";
+    }
     window2.onchange = () => {
       const value = Number(window2.value);
       host.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;
@@ -26848,6 +27034,7 @@ var SafetyHepExplorer = class {
     this.unscheduledRecords = 0;
     this.hasUnscheduled = false;
     this.removedRecords = 0;
+    this.timingEvaluated = true;
     this.droppedParticipants = 0;
     this.droppedRows = [];
     this.droppedParticipantList = [];
@@ -26924,6 +27111,10 @@ var SafetyHepExplorer = class {
       // plugin reads `playing` to suppress labels that do not describe a moving
       // cloud (HEP-ANIM-006).
       animation: { day: null, playing: false },
+      // The time slider's view (HEP-XAX-001): the x-axis option the reader
+      // chose with the "Step by" control; null opens on the setting's default
+      // (Study day unless x_axis names another).
+      xAxis: null,
       selectedId: null,
       hoverId: null,
       xCut: null,
@@ -26992,6 +27183,19 @@ var SafetyHepExplorer = class {
     this.footnote.textContent = this.baseFootnote();
   }
   /**
+   * The X-axis handed to the side panel (#370, PPRF-XAX-009): the chart's
+   * options, opening on the view the time slider is in, so the next
+   * participant opens on whatever the reader last chose beneath the scatter.
+   * @private
+   */
+  profileXAxis() {
+    const active = this.timeAxis ? this.timeAxis.active : null;
+    return {
+      ...normalizeXAxis(this.settings),
+      default: this.state.xAxis || active || timeAxis(this.settings).default
+    };
+  }
+  /**
    * The settings handed to the railed participant-profile module (#98,
    * PPRF-7): the shared long-lab column mappings and cutpoints pass through
    * verbatim so the rail consumes this chart's pre-cleaned rows with no second
@@ -27013,9 +27217,7 @@ var SafetyHepExplorer = class {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
-      // The panel opens on Study day (#370) until hep-explorer has a toggle of
-      // its own, whose view it will forward instead.
-      x_axis: { ...normalizeXAxis(settings), default: "day" },
+      x_axis: this.profileXAxis(),
       baseline_col: settings.baseline_col,
       baseline_value: settings.baseline_value,
       measure_values: settings.measure_values,
@@ -27109,11 +27311,18 @@ var SafetyHepExplorer = class {
   }
   /**
    * The base footnote: usage hint plus the timing-window sentence explaining
-   * filled vs hollow points (HEP-DISPLAY-005).
+   * filled vs hollow points (HEP-DISPLAY-005) — or, when the data has no study
+   * day, that the timing was not evaluated, why, and how the points are drawn
+   * instead (HEP-XAX-007).
    * @private
    */
   baseFootnote() {
-    return `Use controls to update the chart or click a point to see participant details. Points are filled when a participant's peak ${this.state.measureX} and peak ${this.state.measureY} occur within ${this.state.visitWindow} days of each other.`;
+    const usage = "Use controls to update the chart or click a point to see participant details. ";
+    const { measureX, measureY, visitWindow } = this.state;
+    if (!this.timingEvaluated) {
+      return usage + `Timing was not evaluated: the data has no study day, so each point is drawn as a cross, neither filled (peak ${measureX} and peak ${measureY} within ${visitWindow} days of each other) nor hollow.`;
+    }
+    return usage + `Points are filled when a participant's peak ${measureX} and peak ${measureY} occur within ${visitWindow} days of each other.`;
   }
   /**
    * Load data and render: an alias for setData that keeps the two-step
@@ -27156,6 +27365,7 @@ var SafetyHepExplorer = class {
     if ("x_default" in settings) this.state.measureX = this.settings.x_default;
     if ("y_default" in settings) this.state.measureY = this.settings.y_default;
     if ("visit_window" in settings) this.state.visitWindow = this.settings.visit_window;
+    if ("x_axis" in settings) this.state.xAxis = null;
     if ("group_by" in settings) this.state.groupBy = this.settings.group_by;
     if ("cuts" in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
     if ("r_ratio" in settings) this.state.rRatio = [...this.settings.r_ratio];
@@ -27194,6 +27404,7 @@ var SafetyHepExplorer = class {
     deriveBaseline(retained, this.settings);
     assignSequence(retained, this.settings);
     this.cleanRows = retained;
+    this.timingEvaluated = hasStudyDay(retained);
     this.removedRecords = removed + imputation.dropped.length;
     this.rRatioMax = maxRRatio(retained, this.settings);
     this.displayAvailability = availableDisplays(retained);
@@ -27209,10 +27420,13 @@ var SafetyHepExplorer = class {
     if (!xOptions.includes(this.state.measureX)) this.state.measureX = xOptions[0];
     if (!yOptions.includes(this.state.measureY)) this.state.measureY = yOptions[0];
     if (!this.settings.details.length) {
+      const visitCol = this.settings.visit_col;
+      const hasVisit = Boolean(visitCol) && retained.some((row) => row[visitCol] !== void 0 && row[visitCol] !== "");
       this.settings.details = [
         { value_col: this.settings.id_col, label: "Participant" },
         { value_col: this.settings.measure_col, label: "Measure" },
-        { value_col: "__hep_dayLabel", label: "Study Day" },
+        ...hasVisit ? [{ value_col: visitCol, label: "Visit" }] : [],
+        ...this.timingEvaluated ? [{ value_col: "__hep_dayLabel", label: "Study day" }] : [],
         { value_col: this.settings.value_col, label: "Result" },
         { value_col: this.settings.normal_col_high, label: "ULN" },
         { value_col: "__hep_relText", label: "\xD7ULN" }
@@ -32024,10 +32238,14 @@ var SafetyHepWaterfall = class {
       );
     }
     if (!this.settings.details.length) {
+      const present = (col) => Boolean(col) && rows.some((row) => row[col] !== void 0 && row[col] !== "");
+      const visitCol = this.settings.visit_col;
+      const hasDay = rows.some((row) => Number.isFinite(row.__hep_day));
       this.settings.details = [
         { value_col: this.settings.id_col, label: "Participant" },
         { value_col: this.settings.measure_col, label: "Measure" },
-        { value_col: "__hwf_dayLabel", label: "Study Day" },
+        ...present(visitCol) ? [{ value_col: visitCol, label: "Visit" }] : [],
+        ...hasDay ? [{ value_col: "__hwf_dayLabel", label: "Study day" }] : [],
         { value_col: this.settings.value_col, label: "Result" },
         { value_col: this.settings.normal_col_high, label: "ULN" }
       ];

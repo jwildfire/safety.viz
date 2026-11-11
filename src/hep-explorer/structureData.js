@@ -99,12 +99,31 @@ export function maxRRatio(cleanRows, settings) {
 }
 
 /**
+ * The three outcomes of the timing test (HEP-CTRL-008, HEP-XAX-006,
+ * HEP-XAX-007): the two peaks fall within the visit window (drawn filled),
+ * outside it (hollow), or the test was not evaluated because a peak has no
+ * study day (drawn as a cross, neither filled nor hollow).
+ * @type {{WITHIN: string, OUTSIDE: string, NOT_EVALUATED: string}}
+ */
+export const TIMING = Object.freeze({
+  WITHIN: 'within',
+  OUTSIDE: 'outside',
+  NOT_EVALUATED: 'not_evaluated'
+});
+
+/**
  * Reduce cleaned rows to one eDISH scatter point per participant (HEP-CHART-001,
  * HEP-DISPLAY-003): the peak X measure vs peak Y measure in the active display
  * units, tagged with each peak's day, the day-difference and timing flag, the
  * R-Ratio and nR-Ratio (HEP-DISPLAY-008), and the color-by group. A participant is dropped when either peak is
  * missing or ≤ 0, or (in mDISH) lacks a baseline; the drop count feeds the
  * warning note (HEP-DISPLAY-004).
+ *
+ * The timing test measures STUDY DAYS — `__hep_day`, read from the study-day
+ * column (the x_axis day option's column), whatever view the time slider is in
+ * — and never visit numbers. When a peak has no study day the test is not
+ * evaluated: `timing` is TIMING.NOT_EVALUATED and `withinWindow` is null, not a
+ * claim either way (HEP-DATA-004, HEP-XAX-006, HEP-XAX-007).
  * @param {Object[]} cleanRows Rows from cleanData (after deriveBaseline).
  * @param {Object} settings Normalized settings.
  * @param {Object} state The live state ({ measureX, measureY, display, visitWindow, groupBy }).
@@ -113,8 +132,7 @@ export function maxRRatio(cleanRows, settings) {
 export function buildPoints(cleanRows, settings, state) {
   const { measureX, measureY, display, visitWindow, groupBy } = state;
   // When no row carries a usable study day, the timing test cannot be
-  // evaluated; points default to filled (withinWindow true) rather than
-  // all-hollow (HEP-DATA-004).
+  // evaluated for anyone (HEP-DATA-004, HEP-XAX-007).
   const timed = hasStudyDay(cleanRows);
   const metaCols = unique([
     settings.id_col,
@@ -167,7 +185,11 @@ export function buildPoints(cleanRows, settings, state) {
     const daysY = peakY.day;
     const dayDiff =
       Number.isFinite(daysX) && Number.isFinite(daysY) ? Math.abs(daysX - daysY) : NaN;
-    const withinWindow = Number.isFinite(dayDiff) ? dayDiff <= visitWindow : !timed;
+    let timing = TIMING.NOT_EVALUATED;
+    if (timed && Number.isFinite(dayDiff)) {
+      timing = dayDiff <= visitWindow ? TIMING.WITHIN : TIMING.OUTSIDE;
+    }
+    const withinWindow = timing === TIMING.NOT_EVALUATED ? null : timing === TIMING.WITHIN;
     const groupValue = groupBy && groupBy !== GROUP_NONE ? participantRows[0][groupBy] : null;
     const meta = {};
     metaCols.forEach((col) => {
@@ -181,6 +203,7 @@ export function buildPoints(cleanRows, settings, state) {
       days_y: daysY,
       day_diff: dayDiff,
       withinWindow,
+      timing,
       rRatio: computeRRatio(participantRows, settings),
       nrRatio: computeNRRatio(participantRows, settings),
       group: groupValue === null || groupValue === undefined ? null : String(groupValue),

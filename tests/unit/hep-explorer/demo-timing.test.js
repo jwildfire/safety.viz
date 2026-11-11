@@ -47,6 +47,12 @@ describe('hep-explorer timing on the demo data', () => {
     expect(hollow(byDay).every((point) => point.day_diff > 30)).toBe(true);
   });
 
+  it('HEP-XAX-006: on the demo data every participant is evaluated, none drawn as a cross (#376)', () => {
+    const byDay = points('DY');
+    expect(byDay.filter((point) => point.timing === 'not_evaluated')).toHaveLength(0);
+    expect(byDay.filter((point) => point.timing === 'outside')).toHaveLength(131);
+  });
+
   it('HEP-DISPLAY-005: the visit number passed as a study day could draw no participant hollow (#365)', () => {
     expect(hollow(points('VISITNUM'))).toHaveLength(0);
   });
