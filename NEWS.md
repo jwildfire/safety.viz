@@ -10,7 +10,7 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 **See it move:** the [annotated v1.12.0 demo](https://jwildfire.github.io/obot.roadmap/reports/sv-v1.12.0-demo/) has captures, try-it steps and the detail behind everything below.
 
-A release about time. Charts that show change over time can be read by visit or by study day, and say which, from one new setting, `x_axis`; the visit and study-day settings pages already pass still build it. The gallery's demo data now carries both. Four charts read the study day from `DY` by default, and the outlier explorer's Measurement sequence axis is removed.
+A release about time. Charts that show change over time can be read by visit or by study day, and say which, from one new setting, `x_axis`; the visit and study-day settings that pages already pass still build it. The gallery's demo data now carries both. Four charts read the study day from `DY` by default, and the outlier explorer's Measurement sequence axis is removed.
 
 ## What's new
 
@@ -28,12 +28,12 @@ A release about time. Charts that show change over time can be read by visit or 
 ## Also in this release
 
 - **The ×Baseline display reads the baseline flag when given `baseline_col`.** The participant profile, hep-explorer and hep-waterfall divide by the flagged record, not by a screening draw. [#367](https://github.com/jwildfire/safety.viz/issues/367), PR [#378](https://github.com/jwildfire/safety.viz/pull/378)
-- **Listings and tooltips name both the visit and the study day.** This covers hep-explorer, hep-waterfall, the shift plot and delta-delta, and results over time adds each visit's median study day. [#374](https://github.com/jwildfire/safety.viz/issues/374), [#377](https://github.com/jwildfire/safety.viz/issues/377), PR [#379](https://github.com/jwildfire/safety.viz/pull/379), PR [#381](https://github.com/jwildfire/safety.viz/pull/381)
+- **Listings and tooltips name both the visit and the study day.** This covers hep-explorer, hep-waterfall, the shift plot and delta-delta; results over time adds each visit's median study day, and the Patient Journey's lab tooltips show the visit. [#374](https://github.com/jwildfire/safety.viz/issues/374), [#377](https://github.com/jwildfire/safety.viz/issues/377), PR [#379](https://github.com/jwildfire/safety.viz/pull/379), PR [#381](https://github.com/jwildfire/safety.viz/pull/381)
 - **Not in this release: an X-axis control in the AE explorer's and AE timelines' side panels, and `baseline_col` in the other charts' side panels.** The AE panels open on Study day. [#385](https://github.com/jwildfire/safety.viz/issues/385), [#386](https://github.com/jwildfire/safety.viz/issues/386)
 
 ## Tests and provenance
 
-2,659 unit tests and 459 browser tests pass, with each chart's evidence page refreshed on the Linux runner. The release bundle is `dist/safety.viz-1.12.0/`; `dist/safety.viz-1.11.3/` is unchanged from its tag. Release preparation: [#380](https://github.com/jwildfire/safety.viz/issues/380); the review's fixes: [#384](https://github.com/jwildfire/safety.viz/issues/384).
+2,664 unit tests and 459 browser tests pass, with each chart's evidence page refreshed on the Linux runner. The release bundle is `dist/safety.viz-1.12.0/`; `dist/safety.viz-1.11.3/` is unchanged from its tag. Release preparation: [#380](https://github.com/jwildfire/safety.viz/issues/380); the review's fixes: [#384](https://github.com/jwildfire/safety.viz/issues/384).
 
 # safety.viz v1.11.3
 
