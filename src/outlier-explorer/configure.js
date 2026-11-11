@@ -1,18 +1,14 @@
 // Settings defaults + merge for the outlier-explorer module (#24). Mirrors the
 // histogram's configure.js shape (DEFAULT_SETTINGS + syncSettings), extended
 // for the renderer-specific mappings the original safety-outlier-explorer
-// exposes: a time axis (time_cols), the four normal-range methods, and
-// color-by grouping. Kept intentionally close to the histogram so the pattern
-// reads the same across renderers.
+// exposes: a time axis, the four normal-range methods, and color-by grouping.
+// The time axis is the shared `x_axis` setting (#371, src/x-axis.js); the
+// original chart's `time_cols` is read as its options when `x_axis` is absent.
+// Kept intentionally close to the histogram so the pattern reads the same
+// across renderers.
 
-/**
- * Synthetic time column used when the data carries no visit/study-day column:
- * a 1-based measurement sequence derived per participant per measure from
- * input order (the shared demo data is a distribution set with no time axis).
- */
 import { normalizeFilterSpec } from '../filters.js';
-
-export const OE_SEQ = '__oe_seq';
+import { normalizeXAxis } from '../x-axis.js';
 
 /** The "no grouping" sentinel value for the color-by control. */
 export const GROUP_NONE = 'oe_none';
@@ -40,7 +36,8 @@ export const NORMAL_RANGE_METHODS = ['None', 'LLN-ULN', 'Standard Deviation', 'Q
  * @property {number} [normal_range_sd=1.96] Standard-deviation multiplier for the Standard Deviation method (SOE-CFG-007).
  * @property {number} [normal_range_quantile_low=0.05] Lower quantile for the Quantiles method (SOE-CFG-008).
  * @property {number} [normal_range_quantile_high=0.95] Upper quantile for the Quantiles method (SOE-CFG-009).
- * @property {Array<string|Object>} [time_cols=[]] Time-axis options: { value_col, label, type: 'linear'|'ordinal', order_col } specs. When empty, a derived "Measurement" sequence axis is used. More than one option renders the X-axis toggle (SOE-FUNC-004).
+ * @property {?Object} [x_axis=null] The main x-axis, the setting every chart that shows change over time takes (#371): `{ options: [{ key, col, label_col, type: 'ordinal'|'linear', title }], default }`, for example `{ options: [{ key: 'visit', col: 'VISITNUM', label_col: 'VISIT', type: 'ordinal', title: 'Visit' }, { key: 'day', col: 'DY', type: 'linear', title: 'Study day' }], default: 'visit' }`. Each option is a button of the X-axis control, shown even when only one is available; an option whose column the data lacks is greyed and says why. The chart opens on `default` (Visit when unset), by key. Visit view spaces the visits evenly in `col` order, labelled from `label_col`; Study day view is linear in days. When null, the options are read from `time_cols`, or else built from `visitn_col`, `visit_col` and `studyday_col`. With neither a visit nor a study day in the data the chart shows a message instead of a chart (SOE-XAX-001..007).
+ * @property {Array<string|Object>} [time_cols=[]] The original chart's time-axis setting, kept as a synonym of `x_axis` and read only when `x_axis` is not given: { value_col, label, type: 'linear'|'ordinal', order_col } specs. Each becomes an x_axis option: value_col is its column, label its title, type is kept, and an ordinal entry's order_col orders its visits. The ordinal entry is keyed 'visit' and the linear one 'day' (each keyed by its value_col when two share a type), so the chart opens on the visit entry whatever the order (SOE-FUNC-004, SOE-XAX-002).
  * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
  * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. Entries match the label the control shows (the measure name with its unit appended where `unit_col` is mapped), falling back to the bare `measure_col` value, which picks up every unit variant of that measure. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SOE-MEAS-001, SOE-MEAS-002).
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label, start } specs. A filter with a start value is initialized to it, with "All" still on offer (SOE-REG-051..053). Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true whether or not a start is given — pass `all: false` to remove it, and the filter then always holds one value, the first unless `start` names another; a start value the data lacks is dropped with a console warning; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
@@ -53,9 +50,9 @@ export const NORMAL_RANGE_METHODS = ['None', 'LLN-ULN', 'Standard Deviation', 'Q
  * @property {string} [width='100%'] Widget width, carried over for the R widget bindings; the shell always spans its container.
  * @property {number} [height=460] Chart-area height in pixels, carried over for the R widget bindings; the shell fixes the chart area height.
  * @property {number} [page_size=10] Rows per page in the linked participant listing.
- * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-OE-001).
- * @property {?string} [visit_col=null] Visit-name column passed to the docked profile for point tooltips (#99, PPRF-OE-001).
- * @property {?string} [visitn_col=null] Numeric visit column passed to the docked profile for point ordering context (#99, PPRF-OE-001).
+ * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-OE-001). With neither `x_axis` nor `time_cols` it is also the main axis's Study day option (#371).
+ * @property {?string} [visit_col=null] Visit-name column passed to the docked profile for point tooltips (#99, PPRF-OE-001). With neither `x_axis` nor `time_cols` it labels the main axis's Visit option (#371).
+ * @property {?string} [visitn_col=null] Numeric visit column passed to the docked profile for point ordering context (#99, PPRF-OE-001). With neither `x_axis` nor `time_cols` it orders the main axis's Visit option (#371).
  * @property {?Object} [measure_values=null] Optional map of short profile keys (ALT/AST/TB/ALP) to this data's full measure names, passed to the docked profile so the key liver measures resolve; null keeps the profile module's defaults (#99, PPRF-OE-001).
  * @property {boolean} [profile=true] Dock the shared participant-profile module in the shell's profile slot, fed by the point-click selection via the participantsSelected event; false restores the pre-#99 behaviour of listing-only detail (#99, PPRF-OE-001).
  * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null shows none (the host `details` are listing columns, not demographics) (#99, PPRF-OE-001).
@@ -78,6 +75,7 @@ export const DEFAULT_SETTINGS = {
   normal_range_sd: 1.96,
   normal_range_quantile_low: 0.05,
   normal_range_quantile_high: 0.95,
+  x_axis: null,
   time_cols: [],
   start_value: null,
   measures: null,
@@ -137,10 +135,63 @@ export function timeSpec(value) {
 }
 
 /**
+ * Map the original chart's time_cols specs to x_axis options (#371): value_col
+ * is the option's column, label its title, type is kept, and an ordinal
+ * entry's order_col orders its visits. The ordinal entry is keyed 'visit' and
+ * the linear entry 'day'; when two entries share a type, each of them is keyed
+ * by its value_col instead.
+ * @param {Object[]} timeCols Normalized time_cols specs (see timeSpec).
+ * @returns {Object[]} x_axis options.
+ */
+export function timeColsToXAxisOptions(timeCols) {
+  const count = (type) => timeCols.filter((spec) => spec.type === type).length;
+  const keyFor = (spec) => {
+    const known = spec.type === 'ordinal' ? 'visit' : 'day';
+    return count(spec.type) === 1 ? known : spec.value_col;
+  };
+  return timeCols.map((spec) => ({
+    key: keyFor(spec),
+    col: spec.value_col,
+    type: spec.type,
+    title: spec.label,
+    ...(spec.type === 'ordinal' ? { order_col: spec.order_col } : {})
+  }));
+}
+
+/**
+ * The main x-axis setting in its full shape (#371): `x_axis` as given, else
+ * the options `time_cols` maps to, else the options built from `visitn_col`,
+ * `visit_col` and `studyday_col` — normalized with the shared normalizeXAxis,
+ * Visit the default when the setting names none. An option's `order_col` (from
+ * time_cols) is kept for ordering the visits.
+ * @param {OutlierExplorerSettings} settings Settings, as syncSettings returns them.
+ * @returns {{options: Object[], default: string}} The normalized setting.
+ */
+export function xAxisSetting(settings) {
+  const given = settings.x_axis;
+  const timeCols = arrayify(settings.time_cols)
+    .map(timeSpec)
+    .filter((d) => d.value_col);
+  const source =
+    given && Array.isArray(given.options) && given.options.length
+      ? settings
+      : timeCols.length
+        ? { x_axis: { options: timeColsToXAxisOptions(timeCols), default: given?.default } }
+        : settings;
+  const xAxis = normalizeXAxis(source, { fallback: 'visit' });
+  const raw = source.x_axis ? source.x_axis.options : [];
+  xAxis.options = xAxis.options.map((option) => {
+    const from = (raw || []).find((candidate) => candidate && String(candidate.key) === option.key);
+    return from && from.order_col ? { ...option, order_col: from.order_col } : option;
+  });
+  return xAxis;
+}
+
+/**
  * Merge caller settings onto DEFAULT_SETTINGS and normalize them: field lists
  * become spec arrays, the group list always offers None, group_by falls back
- * when its column is not offered, time_cols default to a derived Measurement
- * axis, and listing details default from the other mappings.
+ * when its column is not offered, and listing details default from the other
+ * mappings. The x-axis is read from the merged settings by xAxisSetting.
  * @param {OutlierExplorerSettings} settings Caller overrides; pass {} for the defaults.
  * @returns {OutlierExplorerSettings} The merged, normalized settings.
  */
@@ -170,11 +221,6 @@ export function syncSettings(settings) {
   synced.time_cols = arrayify(synced.time_cols)
     .map(timeSpec)
     .filter((d) => d.value_col);
-  if (!synced.time_cols.length) {
-    synced.time_cols = [
-      { value_col: OE_SEQ, label: 'Measurement', type: 'linear', order_col: OE_SEQ }
-    ];
-  }
 
   synced.tooltip_cols = arrayify(synced.tooltip_cols)
     .map((value) => fieldSpec(value))

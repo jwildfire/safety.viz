@@ -24,18 +24,22 @@ import {
 import { controlBuilders, createElement, option, renderShell } from './shell.js';
 import { presentMeasures, resolveMeasureList } from './measure-list.js';
 import { applyLimitEdit, clearAxisLimits, seedLimitInput, syncAxisLimits } from './axis-limits.js';
-import { GROUP_NONE, NORMAL_RANGE_METHODS, syncSettings } from './outlier-explorer/configure.js';
+import {
+  GROUP_NONE,
+  NORMAL_RANGE_METHODS,
+  syncSettings,
+  xAxisSetting
+} from './outlier-explorer/configure.js';
 import { checkInputs } from './outlier-explorer/checkInputs.js';
 import {
   applyFilters,
-  assignSequence,
   buildSeries,
   cleanData,
   computeNormalRange,
   countInliers,
   measureLabel,
   orderedCategories,
-  timeLabel,
+  timeLabels,
   unique
 } from './outlier-explorer/structureData.js';
 import {
@@ -62,6 +66,7 @@ import {
   unmountProfileRail
 } from './profile-host.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
+import { activeXAxis, renderXAxisControl, resolveXAxis } from './x-axis.js';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Tooltip);
 
@@ -78,6 +83,9 @@ class SafetyOutlierExplorer {
     this.element = typeof element === 'string' ? document.querySelector(element) : element;
     if (!this.element) throw new Error(`Safety Outlier Explorer target not found: ${element}`);
     this.settings = syncSettings(settings);
+    // The main x-axis (#371): x_axis, or time_cols read as its options, or the
+    // visit and study-day column settings — see xAxisSetting.
+    this.xAxis = xAxisSetting(this.settings);
     this.rawData = [];
     this.cleanData = [];
     this.availableMeasures = [];
@@ -115,7 +123,9 @@ class SafetyOutlierExplorer {
     return {
       measure: this.settings.start_value,
       filters: {},
-      timeIndex: 0,
+      // The x-axis view asked for with the X-axis control; null opens on the
+      // setting's default, by key (#371).
+      xView: null,
       groupBy: this.settings.group_by,
       // Y-axis limits (#85): `lower`/`upper` hold USER OVERRIDES only (null =
       // auto), `axisDomain` the [lower, upper] the last render resolved — what
@@ -271,6 +281,7 @@ class SafetyOutlierExplorer {
    */
   setSettings(settings) {
     this.settings = syncSettings({ ...this.settings, ...settings });
+    this.xAxis = xAxisSetting(this.settings);
     this.state.normalMethod = this.settings.normal_range_method;
     this.state.groupBy = this.settings.group_by;
     this.initFilterState();
@@ -335,23 +346,23 @@ class SafetyOutlierExplorer {
   }
 
   /**
-   * The active time-axis column spec.
+   * The x-axis setting checked against the data (#371): each option with
+   * whether the data can draw it and why not, the active view (the one asked
+   * for with the control, else the default, else the first the data can draw)
+   * and, with neither a visit nor a study day, the message shown instead of a
+   * chart.
    * @private
    */
-  activeTimeCol() {
-    return this.settings.time_cols[this.state.timeIndex] || this.settings.time_cols[0];
+  resolveXAxis() {
+    return resolveXAxis(this.xAxis, this.cleanData, this.state.xView);
   }
 
   /**
-   * Cleaned rows for the selected measure, tagged with the derived measurement
-   * sequence.
+   * Cleaned rows for the selected measure.
    * @private
    */
   currentMeasureData() {
-    const rows = this.cleanData.filter(
-      (row) => measureLabel(row, this.settings) === this.state.measure
-    );
-    return assignSequence(rows, this.settings.id_col);
+    return this.cleanData.filter((row) => measureLabel(row, this.settings) === this.state.measure);
   }
 
   /**
@@ -409,16 +420,19 @@ class SafetyOutlierExplorer {
       );
     });
 
-    if (this.settings.time_cols.length > 1) {
-      const xParent = addSection('X-axis');
-      const xAxis = addControl('Plot by', document.createElement('select'), xParent);
-      this.settings.time_cols.forEach((spec, index) =>
-        option(xAxis, String(index), spec.label, index === this.state.timeIndex)
-      );
-      xAxis.onchange = () => {
-        this.state.timeIndex = Number(xAxis.value);
-        this.render();
-      };
+    // The shared X-axis control (#371), shown whenever the setting has an
+    // option, even one alone; an option the data cannot draw is greyed with
+    // its reason.
+    const resolvedXAxis = this.resolveXAxis();
+    if (resolvedXAxis.options.length) {
+      renderXAxisControl(addSection('X-axis'), {
+        resolved: resolvedXAxis,
+        onChange: (key) => {
+          this.state.xView = key;
+          this.buildControls();
+          this.render();
+        }
+      });
     }
 
     const yParent = addSection('Y-axis Limits');
@@ -566,6 +580,15 @@ class SafetyOutlierExplorer {
     this.footnote.textContent =
       'Hover a point for details; click a point to highlight a participant.';
     this.filteredData = this.currentFilteredData();
+    const resolvedXAxis = this.resolveXAxis();
+    this.showTimeAxisMessage(resolvedXAxis.message);
+    if (resolvedXAxis.message) {
+      // Neither a visit nor a study day (#371): the message stands in for the
+      // chart, and there is no derived sequence axis to fall back on.
+      this.state.normalRange = null;
+      this.updateNotes();
+      return;
+    }
     if (!this.filteredData.length) {
       // Keep the participant-count and removed-record notes: when cleanData
       // dropped every row, the removed note is what explains the empty chart.
@@ -574,21 +597,43 @@ class SafetyOutlierExplorer {
         '<span>No records match the current filters.</span>' + this.notes.innerHTML;
       return;
     }
-    this.drawChart();
+    this.drawChart(resolvedXAxis);
     this.drawLegend();
     this.updateNotes();
   }
 
   /**
-   * Draw the main Chart.js line chart: one population line dataset (null-gap
-   * separated per participant) plus an empty selection-overlay dataset, with
-   * the normal-range band plugin, tooltips, and click-to-select.
+   * Show the no-time-axis message in place of the chart, or take it away
+   * (#371).
+   * @param {?string} message The message, or null when the chart can be drawn.
    * @private
    */
-  drawChart() {
-    const timeCol = this.activeTimeCol();
+  showTimeAxisMessage(message) {
+    if (this.noTimeAxisEl) {
+      this.noTimeAxisEl.remove();
+      this.noTimeAxisEl = null;
+    }
+    this.chartWrap.hidden = Boolean(message);
+    this.chartWrap.style.display = message ? 'none' : '';
+    if (!message) return;
+    this.noTimeAxisEl = createElement('div', 'sv-no-time-axis', message);
+    this.main.insertBefore(this.noTimeAxisEl, this.chartWrap);
+  }
+
+  /**
+   * Draw the main Chart.js line chart: one population line dataset (null-gap
+   * separated per participant) plus an empty selection-overlay dataset, with
+   * the normal-range band plugin, tooltips, and click-to-select, along the
+   * active x-axis option (#371).
+   * @param {{options: Object[], active: string}} resolvedXAxis The resolved x-axis setting.
+   * @private
+   */
+  drawChart(resolvedXAxis) {
+    const xOption = activeXAxis(resolvedXAxis);
+    // The time label names the visit and the study day whichever view is
+    // plotted ("Week 8 · Day 57"); the tooltip and the listing show it.
     this.filteredData.forEach((row) => {
-      row.__oe_timeLabel = timeLabel(row, timeCol);
+      row.__oe_timeLabel = timeLabels(row, resolvedXAxis.options);
     });
     // The normal-range controls drive live state, so build the effective
     // config from state (not the initial settings) before computing the band.
@@ -606,8 +651,8 @@ class SafetyOutlierExplorer {
     // AXIS-1) — the padded default (SOE-REG-034) unless a limit was edited.
     syncAxisLimits(this.state, domain, { lower: this.lowerInput, upper: this.upperInput });
     const categories =
-      timeCol.type === 'ordinal' ? orderedCategories(this.currentMeasureData(), timeCol) : [];
-    this.series = buildSeries(this.filteredData, this.settings, timeCol, this.state.groupBy);
+      xOption.type === 'ordinal' ? orderedCategories(this.currentMeasureData(), xOption) : [];
+    this.series = buildSeries(this.filteredData, this.settings, xOption, this.state.groupBy);
 
     const grouped = this.state.groupBy && this.state.groupBy !== GROUP_NONE;
     this.groupValues = grouped
@@ -714,7 +759,7 @@ class SafetyOutlierExplorer {
           }
         },
         scales: {
-          x: buildXScale(timeCol, categories),
+          x: buildXScale(xOption, categories),
           y: buildYScale(domain, this.state.measure)
         },
         onClick: (event, elements) => {

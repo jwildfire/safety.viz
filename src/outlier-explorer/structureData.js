@@ -1,10 +1,10 @@
 // Data preparation for the outlier-explorer module (#24): cleaning, filtering,
-// per-participant series building, the derived time index, and the normal-range
-// statistics. Small numeric helpers mirror the histogram's structureData.js so
-// the two renderers read the same.
+// per-participant series building along the active x-axis option (#371), and
+// the normal-range statistics. Small numeric helpers mirror the histogram's
+// structureData.js so the two renderers read the same.
 
-import { OE_SEQ } from './configure.js';
 import { filterMatches } from '../filters.js';
+import { xAxisTick, xAxisValue } from '../x-axis.js';
 
 export function unique(values) {
   return [
@@ -78,58 +78,67 @@ export function applyFilters(rows, filters) {
   );
 }
 
-// Assigns the derived 1-based measurement sequence per participant, in input
-// order — the synthetic time axis used when the data carries no visit column.
-// Mutates each row with __oe_seq and returns the rows.
-export function assignSequence(rows, idCol) {
-  const counts = new Map();
-  rows.forEach((row) => {
-    const id = row[idCol];
-    const next = (counts.get(id) || 0) + 1;
-    counts.set(id, next);
-    row[OE_SEQ] = next;
-  });
-  return rows;
+const blank = (value) => value === undefined || value === null || String(value).trim() === '';
+
+// Whether a row has a place on an x-axis option: a study day for a linear
+// option, a visit for an ordinal one (#371).
+export function hasPosition(row, option) {
+  if (option.type === 'linear') return Number.isFinite(xAxisValue(option, row));
+  return !blank(row[option.col]);
 }
 
-// The x value a row plots at for a given time column: the derived sequence, a
-// numeric linear value, or an ordinal category label.
-export function timeValue(row, timeCol) {
-  if (timeCol.value_col === OE_SEQ) return row[OE_SEQ];
-  const raw = row[timeCol.value_col];
-  return timeCol.type === 'ordinal' ? raw : Number(raw);
+// The x value a row plots at on an x-axis option: its study day on a linear
+// axis, its visit name (the category) on an ordinal one.
+export function timeValue(row, option) {
+  return option.type === 'ordinal' ? xAxisTick(option, row) : xAxisValue(option, row);
 }
 
-// The sort key ordering a participant's points along the axis.
-export function timeOrder(row, timeCol) {
-  if (timeCol.value_col === OE_SEQ) return row[OE_SEQ];
-  return Number(row[timeCol.order_col]);
+// The sort key ordering a participant's points along the axis: the study day,
+// or the visit's number — its order_col when the option came from time_cols.
+export function timeOrder(row, option) {
+  if (option.type !== 'ordinal' || !option.order_col) return xAxisValue(option, row);
+  return xAxisValue({ ...option, col: option.order_col }, row);
 }
 
-// The human-readable time label shown in tooltips and the listing.
-export function timeLabel(row, timeCol) {
-  if (timeCol.value_col === OE_SEQ) return `#${row[OE_SEQ]}`;
-  return String(row[timeCol.value_col]);
+// The time label shown in tooltips and the listing (#371): the row's visit and
+// study day, each where the row has it, from every x-axis option — "Week 8 ·
+// Day 57" — so the label is the same whichever view is plotted.
+export function timeLabels(row, options) {
+  return options
+    .filter((option) => hasPosition(row, option))
+    .map((option) => {
+      const tick = xAxisTick(option, row);
+      return option.type === 'linear' && option.key !== 'day'
+        ? `${option.title} ${xAxisValue(option, row)}`
+        : tick;
+    })
+    .filter((label) => !blank(label))
+    .join(' · ');
 }
 
-// Ordered category labels for an ordinal axis: unique visit values sorted by
-// the order column (SOE-REG-028 axis ordering).
-export function orderedCategories(rows, timeCol) {
+// Ordered category labels for an ordinal axis: unique visit names sorted by
+// the visit number (SOE-REG-028 axis ordering).
+export function orderedCategories(rows, option) {
   const seen = new Map();
-  rows.forEach((row) => {
-    const label = String(row[timeCol.value_col]);
-    if (!seen.has(label)) seen.set(label, timeOrder(row, timeCol));
-  });
+  rows
+    .filter((row) => hasPosition(row, option))
+    .forEach((row) => {
+      const label = xAxisTick(option, row);
+      if (!seen.has(label)) seen.set(label, timeOrder(row, option));
+    });
   return [...seen.entries()].sort((a, b) => a[1] - b[1]).map(([label]) => label);
 }
 
-// Builds one series per participant: points sorted along the time axis, tagged
-// with the participant id, the color-by group value, and per-point raw record.
-// This is the model the single null-separated Chart.js line dataset is built
-// from (one line per participant without one dataset per participant).
-export function buildSeries(rows, settings, timeCol, groupBy) {
+// Builds one series per participant: points sorted along the active x-axis
+// option, tagged with the participant id, the color-by group value, and
+// per-point raw record. A record with no place on the axis (no study day in
+// Study day view) is left out rather than drawn at zero (#371). This is the
+// model the single null-separated Chart.js line dataset is built from (one
+// line per participant without one dataset per participant).
+export function buildSeries(rows, settings, option, groupBy) {
   const byId = new Map();
   rows.forEach((row) => {
+    if (!hasPosition(row, option)) return;
     const id = row[settings.id_col];
     if (!byId.has(id)) byId.set(id, []);
     byId.get(id).push(row);
@@ -138,14 +147,14 @@ export function buildSeries(rows, settings, timeCol, groupBy) {
   byId.forEach((records, id) => {
     const points = records
       .map((row) => ({
-        x: timeValue(row, timeCol),
+        x: timeValue(row, option),
         y: row.__oe_value,
-        order: timeOrder(row, timeCol),
-        label: timeLabel(row, timeCol),
+        order: timeOrder(row, option),
+        label: row.__oe_timeLabel ?? '',
         raw: row
       }))
       .sort((a, b) => a.order - b.order);
-    const group = groupBy && groupBy !== OE_SEQ ? records[0][groupBy] : null;
+    const group = groupBy ? records[0][groupBy] : null;
     series.push({ id, group, points });
   });
   return series.sort((a, b) =>
