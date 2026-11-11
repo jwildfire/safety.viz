@@ -237,6 +237,13 @@ const SHELL_STYLES = `
 .sv-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
 .sv-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
 .sv-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-xaxis{display:inline-flex;border:1px solid #b8c0cc;border-radius:6px;overflow:hidden}
+.sv-xaxis-option{padding:.3rem .6rem;border:0;background:#fff;font:inherit;font-size:.82rem;color:#1f2933;cursor:pointer}
+.sv-xaxis-option+.sv-xaxis-option{border-left:1px solid #b8c0cc}
+.sv-xaxis-option.is-active{background:#0b62a4;color:#fff;font-weight:600}
+.sv-xaxis-option:disabled{color:#8a96a3;background:#f3f5f7;cursor:not-allowed;text-decoration:line-through}
+.sv-xaxis-option:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
+.sv-no-time-axis{margin:1rem 0;padding:1.25rem 1rem;border:1px dashed #b8c0cc;border-radius:8px;text-align:center;color:#3e4c59;font-size:.9rem}
 .sv-multiselect{border:1px solid #b8c0cc;border-radius:6px;background:#fff}
 .sv-multiselect>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:.4rem;padding:.35rem .45rem;font-size:.85rem;cursor:pointer;border-radius:6px}
 .sv-multiselect>summary::-webkit-details-marker{display:none}

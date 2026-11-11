@@ -24,7 +24,7 @@
 
 ## Members
 
-Thirty-six, in the kit's own order.
+Forty-three, in the kit's own order. The seven `src/x-axis.js` members joined in v1.12.0 ([safety.viz#368](https://github.com/jwildfire/safety.viz/issues/368)).
 
 | From | Members |
 |---|---|
@@ -37,6 +37,7 @@ Thirty-six, in the kit's own order.
 | `src/box-whisker.js` | `drawBoxWhisker`, `boxWhiskerPlugin` |
 | `src/measure-list.js` | `resolveMeasureList`, `presentMeasures` |
 | `src/time-to-event/km.js` | `kmEstimate` |
+| `src/x-axis.js` | `NO_TIME_AXIS`, `normalizeXAxis`, `resolveXAxis`, `activeXAxis`, `xAxisValue`, `xAxisTick`, `renderXAxisControl` |
 
 **One member joined after the task was written.** The task lists thirty-five members. While this work waited for v1.8.0, the v1.8.0 review ([safety.viz#166](https://github.com/jwildfire/safety.viz/issues/166), [#171](https://github.com/jwildfire/safety.viz/pull/171)) added `reconcileFilters` to `src/filters.js` and made every chart call it as it builds its filter controls. It is part of the filter contract the task names, and a second library whose filters reconciled differently would be exactly the drift the kit exists to prevent, so it is the thirty-sixth member. The same review changed what `normalizeFilterSpec` does with `start`: it now only sets what the filter opens on, and only `all: false` removes the All option.
 
@@ -47,7 +48,7 @@ Thirty-six, in the kit's own order.
 | ID | Area | Requirement | Source | Evidence Type | Test/Evidence Link | Status | AI Review | Notes |
 |---|---|---|---|---|---|---|---|---|
 | KIT-API-001 | API | `src/main.js` exports the kit by name, and the default collection carries the same object. | safety.viz src/main.js; src/kit.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | So the script-tag bundle's global carries `SafetyViz.kit`. |
-| KIT-API-002 | API | The kit holds exactly the thirty-six listed members, flat, under the names their modules export. | safety.viz src/kit.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | The list in the test is the list above; one cannot change without the other. |
+| KIT-API-002 | API | The kit holds exactly the forty-three listed members, flat, under the names their modules export. | safety.viz src/kit.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | The list in the test is the list above; one cannot change without the other. |
 | KIT-API-003 | API | The element, option, multi-select, style-injector, shell, control-builder and view-selector members are the functions `src/shell.js` exports. | safety.viz src/shell.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | Identity, not equivalence: the same function object. |
 | KIT-API-004 | API | The filter contract's members are the ones `src/filters.js` exports. | safety.viz src/filters.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | Includes `reconcileFilters`, which joined the contract after the task was written. |
 | KIT-API-005 | API | The axis-limit helpers are the functions `src/axis-limits.js` exports. | safety.viz src/axis-limits.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | |
@@ -57,11 +58,20 @@ Thirty-six, in the kit's own order.
 | KIT-API-009 | API | The measure list functions are the ones `src/measure-list.js` exports. | safety.viz src/measure-list.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | |
 | KIT-API-010 | API | The Kaplan–Meier estimator is the function `src/time-to-event/km.js` exports. | safety.viz src/time-to-event/km.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | Re-exported unchanged; nothing statistical is added. |
 | KIT-API-011 | API | `kit.Chart` is the Chart.js constructor the charts import. | safety.viz src/kit.js; chart.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | So a second library draws with the same copy. |
-| KIT-API-012 | API | Nothing else the eight modules export is on the kit: the status label and the colour helper stay internal, and every other export is a member. | safety.viz src/kit.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | A new export in one of the modules fails this until it is listed or excluded on purpose. |
+| KIT-API-012 | API | Nothing else the nine modules export is on the kit: the status label and the colour helper stay internal, and every other export is a member. | safety.viz src/kit.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | A new export in one of the modules fails this until it is listed or excluded on purpose. |
 | KIT-API-013 | API | The kit cannot be changed from outside: a member cannot be replaced, added or removed. | safety.viz src/kit.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | Frozen. |
 | KIT-API-014 | API | The kit is the only export added: every other export of `src/main.js` is still there under its name. | safety.viz src/main.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | |
 | KIT-API-015 | API | The committed script-tag bundle carries `SafetyViz.kit` with the same members, and no other export of the bundle has changed. | safety.viz dist/safety.viz-{version}/safety.viz.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | Read from the built file. |
 | KIT-API-016 | API | The committed ES module bundle exports `kit` with the same members, and no other export of the bundle has changed. | safety.viz dist/safety.viz-{version}/safety.viz.esm.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | Read from the built file. |
+| KIT-API-017 | API | The x-axis toggle members are the ones `src/x-axis.js` exports. | safety.viz src/x-axis.js | unit | tests/unit/kit/kit.test.js | ai-reviewed | OK for human review. | Joined in v1.12.0 (#368). |
+| KIT-XAX-001 | XAX | `normalizeXAxis` reads an `x_axis` setting as given, filling each option's type and title from its key (`visit`: ordinal, "Visit"; `day`: linear, "Study day"). | safety.viz src/x-axis.js | unit | tests/unit/shared/x-axis.test.js | ai-reviewed | OK for human review. |  |
+| KIT-XAX-002 | XAX | Without `x_axis`, `normalizeXAxis` builds the setting from `visitn_col` and `visit_col` (the visit option) and `studyday_col` (the day option), so the settings charts took before the toggle keep working; the chart names its own default view. | safety.viz src/x-axis.js | unit | tests/unit/shared/x-axis.test.js | ai-reviewed | OK for human review. |  |
+| KIT-XAX-003 | XAX | With both columns in the data, `resolveXAxis` marks both options available and makes the view asked for, else the default, active. | safety.viz src/x-axis.js | unit | tests/unit/shared/x-axis.test.js | ai-reviewed | OK for human review. |  |
+| KIT-XAX-004 | XAX | An option whose column the data lacks is unavailable and carries its reason: "No study day in this data" or "No visit in this data". | safety.viz src/x-axis.js | unit | tests/unit/shared/x-axis.test.js | ai-reviewed | OK for human review. |  |
+| KIT-XAX-005 | XAX | A default or a request naming an unavailable option falls back to the option the data can draw. | safety.viz src/x-axis.js | unit | tests/unit/shared/x-axis.test.js | ai-reviewed | OK for human review. |  |
+| KIT-XAX-006 | XAX | With neither column no option is active, and the result carries the message a chart shows instead of a chart: "This data has no visit or study day, so there is no time axis to plot." | safety.viz src/x-axis.js | unit | tests/unit/shared/x-axis.test.js | ai-reviewed | OK for human review. |  |
+| KIT-XAX-007 | XAX | A row's position is its visit number or its study day, and its tick label is the visit name or "Day N". | safety.viz src/x-axis.js | unit | tests/unit/shared/x-axis.test.js | ai-reviewed | OK for human review. |  |
+| KIT-XAX-008 | XAX | The "X-axis" control offers one button per option, the active one pressed, an unavailable one disabled with its reason as its title, and reports a switch to another available option. | safety.viz src/x-axis.js | unit | tests/unit/shared/x-axis.test.js | ai-reviewed | OK for human review. |  |
 | KIT-USE-001 | USE | A page that loads the committed bundle and no other script builds the shared shell with its collapsible sidebar from the kit, with no console errors. | safety.viz tests/e2e/fixtures/kit.html | browser | tests/e2e/kit.spec.js | ai-reviewed | OK for human review. | The page is a second library in miniature. |
 | KIT-USE-002 | USE | That page reads nothing from the bundle's global but `kit`: no chart module is called directly. | safety.viz tests/e2e/fixtures/kit.html | browser | tests/e2e/kit.spec.js | ai-reviewed | OK for human review. | Every property read from `SafetyViz` is recorded; a read of a chart module fails the test. |
 | KIT-USE-003 | USE | The page's bar chart is drawn with `kit.Chart`, and its one filter, reconciled and built by the filter contract, narrows the chart. | safety.viz tests/e2e/fixtures/kit.html | browser | tests/e2e/kit.spec.js | ai-reviewed | OK for human review. | Expected counts are derived from the fixture data. |

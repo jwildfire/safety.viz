@@ -1,4 +1,4 @@
-// node_modules/@kurkle/color/dist/color.esm.js
+// ../365-demo-data/node_modules/@kurkle/color/dist/color.esm.js
 function round(v) {
   return v + 0.5 | 0;
 }
@@ -555,7 +555,7 @@ var Color = class _Color {
   }
 };
 
-// node_modules/chart.js/dist/chunks/helpers.dataset.js
+// ../365-demo-data/node_modules/chart.js/dist/chunks/helpers.dataset.js
 function noop() {
 }
 var uid = /* @__PURE__ */ (() => {
@@ -2953,7 +2953,7 @@ function getDatasetClipArea(chart, meta) {
   };
 }
 
-// node_modules/chart.js/dist/chart.js
+// ../365-demo-data/node_modules/chart.js/dist/chart.js
 var Animator = class {
   constructor() {
     this._request = null;
@@ -12845,6 +12845,13 @@ var SHELL_STYLES = `
 .sv-view-option:hover{border-color:#b8c0cc;background:#f6f8fa}
 .sv-view-option.is-active{border-color:#0b62a4;background:#eaf2fb;color:#0b3d63;font-weight:600;box-shadow:inset 0 0 0 1px #0b62a4}
 .sv-view-option:focus-visible{outline:2px solid #0b62a4;outline-offset:1px}
+.sv-xaxis{display:inline-flex;border:1px solid #b8c0cc;border-radius:6px;overflow:hidden}
+.sv-xaxis-option{padding:.3rem .6rem;border:0;background:#fff;font:inherit;font-size:.82rem;color:#1f2933;cursor:pointer}
+.sv-xaxis-option+.sv-xaxis-option{border-left:1px solid #b8c0cc}
+.sv-xaxis-option.is-active{background:#0b62a4;color:#fff;font-weight:600}
+.sv-xaxis-option:disabled{color:#8a96a3;background:#f3f5f7;cursor:not-allowed;text-decoration:line-through}
+.sv-xaxis-option:focus-visible{outline:2px solid #0b62a4;outline-offset:-2px}
+.sv-no-time-axis{margin:1rem 0;padding:1.25rem 1rem;border:1px dashed #b8c0cc;border-radius:8px;text-align:center;color:#3e4c59;font-size:.9rem}
 .sv-multiselect{border:1px solid #b8c0cc;border-radius:6px;background:#fff}
 .sv-multiselect>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:.4rem;padding:.35rem .45rem;font-size:.85rem;cursor:pointer;border-radius:6px}
 .sv-multiselect>summary::-webkit-details-marker{display:none}
@@ -41233,6 +41240,109 @@ var portfolio_default = {
   }
 };
 
+// src/x-axis.js
+var NO_TIME_AXIS = "This data has no visit or study day, so there is no time axis to plot.";
+var KNOWN = {
+  visit: { type: "ordinal", title: "Visit", reason: "No visit in this data" },
+  day: { type: "linear", title: "Study day", reason: "No study day in this data" }
+};
+var blank = (value) => value === void 0 || value === null || String(value).trim() === "";
+function fillOption(option2) {
+  const known = KNOWN[option2.key] || {};
+  return {
+    key: String(option2.key),
+    col: option2.col ?? null,
+    label_col: option2.label_col ?? null,
+    type: option2.type ?? known.type ?? "ordinal",
+    title: option2.title ?? known.title ?? String(option2.key)
+  };
+}
+function normalizeXAxis(settings = {}, { fallback = "visit" } = {}) {
+  const given = settings.x_axis;
+  if (given && Array.isArray(given.options) && given.options.length) {
+    return {
+      options: given.options.filter((option2) => option2 && !blank(option2.key)).map(fillOption),
+      default: given.default ?? fallback
+    };
+  }
+  const options = [];
+  const visitCol = settings.visitn_col || settings.visit_col || null;
+  if (visitCol)
+    options.push(
+      fillOption({ key: "visit", col: visitCol, label_col: settings.visit_col || null })
+    );
+  if (settings.studyday_col) options.push(fillOption({ key: "day", col: settings.studyday_col }));
+  return { options, default: (given && given.default) ?? fallback };
+}
+function hasValues(option2, rows) {
+  if (blank(option2.col)) return false;
+  return rows.some((row) => {
+    const value = row ? row[option2.col] : void 0;
+    if (blank(value)) return false;
+    return option2.type === "linear" ? Number.isFinite(Number(value)) : true;
+  });
+}
+function resolveXAxis(xAxis, rows, requested = null) {
+  const data = Array.isArray(rows) ? rows : [];
+  const options = (xAxis.options || []).map((option2) => {
+    const available = hasValues(option2, data);
+    const reason = available ? null : KNOWN[option2.key] && KNOWN[option2.key].reason || `No ${option2.title} in this data`;
+    return { ...option2, available, reason };
+  });
+  const usable2 = (key) => options.find((option2) => option2.key === key && option2.available);
+  const pick2 = usable2(requested) || usable2(xAxis.default) || options.find((o) => o.available);
+  return {
+    options,
+    active: pick2 ? pick2.key : null,
+    message: pick2 ? null : NO_TIME_AXIS
+  };
+}
+function activeXAxis(resolved) {
+  return resolved.options.find((option2) => option2.key === resolved.active) || null;
+}
+function xAxisValue(option2, row) {
+  const value = row ? row[option2.col] : void 0;
+  return blank(value) ? NaN : Number(value);
+}
+function xAxisTick(option2, row) {
+  if (option2.type === "linear") {
+    const value = xAxisValue(option2, row);
+    return Number.isFinite(value) ? `Day ${value}` : "";
+  }
+  const label = option2.label_col && row ? row[option2.label_col] : void 0;
+  return blank(label) ? String(row ? row[option2.col] ?? "" : "") : String(label);
+}
+function renderXAxisControl(parent, { resolved, onChange, label = "X-axis" }) {
+  const wrap = createElement("div", "sv-control sv-xaxis-control");
+  const heading = createElement("label", null, label);
+  const group = createElement("div", "sv-xaxis");
+  group.setAttribute("role", "group");
+  group.setAttribute("aria-label", label);
+  resolved.options.forEach((option2) => {
+    const active = option2.key === resolved.active;
+    const button = createElement(
+      "button",
+      `sv-xaxis-option${active ? " is-active" : ""}`,
+      option2.title
+    );
+    button.type = "button";
+    button.dataset.key = option2.key;
+    button.setAttribute("aria-pressed", String(active));
+    if (!option2.available) {
+      button.disabled = true;
+      button.title = option2.reason;
+    }
+    button.onclick = () => {
+      if (active || !option2.available) return;
+      onChange(option2.key);
+    };
+    group.append(button);
+  });
+  wrap.append(heading, group);
+  parent.append(wrap);
+  return wrap;
+}
+
 // src/kit.js
 var kit = Object.freeze({
   // The Chart.js constructor this bundle contains, with the controllers,
@@ -41280,7 +41390,15 @@ var kit = Object.freeze({
   resolveMeasureList,
   presentMeasures,
   // src/time-to-event/km.js — the Kaplan–Meier estimator.
-  kmEstimate
+  kmEstimate,
+  // src/x-axis.js — the Visit / Study day toggle (#368).
+  NO_TIME_AXIS,
+  normalizeXAxis,
+  resolveXAxis,
+  activeXAxis,
+  xAxisValue,
+  xAxisTick,
+  renderXAxisControl
 });
 
 // src/main.js

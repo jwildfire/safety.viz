@@ -73,6 +73,15 @@ import {
 import { boxWhiskerPlugin, drawBoxWhisker } from './box-whisker.js';
 import { presentMeasures, resolveMeasureList } from './measure-list.js';
 import { kmEstimate } from './time-to-event/km.js';
+import {
+  NO_TIME_AXIS,
+  activeXAxis,
+  normalizeXAxis,
+  renderXAxisControl,
+  resolveXAxis,
+  xAxisTick,
+  xAxisValue
+} from './x-axis.js';
 
 // The kit's API reference page is generated from the typedef below: its
 // description is the page's overview and each @property is a member's row.
@@ -118,6 +127,13 @@ import { kmEstimate } from './time-to-event/km.js';
  * @property {function} boxWhiskerPlugin A Chart.js plugin that draws the box-and-whisker marks for whatever specs its getter returns at draw time.
  * @property {function} resolveMeasureList The labels a Measure control offers: the configured measures in their order, or every measure in the data, sorted, when none is configured or none is found.
  * @property {function} presentMeasures The distinct measures in cleaned rows, in first-seen order, as the label and raw name that `resolveMeasureList` takes.
+ * @property {string} NO_TIME_AXIS The message a chart shows instead of a chart when the data has neither a visit nor a study day. Since 1.12.0.
+ * @property {function} normalizeXAxis Read a chart's `x_axis` setting into its full shape — each option's key, column, label column, type and title, and the default view — building it from `visitn_col`, `visit_col` and `studyday_col` when the chart is given none. Since 1.12.0.
+ * @property {function} resolveXAxis Check each x-axis option against the data and pick the view to show: the one asked for, else the default, else the first the data can draw. An option the data cannot draw carries the reason its control shows; with none, the result carries `NO_TIME_AXIS`. Since 1.12.0.
+ * @property {function} activeXAxis The option a resolved x-axis setting has active, or null. Since 1.12.0.
+ * @property {function} xAxisValue A row's position on an x-axis option: its visit number or its study day, NaN when it has none. Since 1.12.0.
+ * @property {function} xAxisTick A row's tick label on an x-axis option: the visit name, or "Day N". Since 1.12.0.
+ * @property {function} renderXAxisControl Render the "X-axis" control: one button per option, the active one pressed, an unavailable one disabled with its reason. Since 1.12.0.
  * @property {function} kmEstimate The Kaplan–Meier estimate for one group, from one observation per participant of a time, whether it ends in the event, and an id: the steps with their at-risk and event counts, standard errors and pointwise 95% intervals, the censoring times, and a reader for the at-risk table.
  */
 
@@ -176,5 +192,14 @@ export const kit = Object.freeze({
   presentMeasures,
 
   // src/time-to-event/km.js — the Kaplan–Meier estimator.
-  kmEstimate
+  kmEstimate,
+
+  // src/x-axis.js — the Visit / Study day toggle (#368).
+  NO_TIME_AXIS,
+  normalizeXAxis,
+  resolveXAxis,
+  activeXAxis,
+  xAxisValue,
+  xAxisTick,
+  renderXAxisControl
 });
