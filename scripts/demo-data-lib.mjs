@@ -51,10 +51,14 @@ export function scheduledVisitNum(label) {
 // recorded there (its analysis visit when it has one — the labs' baseline was
 // drawn at SDTM visit 1, Screening 1).
 export function visitNumberer(records) {
+  // The record's own sequence number, read the same way for the votes and for
+  // the lookup (#384): the SDTM VISITNUM, else the analysis AVISITN.
+  const sequence = (rec) => clean(rec.VISITNUM) || clean(rec.AVISITN);
   const votes = new Map(); // old integer number → Map(new number → count)
   for (const rec of records) {
-    const old = Number(rec.VISITNUM ?? rec.AVISITN);
-    if (!Number.isInteger(old) || isBlank(rec.VISITNUM ?? rec.AVISITN)) continue;
+    const raw = sequence(rec);
+    const old = Number(raw);
+    if (raw === '' || !Number.isInteger(old)) continue;
     const scheduled = scheduledVisitNum(clean(rec.AVISIT)) ?? scheduledVisitNum(clean(rec.VISIT));
     if (scheduled === null) continue;
     if (!votes.has(old)) votes.set(old, new Map());
@@ -68,7 +72,7 @@ export function visitNumberer(records) {
     const label = analysisVisit(rec);
     const scheduled = scheduledVisitNum(label);
     if (scheduled !== null) return scheduled;
-    const raw = clean(rec.AVISITN) || clean(rec.VISITNUM);
+    const raw = sequence(rec);
     if (label === '' && raw === '') return ''; // a record with no visit keeps none
     const old = Number(raw);
     const base = Math.trunc(old);
