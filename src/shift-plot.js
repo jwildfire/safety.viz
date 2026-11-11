@@ -45,7 +45,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
-import { normalizeXAxis } from './x-axis.js';
+import { panelXAxis } from './participant-profile/configure.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 import { presentMeasures, resolveMeasureList } from './measure-list.js';
 
@@ -155,8 +155,9 @@ class SafetyShiftPlot {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visit_order_col,
-      // No toggle of its own, so the panel opens on Visit (#370).
-      x_axis: normalizeXAxis(
+      // No toggle of its own, so the panel opens on Visit (#370), with the
+      // profile's own visit columns where the chart names none (#384).
+      x_axis: panelXAxis(
         { ...settings, visitn_col: settings.visit_order_col },
         { fallback: 'visit' }
       ),
@@ -291,6 +292,13 @@ class SafetyShiftPlot {
     }
     const { rows, removed } = cleanData(this.rawData, this.settings);
     this.cleanData = rows;
+    // The default listing's Study day column only when the data has a study day (#384).
+    const day = this.settings.studyday_col;
+    this.hasStudyDay =
+      !!day &&
+      this.rawData.some(
+        (row) => row && String(row[day] ?? '').trim() !== '' && Number.isFinite(Number(row[day]))
+      );
     this.removedRecords = removed;
     if (removed) console.warn(`${removed} missing or non-numeric results have been removed.`);
     this.availableMeasures = resolveMeasureList(
@@ -672,6 +680,19 @@ class SafetyShiftPlot {
       top: scales.y.getPixelForValue(Math.max(y0, y1)),
       bottom: scales.y.getPixelForValue(Math.min(y0, y1))
     });
+  }
+
+  /**
+   * The listing's columns: the configured details, less the default Study day
+   * column when the data has no study day (#384, SSP-XAX-001).
+   * @returns {Object[]} The column specs.
+   * @private
+   */
+  listingColumns() {
+    const details = this.settings.details;
+    return this.hasStudyDay === false
+      ? details.filter((detail) => detail.value_col !== '__ssp_day')
+      : details;
   }
 
   /**

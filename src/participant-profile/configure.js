@@ -11,6 +11,8 @@
 // deep-merge onto the defaults so a partial override still back-fills every
 // measure. Requirement groups use the PPRF-* scheme.
 
+import { normalizeXAxis } from '../x-axis.js';
+
 // Normalize a single value or nullish to an array. Kept local (not imported
 // from a renderer file) so the module carries no renderer-specific dependency
 // (PPRF-1).
@@ -213,4 +215,37 @@ export function measureColorScale(keys) {
     scale.set(key, MEASURE_COLORS[index % MEASURE_COLORS.length]);
   });
   return scale;
+}
+
+/**
+ * The x_axis a host hands its side panel (#370, #384): the host's own setting
+ * when it has one; otherwise built from the host's columns, with the
+ * profile's own visit columns (`VISITNUM`, labelled by `VISIT`) where the host
+ * names none, so the panel draws whenever the data has a visit or a study day.
+ * A host with a toggle of its own adds what its setting lacks: a Study day
+ * option from `studyday_col`, a Visit option from the visit columns.
+ * @param {Object} settings The host's settings.
+ * @param {Object} [options] Options.
+ * @param {string} [options.fallback='visit'] The view the panel opens on when the host names none.
+ * @returns {{options: Object[], default: string}} The panel's x_axis.
+ */
+export function panelXAxis(settings = {}, { fallback = 'visit' } = {}) {
+  const own = normalizeXAxis(settings, { fallback });
+  const built = normalizeXAxis(
+    {
+      visitn_col: settings.visitn_col || DEFAULT_SETTINGS.visitn_col,
+      visit_col: settings.visit_col || DEFAULT_SETTINGS.visit_col,
+      studyday_col: settings.studyday_col
+    },
+    { fallback }
+  );
+  const keys = new Set(own.options.map((option) => option.key));
+  const options = [...own.options, ...built.options.filter((option) => !keys.has(option.key))];
+  const order = ['visit', 'day'];
+  options.sort((a, b) => {
+    const ia = order.indexOf(a.key);
+    const ib = order.indexOf(b.key);
+    return (ia < 0 ? order.length : ia) - (ib < 0 ? order.length : ib);
+  });
+  return { options, default: own.default };
 }
