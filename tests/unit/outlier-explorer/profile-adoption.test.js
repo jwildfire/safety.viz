@@ -51,8 +51,20 @@ beforeEach(() => {
   document.body.innerHTML = '<div id="host"></div>';
 });
 
+// The fixture carries a visit and a study day; the chart plots by visit
+// (#371: with no time axis configured it would show a message, not a chart).
+const X_AXIS = {
+  options: [
+    { key: 'visit', col: 'VISITNUM', label_col: 'VISIT', type: 'ordinal', title: 'Visit' },
+    { key: 'day', col: 'DY', type: 'linear', title: 'Study day' }
+  ]
+};
+
 function build(settings = {}) {
-  const instance = outlierExplorer(document.querySelector('#host'), settings);
+  const instance = outlierExplorer(document.querySelector('#host'), {
+    x_axis: X_AXIS,
+    ...settings
+  });
   instance.init(makeRows());
   return instance;
 }
@@ -240,5 +252,63 @@ describe('outlier-explorer rail clear paths (PPRF-OE-003, PPRF-11)', () => {
     expect(instance.railWrap.querySelector('.sv-profile-root')).toBeNull();
     instance.setSettings({ profile: true });
     expect(instance.profile).toBeTruthy();
+  });
+});
+
+describe('outlier-explorer side panel X-axis (PPRF-XAX-009, PPRF-XAX-010, PPRF-XAX-011)', () => {
+  function openPanel(instance, id = 'P1') {
+    instance.root.dispatchEvent(
+      new CustomEvent('participantsSelected', { detail: { data: [id] } })
+    );
+  }
+  const panelView = (instance) =>
+    instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent;
+  const hostButton = (instance, title) =>
+    [...instance.controls.querySelectorAll('.sv-xaxis-option')].find(
+      (candidate) => candidate.textContent === title
+    );
+  const panelButton = (instance, title) =>
+    [...instance.railWrap.querySelectorAll('.sv-xaxis-option')].find(
+      (candidate) => candidate.textContent === title
+    );
+
+  it("PPRF-XAX-009: the side panel opens on the outlier explorer's current view (#370)", () => {
+    const byDay = build({ x_axis: { ...X_AXIS, default: 'day' } });
+    expect(byDay.profile.settings.x_axis.default).toBe('day');
+    openPanel(byDay);
+    expect(panelView(byDay)).toBe('Study day');
+
+    const instance = build();
+    openPanel(instance);
+    expect(panelView(instance)).toBe('Visit');
+    // The host switches its own view: the next participant opens on it.
+    hostButton(instance, 'Study day').click();
+    openPanel(instance);
+    expect(panelView(instance)).toBe('Study day');
+    expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Study day');
+  });
+
+  it('PPRF-XAX-010: switching the side panel does not change the host, and a host re-sync keeps the panel choice (#370)', () => {
+    const instance = build();
+    openPanel(instance);
+    const hostChart = instance.charts[0];
+    panelButton(instance, 'Study day').click();
+    expect(panelView(instance)).toBe('Study day');
+    // The host is untouched: its view, its control and its chart.
+    expect(instance.state.xView).toBeNull();
+    expect(instance.resolveXAxis().active).toBe('visit');
+    expect(hostButton(instance, 'Visit').getAttribute('aria-pressed')).toBe('true');
+    expect(instance.charts[0]).toBe(hostChart);
+    expect(hostChart.destroyed).toBe(false);
+    // A re-sync that leaves the host's view alone keeps the panel's choice.
+    instance.setSettings({ profile_details: [{ value_col: 'SEX', label: 'Sex' }] });
+    openPanel(instance);
+    expect(panelView(instance)).toBe('Study day');
+  });
+
+  it("PPRF-XAX-011: the outlier explorer's studyday_col defaults to DY (#370)", () => {
+    const instance = build();
+    expect(instance.settings.studyday_col).toBe('DY');
+    expect(instance.profile.settings.studyday_col).toBe('DY');
   });
 });

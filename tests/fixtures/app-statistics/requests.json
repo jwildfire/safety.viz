@@ -44,7 +44,7 @@
   },
   {
    "file": "src/app/charts.js",
-   "sha256": "783ec529c7a819c17c6a4b14c89591afef854d293a694f5355409d3f60077b6a"
+   "sha256": "a1594cb551d3e622325af7b02e1d24f801938bb7dc4e8ae2478688066845548c"
   },
   {
    "file": "src/app/libraries.js",
@@ -52,7 +52,7 @@
   },
   {
    "file": "src/app/page.js",
-   "sha256": "f9be594b630dc7384117dfe810fbb2989e2a3a81afb0ee2f746807bed834a056"
+   "sha256": "88d8f4d134b17337dbb4f422e892a671369d42ec0c68a898121fa32edfca18c9"
   },
   {
    "file": "site/vendor/bio.viz/bio.viz.js",

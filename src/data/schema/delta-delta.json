@@ -42,6 +42,11 @@
           "default": "VISITNUM",
           "description": "Optional numeric visit column; orders the visit selectors and the sparkline (SDD-CFG-008)."
         },
+        "studyday_col": {
+          "type": ["string", "null"],
+          "default": "DY",
+          "description": "Optional numeric study-day column: the Study day option of the participant profile side panel, which opens on Visit, and the study days in the point tooltip (#370, #374). Defaults to DY since v1.12.0 (it was null); set null when the data has no study day."
+        },
         "measure_x": {
           "type": ["string", "null"],
           "default": null,

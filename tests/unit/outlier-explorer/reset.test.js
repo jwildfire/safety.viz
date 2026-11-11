@@ -59,9 +59,19 @@ beforeEach(() => {
   Chart.built.length = 0;
 });
 
+// The fixture carries a visit and a study day; the chart plots by visit
+// (#371: with no time axis configured it would show a message, not a chart).
+const X_AXIS = {
+  options: [
+    { key: 'visit', col: 'VISITNUM', label_col: 'VISIT', type: 'ordinal', title: 'Visit' },
+    { key: 'day', col: 'DY', type: 'linear', title: 'Study day' }
+  ]
+};
+
 function build(settings = {}) {
   const instance = outlierExplorer(document.querySelector('#host'), {
     filters: [{ value_col: 'SEX', label: 'Sex' }],
+    x_axis: X_AXIS,
     ...settings
   });
   instance.init(makeRows());

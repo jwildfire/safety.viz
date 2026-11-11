@@ -45,6 +45,7 @@ import {
   syncProfileRail,
   unmountProfileRail
 } from './profile-host.js';
+import { normalizeXAxis } from './x-axis.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
 import { presentMeasures, resolveMeasureList } from './measure-list.js';
 
@@ -154,6 +155,11 @@ class SafetyShiftPlot {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visit_order_col,
+      // No toggle of its own, so the panel opens on Visit (#370).
+      x_axis: normalizeXAxis(
+        { ...settings, visitn_col: settings.visit_order_col },
+        { fallback: 'visit' }
+      ),
       details:
         settings.profile_details && settings.profile_details.length ? settings.profile_details : [],
       participantProfileURL: settings.participantProfileURL ?? null,

@@ -35,15 +35,28 @@ describe('outlier-explorer getScales', () => {
 
   it('SOE-REG-028: buildXScale rotates ordinal visit ticks and keeps linear ticks upright (#24)', () => {
     const ordinal = buildXScale(
-      { value_col: 'VISIT', label: 'Visit', type: 'ordinal', order_col: 'VISITNUM' },
+      { key: 'visit', col: 'VISITNUM', label_col: 'VISIT', type: 'ordinal', title: 'Visit' },
       ['Baseline', 'Week 2']
     );
     expect(ordinal.type).toBe('category');
     expect(ordinal.labels).toEqual(['Baseline', 'Week 2']);
     expect(ordinal.ticks.maxRotation).toBe(45);
 
-    const linear = buildXScale({ value_col: 'DY', label: 'Study Day', type: 'linear' }, []);
+    const linear = buildXScale({ key: 'day', col: 'DY', type: 'linear', title: 'Study day' }, []);
     expect(linear.type).toBe('linear');
     expect(linear.ticks.maxRotation).toBe(0);
+  });
+
+  it('SOE-XAX-006: the x-axis title names what is plotted, Visit or Study day (#371)', () => {
+    const visit = {
+      key: 'visit',
+      col: 'VISITNUM',
+      label_col: 'VISIT',
+      type: 'ordinal',
+      title: 'Visit'
+    };
+    const day = { key: 'day', col: 'DY', type: 'linear', title: 'Study day' };
+    expect(buildXScale(visit, ['Baseline']).title).toEqual({ display: true, text: 'Visit' });
+    expect(buildXScale(day, []).title).toEqual({ display: true, text: 'Study day' });
   });
 });

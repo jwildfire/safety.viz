@@ -103,6 +103,37 @@ export function applyFilters(rows, filters) {
 }
 
 /**
+ * The visits a pair compares and their study days, baseline first, for the
+ * listing's Visit and Study day columns (#374, SSP-XAX-001): `Baseline →
+ * Week 8, Week 12` and `-7 → 57, 85`. Only the visits the participant has a
+ * result at are named, in the order the visit controls hold them, and each
+ * day is the day of the result that visit used; a blank day shows as `—`.
+ * `__ssp_day` is blank when no `studyday_col` is configured or no used result
+ * has a day.
+ * @private
+ */
+function pairVisits(byVisit, baselineVisits, comparisonVisits, settings) {
+  const dayCol = settings.studyday_col;
+  const dayOf = (visit) => {
+    const value = dayCol ? byVisit.get(visit)[dayCol] : undefined;
+    return value === undefined || value === null || String(value).trim() === ''
+      ? null
+      : String(value).trim();
+  };
+  const sides = [baselineVisits || [], comparisonVisits || []].map((visits) =>
+    [...new Set(visits)].filter((visit) => byVisit.has(visit))
+  );
+  const days = sides.map((visits) => visits.map(dayOf));
+  const anyDay = days.some((side) => side.some((day) => day !== null));
+  return {
+    __ssp_visit: sides.map((visits) => visits.join(', ')).join(' → '),
+    __ssp_day: anyDay
+      ? days.map((side) => side.map((day) => (day === null ? '—' : day)).join(', ')).join(' → ')
+      : ''
+  };
+}
+
+/**
  * Pair each participant's baseline-visit value against their comparison-visit
  * value for one measure. Within a participant, the first result at each visit
  * is used (the original's per-visit rollup); the baseline and comparison visit
@@ -112,7 +143,9 @@ export function applyFilters(rows, filters) {
  * plot (SSP-REG-019). The returned records carry the participant's raw columns
  * (so filters and listing detail columns resolve) plus the numeric plot
  * coordinates `x`/`y` and the display columns `__ssp_baseline`,
- * `__ssp_comparison`, `__ssp_chg`, and `__ssp_pchg` (SSP-REQ-005).
+ * `__ssp_comparison`, `__ssp_chg`, and `__ssp_pchg` (SSP-REQ-005), plus
+ * `__ssp_visit` and `__ssp_day`, the visits compared and their study days
+ * (#374, SSP-XAX-001).
  * @param {Object} inputs Pairing inputs.
  * @param {Object[]} inputs.rows Cleaned result rows (any measure).
  * @param {string} inputs.measure Selected measure value.
@@ -144,16 +177,16 @@ export function computeShiftPairs({
     if (!participants.has(id)) participants.set(id, { firstRow: row, byVisit: new Map() });
     const byVisit = participants.get(id).byVisit;
     const visit = row[visitCol];
-    if (!byVisit.has(visit)) byVisit.set(visit, row.__ssp_value);
+    if (!byVisit.has(visit)) byVisit.set(visit, row);
   });
 
   const pairs = [];
   participants.forEach(({ firstRow, byVisit }, id) => {
     const baselineValues = [];
     const comparisonValues = [];
-    byVisit.forEach((value, visit) => {
-      if (baseline.has(visit)) baselineValues.push(value);
-      if (comparison.has(visit)) comparisonValues.push(value);
+    byVisit.forEach((visitRow, visit) => {
+      if (baseline.has(visit)) baselineValues.push(visitRow.__ssp_value);
+      if (comparison.has(visit)) comparisonValues.push(visitRow.__ssp_value);
     });
     if (!baselineValues.length || !comparisonValues.length) return;
     const shiftx = applyStat(baselineValues, baselineStat);
@@ -169,7 +202,8 @@ export function computeShiftPairs({
       __ssp_baseline: roundValue(shiftx),
       __ssp_comparison: roundValue(shifty),
       __ssp_chg: roundValue(chg),
-      __ssp_pchg: formatPercent(pchg)
+      __ssp_pchg: formatPercent(pchg),
+      ...pairVisits(byVisit, baselineVisits, comparisonVisits, settings)
     });
   });
   return pairs;

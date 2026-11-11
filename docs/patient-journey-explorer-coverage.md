@@ -109,6 +109,7 @@ rather than reading pixels or private state. The pilot-data numbers live only in
 | PJE-EVT-003    | PJE-EVT-003        | #142  | `events.test.js` — `off` by name and by handler; `destroy` empties the element and clears every listener                                                   |
 | PJE-ACC-001    | PJE-ACC-001        | #142  | `palette.test.js` — contrast and ΔE recomputed in-test from the composited fills at full and de-emphasized strength                                        |
 | PJE-DEMO-001   | PJE-DEMO-001       | #142  | `demo-data.test.js` — the six builders' derivation rules plus the committed-file drift guard and the pharmaversesdtm provenance assertion                  |
+| PJE-XAX-001    | PJE-XAX-001        | #374  | `axis-names.test.js` — a lab tooltip reads "Week 8 · Day 57"                                                                                               |
 
 ## Known gaps, stated
 

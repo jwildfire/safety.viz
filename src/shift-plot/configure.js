@@ -40,7 +40,7 @@ export const AXIS_TYPES = ['linear', 'log'];
  * @property {string} [baseline_stat='mean'] Statistic collapsing a participant's several baseline-visit results to one value; one of STATS.
  * @property {string} [comparison_stat='mean'] Statistic collapsing a participant's several comparison-visit results to one value; one of STATS.
  * @property {Array<string|Object>} [filters=[]] Filter controls: column names or { value_col, label } specs. Filters whose column is absent from the data are dropped with a console warning. Filter specs take `{ value_col, label, start, all, multiple }`: `start` is the opening selection (an array for a `multiple` filter, and a start of `0` or `false` is a real value, not an absent one); `all` controls the "All" option and defaults to true whether or not a start is given — pass `all: false` to remove it, and the filter then always holds one value, the first unless `start` names another; a start value the data lacks is dropped with a console warning; `multiple: true` renders a checkbox multiselect whose state is null (everything) or an array of values (#136).
- * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005).
+ * @property {?Array<string|Object>} [details=null] Columns for the linked participant listing; when null, defaults to participant ID, Visit, Study day (only when `studyday_col` is set), baseline, comparison, change, and percent change (SSP-REQ-005). Visit names the visits each pair compares, baseline first ("Baseline → Week 8, Week 12"), and Study day their days ("-7 → 57, 85"; a blank day shows as "—") (#374, SSP-XAX-001).
  * @property {?string} [start_value=null] Measure selected on first render; falls back to the first measure (with a console warning) when absent from the data.
  * @property {?string[]} [measures=null] Ordered whitelist of measures the Measure control offers: only these appear, and in this order. null or [] offers every measure in the data, alphabetically — the behaviour before this setting existed. Configured measures absent from the data are dropped with a console warning; when none of them is present the control falls back to every measure in the data rather than going blank (SSP-MEAS-001, SSP-MEAS-002).
  * @property {string} [axis_type='linear'] Initial scale for both axes, one of AXIS_TYPES ('linear' or 'log'); the Axis Type control switches them together because the two axes share one domain. On the log scale a participant pair with a zero or negative baseline or comparison value is removed and counted in the note above the chart (SSP-SCALE-001/003).
@@ -49,7 +49,7 @@ export const AXIS_TYPES = ['linear', 'log'];
  * @property {number} [page_size=10] Rows per page in the linked participant listing.
  * @property {?string} [normal_col_low='STNRLO'] Lower-limit-of-normal column passed to the docked profile's lab mappings (#99, PPRF-SSP-002).
  * @property {?string} [normal_col_high='STNRHI'] Upper-limit-of-normal column passed to the docked profile; profile feed rows without a finite positive value here are dropped (the ×ULN denominator) (#99, PPRF-SSP-002).
- * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-SSP-002).
+ * @property {?string} [studyday_col='DY'] Numeric study-day column: the side panel's Study day option (#370, PPRF-XAX-011; it defaulted to null before v1.12.0). Set it to null when the data has no study day, and the panel offers Visit only (#99, PPRF-SSP-002). When set, the default listing also shows each pair's study days in a Study day column (#374, SSP-XAX-001).
  * @property {?Object} [measure_values=null] Optional map of short profile keys (ALT/AST/TB/ALP) to this data's full measure names, passed to the docked profile so the key liver measures resolve; null keeps the profile module's defaults (#99, PPRF-SSP-002).
  * @property {boolean} [profile=true] Dock the shared participant-profile module in the shell's profile slot, fed by the brush selection via the participantsSelected event; false restores the pre-#99 behaviour of listing-only detail (#99, PPRF-SSP-002).
  * @property {?Array<string|Object>} [profile_details=null] Demographic columns for the docked profile's header, as names or { value_col, label } specs; null shows none (the host `details` are pair columns, not demographics) (#99, PPRF-SSP-002).
@@ -82,7 +82,7 @@ export const DEFAULT_SETTINGS = {
   page_size: 10,
   normal_col_low: 'STNRLO',
   normal_col_high: 'STNRHI',
-  studyday_col: null,
+  studyday_col: 'DY',
   measure_values: null,
   profile: true,
   profile_details: null,
@@ -137,6 +137,10 @@ export function syncSettings(settings) {
   if (!synced.details.length) {
     synced.details = [
       { value_col: synced.id_col, label: 'Participant ID' },
+      // The visits each pair compares and their study days (#374,
+      // SSP-XAX-001); the day column only when one is configured.
+      ...(synced.visit_col ? [{ value_col: '__ssp_visit', label: 'Visit' }] : []),
+      ...(synced.studyday_col ? [{ value_col: '__ssp_day', label: 'Study day' }] : []),
       { value_col: '__ssp_baseline', label: 'Baseline' },
       { value_col: '__ssp_comparison', label: 'Comparison' },
       { value_col: '__ssp_chg', label: 'Change' },

@@ -154,6 +154,22 @@
         // The adverse-event domain: summary block and timeline, drawn on the
         // same study-day axis as the labs chart above them (decisions D5/D7).
         ae: { data: aeRows },
+        // The X-axis toggle (#369): Visit and Study day, opening on Visit. In
+        // Visit view the adverse events are listed; in Study day view they
+        // are drawn on the labs chart's day axis.
+        x_axis: {
+          options: [
+            {
+              key: 'visit',
+              col: mapping.visitn_col,
+              label_col: mapping.visit_col,
+              type: 'ordinal',
+              title: 'Visit'
+            },
+            { key: 'day', col: mapping.studyday_col, type: 'linear', title: 'Study day' }
+          ],
+          default: 'visit'
+        },
         studyday_col: mapping.studyday_col,
         baseline_col: mapping.baseline_col,
         visit_col: mapping.visit_col,

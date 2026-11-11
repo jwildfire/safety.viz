@@ -200,7 +200,9 @@ describe('renderSpaghetti (PPRF-3, PPRF-SPAG-001)', () => {
     expect(chart.config.type).toBe('line');
     expect(chart.data.datasets.map((dataset) => dataset.svKey)).toEqual(['ALT', 'TB']);
     expect(chart.options.scales.y.title.text).toBe('Standardized Result [xULN]');
-    expect(chart.options.scales.x.title.text).toBe('Study Day');
+    // A day-indexed model (no active view) is titled for what it plots
+    // (#369): "Study day", never a title over the other view's data.
+    expect(chart.options.scales.x.title.text).toBe('Study day');
     expect(host.querySelector('canvas')).not.toBeNull();
   });
 
@@ -318,7 +320,8 @@ describe('tooltip visit context and raw/adjusted pairing (PPRF-3, PPRF-SPAG-001)
     expect(dataset.svPoints).toHaveLength(1);
     const { title, label } = chart.options.plugins.tooltip.callbacks;
     const item = { dataset, dataIndex: 0, parsed: { x: 30, y: 4 } };
-    expect(title([item])).toEqual(['Study day: 30', 'Visit: Week 4 (4)']);
+    // One line naming both, visit name then study day (#369, PPRF-XAX-005).
+    expect(title([item])).toEqual(['Week 4 · Day 30']);
     expect(label(item)).toEqual(['Raw ALT: 160.00', 'Adjusted ALT: 4.00']);
   });
 

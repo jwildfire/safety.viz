@@ -81,6 +81,7 @@ const DERIVED_PREFIX = '__pje_';
  * @property {string} outcome The outcome / ongoing-indicator cell as recorded (AE, CM), for the tooltip's terminal phrase.
  * @property {?string} test LB only: the test name.
  * @property {?string} testCode LB only: the test code.
+ * @property {?string} visit LB only: the visit name from `lb_visit_col`, or null when the record has none (#374, PJE-XAX-001).
  * @property {?number} lln LB only: lower limit of normal.
  * @property {?number} uln LB only: upper limit of normal.
  * @property {Object} flags `{ severity: {key,label,rank}|null, serious, related, abnormal, abnormalReason, derived, direction, dayZero, reference?, unconfiguredTest? }` — `dayZero` when the only day recorded was the impossible day 0; `unconfiguredTest` (labs, set by structureData) when the test is outside `lb_tests`.
@@ -376,6 +377,7 @@ function deriveFields(row, domain, settings) {
         category: test,
         test,
         testCode: text(row[s.lb_testcd_col]),
+        visit: s.lb_visit_col ? text(row[s.lb_visit_col]) : null,
         value,
         unit,
         lln,
@@ -518,6 +520,7 @@ export function normalizeDomain(rows, domain, settings) {
       outcome: rest.outcome || '',
       test: rest.test ?? null,
       testCode: rest.testCode ?? null,
+      visit: rest.visit || null,
       lln: rest.lln ?? null,
       uln: rest.uln ?? null,
       flags: {

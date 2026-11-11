@@ -37,6 +37,11 @@
           "default": "VISITNUM",
           "description": "Optional numeric column that orders the visits; when absent the visits sort alphanumerically (SSP-REG-013/014)."
         },
+        "studyday_col": {
+          "type": ["string", "null"],
+          "default": "DY",
+          "description": "Optional numeric study-day column: the Study day option of the participant profile side panel, which opens on Visit, and the listing's Study day column (#370, #374). Defaults to DY since v1.12.0 (it was null); set null when the data has no study day."
+        },
         "id_col": {
           "type": "string",
           "default": "USUBJID",
@@ -85,7 +90,7 @@
         },
         "details": {
           "$ref": "#/$defs/fieldList",
-          "description": "Optional listing columns; defaults to participant ID, baseline, comparison, change, and percent change (SSP-REQ-005)."
+          "description": "Optional listing columns; defaults to participant ID, Visit, Study day (only when studyday_col is set), baseline, comparison, change, and percent change (SSP-REQ-005). Visit names the visits each pair compares, baseline first (\"Baseline → Week 8, Week 12\"), and Study day their days (\"-7 → 57, 85\"; a blank day shows as \"—\") (#374, SSP-XAX-001)."
         }
       }
     }
