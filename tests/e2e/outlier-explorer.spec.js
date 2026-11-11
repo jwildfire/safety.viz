@@ -36,7 +36,7 @@ test.describe('safety.viz outlier-explorer module', () => {
         'Measure',
         'Sex',
         'Treatment Group',
-        'Plot by',
+        'X-axis',
         'Lower',
         'Upper',
         'Method',
@@ -232,22 +232,54 @@ test.describe('safety.viz outlier-explorer module', () => {
     await captureEvidence(page, 'SOE-REG-049', 'color-by-group');
   });
 
-  test('SOE-FUNC-004/SOE-REG-003: the x-axis toggle switches between the visit and study-day axes (#24)', async ({
+  // The fixture configures the axis through the original chart's time_cols;
+  // the sibling below configures it through x_axis, the setting every chart
+  // takes (#371). Both open on Visit and switch with the shared X-axis control.
+  const xAxisType = (page) =>
+    page.evaluate(() => window.__safetyOutlierExplorerInstance.chart.scales.x.type);
+  const xAxisTitle = (page) =>
+    page.evaluate(() => window.__safetyOutlierExplorerInstance.chart.options.scales.x.title.text);
+  const xAxisButton = (page, title) =>
+    page.locator('.sv-xaxis-control .sv-xaxis-option', { hasText: title });
+
+  test('SOE-FUNC-004/SOE-REG-003: the x-axis toggle switches between the visit and study-day axes through time_cols (#24, #371)', async ({
     page
   }) => {
-    expect(
-      await page.evaluate(() => window.__safetyOutlierExplorerInstance.chart.scales.x.type)
-    ).toBe('category');
-    await page
-      .locator('.sv-control', { hasText: 'Plot by' })
-      .locator('select')
-      .selectOption({ label: 'Study Day' });
-    expect(
-      await page.evaluate(() => window.__safetyOutlierExplorerInstance.chart.scales.x.type)
-    ).toBe('linear');
+    expect(await xAxisType(page)).toBe('category');
+    expect(await xAxisTitle(page)).toBe('Visit');
+    await expect(xAxisButton(page, 'Visit')).toHaveAttribute('aria-pressed', 'true');
+    await xAxisButton(page, 'Study Day').click();
+    expect(await xAxisType(page)).toBe('linear');
+    expect(await xAxisTitle(page)).toBe('Study Day');
+    await expect(xAxisButton(page, 'Study Day')).toHaveAttribute('aria-pressed', 'true');
   });
 
-  test('SOE-REG-011: point tooltips list participant, result, and time (#24)', async ({ page }) => {
+  test('SOE-FUNC-004/SOE-REG-003/SOE-XAX-001: the x-axis toggle switches between the visit and study-day axes through x_axis (#371)', async ({
+    page
+  }) => {
+    await page.evaluate(() => {
+      window.__safetyOutlierExplorerInstance.setSettings({
+        time_cols: [],
+        x_axis: {
+          options: [
+            { key: 'visit', col: 'VISITNUM', label_col: 'VISIT', type: 'ordinal', title: 'Visit' },
+            { key: 'day', col: 'DY', type: 'linear', title: 'Study day' }
+          ],
+          default: 'visit'
+        }
+      });
+    });
+    expect(await xAxisType(page)).toBe('category');
+    expect(await xAxisTitle(page)).toBe('Visit');
+    await expect(xAxisButton(page, 'Visit')).toHaveAttribute('aria-pressed', 'true');
+    await xAxisButton(page, 'Study day').click();
+    expect(await xAxisType(page)).toBe('linear');
+    expect(await xAxisTitle(page)).toBe('Study day');
+  });
+
+  test('SOE-REG-011/SOE-XAX-006: point tooltips list participant, result, and the visit and study day (#24, #371)', async ({
+    page
+  }) => {
     const lines = await page.evaluate(() => {
       const instance = window.__safetyOutlierExplorerInstance;
       return instance.chart.options.plugins.tooltip.callbacks.label({
@@ -257,7 +289,8 @@ test.describe('safety.viz outlier-explorer module', () => {
     });
     expect(lines[0]).toMatch(/^SUBJ-/);
     expect(lines[1]).toContain('Albumin');
-    expect(lines[2]).toContain('Time:');
+    // The visit and the study day, whichever view is plotted (#371).
+    expect(lines[2]).toMatch(/^.+ · Day -?\d+$/);
   });
 
   test('SOE-API-003: participantsSelected fires on select and clear (#24)', async ({ page }) => {

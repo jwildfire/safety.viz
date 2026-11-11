@@ -48,18 +48,16 @@ export function groupColorScale(groupValues) {
 
 /**
  * Tooltip text lines for a data point (SOE-REG-011): participant, result, and
- * time, plus any configured tooltip_cols (SOE-CFG-006).
- * @param {Object} point The plotted point ({ y, label, raw }).
+ * the row's visit and study day ("Week 8 · Day 57", #371), plus any configured
+ * tooltip_cols (SOE-CFG-006).
+ * @param {Object} point The plotted point ({ y, label, raw }); `label` is the time label.
  * @param {Object} settings Normalized settings.
  * @param {string} measureText The active measure label.
  * @returns {Array<string>} Tooltip lines.
  */
 export function pointTooltip(point, settings, measureText) {
-  const lines = [
-    String(point.raw[settings.id_col]),
-    `${measureText}: ${point.y}`,
-    `Time: ${point.label}`
-  ];
+  const lines = [String(point.raw[settings.id_col]), `${measureText}: ${point.y}`];
+  if (point.label) lines.push(point.label);
   settings.tooltip_cols.forEach((col) => {
     const value = point.raw[col.value_col];
     if (value !== undefined && value !== null && value !== '') {

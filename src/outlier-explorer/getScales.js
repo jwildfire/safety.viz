@@ -43,22 +43,23 @@ export function axisStep(range) {
   return Math.pow(10, Math.floor(Math.log10(raw)));
 }
 
-// Chart.js x-scale config for the active time column. Ordinal visit axes use a
-// category scale over the ordered labels with rotated ticks; linear time axes
-// use a numeric scale with upright ticks (SOE-REG-028).
-export function buildXScale(timeCol, categories) {
-  if (timeCol.type === 'ordinal') {
+// Chart.js x-scale config for the active x-axis option (#371). The Visit view
+// uses a category scale over the ordered visit names with rotated ticks; the
+// Study day view a numeric scale with upright ticks (SOE-REG-028). The title
+// is the option's, so it always names what is plotted.
+export function buildXScale(option, categories) {
+  if (option.type === 'ordinal') {
     return {
       type: 'category',
       labels: categories,
       offset: true,
-      title: { display: true, text: timeCol.label },
+      title: { display: true, text: option.title },
       ticks: { maxRotation: 45, minRotation: 45, autoSkip: true }
     };
   }
   return {
     type: 'linear',
-    title: { display: true, text: timeCol.label },
+    title: { display: true, text: option.title },
     ticks: { maxRotation: 0, minRotation: 0 }
   };
 }

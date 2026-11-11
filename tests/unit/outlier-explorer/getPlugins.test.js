@@ -16,25 +16,25 @@ describe('outlier-explorer getPlugins', () => {
     expect(long.get(`g${GROUP_COLORS.length}`)).toBe(GROUP_COLORS[0]);
   });
 
-  it('SOE-REG-011: pointTooltip lists participant, result, and time (#24)', () => {
+  it('SOE-REG-011/SOE-XAX-006: pointTooltip lists participant, result, and the visit and study day (#24, #371)', () => {
     const settings = syncSettings({});
-    const point = { y: 12, label: '#3', raw: { USUBJID: 'SUBJ-007' } };
+    const point = { y: 12, label: 'Week 8 · Day 57', raw: { USUBJID: 'SUBJ-007' } };
     const lines = pointTooltip(point, settings, 'Albumin (g/dL)');
     expect(lines[0]).toBe('SUBJ-007');
     expect(lines[1]).toBe('Albumin (g/dL): 12');
-    expect(lines[2]).toBe('Time: #3');
+    expect(lines[2]).toBe('Week 8 · Day 57');
   });
 
   it('SOE-CFG-006/SOE-REG-012: pointTooltip appends configured tooltip_cols when present (#24)', () => {
     const settings = syncSettings({ tooltip_cols: [{ value_col: 'DT', label: 'Date' }] });
     const withDate = pointTooltip(
-      { y: 1, label: '#1', raw: { USUBJID: 'P', DT: '2026-01-02' } },
+      { y: 1, label: 'Week 2', raw: { USUBJID: 'P', DT: '2026-01-02' } },
       settings,
       'M'
     );
     expect(withDate).toContain('Date: 2026-01-02');
     const withoutDate = pointTooltip(
-      { y: 1, label: '#1', raw: { USUBJID: 'P', DT: '' } },
+      { y: 1, label: 'Week 2', raw: { USUBJID: 'P', DT: '' } },
       settings,
       'M'
     );

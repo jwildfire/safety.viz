@@ -80,10 +80,11 @@ exotic, legacy, or data-unsupported rows honestly.
   (SOE-FUNC-008/009, SOE-CFG-010/011/012, SOE-DATA-005, SOE-REG-007/008/009/010):**
   the "visits without data" and "unscheduled visits" toggles and their
   `unscheduled_visit_pattern`/`unscheduled_visits_values` config depend on a
-  visit-name/scheduling column. The reused `adbds.csv` is a distribution set
-  with no such column, and the module derives an ordinal measurement sequence
-  for its axis; there is no honest way to demo empty or unscheduled visits, so
-  these are out of scope for this module.
+  visit-name/scheduling column. The reused `adbds.csv` was then a distribution
+  set with no such column, and the module derived a measurement sequence for
+  its axis (removed in #371: the axis is now Visit or Study day); there was no
+  honest way to demo empty or unscheduled visits, so these are out of scope
+  for this module.
 
 - **Descoped — secondary visualization (SOE-FUNC-010/012 sparkline panel,
   SOE-REG-021/024):** the original opens a panel of small per-measure sparkline
