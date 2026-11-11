@@ -16,6 +16,158 @@ export const num = (v) => (isNum(v) ? v : ''); // numeric field → '' when miss
 
 export const roundTo = (value, decimals) => Number(Number(value).toFixed(decimals));
 
+// ---- visits and study days (#365, #366) -----------------------------------
+// Every extract numbers visits one way: Baseline 0, Week N = N, Screening before
+// Baseline (Screening 1 = -2, Screening 2 = -1), and an unscheduled visit 0.1
+// after the visit it follows. The pilot's labs number visits by SDTM sequence
+// instead (Week 2 = 4 … Week 26 = 13), which put one visit at two numbers.
+
+// The visit a record is shown at: its analysis visit (AVISIT). A record with none
+// that is flagged as the baseline (ABLFL) is the Baseline: a few vital signs and
+// one participant's ECGs took their baseline at Screening 1 with no analysis
+// visit, and under their SDTM label they sorted after Baseline and collided with
+// Week 2. Anything else keeps its SDTM visit.
+export function analysisVisit(rec) {
+  if (!isBlank(rec.AVISIT)) return clean(rec.AVISIT);
+  if (rec.ABLFL === 'Y') return 'Baseline';
+  return clean(rec.VISIT);
+}
+
+// The number of a scheduled visit from its label, or null when the label is not one.
+export function scheduledVisitNum(label) {
+  const text = String(label ?? '').trim();
+  if (/^baseline$/i.test(text)) return 0;
+  const week = /^week\s+(\d+)$/i.exec(text);
+  if (week) return Number(week[1]);
+  const screening = /^screening(?:\s+(\d+))?$/i.exec(text);
+  if (screening) return (screening[1] ? Number(screening[1]) : 2) - 3;
+  return null;
+}
+
+// A function numbering one domain's records. Scheduled visits take their number
+// from the label; any other visit (unscheduled, or the labs' "Ambul Ecg
+// Placement") keeps its fraction after the visit it follows, found from the
+// domain's own SDTM sequence: the integer visit number → the scheduled visit
+// recorded there (its analysis visit when it has one — the labs' baseline was
+// drawn at SDTM visit 1, Screening 1).
+export function visitNumberer(records) {
+  // The record's own sequence number, read the same way for the votes and for
+  // the lookup (#384): the SDTM VISITNUM, else the analysis AVISITN.
+  const sequence = (rec) => clean(rec.VISITNUM) || clean(rec.AVISITN);
+  const votes = new Map(); // old integer number → Map(new number → count)
+  for (const rec of records) {
+    const raw = sequence(rec);
+    const old = Number(raw);
+    if (raw === '' || !Number.isInteger(old)) continue;
+    const scheduled = scheduledVisitNum(clean(rec.AVISIT)) ?? scheduledVisitNum(clean(rec.VISIT));
+    if (scheduled === null) continue;
+    if (!votes.has(old)) votes.set(old, new Map());
+    const tally = votes.get(old);
+    tally.set(scheduled, (tally.get(scheduled) ?? 0) + 1);
+  }
+  const follows = new Map(
+    [...votes].map(([old, tally]) => [old, [...tally].sort((a, b) => b[1] - a[1])[0][0]])
+  );
+  return (rec) => {
+    const label = analysisVisit(rec);
+    const scheduled = scheduledVisitNum(label);
+    if (scheduled !== null) return scheduled;
+    const raw = sequence(rec);
+    if (label === '' && raw === '') return ''; // a record with no visit keeps none
+    const old = Number(raw);
+    const base = Math.trunc(old);
+    if (isNum(raw) && old !== base && follows.has(base))
+      return roundTo(follows.get(base) + (old - base), 1);
+    throw new Error(
+      `cannot place visit "${label}" (number ${raw || 'none'}) in the visit numbering`
+    );
+  };
+}
+
+// The synthetic cohorts' planned study day: Baseline is day 1 (first dose), Week N
+// is day 7N + 1. CDISC study days have no day 0.
+export function syntheticStudyDay(label) {
+  const visit = scheduledVisitNum(label);
+  if (visit === null || visit < 0) throw new Error(`no planned study day for visit "${label}"`);
+  return visit === 0 ? 1 : visit * 7 + 1;
+}
+
+// A minimal RFC-4180 reader for the contract check below: header → records.
+export function csvRecords(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let quoted = false;
+  for (let i = 0; i < text.length; i += 1) {
+    const c = text[i];
+    if (quoted) {
+      if (c === '"' && text[i + 1] === '"') {
+        field += '"';
+        i += 1;
+      } else if (c === '"') quoted = false;
+      else field += c;
+    } else if (c === '"') quoted = true;
+    else if (c === ',') {
+      row.push(field);
+      field = '';
+    } else if (c === '\n' || c === '\r') {
+      if (c === '\r' && text[i + 1] === '\n') i += 1;
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
+    } else field += c;
+  }
+  if (field !== '' || row.length) {
+    row.push(field);
+    rows.push(row);
+  }
+  const [header = [], ...body] = rows;
+  return {
+    header,
+    records: body
+      .filter((cells) => !(cells.length === 1 && cells[0] === ''))
+      .map((cells) => Object.fromEntries(header.map((col, i) => [col, cells[i] ?? ''])))
+  };
+}
+
+// What the time-axis charts need from each extract: the columns, a numeric study
+// day on every row, and one number per visit label across all of them.
+export const DEMO_DATA_CONTRACT = {
+  'adbds.csv': { columns: ['VISIT', 'VISITNUM', 'DY', 'ABLFL'], day: 'DY' },
+  'adbds-abnbl.csv': { columns: ['VISIT', 'VISITNUM', 'DY', 'ABLFL'], day: 'DY' },
+  'adeg.csv': { columns: ['VISIT', 'VISITNUM', 'DY', 'ABLFL'], day: 'DY' },
+  'pje-lb.csv': { columns: ['VISIT', 'VISITNUM', 'LBDY'], day: 'LBDY' }
+};
+
+// Problems with the extracts given ({file name → text}), one line each; [] when
+// they hold. A file not given is not checked.
+export function demoDataContract(files) {
+  const problems = [];
+  const numbers = new Map(); // visit label → Map(number → first file that used it)
+  for (const [file, rule] of Object.entries(DEMO_DATA_CONTRACT)) {
+    if (!(file in files)) continue;
+    const { header, records } = csvRecords(files[file]);
+    const absent = rule.columns.filter((col) => !header.includes(col));
+    for (const col of absent) problems.push(`${file} has no ${col} column`);
+    if (absent.length) continue;
+    records.forEach((rec, i) => {
+      if (!isNum(rec[rule.day]))
+        problems.push(`${file} row ${i + 2} has no study day (${rule.day})`);
+      if (!numbers.has(rec.VISIT)) numbers.set(rec.VISIT, new Map());
+      const seen = numbers.get(rec.VISIT);
+      if (!seen.has(rec.VISITNUM)) seen.set(rec.VISITNUM, file);
+    });
+  }
+  for (const [label, seen] of numbers) {
+    if (seen.size > 1)
+      problems.push(
+        `visit "${label}" is numbered ${[...seen].map(([n, file]) => `${n} (${file})`).join(' and ')}`
+      );
+  }
+  return problems;
+}
+
 // ---- ECG / QT contract ----------------------------------------------------
 // The pilot ADEG carries eight PARAMCDs; the QT Safety Explorer demo keeps the two
 // fixed heart-rate corrections in scope for Phase 1 (QTcF / QTcB) plus heart rate,
@@ -86,7 +238,8 @@ export const EG_COLUMNS = [
   'STRESN',
   'BASE',
   'CHG',
-  'ABLFL'
+  'ABLFL',
+  'DY'
 ];
 
 // QTc = QT / (RR in seconds) ^ exponent. Fridericia uses 1/3, Bazett 1/2.
@@ -111,7 +264,7 @@ export const isEgAnalysisRecord = (rec) =>
 // the source AVAL for measured parameters, or a derived QTc for the corrections. BASE
 // and CHG are filled in by attachEgBaseline(); the source BASE/CHG cannot be reused
 // because they belong to the QTCFR/QTCBR values we do not carry forward (#79).
-export function mapEg(rec, param, value) {
+export function mapEg(rec, param, value, visitNum = (r) => clean(r.AVISITN) || clean(r.VISITNUM)) {
   return {
     USUBJID: clean(rec.USUBJID),
     SITE: isBlank(rec.SITEID) ? '' : `Clinical Site ${rec.SITEID}`,
@@ -120,15 +273,16 @@ export function mapEg(rec, param, value) {
     RACE: clean(rec.RACE),
     AGE: num(rec.AGE),
     ARM: clean(rec.TRTA) || clean(rec.ARM),
-    VISIT: clean(rec.AVISIT) || clean(rec.VISIT),
-    VISITNUM: clean(rec.AVISITN) || clean(rec.VISITNUM),
+    VISIT: analysisVisit(rec),
+    VISITNUM: visitNum(rec),
     PARAMCD: param.paramcd,
     TEST: param.test,
     STRESU: param.unit,
     STRESN: value,
     BASE: '',
     CHG: '',
-    ABLFL: clean(rec.ABLFL)
+    ABLFL: clean(rec.ABLFL),
+    DY: num(rec.ADY)
   };
 }
 
@@ -203,12 +357,13 @@ export function buildEcgRecords(sourceRecords, { log = () => {}, warn = () => {}
       `(max ${worst.toFixed(3)} bpm)`
   );
 
+  const visitNum = visitNumberer(sourceRecords);
   const records = [];
   let unpaired = 0;
   for (const param of EG_PARAMS) {
     if (!param.derivedFrom) {
       for (const rec of source.filter((r) => clean(r.PARAMCD) === param.paramcd))
-        records.push(mapEg(rec, param, rec.AVAL));
+        records.push(mapEg(rec, param, rec.AVAL, visitNum));
       continue;
     }
     for (const [key, rec] of qtByKey) {
@@ -218,7 +373,12 @@ export function buildEcgRecords(sourceRecords, { log = () => {}, warn = () => {}
         continue;
       }
       records.push(
-        mapEg(rec, param, roundTo(correctQt(rec.AVAL, rr.AVAL, param.exponent), EG_DECIMALS))
+        mapEg(
+          rec,
+          param,
+          roundTo(correctQt(rec.AVAL, rr.AVAL, param.exponent), EG_DECIMALS),
+          visitNum
+        )
       );
     }
   }
@@ -328,7 +488,9 @@ export const PJE_LB_COLUMNS = [
   'ABLFL',
   'LBDY',
   'LBDTC',
-  'TRTSDT'
+  'TRTSDT',
+  'VISIT',
+  'VISITNUM'
 ];
 export const PJE_CM_COLUMNS = [
   'USUBJID',
@@ -428,6 +590,7 @@ export function buildPjeAeRecords(adaeRecords) {
 // carried verbatim because the baseline rule is flag-first (design D17).
 export function buildPjeLbRecords(adlbRecords, { tests = PJE_LB_TESTS, warn = () => {} } = {}) {
   const panel = new Set(tests);
+  const visitNum = visitNumberer(adlbRecords);
   const records = adlbRecords
     .filter(
       (r) =>
@@ -448,7 +611,9 @@ export function buildPjeLbRecords(adlbRecords, { tests = PJE_LB_TESTS, warn = ()
       ABLFL: clean(r.ABLFL),
       LBDY: num(r.ADY),
       LBDTC: clean(r.ADT),
-      TRTSDT: clean(r.TRTSDT)
+      TRTSDT: clean(r.TRTSDT),
+      VISIT: analysisVisit(r),
+      VISITNUM: visitNum(r)
     }));
   const found = new Set(records.map((r) => r.LBTEST));
   const missing = tests.filter((t) => !found.has(t));

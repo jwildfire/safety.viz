@@ -18,8 +18,8 @@ describe('demo app: placing a file in a domain', () => {
 
   it('APP-PLACE-002: reports how many of the domain’s columns were found, and every candidate (#149)', () => {
     const placed = placeFile(header('adbds.csv'), manifest);
-    // The labs extract carries every bds column but the study day.
-    expect(placed.matched).toBe(12);
+    // The labs extract carries every bds column, the study day included (#365).
+    expect(placed.matched).toBe(13);
     expect(placed.of).toBe(13);
     expect(placed.candidates.map((candidate) => candidate.domain)).toEqual([
       'bds',
@@ -27,7 +27,7 @@ describe('demo app: placing a file in a domain', () => {
       'subject',
       'ae'
     ]);
-    expect(placed.candidates[0]).toEqual({ domain: 'bds', matched: 12, of: 13 });
+    expect(placed.candidates[0]).toEqual({ domain: 'bds', matched: 13, of: 13 });
   });
 
   it('APP-PLACE-003: a file matching two columns or fewer is not placed, and says what it did find (#149)', () => {
@@ -103,7 +103,7 @@ describe('demo app: placing a file in a domain', () => {
     expect(placeFile(adlb, manifest, { measureNames: ['QTcF', 'Heart Rate'] })).toMatchObject({
       domain: 'eg',
       matched: 9,
-      of: 10
+      of: 11
     });
     // Without normal ranges or a study day it carries more ECG columns than
     // labs columns, and is still labs by what it measures.

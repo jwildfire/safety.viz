@@ -1,6 +1,6 @@
 {
   "module": "outlier-explorer",
-  "generatedAt": "2026-11-09T02:05:16.118Z",
+  "generatedAt": "2026-11-11T07:57:41.496Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.4",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42547979942",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42547979942"
+    "id": "42981434271",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42981434271"
   },
   "records": [
     {
@@ -146,6 +146,14 @@
       "status": "pass",
       "requirementIds": ["APP-CHART-010"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "APP-CHART-012: the Outlier Explorer opens on the X-axis view the reader left it on, after another chart and another tab (#373)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-012"],
+      "issueRefs": [373],
       "screenshots": []
     },
     {
@@ -1500,11 +1508,19 @@
       "screenshots": []
     },
     {
-      "test": "SOE-FUNC-004/SOE-REG-003: the x-axis toggle switches between the visit and study-day axes (#24)",
+      "test": "SOE-FUNC-004/SOE-REG-003: the x-axis toggle switches between the visit and study-day axes through time_cols (#24, #371)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["SOE-FUNC-004", "SOE-REG-003"],
-      "issueRefs": [24],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "SOE-FUNC-004/SOE-REG-003/SOE-XAX-001: the x-axis toggle switches between the visit and study-day axes through x_axis (#371)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["SOE-FUNC-004", "SOE-REG-003", "SOE-XAX-001"],
+      "issueRefs": [371],
       "screenshots": []
     },
     {
@@ -1552,11 +1568,11 @@
       "screenshots": ["SOE-FUNC-010-participant-detail.png"]
     },
     {
-      "test": "SOE-REG-011: point tooltips list participant, result, and time (#24)",
+      "test": "SOE-REG-011/SOE-XAX-006: point tooltips list participant, result, and the visit and study day (#24, #371)",
       "suite": "browser",
       "status": "pass",
-      "requirementIds": ["SOE-REG-011"],
-      "issueRefs": [24],
+      "requirementIds": ["SOE-REG-011", "SOE-XAX-006"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -3320,6 +3336,14 @@
       "screenshots": []
     },
     {
+      "test": "analysisVisit shows a flagged baseline with no analysis visit as Baseline, numbered 0 (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
+      "screenshots": []
+    },
+    {
       "test": "buildAdslRecords derives EOSDY = EOSDT − TRTSDT + 1 and carries the end-of-study status (#128)",
       "suite": "unit",
       "status": "pass",
@@ -3648,11 +3672,11 @@
       "screenshots": []
     },
     {
-      "test": "demo app: chart recipes APP-CHART-006: the study day is the mapped column, else visit order, else nothing for a chart that would print it (#150)",
+      "test": "demo app: chart recipes APP-CHART-006: the study day passed to a chart is the mapped column or none, never the visit number (#150, #373)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-CHART-006"],
-      "issueRefs": [150],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -3685,6 +3709,14 @@
       "status": "pass",
       "requirementIds": ["APP-CHART-010"],
       "issueRefs": [165],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: chart recipes APP-CHART-011: every chart with the X-axis toggle is passed x_axis from the mapped visit and study-day columns; an unmapped one leaves its option with no column (#373)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-011"],
+      "issueRefs": [373],
       "screenshots": []
     },
     {
@@ -4456,6 +4488,22 @@
       "screenshots": []
     },
     {
+      "test": "demo app: the remembered X-axis view APP-CHART-012: a chart opens on the X-axis view the reader left it on, after another chart or tab, while the page is open (#373)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-012"],
+      "issueRefs": [373],
+      "screenshots": []
+    },
+    {
+      "test": "demo app: the remembered X-axis view APP-CHART-012: the remembered view is not kept across page loads (#373)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-CHART-012"],
+      "issueRefs": [373],
+      "screenshots": []
+    },
+    {
       "test": "demo app: the renamed-column study APP-LOAD-016: scripts/build-app-fixture.mjs reproduces the committed files byte for byte (#151)",
       "suite": "unit",
       "status": "pass",
@@ -4557,6 +4605,38 @@
       "status": "pass",
       "requirementIds": ["APP-STAT-008"],
       "issueRefs": [151],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataContract fails a lab row with no study day, naming the file and row (#365)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [365],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataContract fails an extract that lacks a required column (#365)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [365],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataContract fails one visit label numbered two ways across the extracts (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
+      "screenshots": []
+    },
+    {
+      "test": "demoDataContract passes extracts that carry the visit, the study day and the baseline flag (#365)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [365],
       "screenshots": []
     },
     {
@@ -5192,6 +5272,14 @@
       "screenshots": []
     },
     {
+      "test": "kit: the shared chart parts as one export KIT-API-017: the x-axis toggle members are the ones src/x-axis.js exports (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-API-017"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
       "test": "letting go of R (#258) APP-R-048: closing never waits on R: an R that stopped answering while it started is closed at once, the run that was waiting on it is left to itself, and the next run starts another; an R that was still being fetched is never made (#261)",
       "suite": "unit",
       "status": "pass",
@@ -5544,11 +5632,115 @@
       "screenshots": []
     },
     {
+      "test": "normalizeXAxis KIT-XAX-001: an option key given twice is read once, the first time (#384)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-001"],
+      "issueRefs": [384],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeXAxis KIT-XAX-001: x_axis is read as given, each option filled from its key (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-001"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeXAxis KIT-XAX-002: a visit name with no visit number builds no Visit option, since nothing orders it (#384)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-002"],
+      "issueRefs": [384],
+      "screenshots": []
+    },
+    {
+      "test": "normalizeXAxis KIT-XAX-002: without x_axis it is built from visitn_col, visit_col and studyday_col (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-002"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
       "test": "openCommand APP-LOCAL-006: opens the address with each system’s own command (#214)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOCAL-006"],
       "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "outlier explorer: the main x-axis SOE-XAX-001: x_axis drives the main axis and the shared X-axis control (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-001"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier explorer: the main x-axis SOE-XAX-002: time_cols still works, read as the x_axis options (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-002"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier explorer: the main x-axis SOE-XAX-004: Reset chart puts the x-axis back on the default view (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-004"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier explorer: the main x-axis SOE-XAX-004: the chart opens on the setting's default view by key, not on the first option (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-004"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier explorer: the main x-axis SOE-XAX-005: an option the data cannot draw is greyed with its reason, and the control still shows (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-005"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier explorer: the main x-axis SOE-XAX-006: the tooltip and the listing name both the visit and the study day (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-006"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier explorer: the main x-axis SOE-XAX-007: the message goes when data with a time axis arrives (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-007"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier explorer: the main x-axis SOE-XAX-007: with neither a visit nor a study day the chart shows a message and no chart (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-007"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier explorer: the main x-axis SOE-XAX-007: with no time setting at all there is no Measurement sequence axis, only the message (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-007"],
+      "issueRefs": [371],
       "screenshots": []
     },
     {
@@ -5624,11 +5816,11 @@
       "screenshots": []
     },
     {
-      "test": "outlier-explorer configure SOE-FUNC-004: time_cols default to a derived Measurement axis and normalize ordinal specs (#24)",
+      "test": "outlier-explorer configure SOE-FUNC-004: time_cols specs normalize, and no Measurement axis is derived when they are empty (#24, #371)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["SOE-FUNC-004"],
-      "issueRefs": [24],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -5645,6 +5837,30 @@
       "status": "pass",
       "requirementIds": ["SOE-REG-048"],
       "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-XAX-001: the main axis reads x_axis, the setting every chart takes (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-001"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-XAX-002: without x_axis, each time_cols entry becomes an x_axis option (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-002"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer configure SOE-XAX-003: without x_axis or time_cols, the axis is built from visitn_col, visit_col and studyday_col (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-003"],
+      "issueRefs": [371],
       "screenshots": []
     },
     {
@@ -5696,11 +5912,11 @@
       "screenshots": []
     },
     {
-      "test": "outlier-explorer getPlugins SOE-REG-011: pointTooltip lists participant, result, and time (#24)",
+      "test": "outlier-explorer getPlugins SOE-REG-011/SOE-XAX-006: pointTooltip lists participant, result, and the visit and study day (#24, #371)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SOE-REG-011"],
-      "issueRefs": [24],
+      "requirementIds": ["SOE-REG-011", "SOE-XAX-006"],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -5749,6 +5965,14 @@
       "status": "pass",
       "requirementIds": ["SOE-REG-033"],
       "issueRefs": [24],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer getScales SOE-XAX-006: the x-axis title names what is plotted, Visit or Study day (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-006"],
+      "issueRefs": [371],
       "screenshots": []
     },
     {
@@ -5912,11 +6136,35 @@
       "screenshots": []
     },
     {
-      "test": "outlier-explorer structureData SOE-FUNC-004: assignSequence derives a 1-based per-participant measurement index (#24)",
+      "test": "outlier-explorer side panel X-axis (PPRF-XAX-009, PPRF-XAX-010, PPRF-XAX-011) PPRF-XAX-009: a main axis with no day option still hands the panel a Study day option from studyday_col (#384)",
       "suite": "unit",
       "status": "pass",
-      "requirementIds": ["SOE-FUNC-004"],
-      "issueRefs": [24],
+      "requirementIds": ["PPRF-XAX-009", "PPRF-XAX-010", "PPRF-XAX-011"],
+      "issueRefs": [384],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer side panel X-axis (PPRF-XAX-009, PPRF-XAX-010, PPRF-XAX-011) PPRF-XAX-009: the side panel opens on the outlier explorer's current view (#370)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-009", "PPRF-XAX-010", "PPRF-XAX-011"],
+      "issueRefs": [370],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer side panel X-axis (PPRF-XAX-009, PPRF-XAX-010, PPRF-XAX-011) PPRF-XAX-010: switching the side panel does not change the host, and a host re-sync keeps the panel choice (#370)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-009", "PPRF-XAX-010", "PPRF-XAX-011"],
+      "issueRefs": [370],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer side panel X-axis (PPRF-XAX-009, PPRF-XAX-010, PPRF-XAX-011) PPRF-XAX-011: the outlier explorer's studyday_col defaults to DY (#370)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["PPRF-XAX-009", "PPRF-XAX-010", "PPRF-XAX-011"],
+      "issueRefs": [370],
       "screenshots": []
     },
     {
@@ -5982,6 +6230,38 @@
       "requirementIds": ["SOE-REG-037", "SOE-REG-038"],
       "issueRefs": [24],
       "screenshots": ["SOE-REG-037-invalid-data-note.png"]
+    },
+    {
+      "test": "outlier-explorer structureData SOE-XAX-006: buildSeries places points by visit name or by study day, and leaves out a record with no place on the axis (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-006"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer structureData SOE-XAX-006: numbered visits sort by number, then visits with no number in the order they first appear, never named NaN (#384)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-006"],
+      "issueRefs": [384],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer structureData SOE-XAX-006: the tooltip and listing name both the visit and the study day where the row has them (#371)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-006"],
+      "issueRefs": [371],
+      "screenshots": []
+    },
+    {
+      "test": "outlier-explorer structureData SOE-XAX-006: visits that share a name but not a number stay apart, each named with its number (#384)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["SOE-XAX-006"],
+      "issueRefs": [384],
+      "screenshots": []
     },
     {
       "test": "outlier-explorer unedited limits stay automatic (SOE-AXIS-002) SOE-AXIS-002: an edited limit survives a filter change and stays an override (#85)",
@@ -6464,6 +6744,14 @@
       "screenshots": []
     },
     {
+      "test": "renderXAxisControl KIT-XAX-008: the X-axis control offers Visit and Study day, greys out an unavailable one with its reason, and reports a switch (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-008"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
       "test": "repo hygiene no source or test file carries a machine-specific absolute path (#136)",
       "suite": "unit",
       "status": "pass",
@@ -6557,6 +6845,46 @@
       "status": "pass",
       "requirementIds": ["APP-LOCAL-004"],
       "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-003: with both columns both options are available and the default is active (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-003"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-004: a missing column greys its option out and says why (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-004"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-004: data with visit names but no visit number greys Visit and names the missing column (#384)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-004"],
+      "issueRefs": [384],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-005: a default naming an unavailable option falls back to the available one (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-005"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "resolveXAxis KIT-XAX-006: with neither column no option is active and the message says why (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-006"],
+      "issueRefs": [368],
       "screenshots": []
     },
     {
@@ -6677,6 +7005,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [1],
+      "screenshots": []
+    },
+    {
+      "test": "scheduledVisitNum numbers Baseline 0, Week N as N and Screening before Baseline (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
       "screenshots": []
     },
     {
@@ -7909,6 +8245,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOCAL-008"],
       "issueRefs": [214],
+      "screenshots": []
+    },
+    {
+      "test": "syntheticStudyDay gives the synthetic cohorts a planned study day: Baseline day 1, Week N day 7N + 1 (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
       "screenshots": []
     },
     {
@@ -9829,6 +10173,38 @@
       "status": "pass",
       "requirementIds": ["API-SCHEMA-006"],
       "issueRefs": [6],
+      "screenshots": []
+    },
+    {
+      "test": "values and ticks KIT-XAX-007: a row reads as its visit number or its study day, labelled by visit name or day (#368)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["KIT-XAX-007"],
+      "issueRefs": [368],
+      "screenshots": []
+    },
+    {
+      "test": "visitNumberer puts an unscheduled visit 0.1 after the visit it follows (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
+      "screenshots": []
+    },
+    {
+      "test": "visitNumberer refuses a visit it cannot place, rather than guessing (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
+      "screenshots": []
+    },
+    {
+      "test": "visitNumberer renumbers a scheduled visit from its label, whatever the domain numbered it (#366)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [366],
       "screenshots": []
     },
     {

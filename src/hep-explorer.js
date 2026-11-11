@@ -48,13 +48,14 @@ import {
   renderShell,
   renderViewSelector
 } from './shell.js';
-import { VIEW_MODES, syncSettings, cutFor } from './hep-explorer/configure.js';
+import { VIEW_MODES, syncSettings, cutFor, timeAxis } from './hep-explorer/configure.js';
 import { resolveArmCol } from './hep-core/arms.js';
 import { checkInputs } from './hep-explorer/checkInputs.js';
 import {
   assignSequence,
   cleanData,
   deriveBaseline,
+  hasStudyDay,
   partitionUnscheduledRows,
   maxRRatio,
   unique,
@@ -74,6 +75,7 @@ import migrationView from './hep-explorer/views/migration.js';
 import compositeView from './hep-explorer/views/composite.js';
 import { renderListing } from './histogram/listing.js';
 import { initFilterState, reconcileFilters, renderFilterControl } from './filters.js';
+import { normalizeXAxis, resolveXAxis } from './x-axis.js';
 
 Chart.register(
   ScatterController,
@@ -128,6 +130,9 @@ class SafetyHepExplorer {
     this.unscheduledRecords = 0;
     this.hasUnscheduled = false;
     this.removedRecords = 0;
+    // Whether the data carries a study day, so the timing test could run
+    // (HEP-XAX-007); true until data says otherwise.
+    this.timingEvaluated = true;
     this.droppedParticipants = 0;
     this.droppedRows = [];
     this.droppedParticipantList = [];
@@ -232,6 +237,10 @@ class SafetyHepExplorer {
       // plugin reads `playing` to suppress labels that do not describe a moving
       // cloud (HEP-ANIM-006).
       animation: { day: null, playing: false },
+      // The time slider's view (HEP-XAX-001): the x-axis option the reader
+      // chose with the "Step by" control; null opens on the setting's default
+      // (Study day unless x_axis names another).
+      xAxis: null,
       selectedId: null,
       hoverId: null,
       xCut: null,
@@ -330,6 +339,20 @@ class SafetyHepExplorer {
   }
 
   /**
+   * The X-axis handed to the side panel (#370, PPRF-XAX-009): the chart's
+   * options, opening on the view the time slider is in, so the next
+   * participant opens on whatever the reader last chose beneath the scatter.
+   * @private
+   */
+  profileXAxis() {
+    // Resolved now, not read from the last render, so a setSettings({ x_axis })
+    // reaches the panel at once (#384).
+    const axis = timeAxis(this.settings);
+    const { active } = resolveXAxis(axis, this.cleanRows || [], this.state.xAxis);
+    return { ...normalizeXAxis(this.settings), default: active || axis.default };
+  }
+
+  /**
    * The settings handed to the railed participant-profile module (#98,
    * PPRF-7): the shared long-lab column mappings and cutpoints pass through
    * verbatim so the rail consumes this chart's pre-cleaned rows with no second
@@ -351,6 +374,7 @@ class SafetyHepExplorer {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
+      x_axis: this.profileXAxis(),
       baseline_col: settings.baseline_col,
       baseline_value: settings.baseline_value,
       measure_values: settings.measure_values,
@@ -463,14 +487,26 @@ class SafetyHepExplorer {
 
   /**
    * The base footnote: usage hint plus the timing-window sentence explaining
-   * filled vs hollow points (HEP-DISPLAY-005).
+   * filled vs hollow points (HEP-DISPLAY-005) — or, when the data has no study
+   * day, that the timing was not evaluated, why, and how the points are drawn
+   * instead (HEP-XAX-007).
    * @private
    */
   baseFootnote() {
+    const usage = 'Use controls to update the chart or click a point to see participant details. ';
+    const { measureX, measureY, visitWindow } = this.state;
+    if (!this.timingEvaluated) {
+      return (
+        usage +
+        'Timing was not evaluated: the data has no study day, so each point is drawn as a ' +
+        `cross, neither filled (peak ${measureX} and peak ${measureY} within ${visitWindow} ` +
+        'days of each other) nor hollow.'
+      );
+    }
     return (
-      'Use controls to update the chart or click a point to see participant details. ' +
-      `Points are filled when a participant's peak ${this.state.measureX} and peak ` +
-      `${this.state.measureY} occur within ${this.state.visitWindow} days of each other.`
+      usage +
+      `Points are filled when a participant's peak ${measureX} and peak ` +
+      `${measureY} occur within ${visitWindow} days of each other.`
     );
   }
 
@@ -517,6 +553,7 @@ class SafetyHepExplorer {
     if ('x_default' in settings) this.state.measureX = this.settings.x_default;
     if ('y_default' in settings) this.state.measureY = this.settings.y_default;
     if ('visit_window' in settings) this.state.visitWindow = this.settings.visit_window;
+    if ('x_axis' in settings) this.state.xAxis = null;
     if ('group_by' in settings) this.state.groupBy = this.settings.group_by;
     if ('cuts' in settings) this.state.cuts = JSON.parse(JSON.stringify(this.settings.cuts));
     if ('r_ratio' in settings) this.state.rRatio = [...this.settings.r_ratio];
@@ -571,6 +608,9 @@ class SafetyHepExplorer {
     // fallback used when the data carries no usable study day (HEP-DATA-004).
     assignSequence(retained, this.settings);
     this.cleanRows = retained;
+    // The timing test needs study days; without them it is not evaluated, and
+    // the footnote says so (HEP-XAX-007).
+    this.timingEvaluated = hasStudyDay(retained);
     this.removedRecords = removed + imputation.dropped.length;
     // Precompute the data-derived R-Ratio maximum so the R-Ratio range filter's
     // max input seeds correctly on the first buildControls, before render()
@@ -597,10 +637,18 @@ class SafetyHepExplorer {
     if (!yOptions.includes(this.state.measureY)) this.state.measureY = yOptions[0];
 
     if (!this.settings.details.length) {
+      // Visit and Study day are separate columns, each only when its column is
+      // configured and in the data (HEP-XAX-008): one "Study Day" column could
+      // hold visit numbers and call them days.
+      const visitCol = this.settings.visit_col;
+      const hasVisit =
+        Boolean(visitCol) &&
+        retained.some((row) => row[visitCol] !== undefined && row[visitCol] !== '');
       this.settings.details = [
         { value_col: this.settings.id_col, label: 'Participant' },
         { value_col: this.settings.measure_col, label: 'Measure' },
-        { value_col: '__hep_dayLabel', label: 'Study Day' },
+        ...(hasVisit ? [{ value_col: visitCol, label: 'Visit' }] : []),
+        ...(this.timingEvaluated ? [{ value_col: '__hep_dayLabel', label: 'Study day' }] : []),
         { value_col: this.settings.value_col, label: 'Result' },
         { value_col: this.settings.normal_col_high, label: 'ULN' },
         { value_col: '__hep_relText', label: '×ULN' }

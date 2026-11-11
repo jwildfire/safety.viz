@@ -117,10 +117,8 @@ describe('demo app: the pre-filled mapping', () => {
     const mapping = buildMapping('bds', adbds, manifest);
     expect(mapping.domain).toBe('bds');
     for (const [column, entry] of Object.entries(mapping.columns)) {
-      // The labs extract has no study-day column; everything else is there.
-      expect(entry, column).toEqual(
-        column === 'DY' ? { value: null, source: null } : { value: column, source: 'same name' }
-      );
+      // The labs extract carries every column, the study day included (#365).
+      expect(entry, column).toEqual({ value: column, source: 'same name' });
     }
     expect(mapping.measures).toEqual({
       ALT: { value: 'Alanine Aminotransferase', source: 'guessed' },

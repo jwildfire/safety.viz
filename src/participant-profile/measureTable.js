@@ -18,6 +18,18 @@ import { renderInset } from './inset.js';
 
 const COLUMNS = ['Measure', 'N', 'Min', 'Median', 'Max', 'Spark'];
 
+/**
+ * The table's column headers (#369, PPRF-XAX-006): the last column holds the
+ * sparkline, the table's one time-indexed column, so its header names the
+ * active view — "By visit" or "By study day" — rather than a bare "Spark".
+ * @param {?Object} axis The profile's time axis ({ title }), or null.
+ * @returns {string[]} The headers.
+ */
+export function tableColumns(axis) {
+  if (!axis || !axis.title) return COLUMNS.slice();
+  return [...COLUMNS.slice(0, -1), `By ${String(axis.title).toLowerCase()}`];
+}
+
 // Unique-id sequence for the inset rows so the spark toggles can reference
 // them via aria-controls even with two mounts on one page (PPRF-8).
 let insetUid = 0;
@@ -89,7 +101,7 @@ export function listingColumns(settings) {
  * @param {Object[]} measures The measure models from buildProfileModel, key-first.
  * @param {Object} settings Normalized settings.
  * @param {Object} [state] The live state ({ showExtras }).
- * @param {Object} [handlers] Optional handlers ({ onToggleExtras }).
+ * @param {Object} [handlers] Optional handlers and context: `onToggleExtras`, and `axis`, the profile's time axis (#369), which names the spark column and sets the inset's x-axis.
  * @returns {{element: HTMLElement, open: Map, collapseAll: Function, destroy: Function}}
  */
 export function renderMeasureTable(host, measures, settings, state = {}, handlers = {}) {
@@ -100,7 +112,8 @@ export function renderMeasureTable(host, measures, settings, state = {}, handler
   table.setAttribute('aria-label', 'Measure summary');
   const thead = createElement('thead');
   const headRow = createElement('tr');
-  COLUMNS.forEach((label) => headRow.append(createElement('th', null, label)));
+  const axis = handlers.axis || null;
+  tableColumns(axis).forEach((label) => headRow.append(createElement('th', null, label)));
   thead.append(headRow);
   const tbody = createElement('tbody');
   table.append(thead, tbody);
@@ -125,7 +138,7 @@ export function renderMeasureTable(host, measures, settings, state = {}, handler
     cell.setAttribute('colspan', String(COLUMNS.length));
     insetRow.append(cell);
     row.after(insetRow); // parity insertAfter
-    const chart = renderInset(cell, measure);
+    const chart = renderInset(cell, measure, axis);
     button.setAttribute('aria-expanded', 'true');
     // The accessible name follows the expanded state (PPRF-8) and the button
     // points at the inset row it controls.

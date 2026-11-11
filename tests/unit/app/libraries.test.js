@@ -186,6 +186,7 @@ describe('a second library’s chart: settings, data and status from its entry',
       measure_col: 'TEST',
       value_col: 'STRESN',
       visit_col: 'VISIT',
+      day_col: 'DY',
       group_col: 'ARM'
     });
     // A foreign entry keyed like a safety chart gets no safety recipe or special case.
@@ -201,16 +202,18 @@ describe('a second library’s chart: settings, data and status from its entry',
   });
 
   it('APP-LIB-006: under `unmappedSettings: "omit"` an unmapped setting is left out, not passed as null; without it, as for safety.viz’s charts, it is null (#181)', () => {
-    // The demo labs file has no study day, so day_col is unmapped.
-    expect(demoMappings().bds.columns.DY.value).toBeNull();
-    const settings = chartSettings('stand-in-strip', demoMappings(), all);
+    // The demo labs file carries a study day (#365); cleared, day_col is unmapped.
+    const noDay = demoMappings();
+    noDay.bds = setColumn(noDay.bds, 'DY', null, files.bds);
+    expect(noDay.bds.columns.DY.value).toBeNull();
+    const settings = chartSettings('stand-in-strip', noDay, all);
     expect(settings).not.toHaveProperty('day_col');
     const cleared = demoMappings();
     cleared.bds = setColumn(cleared.bds, 'VISIT', null, files.bds);
     expect(chartSettings('stand-in-strip', cleared, all)).not.toHaveProperty('visit_col');
     const nulls = clone(all);
     delete nulls.modules['stand-in-strip'].unmappedSettings;
-    expect(chartSettings('stand-in-strip', demoMappings(), nulls).day_col).toBeNull();
+    expect(chartSettings('stand-in-strip', noDay, nulls).day_col).toBeNull();
   });
 
   it('APP-LIB-007: its data is an object of its named tables, each the loaded file’s rows untouched; an optional table with no file is left out (#181)', () => {
@@ -346,7 +349,8 @@ describe('the page with a second library', () => {
     app.select('stand-in-strip');
     const [init] = standInLog;
     expect(init).toMatchObject({ event: 'init', tables: ['results', 'participants'] });
-    expect(init.settings).not.toHaveProperty('day_col');
+    // The demo labs file carries a study day (#365), so day_col is mapped.
+    expect(init.settings.day_col).toBe('DY');
     expect(document.querySelector('.sva-chart .stand-in-strip').dataset.tables).toBe(
       'results,participants'
     );

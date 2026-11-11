@@ -18,9 +18,9 @@
 //
 // Three mappings adapt the module defaults to this dataset: measure_values
 // points the four liver-measure keys at the dataset's TEST strings, studyday_col
-// maps to the numeric VISITNUM sequence (the file carries no study-day column,
-// so the visit sequence stands in for study day in the baseline split, the
-// tooltip and the listing), and the arm designation names the cohort's two arms
+// and baseline_col map to the cohort's planned study day (DY) and baseline flag
+// (ABLFL), which set the baseline split, the tooltip and the listing (#365), and
+// the arm designation names the cohort's two arms
 // explicitly so the placebo/active split never depends on auto-detection.
 // Loaded by hep-waterfall/index.html after the dist/ bundle.
 (function () {
@@ -105,10 +105,9 @@
     })
     .then(function (text) {
       const instance = SafetyViz.hepWaterfall('#container', {
-        // The cohort carries no study-day column; VISITNUM (0 = Baseline,
-        // 1-4 = on-treatment) is the study-day surrogate, exactly as in the
-        // hep-explorer demo.
-        studyday_col: 'VISITNUM',
+        // The cohort's planned study day and its baseline flag (#365).
+        studyday_col: 'DY',
+        baseline_col: 'ABLFL',
         visit_col: 'VISIT',
         visitn_col: 'VISITNUM',
         measure_values: {

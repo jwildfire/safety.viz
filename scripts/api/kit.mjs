@@ -27,7 +27,8 @@ export const KIT_SOURCE_FILES = [
   'src/profile-host.js',
   'src/box-whisker.js',
   'src/measure-list.js',
-  'src/time-to-event/km.js'
+  'src/time-to-event/km.js',
+  'src/x-axis.js'
 ];
 
 // The name the page gives the Chart.js package as a source.

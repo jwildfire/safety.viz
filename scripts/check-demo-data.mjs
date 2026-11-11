@@ -30,7 +30,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { demoDataDrift } from './demo-data-lib.mjs';
+import { demoDataContract, demoDataDrift } from './demo-data-lib.mjs';
 
 const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(scriptsDir, '..');
@@ -127,5 +127,22 @@ if (drift.length > 0) {
   );
   process.exit(1);
 }
+
+// The contract (#365, #366): what the time-axis charts need from the extracts — the
+// visit, a study day on every row and the baseline flag, and one number per visit
+// label across the files. Checked on the committed files, so a hand edit that the
+// generators would also have produced still cannot drop a study day.
+const problems = demoDataContract(committed);
+if (problems.length > 0) {
+  for (const problem of problems.slice(0, 20)) console.error(`✗ ${problem}`);
+  if (problems.length > 20) console.error(`  … and ${problems.length - 20} more`);
+  console.error(
+    `\nThe demo data breaks its contract in ${problems.length} place(s): every lab, vital-sign\n` +
+      'and ECG row carries VISIT, VISITNUM, DY and ABLFL, and each visit has one number\n' +
+      '(scripts/demo-data-lib.mjs, DEMO_DATA_CONTRACT).'
+  );
+  process.exit(1);
+}
+console.log('✓ every extract carries the visit, the study day and the baseline flag');
 
 console.log(`\n${Object.keys(committed).length} files under site/data/ match a fresh rebuild.`);

@@ -49,23 +49,25 @@ blank them.
 
 ## Unit evidence (Vitest — `tests/unit/qt-explorer/`)
 
-| Requirement ID                                                            | Source matrix rows                                 | Issue | Test file                               |
-| ------------------------------------------------------------------------- | -------------------------------------------------- | ----- | --------------------------------------- |
-| QT-CFG-001..007 (settings normalization, z table, placebo resolution)     | —                                                  | #68   | `configure.test.js`                     |
-| QT-DATA-005 (schema required columns)                                     | —                                                  | #68   | `checkInputs.test.js`                   |
-| QT-DATA-003/004/006, QT-STAT-001/002 (cleaning, change derivation, stats) | —                                                  | #68   | `structureData.test.js`                 |
-| QT-CT-001/002/004/005/006 (central-tendency series, ΔΔ, ICH-E14, peaks)   | —                                                  | #68   | `structureData.test.js`                 |
-| QT-CT-008 (printed central-tendency values table)                         | QT-CT-008                                          | #136  | `central-table.test.js`                 |
-| QT-CT-009 (the table's box: a named region that takes focus)              | QT-CT-009                                          | #284  | `central-table.test.js`                 |
-| QT-OUT-001/002 (subject points, max post-baseline vs visit)               | —                                                  | #68   | `structureData.test.js`                 |
-| QT-CAT-001/002/003 (by-arm exceedance counts and percents)                | —                                                  | #68   | `structureData.test.js`                 |
-| QT-SCL-001..008 (correction suffix, axis titles, domains, arm marks)      | —                                                  | #68   | `getScales.test.js`                     |
-| QT-PLG-001/002/003 (color scale, rgba, scatter tooltip)                   | —                                                  | #68   | `getPlugins.test.js`                    |
-| QT-API-001 (module export)                                                | —                                                  | #68   | `export.test.js`                        |
-| QT-CAUTION-001, QT-CAUTION-002 (standing caution, unblinding gate)        | QT-CAUTION-001, QT-CAUTION-002                     | #136  | `configure.test.js`, `cautions.test.js` |
-| PPRF-QT-001..004 (rail adoption, interval-measure mapping, clear paths)   | PPRF-QT-001..004 (participant-profile matrix)      | #99   | `profile-adoption.test.js`              |
-| QT-FILT-001..004 (shared filter contract)                                 | QT-FILT-001, QT-FILT-002, QT-FILT-003, QT-FILT-004 | #166  | `../shared/filter-contract.test.js`     |
-| QT-CTRL-004 (whole-chart reset, back to the central view)                 | QT-CTRL-004                                        | #136  | `reset.test.js`                         |
+| Requirement ID                                                                             | Source matrix rows                                 | Issue | Test file                               |
+| ------------------------------------------------------------------------------------------ | -------------------------------------------------- | ----- | --------------------------------------- |
+| QT-CFG-001..007 (settings normalization, z table, placebo resolution)                      | —                                                  | #68   | `configure.test.js`                     |
+| QT-DATA-005 (schema required columns)                                                      | —                                                  | #68   | `checkInputs.test.js`                   |
+| QT-DATA-003/004/006, QT-STAT-001/002 (cleaning, change derivation, stats)                  | —                                                  | #68   | `structureData.test.js`                 |
+| QT-CT-001/002/004/005/006 (central-tendency series, ΔΔ, ICH-E14, peaks)                    | —                                                  | #68   | `structureData.test.js`                 |
+| QT-CT-008 (printed central-tendency values table)                                          | QT-CT-008                                          | #136  | `central-table.test.js`                 |
+| QT-CT-009 (the table's box: a named region that takes focus)                               | QT-CT-009                                          | #284  | `central-table.test.js`                 |
+| QT-OUT-001/002 (subject points, max post-baseline vs visit)                                | —                                                  | #68   | `structureData.test.js`                 |
+| QT-CAT-001/002/003 (by-arm exceedance counts and percents)                                 | —                                                  | #68   | `structureData.test.js`                 |
+| QT-SCL-001..008 (correction suffix, axis titles, domains, arm marks)                       | —                                                  | #68   | `getScales.test.js`                     |
+| QT-PLG-001/002/003 (color scale, rgba, scatter tooltip)                                    | —                                                  | #68   | `getPlugins.test.js`                    |
+| QT-API-001 (module export)                                                                 | —                                                  | #68   | `export.test.js`                        |
+| QT-CAUTION-001, QT-CAUTION-002 (standing caution, unblinding gate)                         | QT-CAUTION-001, QT-CAUTION-002                     | #136  | `configure.test.js`, `cautions.test.js` |
+| PPRF-QT-001..004 (rail adoption, interval-measure mapping, clear paths)                    | PPRF-QT-001..004 (participant-profile matrix)      | #99   | `profile-adoption.test.js`              |
+| QT-FILT-001..004 (shared filter contract)                                                  | QT-FILT-001, QT-FILT-002, QT-FILT-003, QT-FILT-004 | #166  | `../shared/filter-contract.test.js`     |
+| QT-CTRL-004 (whole-chart reset, back to the central view)                                  | QT-CTRL-004                                        | #136  | `reset.test.js`                         |
+| QT-XAX-001..003 (drill-down Visit and Study day views, ECGs on one day, baseline-flag ECG) | QT-XAX-001..003                                    | #372  | `profile-adoption.test.js`              |
+| PPRF-XAX-009 (the drill-down opens on Visit)                                               | PPRF-XAX-009 (participant-profile matrix)          | #370  | `profile-adoption.test.js`              |
 
 ## Railed participant profile (#99, PPRF-QT)
 
@@ -93,10 +95,13 @@ View coverage and mapping caveats:
   change thresholds apply to Δ, not the observed series. They stay on the
   scatter and the categorical table.
 - **The host's `baseline_col` ('BASE') is a VALUE column**, not the profile's
-  baseline FLAG contract, so the profile receives `baseline_col: null` and its
-  `deriveBaseline` earliest-visit rule resolves the baseline record (VISITNUM
-  orders the day axis; ADEG-style data carries no DY — the profile's "Study
-  Day" axis titles and tooltips therefore show visit numbers, not days).
+  baseline FLAG contract, so the profile receives the host's
+  `baseline_flag_col` (ABLFL) as its `baseline_col` instead, and ×Baseline
+  divides by the flagged ECG rather than the earliest one (QT-XAX-003).
+- **The drill-down plots by visit or by study day (#372, QT-XAX-001/002).**
+  It takes `x_axis` — by default Visit on VISITNUM / VISIT and Study day on
+  the ECG data's DY (`studyday_col`) — and opens on Visit. Before #372 it
+  passed the visit number as the study day.
 - **Module-surface (#98): the synthesized unit ULN poisons the measure table's
   normal-range semantics.** The sparkline/inset outlier flags compare each
   observed value against `__qt_profile_uln = 1`, so every ECG value renders as

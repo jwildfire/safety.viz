@@ -37,25 +37,27 @@ matrix row → failing test → minimal implementation.
 
 ## Unit evidence (Vitest — `tests/unit/shift-plot/`)
 
-| Requirement ID                             | Source matrix rows                                     | Issue | Test file                                                        |
-| ------------------------------------------ | ------------------------------------------------------ | ----- | ---------------------------------------------------------------- |
-| SSP-CFG-004/005/006                        | SSP-CFG-004, SSP-CFG-005, SSP-CFG-006                  | #14   | `configure.test.js`                                              |
-| SSP-REQ-005                                | SSP-REQ-005                                            | #14   | `configure.test.js`                                              |
-| SSP-REG-020                                | SSP-REG-020                                            | #14   | `structureData.test.js`                                          |
-| SSP-DATA-001                               | SSP-DATA-001                                           | #14   | `structureData.test.js`                                          |
-| SSP-REG-013/SSP-REG-014                    | SSP-REG-013, SSP-REG-014                               | #14   | `structureData.test.js`                                          |
-| SSP-CHART-001/SSP-REQ-005/SSP-REG-019      | SSP-CHART-001, SSP-REQ-005, SSP-REG-019                | #14   | `structureData.test.js`                                          |
-| SSP-CFG-005                                | SSP-CFG-005                                            | #14   | `structureData.test.js`                                          |
-| SSP-CTRL-001/SSP-CTRL-003                  | SSP-CTRL-001, SSP-CTRL-003                             | #14   | `structureData.test.js`                                          |
-| SSP-CHART-002                              | SSP-CHART-002                                          | #14   | `structureData.test.js`, `getScales.test.js`                     |
-| SSP-SCALE-001                              | SSP-SCALE-001                                          | #136  | `configure.test.js`, `getScales.test.js`, `scale-toggle.test.js` |
-| SSP-SCALE-002                              | SSP-SCALE-002                                          | #136  | `structureData.test.js`, `scale-toggle.test.js`                  |
-| SSP-SCALE-003                              | SSP-SCALE-003                                          | #136  | `scale-toggle.test.js`                                           |
-| SSP-DATA-001/SSP-DATA-003                  | SSP-DATA-001, SSP-DATA-003                             | #14   | `checkInputs.test.js`                                            |
-| PPRF-SSP-001..004                          | PPRF-SSP-001..004 (participant-profile matrix)         | #99   | `profile-adoption.test.js`                                       |
-| SSP-FILT-001..004 (shared filter contract) | SSP-FILT-001, SSP-FILT-002, SSP-FILT-003, SSP-FILT-004 | #166  | `../shared/filter-contract.test.js`                              |
-| SSP-MEAS-001/002 (measures whitelist)      | SSP-MEAS-001, SSP-MEAS-002                             | #136  | `measure-list.test.js`                                           |
-| SSP-CTRL-004 (whole-chart reset)           | SSP-CTRL-004                                           | #136  | `reset.test.js`                                                  |
+| Requirement ID                                                                                                     | Source matrix rows                                      | Issue      | Test file                                                        |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- | ---------- | ---------------------------------------------------------------- |
+| SSP-CFG-004/005/006                                                                                                | SSP-CFG-004, SSP-CFG-005, SSP-CFG-006                   | #14        | `configure.test.js`                                              |
+| SSP-REQ-005                                                                                                        | SSP-REQ-005                                             | #14        | `configure.test.js`                                              |
+| SSP-REG-020                                                                                                        | SSP-REG-020                                             | #14        | `structureData.test.js`                                          |
+| SSP-DATA-001                                                                                                       | SSP-DATA-001                                            | #14        | `structureData.test.js`                                          |
+| SSP-REG-013/SSP-REG-014                                                                                            | SSP-REG-013, SSP-REG-014                                | #14        | `structureData.test.js`                                          |
+| SSP-CHART-001/SSP-REQ-005/SSP-REG-019                                                                              | SSP-CHART-001, SSP-REQ-005, SSP-REG-019                 | #14        | `structureData.test.js`                                          |
+| SSP-CFG-005                                                                                                        | SSP-CFG-005                                             | #14        | `structureData.test.js`                                          |
+| SSP-CTRL-001/SSP-CTRL-003                                                                                          | SSP-CTRL-001, SSP-CTRL-003                              | #14        | `structureData.test.js`                                          |
+| SSP-CHART-002                                                                                                      | SSP-CHART-002                                           | #14        | `structureData.test.js`, `getScales.test.js`                     |
+| SSP-SCALE-001                                                                                                      | SSP-SCALE-001                                           | #136       | `configure.test.js`, `getScales.test.js`, `scale-toggle.test.js` |
+| SSP-SCALE-002                                                                                                      | SSP-SCALE-002                                           | #136       | `structureData.test.js`, `scale-toggle.test.js`                  |
+| SSP-SCALE-003                                                                                                      | SSP-SCALE-003                                           | #136       | `scale-toggle.test.js`                                           |
+| SSP-DATA-001/SSP-DATA-003                                                                                          | SSP-DATA-001, SSP-DATA-003                              | #14        | `checkInputs.test.js`                                            |
+| PPRF-SSP-001..004                                                                                                  | PPRF-SSP-001..004 (participant-profile matrix)          | #99        | `profile-adoption.test.js`                                       |
+| SSP-FILT-001..004 (shared filter contract)                                                                         | SSP-FILT-001, SSP-FILT-002, SSP-FILT-003, SSP-FILT-004  | #166       | `../shared/filter-contract.test.js`                              |
+| SSP-MEAS-001/002 (measures whitelist)                                                                              | SSP-MEAS-001, SSP-MEAS-002                              | #136       | `measure-list.test.js`                                           |
+| SSP-CTRL-004 (whole-chart reset)                                                                                   | SSP-CTRL-004                                            | #136       | `reset.test.js`                                                  |
+| SSP-XAX-001 (Visit and Study day)                                                                                  | SSP-XAX-001                                             | #374       | `axis-names.test.js`                                             |
+| PPRF-XAX-009, PPRF-XAX-011 (side panel opens on Visit, falls back to the profile's visit columns, Study day on DY) | PPRF-XAX-009, PPRF-XAX-011 (participant-profile matrix) | #370, #384 | `profile-adoption.test.js`                                       |
 
 ## Source-matrix routing status (45 rows)
 

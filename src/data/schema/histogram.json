@@ -47,6 +47,11 @@
           "default": "STNRHI",
           "description": "Optional upper limit of normal."
         },
+        "studyday_col": {
+          "type": ["string", "null"],
+          "default": "DY",
+          "description": "Optional numeric study-day column: the Study day option of the participant profile side panel, which opens on Visit (#370). Defaults to DY since v1.12.0 (it was null); set null when the data has no study day."
+        },
         "measures": {
           "type": ["array", "null"],
           "items": { "type": "string" },

@@ -48,6 +48,7 @@ import {
   unionDomain
 } from './participant-profile/ae.js';
 import { renderAeTracks } from './participant-profile/aeTracks.js';
+import { NO_TIME_AXIS, normalizeXAxis, renderXAxisControl } from './x-axis.js';
 
 Chart.register(
   LineController,
@@ -61,7 +62,8 @@ Chart.register(
 
 /**
  * The day span the visible lab series occupy — half of the union domain
- * (PPRF-AXIS-001).
+ * (PPRF-AXIS-001). Read in Study day view only, where each point's position is
+ * its day on the active day column (#369).
  * @param {Object} spaghetti The spaghetti model ({ series }).
  * @returns {?number[]} [min, max], or null when no series carries a finite day.
  * @private
@@ -70,7 +72,8 @@ function labDomain(spaghetti) {
   const days = [];
   ((spaghetti && spaghetti.series) || []).forEach((entry) => {
     (entry.points || []).forEach((point) => {
-      if (Number.isFinite(point.day)) days.push(point.day);
+      const day = point.x !== undefined ? point.x : point.day;
+      if (Number.isFinite(day)) days.push(day);
     });
   });
   if (!days.length) return null;
@@ -137,7 +140,11 @@ class SafetyParticipantProfile {
       ids: [],
       index: 0,
       expanded: false,
-      cohortOpen: false
+      cohortOpen: false,
+      // The X-axis control's choice (#369); null opens on x_axis.default. The
+      // profile's own state: switching it dispatches nothing, and in a side
+      // panel it never changes the host (#370).
+      xAxis: null
     };
     // The AE domain is opt-in: without settings.ae the profile is exactly the
     // v1 lab-only block (PPRF-AE-001).
@@ -353,7 +360,13 @@ class SafetyParticipantProfile {
    */
   applySettings(settings) {
     if ('display' in settings) this.state.display = settings.display;
+    // A host tells its side panel which view to open on through
+    // x_axis.default (#370, PPRF-XAX-009). The panel's own choice outlives
+    // a re-sync that gives the same view, and gives way when the host's view
+    // changes (PPRF-XAX-010).
+    const opensOn = normalizeXAxis(this.settings).default;
     this.settings = syncSettings({ ...this.settings, ...settings });
+    if (normalizeXAxis(this.settings).default !== opensOn) this.state.xAxis = null;
     return this;
   }
 
@@ -595,27 +608,38 @@ class SafetyParticipantProfile {
       this.controls.innerHTML = '';
     }
 
+    // The active view (#369): Visit view has no days, so the adverse events
+    // are listed rather than drawn on it; with neither a visit nor a study day
+    // a message stands in place of the labs chart.
+    const visitView = Boolean(model.axis && model.axis.type === 'ordinal');
+    const listEvents = hasLabs && visitView;
+
     // The shared study-day domain (decision D7): labs and adverse events
     // rescale together so an event running past the last lab draw stays
-    // visible instead of clipping at the edge.
-    this.domain = this.aeSettings
-      ? unionDomain(labDomain(model.spaghetti), aeDomain(this.aeRows))
-      : null;
+    // visible instead of clipping at the edge. Study day view only.
+    this.domain =
+      this.aeSettings && !visitView
+        ? unionDomain(labDomain(model.spaghetti), aeDomain(this.aeRows))
+        : null;
 
-    if (hasLabs) {
+    if (hasLabs && model.axis) {
       this.spaghettiHost = createElement('div', 'sv-profile-spaghetti');
       root.append(this.spaghettiHost);
       this.drawSpaghetti();
+    } else if (hasLabs) {
+      root.append(createElement('div', 'sv-no-time-axis', model.xAxis.message || NO_TIME_AXIS));
     }
 
     // Directly under the labs chart, before the measure table (decision D5):
     // the shared axis only pays off if the two time tracks touch.
     if (this.aeSettings) {
-      root.append(renderAeTracks(this.aeRows, this.domain, this.aeSettings));
+      root.append(renderAeTracks(this.aeRows, this.domain, this.aeSettings, { list: listEvents }));
     }
 
     if (hasLabs)
       this.tableController = renderMeasureTable(root, model.measures, this.settings, this.state, {
+        // The spark column and the insets follow the active view (#369).
+        axis: model.axis,
         // The extras toggle changes both the table AND the control surface
         // (Measures options, spaghetti series), so it re-renders the block;
         // focus restoration keeps the checkbox focused (PPRF-8).
@@ -716,6 +740,7 @@ class SafetyParticipantProfile {
       displayControl(this.settings, this.state, (value) => this.onDisplayChange(value)),
       displayParent
     );
+    this.xAxisControl(displayParent);
     const labParent = addSection('Labs');
     addControl(
       'Measures',
@@ -743,8 +768,45 @@ class SafetyParticipantProfile {
       createElement('label', null, 'Measures'),
       labControl(keys, this.state, (labs) => this.onLabsChange(labs))
     );
-    strip.append(displayField, labField);
+    strip.append(displayField);
+    const xAxisField = this.xAxisControl(strip);
+    if (xAxisField) xAxisField.classList.add('sv-profile-field');
+    strip.append(labField);
     return strip;
+  }
+
+  /**
+   * The "X-axis" control (#369, PPRF-XAX-001): Visit and Study day, the active
+   * view pressed, an option the data lacks greyed out with its reason. Each
+   * button carries a focus key so the rebuild a switch triggers keeps keyboard
+   * focus on it (PPRF-8).
+   * @param {HTMLElement} parent Where the control goes.
+   * @returns {?HTMLElement} The control, or null when the setting has no options.
+   * @private
+   */
+  xAxisControl(parent) {
+    const resolved = this.model ? this.model.xAxis : null;
+    if (!resolved || !resolved.options.length) return null;
+    const control = renderXAxisControl(parent, {
+      resolved,
+      onChange: (key) => this.onXAxisChange(key)
+    });
+    control.querySelectorAll('button').forEach((button) => {
+      button.setAttribute('data-sv-focus', `xaxis-${button.dataset.key}`);
+    });
+    return control;
+  }
+
+  /**
+   * X-axis change (#369): switch the view and rebuild the profile — the labs
+   * chart, the insets, the measure table and the adverse events all follow
+   * it. The choice is the profile's own state; no selection event is sent.
+   * @param {string} key The chosen option's key.
+   * @private
+   */
+  onXAxisChange(key) {
+    this.state.xAxis = key;
+    this.renderProfile();
   }
 
   /**

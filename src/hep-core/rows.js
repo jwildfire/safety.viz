@@ -170,8 +170,8 @@ export function assignSequence(rows, settings) {
 
 /**
  * Whether the cleaned rows carry any usable (finite) study day. When false the
- * timing test degrades gracefully: day_diff is unavailable and points render
- * filled by default rather than all-hollow (HEP-DATA-004).
+ * hep-explorer's timing test is not evaluated: day_diff is unavailable and no
+ * point is drawn filled or hollow (HEP-DATA-004, HEP-XAX-007).
  * @param {Object[]} rows Cleaned rows.
  * @returns {boolean} True when at least one row has a finite study day.
  */
@@ -205,8 +205,11 @@ export function partitionUnscheduledRows(rows, settings) {
 
 /**
  * Fill each row's ×Baseline column (HEP-DISPLAY-001): for every participant ×
- * measure group, the baseline value is the record at study day 0, else the
- * earliest day (or the first in input order when no day column). Mutates the
+ * measure group, the baseline value is the record whose `baseline_col` equals
+ * `baseline_value` when `baseline_col` is given (HEP-CORE-003, #367), else the
+ * record at study day 0, else the earliest day (or the first in input order when
+ * no day column). Real ADaM study days have no day 0, so without the flag the
+ * baseline would fall back to a screening draw. Mutates the
  * rows with __hep_baseline and __hep_relative_baseline and returns them; a
  * missing or zero baseline leaves __hep_relative_baseline as NaN, which drops
  * that participant from the mDISH scatter (HEP-DISPLAY-004).
@@ -223,8 +226,12 @@ export function deriveBaseline(rows, settings) {
   });
   groups.forEach((records) => {
     const ordered = [...records].sort(dayThenIndex);
+    const flag = settings.baseline_col;
+    const flagged = flag
+      ? ordered.find((row) => String(row[flag]) === String(settings.baseline_value ?? 'Y'))
+      : null;
     const zero = ordered.find((row) => row.__hep_day === 0);
-    const baselineRow = zero || ordered[0];
+    const baselineRow = flagged || zero || ordered[0];
     const baselineValue = baselineRow ? baselineRow.__hep_value : NaN;
     records.forEach((row) => {
       row.__hep_baseline = baselineValue;

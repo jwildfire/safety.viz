@@ -569,6 +569,36 @@ test.describe('demo app on the demo study', () => {
     }
     expect(errors).toEqual([]);
   });
+
+  test('APP-CHART-012: the Outlier Explorer opens on the X-axis view the reader left it on, after another chart and another tab (#373)', async ({
+    page
+  }) => {
+    const errors = watchErrors(page);
+    await openOnDemo(page);
+    const option = (key) => page.locator(`.sva-chart .sv-xaxis-option[data-key="${key}"]`);
+    await openChart(page, 'outlier-explorer');
+    // The app passes both options, from the demo study's VISITNUM and DY.
+    await expect(option('visit')).toHaveAttribute('aria-pressed', 'true');
+    await expect(option('day')).toBeEnabled();
+    await option('day').click();
+    await expect(option('day')).toHaveAttribute('aria-pressed', 'true');
+    // Another chart, then back.
+    await openChart(page, 'histogram');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await openChart(page, 'outlier-explorer');
+    await expect(option('day')).toHaveAttribute('aria-pressed', 'true');
+    await expect(option('visit')).toHaveAttribute('aria-pressed', 'false');
+    // Another tab, then back.
+    await openChart(page, 'qt-explorer');
+    await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
+    await openChart(page, 'outlier-explorer');
+    await expect(option('day')).toHaveAttribute('aria-pressed', 'true');
+    // Not kept across page loads.
+    await openOnDemo(page);
+    await openChart(page, 'outlier-explorer');
+    await expect(option('visit')).toHaveAttribute('aria-pressed', 'true');
+    expect(errors).toEqual([]);
+  });
 });
 
 // ---- the data panel (#151) ---------------------------------------------------
@@ -924,12 +954,15 @@ test.describe('demo app with a second chart library', () => {
       tables: ['results', 'participants'],
       rows: counts
     });
-    // The demo labs file has no study day: day_col is unmapped, and left out, not null.
+    // The demo labs file carries a study day (#365), so day_col is mapped; the
+    // left-out case, an unmapped setting omitted rather than null, is held by
+    // the unit test APP-LIB-006 on the same file with its study day cleared.
     expect(init.settings).toEqual({
       id_col: 'USUBJID',
       measure_col: 'TEST',
       value_col: 'STRESN',
       visit_col: 'VISIT',
+      day_col: 'DY',
       group_col: 'ARM'
     });
     // Back to a safety chart: the stand-in is destroyed and the histogram draws.
@@ -990,7 +1023,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
       ['subject', 'dm.csv', '3 of 7 columns found'],
       ['ae', 'ae.csv', '9 of 10 columns found'],
       ['bds', 'labs_final.csv', '7 of 13 columns found'],
-      ['eg', 'ecg.json', '9 of 10 columns found']
+      ['eg', 'ecg.json', '9 of 11 columns found']
     ]) {
       await expect(card(page, domain).locator('.sva-file-name')).toHaveText(name);
       await expect(card(page, domain).locator('.sva-domain')).toHaveValue(domain);

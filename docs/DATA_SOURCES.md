@@ -36,7 +36,10 @@ after it** — the chronic-liver-disease population the composite plot needs
 ([`CLD-*`](#synthetic-composite-plot-cohort-hep-explorer-67)) and the
 acute-kidney-injury population the KDIGO scatter needs
 ([`AKI-*`](#synthetic-acute-kidney-injury-cohort-nep-explorer-120)). Both
-injectors are idempotent, so the full rebuild is:
+cohorts number their visits as the pilot rows do (Week N = N), carry a planned
+study day (`DY`: Baseline day 1, Week N day 7N + 1) that is synthetic, not
+observed, and flag their baseline row `ABLFL='Y'` (#366). Both injectors are
+idempotent, so the full rebuild is:
 
 ```bash
 node scripts/build-demo-data.mjs
@@ -90,7 +93,20 @@ plus one file from the sibling SDTM package, `ds.csv` → `pje-ds.csv` (see
   and reference ranges (`ANRLO`/`ANRHI`), so no separate `adsl` join is needed.
   Columns are mapped to the safety.viz measure contract
   (`USUBJID, SITE, SITEID, SEX, RACE, ARM, VISIT, VISITNUM, TEST, STRESU,
-STRESN, STNRLO, STNRHI`).
+STRESN, STNRLO, STNRHI, DY, ABLFL`).
+- **Visit and study day (#365, #366).** Every lab and vital-sign row keeps its
+  visit (`VISIT`, `VISITNUM`), its ADaM analysis study day (`ADY`, as `DY`) and
+  its baseline flag (`ABLFL`), so a chart can plot by visit or by study day.
+  Study days follow CDISC: day 1 is the first dose, pre-dose records are
+  negative, and there is no day 0. Every extract numbers visits one way:
+  Baseline 0, Week N = N, Screening 1 = −2 and Screening 2 = −1, and a visit
+  outside the schedule 0.1 after the visit it follows. The pilot's labs number
+  visits by SDTM sequence (Week 2 = 4 … Week 26 = 13), so the build renumbers
+  them; an unscheduled visit keeps its source label ("Unscheduled 4.1", the
+  first after Week 2, is numbered 2.1). The labs' baseline was drawn at SDTM
+  visit 1, so "Unscheduled 1.1" follows Baseline (0.1).
+  `scripts/check-demo-data.mjs` fails when an extract loses a column, a row has
+  no study day, or a visit label carries two numbers.
 - **Analysis records only.** Rows are kept where the result is numeric, the
   record is not ADaM-derived (`DTYPE` blank), and it is either the primary
   analysis record (`ANL01FL='Y'`) or the baseline (`ABLFL='Y'`). This
@@ -116,7 +132,8 @@ STRESN, STNRLO, STNRHI`).
   total while dropping the blank-term record with a reported count.
 - **ECG (QT)** projects `adeg` to the QT measure contract
   (`USUBJID, SITE, SITEID, SEX, RACE, AGE, ARM, VISIT, VISITNUM, PARAMCD, TEST,
-STRESU, STRESN, BASE, CHG, ABLFL`). Three parameters are kept for the QT Safety
+STRESU, STRESN, BASE, CHG, ABLFL, DY`), with the visit numbering and the
+  study day (`ADY` as `DY`) of the BDS file. Three parameters are kept for the QT Safety
   Explorer's Phase-1 scope — **QTcF** (`QTCF`, Fridericia), **QTcB** (`QTCB`,
   Bazett), and **Heart Rate** (`HR`, the source `AVAL` as recorded). The pilot
   records each visit at three postural timepoints plus a `DTYPE=AVERAGE` roll-up;
@@ -428,9 +445,10 @@ writes a new file rather than appending to `adbds.csv`: that file is the demo
 dataset for six shipped renderers, and injecting a hepatic cohort into it would
 churn their evidence baselines for a figure none of them draws.
 
-- **Composition.** Every participant has a real day-0 `Baseline` record plus four
-  on-treatment visits (`VISITNUM` 1–4, the visit sequence used as the study-day
-  surrogate) for all four liver analytes — ALT, AST, total bilirubin and ALP —
+- **Composition.** Every participant has a real `Baseline` record (flagged
+  `ABLFL='Y'`, study day 1) plus four on-treatment visits (Weeks 4, 8, 12 and 16,
+  `VISITNUM` 4–16, with a planned study day `DY` of 7N + 1, labelled synthetic)
+  for all four liver analytes — ALT, AST, total bilirubin and ALP —
   so the cohort cannot reproduce the baseline-fallback defect that affects 24 of
   318 participants in `adbds.csv`. ALT carries a **single cohort-wide reference
   range** (6–40 U/L) in a single unit, so the absolute-axis ULN reference is a

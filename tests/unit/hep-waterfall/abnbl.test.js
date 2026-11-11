@@ -31,7 +31,8 @@ import { fileURLToPath } from 'node:url';
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const dataPath = path.join(rootDir, 'site', 'data', 'adbds-abnbl.csv');
 
-const HEADER = 'USUBJID,SITE,SITEID,SEX,RACE,ARM,VISIT,VISITNUM,TEST,STRESU,STRESN,STNRLO,STNRHI';
+const HEADER =
+  'USUBJID,SITE,SITEID,SEX,RACE,ARM,VISIT,VISITNUM,TEST,STRESU,STRESN,STNRLO,STNRHI,DY,ABLFL';
 
 const ALT = 'Alanine Aminotransferase';
 const AST = 'Aspartate Aminotransferase';
@@ -44,7 +45,7 @@ const ACTIVE = 'ABL: Study Drug';
 
 const ALT_ULN = 40;
 const TB_ULN = 1.2;
-const ON_TREATMENT_VISITS = [1, 2, 3, 4];
+const ON_TREATMENT_VISITS = [4, 8, 12, 16]; // Weeks 4–16, numbered by week (#366)
 
 const raw = readFileSync(dataPath, 'utf8').trim();
 const [header, ...lines] = raw.split('\n');

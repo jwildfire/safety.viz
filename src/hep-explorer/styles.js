@@ -98,6 +98,8 @@ const MODULE_CSS = `
 .safety-hep-explorer .hep-animation-reset{padding:.2rem .5rem;border:1px solid #b8c0cc;border-radius:6px;background:#fff;font:inherit;font-size:.75rem;cursor:pointer}
 .safety-hep-explorer .hep-animation-label{margin-top:.2rem;font-size:.78rem;color:#52616f;font-variant-numeric:tabular-nums}
 .safety-hep-explorer .hep-animation-note{font-size:.78rem;color:#7b8794;font-style:italic}
+.safety-hep-explorer .hep-animation-axis{display:flex;align-items:center;gap:.5rem;margin:.35rem 0 0}
+.safety-hep-explorer .hep-animation-axis>label{margin:0}
 .safety-hep-explorer .hep-quadrant-summary{transition:opacity .15s ease}`;
 
 /**

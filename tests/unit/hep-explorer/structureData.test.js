@@ -98,15 +98,16 @@ describe('hep-explorer structureData', () => {
     expect(rows[0].__hep_relative_baseline).toBeNaN();
   });
 
-  it('HEP-DATA-004: without a study-day column __hep_day is NaN and timing falls back to filled points (port)', () => {
+  it('HEP-DATA-004: without a study-day column __hep_day is NaN and the timing test is marked not evaluated (#376)', () => {
     const noDay = syncSettings({ studyday_col: null });
     const { rows } = cleanData([row('P1', 'ALT', 0, 160, 40), row('P1', 'TB', 0, 3, 1)], noDay);
     expect(rows.every((r) => Number.isNaN(r.__hep_day))).toBe(true);
     const { points } = buildPoints(deriveBaseline(rows, noDay), noDay, edishState);
-    // No usable study day -> the day gap is unavailable, but points default to
-    // filled (withinWindow true) rather than all-hollow.
+    // No usable study day -> nobody checked the gap, so the point is neither
+    // within the window (filled) nor outside it (hollow): it is not evaluated.
     expect(points[0].day_diff).toBeNaN();
-    expect(points[0].withinWindow).toBe(true);
+    expect(points[0].withinWindow).toBeNull();
+    expect(points[0].timing).toBe('not_evaluated');
   });
 
   it('HEP-DATA-004: a non-numeric study-day value is treated as absent (NaN), not coerced (port)', () => {
@@ -137,10 +138,11 @@ describe('hep-explorer structureData', () => {
     );
     // Each participant x measure numbers its records 1..n in input order.
     expect(rows.map((r) => r.__hep_seq)).toEqual([1, 2, 1, 2]);
-    // No usable study day -> the point renders filled.
+    // No usable study day -> the timing test is not evaluated (#376).
     const { points } = buildPoints(rows, noDay, edishState);
     expect(points[0].day_diff).toBeNaN();
-    expect(points[0].withinWindow).toBe(true);
+    expect(points[0].withinWindow).toBeNull();
+    expect(points[0].timing).toBe('not_evaluated');
     // The visit path pairs ALT/TB by sequence, in sequence order, labelled #n.
     const path = visitPathSeries(rows, 'Q1', noDay, edishState);
     expect(path).toHaveLength(2);

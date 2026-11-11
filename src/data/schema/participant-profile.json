@@ -50,17 +50,59 @@
         "studyday_col": {
           "type": ["string", "null"],
           "default": "DY",
-          "description": "Study-day column; the x-axis of the labs-over-time spaghetti and the expanded inset (PPRF-3, PPRF-4)."
+          "description": "Study-day column; the Study day view of the x-axis when x_axis is not given, and the day the adverse-event domain reads (PPRF-3, PPRF-4)."
         },
         "visit_col": {
           "type": ["string", "null"],
           "default": "VISIT",
-          "description": "Visit-name column, carried onto spark points and tooltips."
+          "description": "Visit-name column; the Visit view's tick labels when x_axis is not given, and the visit name in tooltips."
         },
         "visitn_col": {
           "type": ["string", "null"],
           "default": "VISITNUM",
-          "description": "Numeric visit column, the fallback ordering when no study day exists."
+          "description": "Numeric visit column; the Visit view's order when x_axis is not given."
+        },
+        "x_axis": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "The x-axis toggle (#369): the views the profile's \"X-axis\" control offers and the one it opens on. Visit view spaces visits evenly in visit-number order, labelled by visit name; Study day view plots each record at its study day, pre-dose records at negative days, with a day-1 line. The axis title, tooltips and measure table name the active view; adverse events are drawn as a track in Study day view and listed in Visit view. An option the data lacks is greyed out with its reason; with neither, a message replaces the labs chart. null builds the setting from visitn_col / visit_col and studyday_col, opening on Visit. As a side panel, the host sets default to its own current view (#370): the panel opens on it and keeps its own toggle, which a later re-sync resets only when that default changes.",
+          "properties": {
+            "options": {
+              "type": "array",
+              "description": "One entry per view, in control order.",
+              "items": {
+                "type": "object",
+                "required": ["key", "col"],
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "The view's key: `visit` or `day`."
+                  },
+                  "col": {
+                    "type": "string",
+                    "description": "The column the view plots by: the visit number for `visit`, the study day for `day`."
+                  },
+                  "label_col": {
+                    "type": ["string", "null"],
+                    "description": "Visit view only: the column holding the visit name, for the tick labels."
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["ordinal", "linear"],
+                    "description": "`ordinal` (evenly spaced, in order) or `linear` (in days); filled from the key when omitted."
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "The axis title and control label; filled from the key (\"Visit\", \"Study day\") when omitted."
+                  }
+                }
+              }
+            },
+            "default": {
+              "type": "string",
+              "description": "The key of the view the profile opens on; `visit` when omitted."
+            }
+          }
         },
         "baseline_col": {
           "type": ["string", "null"],

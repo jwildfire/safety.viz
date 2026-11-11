@@ -285,3 +285,51 @@ describe('histogram rail clear paths (PPRF-SH-003, PPRF-11)', () => {
     expect(instance.profile).toBeTruthy();
   });
 });
+
+describe('histogram side panel X-axis (PPRF-XAX-009, PPRF-XAX-011)', () => {
+  /** Feed the rail one participant the way an external dispatch does. */
+  function openPanel(instance, id = 'P1') {
+    instance.root.dispatchEvent(
+      new CustomEvent('participantsSelected', { detail: { data: [id] } })
+    );
+  }
+  const panelButtons = (instance) => [
+    ...instance.railWrap.querySelectorAll('.sv-xaxis-control button')
+  ];
+
+  it('PPRF-XAX-009: the histogram, which has no toggle, opens its side panel on Visit (#370)', () => {
+    const instance = build({ visit_col: 'VISIT', visitn_col: 'VISITNUM' });
+    expect(instance.profile.settings.x_axis.default).toBe('visit');
+    openPanel(instance);
+    expect(panelButtons(instance).map((button) => button.textContent)).toEqual([
+      'Visit',
+      'Study day'
+    ]);
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+    expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Visit');
+  });
+
+  it("PPRF-XAX-011: the histogram's studyday_col defaults to DY, so the panel's Study day option reads DY; null leaves it out (#370)", () => {
+    const instance = build({ visit_col: 'VISIT', visitn_col: 'VISITNUM' });
+    expect(instance.settings.studyday_col).toBe('DY');
+    expect(instance.profile.settings.studyday_col).toBe('DY');
+    openPanel(instance);
+    expect(panelButtons(instance)[1].disabled).toBe(false);
+    const none = build({ visit_col: 'VISIT', visitn_col: 'VISITNUM', studyday_col: null });
+    openPanel(none);
+    expect(panelButtons(none).map((button) => button.textContent)).toEqual(['Visit']);
+  });
+
+  it("PPRF-XAX-009: with no visit settings and no study day, the panel still opens on Visit, from the profile's own visit columns (#384)", () => {
+    const instance = histogram(document.querySelector('#host'), { start_value: ALT_TEST });
+    instance.init(makeRows().map(({ DY, ...row }) => row));
+    openPanel(instance);
+    expect(instance.railWrap.querySelector('.sv-no-time-axis')).toBeNull();
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+    // studyday_col: null on data with a study day: the visit still draws.
+    const noDayCol = build({ studyday_col: null });
+    openPanel(noDayCol);
+    expect(noDayCol.railWrap.querySelector('.sv-no-time-axis')).toBeNull();
+    expect(panelButtons(noDayCol).map((button) => button.textContent)).toEqual(['Visit']);
+  });
+});

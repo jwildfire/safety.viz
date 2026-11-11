@@ -1,15 +1,25 @@
 import { describe, it, expect } from 'vitest';
-import { syncSettings, OE_SEQ } from '../../../src/outlier-explorer/configure.js';
+import { syncSettings } from '../../../src/outlier-explorer/configure.js';
 import {
-  assignSequence,
   buildSeries,
+  categoryNames,
   cleanData,
   computeNormalRange,
   countInliers,
   measureLabel,
   median,
-  orderedCategories
+  orderedCategories,
+  timeLabels
 } from '../../../src/outlier-explorer/structureData.js';
+
+const VISIT = {
+  key: 'visit',
+  col: 'VISITNUM',
+  label_col: 'VISIT',
+  type: 'ordinal',
+  title: 'Visit'
+};
+const DAY = { key: 'day', col: 'DY', label_col: null, type: 'linear', title: 'Study day' };
 
 const settings = syncSettings({});
 
@@ -33,27 +43,15 @@ describe('outlier-explorer structureData', () => {
     expect(measureLabel({ TEST: 'Pulse', STRESU: '' }, settings)).toBe('Pulse');
   });
 
-  it('SOE-FUNC-004: assignSequence derives a 1-based per-participant measurement index (#24)', () => {
-    const rows = [
-      { USUBJID: 'P1', __oe_value: 1 },
-      { USUBJID: 'P2', __oe_value: 2 },
-      { USUBJID: 'P1', __oe_value: 3 },
-      { USUBJID: 'P1', __oe_value: 4 }
-    ];
-    assignSequence(rows, 'USUBJID');
-    expect(rows.map((r) => r[OE_SEQ])).toEqual([1, 1, 2, 3]);
-  });
-
   it('SOE-FUNC-010/SOE-REG-016: buildSeries makes one time-sorted series per participant (#24)', () => {
     const rows = [
-      { USUBJID: 'P2', __oe_value: 5, [OE_SEQ]: 1, ARM: 'Drug' },
-      { USUBJID: 'P1', __oe_value: 9, [OE_SEQ]: 2, ARM: 'Placebo' },
-      { USUBJID: 'P1', __oe_value: 7, [OE_SEQ]: 1, ARM: 'Placebo' }
+      { USUBJID: 'P2', __oe_value: 5, DY: '1', ARM: 'Drug' },
+      { USUBJID: 'P1', __oe_value: 9, DY: '29', ARM: 'Placebo' },
+      { USUBJID: 'P1', __oe_value: 7, DY: '1', ARM: 'Placebo' }
     ];
-    const timeCol = { value_col: OE_SEQ, label: 'Measurement', type: 'linear', order_col: OE_SEQ };
-    const series = buildSeries(rows, settings, timeCol, 'ARM');
+    const series = buildSeries(rows, settings, DAY, 'ARM');
     expect(series.map((s) => s.id)).toEqual(['P1', 'P2']);
-    // P1's points come out sorted by the sequence (1 then 2).
+    // P1's points come out sorted by study day (1 then 29).
     expect(series[0].points.map((p) => p.y)).toEqual([7, 9]);
     expect(series[0].group).toBe('Placebo');
     expect(series[1].points.map((p) => p.y)).toEqual([5]);
@@ -66,8 +64,84 @@ describe('outlier-explorer structureData', () => {
       { VISIT: 'Week 4', VISITNUM: 4 },
       { VISIT: 'Week 2', VISITNUM: 2 }
     ];
-    const timeCol = { value_col: 'VISIT', label: 'Visit', type: 'ordinal', order_col: 'VISITNUM' };
-    expect(orderedCategories(rows, timeCol)).toEqual(['Baseline', 'Week 2', 'Week 4']);
+    expect(orderedCategories(rows, VISIT)).toEqual(['Baseline', 'Week 2', 'Week 4']);
+    // A visit option read from time_cols orders by its order_col.
+    const fromTimeCols = { key: 'visit', col: 'VISIT', type: 'ordinal', order_col: 'VISITNUM' };
+    expect(orderedCategories(rows, fromTimeCols)).toEqual(['Baseline', 'Week 2', 'Week 4']);
+  });
+
+  it('SOE-XAX-006: buildSeries places points by visit name or by study day, and leaves out a record with no place on the axis (#371)', () => {
+    const rows = [
+      { USUBJID: 'P1', __oe_value: 9, VISIT: 'Week 2', VISITNUM: '2', DY: '15' },
+      { USUBJID: 'P1', __oe_value: 7, VISIT: 'Baseline', VISITNUM: '0', DY: '' }
+    ];
+    const byVisit = buildSeries(rows, settings, VISIT, null)[0].points;
+    expect(byVisit.map((p) => p.x)).toEqual(['Baseline', 'Week 2']);
+    // With no study day the baseline record has no place on a day axis; it is
+    // not plotted at day 0.
+    const byDay = buildSeries(rows, settings, DAY, null)[0].points;
+    expect(byDay.map((p) => p.x)).toEqual([15]);
+  });
+
+  it('SOE-XAX-006: visits that share a name but not a number stay apart, each named with its number (#384)', () => {
+    const rows = [
+      ['Baseline', 0],
+      ['Week 2', 2],
+      ['UNSCHEDULED', 2.1],
+      ['Week 4', 4],
+      ['UNSCHEDULED', 4.1],
+      ['Week 6', 6]
+    ].map(([visit, number], i) => ({
+      USUBJID: 'P1',
+      __oe_value: i,
+      VISIT: visit,
+      VISITNUM: number
+    }));
+    const expected = [
+      'Baseline',
+      'Week 2',
+      'UNSCHEDULED (2.1)',
+      'Week 4',
+      'UNSCHEDULED (4.1)',
+      'Week 6'
+    ];
+    expect(orderedCategories(rows, VISIT)).toEqual(expected);
+    // The line runs left to right through both, never back to the first.
+    const names = categoryNames(rows, VISIT);
+    expect(buildSeries(rows, settings, VISIT, null, names)[0].points.map((p) => p.x)).toEqual(
+      expected
+    );
+    // A name used once keeps its own label.
+    expect(names.get('2')).toBe('Week 2');
+  });
+
+  it('SOE-XAX-006: numbered visits sort by number, then visits with no number in the order they first appear, never named NaN (#384)', () => {
+    const fromTimeCols = { key: 'visit', col: 'VISIT', type: 'ordinal', order_col: 'VISITNUM' };
+    const rows = [
+      ['Week 4', 3],
+      ['Unscheduled', ''],
+      ['Baseline', 1],
+      ['Unscheduled', 2.1],
+      ['Early Term', ''],
+      ['Week 2', 2]
+    ].map(([visit, number]) => ({ VISIT: visit, VISITNUM: number }));
+    expect(orderedCategories(rows, fromTimeCols)).toEqual([
+      'Baseline',
+      'Week 2',
+      'Unscheduled (2.1)',
+      'Week 4',
+      'Unscheduled',
+      'Early Term'
+    ]);
+  });
+
+  it('SOE-XAX-006: the tooltip and listing name both the visit and the study day where the row has them (#371)', () => {
+    const options = [VISIT, DAY];
+    expect(timeLabels({ VISIT: 'Week 8', VISITNUM: '8', DY: '57' }, options)).toBe(
+      'Week 8 · Day 57'
+    );
+    expect(timeLabels({ VISIT: 'Week 8', VISITNUM: '8', DY: '' }, options)).toBe('Week 8');
+    expect(timeLabels({ DY: '-3' }, options)).toBe('Day -3');
   });
 
   it('SOE-FUNC-007/SOE-CFG-007: Standard Deviation normal range uses mean +/- k*sd (#24)', () => {

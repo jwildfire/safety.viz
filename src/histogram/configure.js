@@ -42,7 +42,7 @@ export const removedSetting = (name) =>
  * @property {boolean} [display_normal_range=false] Draw the normal-range overlay on first render. The pilot's camelCase alias displayNormalRange is still honored.
  * @property {boolean} [annotate_bin_boundaries=false] Label the x-axis with bin boundaries instead of linear ticks on first render.
  * @property {string} [group_by='sh_none'] Column the small multiples are grouped by on first render; 'sh_none' disables grouping. Unknown columns are added to the group options as-is.
- * @property {?string} [studyday_col=null] Numeric study-day column for the docked profile's labs-over-time x-axis; when null the profile falls back to input order (#99, PPRF-SH-001).
+ * @property {?string} [studyday_col='DY'] Numeric study-day column: the side panel's Study day option (#370, PPRF-XAX-011; it defaulted to null before v1.12.0). Set it to null when the data has no study day, and the panel offers Visit only (#99, PPRF-SH-001).
  * @property {?string} [visit_col=null] Visit-name column: listed as "Visit" after the participant ID in the default bar listing (#348), and passed to the docked profile for point tooltips (#99, PPRF-SH-001).
  * @property {?string} [visitn_col=null] Numeric visit column passed to the docked profile for point ordering context (#99, PPRF-SH-001).
  * @property {?Object} [measure_values=null] Optional map of short profile keys (ALT/AST/TB/ALP) to this data's full measure names, passed to the docked profile so the key liver measures resolve; null keeps the profile module's defaults (#99, PPRF-SH-001).
@@ -78,7 +78,7 @@ export const DEFAULT_SETTINGS = {
   display_normal_range: false,
   annotate_bin_boundaries: false,
   group_by: 'sh_none',
-  studyday_col: null,
+  studyday_col: 'DY',
   visit_col: null,
   visitn_col: null,
   measure_values: null,

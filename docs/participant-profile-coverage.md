@@ -45,28 +45,31 @@ adoption is this module's behaviour even though the fixtures drive hep-explorer.
 
 ## Unit evidence (Vitest — `tests/unit/participant-profile/`)
 
-| Requirement ID                                                        | Source matrix rows | Issue | Test file                                       |
-| --------------------------------------------------------------------- | ------------------ | ----- | ----------------------------------------------- |
-| PPRF-CORE-001 (module export: factory + rail)                         | PPRF-CORE-001      | #98   | `export.test.js`                                |
-| PPRF-CORE-002 (standalone long-lab contract guard)                    | PPRF-CORE-002      | #98   | `checkInputs.test.js`                           |
-| PPRF-CORE-003 (defaults + settings normalization)                     | PPRF-CORE-003      | #98   | `configure.test.js`                             |
-| PPRF-CORE-004 (standalone chrome: shell mount, hidden chart card)     | PPRF-CORE-004      | #98   | `events.test.js`                                |
-| PPRF-CORE-005 (railed mount: pre-cleaned rows, imperative feed)       | PPRF-CORE-005      | #98   | `rail.test.js`                                  |
-| PPRF-HDR-001 (demographics, R Ratio, P_ALT pass-through, Clear)       | PPRF-HDR-001       | #98   | `header.test.js`, `structureData.test.js`       |
-| PPRF-HDR-002 ({id}-templated link-out, closes #53)                    | PPRF-HDR-002       | #98   | `configure.test.js`                             |
-| PPRF-SPAG-001 (series building, cut lines, spaghetti render)          | PPRF-SPAG-001      | #98   | `spaghetti.test.js`, `structureData.test.js`    |
-| PPRF-SPAG-002 (×ULN/×Baseline and lab-subset controls)                | PPRF-SPAG-002      | #98   | `controls.test.js`                              |
-| PPRF-SPAG-003 (measure color palette)                                 | PPRF-SPAG-003      | #98   | `configure.test.js`                             |
-| PPRF-SPAG-004 (full names in the legend, short keys on the lines)     | PPRF-SPAG-004      | #54   | `spaghetti.test.js`                             |
-| PPRF-TBL-001 (per-measure summary model + table render)               | PPRF-TBL-001       | #98   | `measureTable.test.js`, `structureData.test.js` |
-| PPRF-TBL-002 (sparklines with normal-range and population bands)      | PPRF-TBL-002       | #98   | `sparkline.test.js`                             |
-| PPRF-TBL-003 (sparkline → inset expansion lifecycle)                  | PPRF-TBL-003       | #98   | `inset.test.js`                                 |
-| PPRF-TBL-004 (non-key-measure "show N additional" toggle)             | PPRF-TBL-004       | #98   | `controls.test.js`                              |
-| PPRF-TBL-005 (optional shared record listing)                         | PPRF-TBL-005       | #98   | `measureTable.test.js`                          |
-| PPRF-STEP-001 (stepper render, wrap/clamp, keyboard operation)        | PPRF-STEP-001      | #98   | `stepper.test.js`                               |
-| PPRF-STEP-002 (worst-quadrant-first ordering, peak-severity fallback) | PPRF-STEP-002      | #98   | `rank.test.js`                                  |
-| PPRF-EVT-001 (participantsSelected listener on the configured target) | PPRF-EVT-001       | #98   | `events.test.js`                                |
-| PPRF-EVT-002 (programmatic selection + on_clear/on_step callbacks)    | PPRF-EVT-002       | #98   | `events.test.js`                                |
+| Requirement ID                                                                                                                                       | Source matrix rows | Issue | Test file                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ----- | ----------------------------------------------- |
+| PPRF-CORE-001 (module export: factory + rail)                                                                                                        | PPRF-CORE-001      | #98   | `export.test.js`                                |
+| PPRF-CORE-002 (standalone long-lab contract guard)                                                                                                   | PPRF-CORE-002      | #98   | `checkInputs.test.js`                           |
+| PPRF-CORE-003 (defaults + settings normalization)                                                                                                    | PPRF-CORE-003      | #98   | `configure.test.js`                             |
+| PPRF-CORE-004 (standalone chrome: shell mount, hidden chart card)                                                                                    | PPRF-CORE-004      | #98   | `events.test.js`                                |
+| PPRF-CORE-005 (railed mount: pre-cleaned rows, imperative feed)                                                                                      | PPRF-CORE-005      | #98   | `rail.test.js`                                  |
+| PPRF-HDR-001 (demographics, R Ratio, P_ALT pass-through, Clear)                                                                                      | PPRF-HDR-001       | #98   | `header.test.js`, `structureData.test.js`       |
+| PPRF-HDR-002 ({id}-templated link-out, closes #53)                                                                                                   | PPRF-HDR-002       | #98   | `configure.test.js`                             |
+| PPRF-SPAG-001 (series building, cut lines, spaghetti render)                                                                                         | PPRF-SPAG-001      | #98   | `spaghetti.test.js`, `structureData.test.js`    |
+| PPRF-SPAG-002 (×ULN/×Baseline and lab-subset controls)                                                                                               | PPRF-SPAG-002      | #98   | `controls.test.js`                              |
+| PPRF-SPAG-003 (measure color palette)                                                                                                                | PPRF-SPAG-003      | #98   | `configure.test.js`                             |
+| PPRF-SPAG-004 (full names in the legend, short keys on the lines)                                                                                    | PPRF-SPAG-004      | #54   | `spaghetti.test.js`                             |
+| PPRF-TBL-001 (per-measure summary model + table render)                                                                                              | PPRF-TBL-001       | #98   | `measureTable.test.js`, `structureData.test.js` |
+| PPRF-TBL-002 (sparklines with normal-range and population bands)                                                                                     | PPRF-TBL-002       | #98   | `sparkline.test.js`                             |
+| PPRF-TBL-003 (sparkline → inset expansion lifecycle)                                                                                                 | PPRF-TBL-003       | #98   | `inset.test.js`                                 |
+| PPRF-TBL-004 (non-key-measure "show N additional" toggle)                                                                                            | PPRF-TBL-004       | #98   | `controls.test.js`                              |
+| PPRF-TBL-005 (optional shared record listing)                                                                                                        | PPRF-TBL-005       | #98   | `measureTable.test.js`                          |
+| PPRF-STEP-001 (stepper render, wrap/clamp, keyboard operation)                                                                                       | PPRF-STEP-001      | #98   | `stepper.test.js`                               |
+| PPRF-STEP-002 (worst-quadrant-first ordering, peak-severity fallback)                                                                                | PPRF-STEP-002      | #98   | `rank.test.js`                                  |
+| PPRF-EVT-001 (participantsSelected listener on the configured target)                                                                                | PPRF-EVT-001       | #98   | `events.test.js`                                |
+| PPRF-EVT-002 (programmatic selection + on_clear/on_step callbacks)                                                                                   | PPRF-EVT-002       | #98   | `events.test.js`                                |
+| PPRF-XAX-001..008 (the X-axis control, Visit and Study day views, day-1 line, tooltip, table column, AE track, greyed options, no-time-axis message) | PPRF-XAX-001..008  | #369  | `xaxis.test.js`, `spaghetti.test.js`            |
+| PPRF-XAX-010 (a host re-sync keeps the view chosen in the panel)                                                                                     | PPRF-XAX-010       | #370  | `xaxis.test.js`                                 |
+| PPRF-XAX-009 (`panelXAxis`: the x_axis a host hands its side panel, the host's order kept, no column twice)                                          | PPRF-XAX-009       | #384  | `configure.test.js`                             |
 
 ## Source-matrix routing status
 

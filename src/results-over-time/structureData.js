@@ -182,24 +182,38 @@ export function groupKey(row, groupCol) {
 
 /**
  * Nest rows by visit then group and compute summary statistics for each
- * visit-group combination.
+ * visit-group combination. With a study-day column, each summary also
+ * carries `median_day`: the median study day of the records it summarizes,
+ * blanks left out, or null when none has a day (#374, SROT-XAX-001). It is
+ * shown, never used for a statistic.
  * @param {Object[]} rows Data records (with numeric results).
- * @param {{timeCol:string, valueCol:string, groupCol:?string}} columns Column accessors.
+ * @param {{timeCol:string, valueCol:string, groupCol:?string, dayCol:?string}} columns Column accessors; dayCol is optional.
  * @returns {Object<string, Object<string, Object>>} statsByVisit[visit][group] = summary.
  */
-export function summarizeVisitGroups(rows, { timeCol, valueCol, groupCol }) {
+export function summarizeVisitGroups(rows, { timeCol, valueCol, groupCol, dayCol = null }) {
   const nested = {};
   const buckets = new Map();
   for (const row of rows) {
     const visit = row[timeCol];
     const group = groupKey(row, groupCol);
     const key = `${visit}\u0000${group}`;
-    if (!buckets.has(key)) buckets.set(key, { visit, group, values: [] });
-    buckets.get(key).values.push(Number(row[valueCol]));
+    if (!buckets.has(key)) buckets.set(key, { visit, group, values: [], days: [] });
+    const bucket = buckets.get(key);
+    bucket.values.push(Number(row[valueCol]));
+    const day = dayCol ? row[dayCol] : undefined;
+    if (day !== undefined && day !== null && String(day).trim() !== '' && Number.isFinite(+day)) {
+      bucket.days.push(Number(day));
+    }
   }
-  for (const { visit, group, values } of buckets.values()) {
+  for (const { visit, group, values, days } of buckets.values()) {
     if (!nested[visit]) nested[visit] = {};
     nested[visit][group] = summarize(values);
+    nested[visit][group].median_day = days.length
+      ? quantile(
+          [...days].sort((a, b) => a - b),
+          0.5
+        )
+      : null;
   }
   return nested;
 }

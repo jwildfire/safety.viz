@@ -193,3 +193,51 @@ describe('dock coordination follows live control state (PPRF-7, PPRF-HEP-001)', 
     expect(instance.profile.settings.details).toEqual([{ value_col: 'SEX', label: 'Sex' }]);
   });
 });
+
+describe('hep-explorer side panel X-axis (PPRF-XAX-009)', () => {
+  it('PPRF-XAX-009: hep-explorer opens its side panel on Study day (#370)', () => {
+    const instance = build();
+    expect(instance.profile.settings.x_axis.default).toBe('day');
+    instance.selectParticipant('P1');
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe(
+      'Study day'
+    );
+    expect(instance.profile.spaghettiChart.options.scales.x.title.text).toBe('Study day');
+  });
+
+  it('PPRF-XAX-009: the side panel opens on the view the time slider opens on (#370)', () => {
+    const instance = build({
+      visit_col: 'VISIT',
+      visitn_col: 'VISITNUM',
+      x_axis: { default: 'visit' }
+    });
+    expect(instance.profile.settings.x_axis.default).toBe('visit');
+    instance.selectParticipant('P1');
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+  });
+
+  it('PPRF-XAX-009: after the slider switches to Visit, the next participant opens on Visit (#370)', () => {
+    const instance = build({ visit_col: 'VISIT', visitn_col: 'VISITNUM' });
+    instance.animationWrap.querySelector('.sv-xaxis-option[data-key="visit"]').click();
+    expect(instance.profile.settings.x_axis.default).toBe('visit');
+    instance.selectParticipant('P1');
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+  });
+
+  it('PPRF-XAX-009: after setSettings names another default view, the panel opens on it at once (#384)', () => {
+    const instance = build({ visit_col: 'VISIT', visitn_col: 'VISITNUM' });
+    instance.animationWrap.querySelector('.sv-xaxis-option[data-key="visit"]').click();
+    instance.setSettings({ x_axis: { default: 'day' } });
+    expect(instance.profile.settings.x_axis.default).toBe('day');
+  });
+
+  it("PPRF-XAX-010: switching the side panel leaves hep-explorer's slider where it was (#384)", () => {
+    const instance = build({ visit_col: 'VISIT', visitn_col: 'VISITNUM' });
+    instance.selectParticipant('P1');
+    instance.railWrap.querySelector('.sv-xaxis-option[data-key="visit"]').click();
+    expect(instance.railWrap.querySelector('.sv-xaxis-option.is-active').textContent).toBe('Visit');
+    expect(instance.state.xAxis).toBeNull();
+    const slider = instance.animationWrap.querySelector('.sv-xaxis-option[aria-pressed="true"]');
+    expect(slider.dataset.key).toBe('day');
+  });
+});
