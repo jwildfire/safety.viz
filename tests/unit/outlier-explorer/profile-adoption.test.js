@@ -311,4 +311,15 @@ describe('outlier-explorer side panel X-axis (PPRF-XAX-009, PPRF-XAX-010, PPRF-X
     expect(instance.settings.studyday_col).toBe('DY');
     expect(instance.profile.settings.studyday_col).toBe('DY');
   });
+
+  it('PPRF-XAX-009: a main axis with no day option still hands the panel a Study day option from studyday_col (#384)', () => {
+    const instance = build({
+      x_axis: undefined,
+      time_cols: [{ value_col: 'VISIT', type: 'ordinal', order_col: 'VISITNUM', label: 'Visit' }]
+    });
+    expect(instance.profile.settings.x_axis.options.map((o) => [o.key, o.col])).toEqual([
+      ['visit', 'VISITNUM'],
+      ['day', 'DY']
+    ]);
+  });
 });
