@@ -68,6 +68,11 @@ const MODULE_CSS = `
 .sv-profile-ae-tick{position:absolute;top:2px;transform:translateX(-50%);font-size:.65rem;color:#7b8b96;font-variant-numeric:tabular-nums}
 .sv-profile-ae-more,.sv-profile-ae-unplaceable{margin:.4rem 0 0;font-size:.72rem;color:#7b8b96}
 .sv-profile-ae-empty{margin:.3rem 0 .8rem;font-size:.82rem;color:#7b8b96}
+.sv-profile-ae-list-wrap{margin:.6rem 0 0}
+.sv-profile-ae-list-note{margin:0 0 .35rem;font-size:.76rem;color:#7b8b96}
+.sv-profile-ae-list{margin:0;padding:0 0 0 1.1rem;font-size:.8rem;color:#52616f;display:grid;gap:.15rem}
+.sv-profile-ae-list strong{color:#1f2933;font-weight:600}
+.sv-profile-controls .sv-xaxis-control{margin:0}
 .sv-profile-ae-soc-wrap{margin-top:.7rem}
 .sv-profile-ae-soc{list-style:none;margin:0;padding:0}
 .sv-profile-ae-soc li{display:flex;justify-content:space-between;gap:.6rem;font-size:.76rem;padding:.16rem 0;border-bottom:1px dotted #e3e8ee}

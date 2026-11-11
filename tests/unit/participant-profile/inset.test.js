@@ -175,7 +175,7 @@ describe('renderInset (PPRF-4, PPRF-TBL-003)', () => {
       { x: 60, y: 80 }
     ]);
     expect(dataset.borderColor).toBe('#e41a1c');
-    expect(chart.options.scales.x.title.text).toBe('Study Day');
+    expect(chart.options.scales.x.title.text).toBe('Study day');
     expect(chart.options.scales.y.title.text).toBe('Aminotransferase, alanine (ALT)');
     // y-domain unioned with band + guides (parity setDomain).
     expect(chart.options.scales.y.min).toBeCloseTo(5 * 0.99, 6);

@@ -51,9 +51,10 @@ export const MEASURE_COLORS = [
  * @property {string} [unit_col='STRESU'] Optional unit column.
  * @property {string} [normal_col_high='STNRHI'] Upper-limit-of-normal column; the ×ULN denominator and the outlier-high flag (PPRF-4).
  * @property {?string} [normal_col_low='STNRLO'] Lower-limit-of-normal column; the sparkline band floor and the outlier-low flag (PPRF-4).
- * @property {?string} [studyday_col='DY'] Study-day column; the spaghetti / inset x-axis (PPRF-3/4).
- * @property {?string} [visit_col='VISIT'] Visit column, carried onto spark points.
- * @property {?string} [visitn_col='VISITNUM'] Numeric visit column.
+ * @property {?string} [studyday_col='DY'] Study-day column; the Study day option of the x-axis when `x_axis` is not given, and the day the adverse-event domain and P_ALT read (PPRF-3/4).
+ * @property {?string} [visit_col='VISIT'] Visit-name column; the Visit option's tick labels when `x_axis` is not given.
+ * @property {?string} [visitn_col='VISITNUM'] Numeric visit column; the Visit option's order when `x_axis` is not given.
+ * @property {?Object} [x_axis=null] The x-axis toggle (#369): `{ options: [{ key, col, label_col, type, title }], default }`, the same setting every chart takes. Visit view (`type: 'ordinal'`) spaces visits evenly in visit-number order, labelled from `label_col`; Study day view (`type: 'linear'`) plots each record at its day, with a day-1 line. null builds it from `visitn_col` / `visit_col` and `studyday_col`, opening on Visit.
  * @property {?string} [baseline_col=null] Optional baseline-flag column, feeding deriveBaseline and the hep-core reduction (PPRF-5).
  * @property {string} [baseline_value='Y'] The value of baseline_col that marks the baseline record.
  * @property {Array<string|Object>} [details=[]] Header demographics: column names or { value_col, label } specs (PPRF-2).
@@ -95,6 +96,7 @@ export const DEFAULT_SETTINGS = {
   studyday_col: 'DY',
   visit_col: 'VISIT',
   visitn_col: 'VISITNUM',
+  x_axis: null,
   baseline_col: null,
   baseline_value: 'Y',
   details: [],

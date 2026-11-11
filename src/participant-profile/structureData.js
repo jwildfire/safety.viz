@@ -13,6 +13,106 @@ import { SEVERITY_ORDER } from '../hep-core/quadrants.js';
 import { median, quantile } from '../hep-core/stats.js';
 import { calculatePalt } from '../hep-core/palt.js';
 import { measureColorScale, templateProfileURL } from './configure.js';
+import { normalizeXAxis, resolveXAxis, activeXAxis, xAxisValue, xAxisTick } from '../x-axis.js';
+
+const blank = (value) => value === undefined || value === null || String(value).trim() === '';
+
+/**
+ * Resolve the profile's x-axis for the current data and control state
+ * (#369, PPRF-XAX-001): the `x_axis` setting (built from studyday_col /
+ * visit_col / visitn_col when absent, default view Visit) checked against the
+ * cleaned rows, with the view the control asked for when the data can draw it.
+ * @param {Object[]} cleanRows All cleaned rows.
+ * @param {Object} settings Normalized settings.
+ * @param {?string} [requested=null] The view the X-axis control asked for.
+ * @returns {{options: Object[], active: ?string, message: ?string}} The resolved setting.
+ */
+export function resolveProfileXAxis(cleanRows, settings, requested = null) {
+  return resolveXAxis(normalizeXAxis(settings, { fallback: 'visit' }), cleanRows, requested);
+}
+
+/**
+ * The tooltip's first line for a point (#369, PPRF-XAX-005): the visit name
+ * and the study day, "Week 8 · Day 57", whichever view is active, using
+ * whatever of the two the point carries.
+ * @param {Object} point A spaghetti or spark point ({ visit, studyDay } or { visit, day }).
+ * @returns {string} The line, '' when the point carries neither.
+ */
+export function timeLabel(point) {
+  if (!point) return '';
+  const parts = [];
+  if (!blank(point.visit)) parts.push(String(point.visit));
+  // A point built before the toggle carries only `day`.
+  const day = point.studyDay !== undefined ? point.studyDay : point.day;
+  if (Number.isFinite(day)) parts.push(`Day ${day}`);
+  return parts.join(' \u00b7 ');
+}
+
+/**
+ * Build the time axis one participant's charts share (#369, PPRF-XAX-002/003):
+ * for a visit option, one evenly spaced position per distinct visit in
+ * visit-number order (an unscheduled visit's fractional number puts it right
+ * after the visit it follows), each tick labelled by the visit name; for a
+ * study-day option, the day itself on a linear axis.
+ * @param {?Object} option The active x-axis option, or null.
+ * @param {Object[]} participantRows The participant's cleaned rows.
+ * @returns {?{key: string, type: string, title: string, ticks: ?Array<{value: number, label: string}>, position: Function}} The axis, or null without an active option.
+ * @private
+ */
+function timeAxis(option, participantRows) {
+  if (!option) return null;
+  if (option.type === 'linear') {
+    return {
+      key: option.key,
+      type: 'linear',
+      title: option.title,
+      ticks: null,
+      position: (row) => xAxisValue(option, row)
+    };
+  }
+  // Distinct visits: numeric visit numbers sort numerically; a text-only visit
+  // column keeps the order the visits first appear in by study day.
+  const seen = new Map();
+  participantRows
+    .slice()
+    .sort(dayThenIndex)
+    .forEach((row) => {
+      const value = row[option.col];
+      if (blank(value)) return;
+      const key = String(value);
+      if (!seen.has(key)) seen.set(key, { value, label: xAxisTick(option, row) });
+    });
+  const entries = [...seen.values()];
+  if (entries.every((entry) => Number.isFinite(Number(entry.value))))
+    entries.sort((a, b) => Number(a.value) - Number(b.value));
+  const index = new Map(entries.map((entry, i) => [String(entry.value), i]));
+  return {
+    key: option.key,
+    type: 'ordinal',
+    title: option.title,
+    ticks: entries.map((entry, i) => ({ value: i, label: entry.label })),
+    position: (row) => {
+      const value = row[option.col];
+      return blank(value) || !index.has(String(value)) ? NaN : index.get(String(value));
+    }
+  };
+}
+
+/**
+ * Order points by their position on the active axis, records with no position
+ * last; ties (two records at one visit) by study day, then input order.
+ * @param {Object} a A point.
+ * @param {Object} b A point.
+ * @returns {number} The comparison.
+ * @private
+ */
+function byPosition(a, b) {
+  const xa = Number.isFinite(a.x) ? a.x : Number.MAX_SAFE_INTEGER;
+  const xb = Number.isFinite(b.x) ? b.x : Number.MAX_SAFE_INTEGER;
+  const da = Number.isFinite(a.day) ? a.day : Number.MAX_SAFE_INTEGER;
+  const db = Number.isFinite(b.day) ? b.day : Number.MAX_SAFE_INTEGER;
+  return xa - xb || da - db || a.index - b.index;
+}
 
 /** The y-axis label for the active display mode (PPRF-3). */
 function yLabelFor(display) {
@@ -110,6 +210,31 @@ export function buildProfileModel(cleanRows, id, settings, state) {
   const first = participantRows[0] || {};
 
   const measures = orderedMeasures(participantRows, settings);
+
+  // The active view (#369): which option is drawn, and each record's position
+  // on it. The visit name and study day ride on every point for the tooltip,
+  // read from the x_axis options so a host's own column names are honoured.
+  const xAxis = resolveProfileXAxis(cleanRows, settings, state ? state.xAxis : null);
+  const option = activeXAxis(xAxis);
+  const axis = timeAxis(option, participantRows);
+  const visitOption = xAxis.options.find((entry) => entry.type !== 'linear') || null;
+  const dayOption = xAxis.options.find((entry) => entry.type === 'linear') || null;
+  const timeFields = (row) => {
+    const visit = visitOption
+      ? xAxisTick(visitOption, row)
+      : settings.visit_col != null
+        ? row[settings.visit_col]
+        : undefined;
+    const studyDay = dayOption ? xAxisValue(dayOption, row) : row.__hep_day;
+    return {
+      x: axis ? axis.position(row) : NaN,
+      index: row.__hep_index,
+      visit: blank(visit) ? undefined : visit,
+      visitn: settings.visitn_col != null ? row[settings.visitn_col] : undefined,
+      studyDay
+    };
+  };
+
   const colors = measureColorScale(measures.map((measure) => measure.key));
 
   const details = (settings.details || []).map((spec) => ({
@@ -140,16 +265,15 @@ export function buildProfileModel(cleanRows, id, settings, state) {
   const series = measures.map((measure) => {
     const points = measure.rows
       .filter((row) => Number.isFinite(row[field]))
-      .sort(dayThenIndex)
       .map((row) => ({
         day: row.__hep_day,
         value: row[field],
         // Tooltip context (parity: the original spaghetti addPointTitles):
         // the raw result alongside the adjusted value, plus the visit fields.
         raw: row.__hep_value,
-        visit: settings.visit_col != null ? row[settings.visit_col] : undefined,
-        visitn: settings.visitn_col != null ? row[settings.visitn_col] : undefined
-      }));
+        ...timeFields(row)
+      }))
+      .sort(byPosition);
     return {
       key: measure.key,
       label: measure.label,
@@ -163,8 +287,6 @@ export function buildProfileModel(cleanRows, id, settings, state) {
   const measureModels = measures.map((measure) => {
     const values = measure.rows.map((row) => row.__hep_value).filter(Number.isFinite);
     const spark = measure.rows
-      .slice()
-      .sort(dayThenIndex)
       .map((row) => {
         const lln = settings.normal_col_low != null ? Number(row[settings.normal_col_low]) : NaN;
         const uln = Number(row[settings.normal_col_high]);
@@ -177,10 +299,10 @@ export function buildProfileModel(cleanRows, id, settings, state) {
           lln,
           uln,
           outlier: outlierLow || outlierHigh,
-          visit: settings.visit_col != null ? row[settings.visit_col] : undefined,
-          visitn: settings.visitn_col != null ? row[settings.visitn_col] : undefined
+          ...timeFields(row)
         };
-      });
+      })
+      .sort(byPosition);
     return {
       key: measure.key,
       label: measure.label,
@@ -195,9 +317,18 @@ export function buildProfileModel(cleanRows, id, settings, state) {
     };
   });
 
+  // The axis the charts draw on, without its row-position function: the view
+  // model stays plain data. `xAxis` is what the X-axis control renders.
+  const axisModel = axis
+    ? { key: axis.key, type: axis.type, title: axis.title, ticks: axis.ticks }
+    : null;
+
   return {
     participant,
+    xAxis,
+    axis: axisModel,
     spaghetti: {
+      axis: axisModel,
       series,
       yLabel: yLabelFor(display),
       display,
