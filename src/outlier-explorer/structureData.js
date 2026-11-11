@@ -143,14 +143,14 @@ export function categoryNames(rows, option) {
   visits.forEach(({ label }) => uses.set(label, (uses.get(label) || 0) + 1));
   const names = new Map();
   visits.forEach(({ label, order }, key) =>
-    names.set(key, uses.get(label) > 1 ? `${label} (${order})` : label)
+    names.set(key, uses.get(label) > 1 && Number.isFinite(order) ? `${label} (${order})` : label)
   );
   return names;
 }
 
 // Ordered category labels for an ordinal axis: one per visit, sorted by the
-// visit number (SOE-REG-028 axis ordering); visits with no number keep the
-// order they first appear in.
+// visit number (SOE-REG-028 axis ordering), then the visits with no number in
+// the order they first appear.
 export function orderedCategories(rows, option, names = categoryNames(rows, option)) {
   const order = new Map();
   rows
@@ -159,8 +159,14 @@ export function orderedCategories(rows, option, names = categoryNames(rows, opti
       const key = categoryKey(row, option);
       if (!order.has(key)) order.set(key, timeOrder(row, option));
     });
-  const byOrder = (a, b) => (Number.isFinite(a[1]) && Number.isFinite(b[1]) ? a[1] - b[1] : 0);
-  return [...order.entries()].sort(byOrder).map(([key]) => names.get(key));
+  // Numbered visits by number, then the visits with no number in the order
+  // they first appear (#384).
+  const entries = [...order.entries()];
+  const numbered = entries
+    .filter(([, value]) => Number.isFinite(value))
+    .sort((a, b) => a[1] - b[1]);
+  const unnumbered = entries.filter(([, value]) => !Number.isFinite(value));
+  return [...numbered, ...unnumbered].map(([key]) => names.get(key));
 }
 
 // Builds one series per participant: points sorted along the active x-axis
