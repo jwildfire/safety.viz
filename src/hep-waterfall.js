@@ -507,10 +507,18 @@ class SafetyHepWaterfall {
       );
     }
     if (!this.settings.details.length) {
+      // Visit and Study day are separate columns, each only when its column is
+      // configured and in the data (HWF-SELECT-004): one "Study Day" column
+      // could hold visit numbers and call them days.
+      const present = (col) =>
+        Boolean(col) && rows.some((row) => row[col] !== undefined && row[col] !== '');
+      const visitCol = this.settings.visit_col;
+      const hasDay = rows.some((row) => Number.isFinite(row.__hep_day));
       this.settings.details = [
         { value_col: this.settings.id_col, label: 'Participant' },
         { value_col: this.settings.measure_col, label: 'Measure' },
-        { value_col: '__hwf_dayLabel', label: 'Study Day' },
+        ...(present(visitCol) ? [{ value_col: visitCol, label: 'Visit' }] : []),
+        ...(hasDay ? [{ value_col: '__hwf_dayLabel', label: 'Study day' }] : []),
         { value_col: this.settings.value_col, label: 'Result' },
         { value_col: this.settings.normal_col_high, label: 'ULN' }
       ];

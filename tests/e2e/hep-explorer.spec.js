@@ -551,7 +551,10 @@ test.describe('safety.viz hep-explorer module', () => {
     const headers = await page.locator('.sv-listing th').allTextContents();
     expect(headers.join(',')).toContain('Participant');
     expect(headers.join(',')).toContain('Measure');
-    expect(headers.join(',')).toContain('Study Day');
+    // Visit and Study day are separate columns (HEP-XAX-008, #377).
+    expect(headers.join(',')).toContain('Visit');
+    expect(headers.join(',')).toContain('Study day');
+    expect(headers.join(',')).not.toContain('Study Day');
     expect(headers.join(',')).toContain('Result');
     expect(headers.join(',')).toContain('ULN');
     await expect(page.locator('.sv-footnote')).toContainText('Participant SUBJ-001 selected.');

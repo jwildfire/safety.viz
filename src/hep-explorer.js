@@ -621,10 +621,18 @@ class SafetyHepExplorer {
     if (!yOptions.includes(this.state.measureY)) this.state.measureY = yOptions[0];
 
     if (!this.settings.details.length) {
+      // Visit and Study day are separate columns, each only when its column is
+      // configured and in the data (HEP-XAX-008): one "Study Day" column could
+      // hold visit numbers and call them days.
+      const visitCol = this.settings.visit_col;
+      const hasVisit =
+        Boolean(visitCol) &&
+        retained.some((row) => row[visitCol] !== undefined && row[visitCol] !== '');
       this.settings.details = [
         { value_col: this.settings.id_col, label: 'Participant' },
         { value_col: this.settings.measure_col, label: 'Measure' },
-        { value_col: '__hep_dayLabel', label: 'Study Day' },
+        ...(hasVisit ? [{ value_col: visitCol, label: 'Visit' }] : []),
+        ...(this.timingEvaluated ? [{ value_col: '__hep_dayLabel', label: 'Study day' }] : []),
         { value_col: this.settings.value_col, label: 'Result' },
         { value_col: this.settings.normal_col_high, label: 'ULN' },
         { value_col: '__hep_relText', label: '×ULN' }

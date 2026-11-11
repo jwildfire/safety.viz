@@ -46,6 +46,7 @@
     "HWF-SELECT-001": "Hovering a bar shows a tooltip listing the participant identifier, arm, baseline value, maximum on-treatment value with the study day it occurred, the change from baseline in both absolute units and multiples of baseline, the participant's maximum total bilirubin in ×ULN, and their jaundice status.",
     "HWF-SELECT-002": "Clicking a bar selects that participant, highlights their bar against the rest of the cohort, and opens the participant listing.",
     "HWF-SELECT-003": "A selection dispatches a participantsSelected event on the module's root element carrying the selected participant identifiers.",
+    "HWF-SELECT-004": "The participant listing shows a Visit column (visit_col) and a Study day column (studyday_col), each only when its column is configured and carries values in the data, in place of the single \"Study Day\" column that could hold visit numbers.",
     "HWF-API-001": "The library's default export collection exposes a hepWaterfall factory that is identical to the named hepWaterfall export and returns a module instance.",
     "HWF-API-002": "The init, setData and setSettings methods replace the instance's data or settings, re-render, and return the instance.",
     "HWF-API-003": "The resize method re-measures every chart the module owns and destroy destroys them all and empties the target element, leaving no Chart.js instance behind.",
