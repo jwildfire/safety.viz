@@ -87,6 +87,7 @@ pending; each row lists the module IDs its test covers.
 | HEP-CHART-004, HEP-CTRL-009, HEP-QUAD-002, HEP-SELECT-001 (tooltip, palette, plugin)       | —                                                      | #43   | `getPlugins.test.js`                              |
 | HEP-DISPLAY-008 (nR ratio: higher of ALT and AST over ALP, on each point)                  | —                                                      | #334  | `structureData.test.js`                           |
 | HEP-CTRL-014, HEP-CHART-004 (the nrRatio note, the nR tooltip line)                        | —                                                      | #334  | `getPlugins.test.js`                              |
+| HEP-DISPLAY-005 (filled or hollow on the demo study days: 131 of 318 hollow)               | —                                                      | #365  | `demo-timing.test.js`                             |
 | HEP-CTRL-007 (the nrRatio Point Size option)                                               | —                                                      | #334  | `configure.test.js`                               |
 | HEP-API-001 (module export)                                                                | —                                                      | #43   | `export.test.js`                                  |
 | HEP-COMP-001/002/003/004/005/006 (classification, migration, concern matrix, by-arm)       | —                                                      | #67   | `composite.test.js`                               |
