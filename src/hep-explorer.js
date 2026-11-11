@@ -48,7 +48,7 @@ import {
   renderShell,
   renderViewSelector
 } from './shell.js';
-import { VIEW_MODES, syncSettings, cutFor } from './hep-explorer/configure.js';
+import { VIEW_MODES, syncSettings, cutFor, timeAxis } from './hep-explorer/configure.js';
 import { resolveArmCol } from './hep-core/arms.js';
 import { checkInputs } from './hep-explorer/checkInputs.js';
 import {
@@ -339,6 +339,20 @@ class SafetyHepExplorer {
   }
 
   /**
+   * The X-axis handed to the side panel (#370, PPRF-XAX-009): the chart's
+   * options, opening on the view the time slider is in, so the next
+   * participant opens on whatever the reader last chose beneath the scatter.
+   * @private
+   */
+  profileXAxis() {
+    const active = this.timeAxis ? this.timeAxis.active : null;
+    return {
+      ...normalizeXAxis(this.settings),
+      default: this.state.xAxis || active || timeAxis(this.settings).default
+    };
+  }
+
+  /**
    * The settings handed to the railed participant-profile module (#98,
    * PPRF-7): the shared long-lab column mappings and cutpoints pass through
    * verbatim so the rail consumes this chart's pre-cleaned rows with no second
@@ -360,9 +374,7 @@ class SafetyHepExplorer {
       studyday_col: settings.studyday_col,
       visit_col: settings.visit_col,
       visitn_col: settings.visitn_col,
-      // The panel opens on Study day (#370) until hep-explorer has a toggle of
-      // its own, whose view it will forward instead.
-      x_axis: { ...normalizeXAxis(settings), default: 'day' },
+      x_axis: this.profileXAxis(),
       baseline_col: settings.baseline_col,
       baseline_value: settings.baseline_value,
       measure_values: settings.measure_values,

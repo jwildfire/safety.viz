@@ -719,6 +719,8 @@ function syncPlayButton(host) {
 function switchTimeAxis(host, key) {
   resetPlayback(host);
   host.state.xAxis = key;
+  // The next participant opens on the view just chosen (#370, PPRF-XAX-009).
+  if (host.profile) host.profile.applySettings({ x_axis: host.profileXAxis() });
   rebuildAnimationFrames(host);
   host.animationWrap.innerHTML = '';
   drawAnimationBar(host);
