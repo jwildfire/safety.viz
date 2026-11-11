@@ -181,7 +181,8 @@ function dayText(day) {
 /**
  * Tooltip text lines for a participant point (HEP-CHART-004): the participant
  * id, the R Ratio and nR Ratio, each axis measure with its standardized peak value and day,
- * and the day-difference between the two peaks. Each measure is named with its
+ * and the day-difference between the two peaks — or, when the timing test was
+ * not evaluated, a line saying so (HEP-XAX-007). Each measure is named with its
  * full label from measure_values (e.g. `Total Bilirubin`) rather than the short
  * key, matching the axis titles and the original renderer.
  * @param {Object} point The plotted point ({ id, x, y, days_x, days_y, day_diff, rRatio, nrRatio }).
@@ -201,7 +202,11 @@ export function pointTooltip(point, state, measureValues) {
       point.days_y
     )}`
   ];
-  if (Number.isFinite(point.day_diff)) {
+  if (point.timing === 'not_evaluated') {
+    // Nobody measured the gap, so the tooltip says so rather than giving a
+    // number of days (HEP-XAX-007).
+    lines.push('Timing not evaluated (no study day)');
+  } else if (Number.isFinite(point.day_diff)) {
     lines.push(`${formatNumber(point.day_diff)} days apart`);
   }
   return lines;

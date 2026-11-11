@@ -40,7 +40,7 @@ import {
   cutFor,
   timeAxis
 } from '../configure.js';
-import { applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
+import { TIMING, applyFilters, buildPoints, classifyQuadrants, unique } from '../structureData.js';
 import { cutHandleAt, cutValueFor } from '../cutDrag.js';
 import { availableDisplays, groupOrder } from '../availability.js';
 import { MARGINAL_MODES, marginalPlugin, scatterPadding } from '../marginals.js';
@@ -317,6 +317,23 @@ function updateNotes(host) {
       );
     }
     host.notes.append(note);
+  }
+
+  // Where the data has study days but a participant's peak does not, that
+  // participant's timing was not evaluated either; the footnote speaks for the
+  // dated majority, so the exceptions are counted here (HEP-XAX-007).
+  const unevaluated = host.timingEvaluated
+    ? host.points.filter((point) => point.timing === TIMING.NOT_EVALUATED).length
+    : 0;
+  if (unevaluated) {
+    host.notes.append(
+      createElement(
+        'span',
+        null,
+        `${unevaluated} participant${unevaluated === 1 ? '' : 's'} not evaluated for timing: ` +
+          'a peak has no study day (drawn as a cross).'
+      )
+    );
   }
 
   if (host.droppedParticipants) {
@@ -850,7 +867,7 @@ function drawScatter(host) {
       if (!moving.enrolled) return 'rgba(0,0,0,0)';
       return hexToRgba(color, anyActive(host) ? (active ? 1 : HIGHLIGHT.DIM_FILL) : 0.5);
     }
-    if (!point.withinWindow && !active) return 'rgba(0,0,0,0)';
+    if (point.timing === TIMING.OUTSIDE && !active) return 'rgba(0,0,0,0)';
     const opacity = anyActive(host) ? (active ? 1 : HIGHLIGHT.DIM_FILL) : 0.75;
     return hexToRgba(color, opacity);
   };
@@ -863,6 +880,12 @@ function drawScatter(host) {
     const opacity = anyActive(host) ? HIGHLIGHT.DIM_BORDER : 0.9;
     return hexToRgba(colorFor(host, point), opacity);
   };
+  // A point whose timing was not evaluated is drawn as a cross: neither filled
+  // (within the window) nor hollow (outside it), because nobody checked
+  // (HEP-XAX-007). While the cloud moves the timing is not shown at all, so
+  // every point is a circle again (HEP-ANIM-003).
+  const notEvaluated = (index) =>
+    points[index] && points[index].timing === TIMING.NOT_EVALUATED && !animatedAt(host, index);
   // A point sitting outside its own measured span is drawn at half size, the
   // original's signal that it is being held rather than observed (HEP-ANIM-003).
   const animatedRadius = (index) => {
@@ -880,8 +903,11 @@ function drawScatter(host) {
           data,
           pointBackgroundColor: fill,
           pointBorderColor: border,
-          pointBorderWidth: (ctx) =>
-            traced(points[ctx.dataIndex]) ? HIGHLIGHT.BORDER_WIDTH : 1.25,
+          pointStyle: (ctx) => (notEvaluated(ctx.dataIndex) ? 'crossRot' : 'circle'),
+          pointBorderWidth: (ctx) => {
+            if (traced(points[ctx.dataIndex])) return HIGHLIGHT.BORDER_WIDTH;
+            return notEvaluated(ctx.dataIndex) ? 2 : 1.25;
+          },
           pointRadius: (ctx) =>
             animatedRadius(ctx.dataIndex) +
             (traced(points[ctx.dataIndex]) ? HIGHLIGHT.RADIUS_BOOST : 0),
@@ -1220,6 +1246,11 @@ const scatterView = {
     window.min = '0';
     window.step = '1';
     window.value = host.state.visitWindow;
+    // Without a study day there is no timing to highlight (HEP-XAX-007).
+    if (!host.timingEvaluated) {
+      window.disabled = true;
+      window.title = 'No study day in this data';
+    }
     window.onchange = () => {
       const value = Number(window.value);
       host.state.visitWindow = Number.isFinite(value) && value >= 0 ? value : 0;

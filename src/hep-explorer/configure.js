@@ -99,7 +99,7 @@ export { MEASURE_KEYS, cutFor } from '../hep-core/rows.js';
  * @property {string} [unit_col='STRESU'] Optional unit column, appended to measure labels and shown in the linked listing.
  * @property {string} [normal_col_high='STNRHI'] Upper-limit-of-normal (ULN) column; required in the data — the ×ULN standardization divides each value by it (HEP-DISPLAY-002).
  * @property {?string} [normal_col_low='STNRLO'] Optional lower-limit-of-normal column, carried into the linked listing.
- * @property {?string} [studyday_col='DY'] Optional study-day column; drives the day_diff timing test and the visit-path ordering. When absent, a per-participant per-measure input-order sequence is derived (HEP-SELECT-004, HEP-DATA-004).
+ * @property {?string} [studyday_col='DY'] Optional study-day column; drives the day_diff timing test and the visit-path ordering. A given `x_axis` day option's column takes its place. When the data has no study day the timing test is not evaluated — every point is drawn as a cross and the footnote says why — and a per-participant per-measure input-order sequence is derived for the visit path (HEP-SELECT-004, HEP-DATA-004, HEP-XAX-007).
  * @property {?string} [visit_col='VISIT'] Optional categorical visit column; labels the visit-path overlay and pairs the X/Y trajectory points (HEP-SELECT-003).
  * @property {?string} [visitn_col='VISITNUM'] Optional numeric visit column; orders visit-keyed series when present.
  * @property {?Object} [x_axis=null] The x-axis toggle for the time slider beneath the scatter, the same shape every chart takes: `{ options: [{ key: 'visit', col: 'VISITNUM', label_col: 'VISIT', type: 'ordinal', title: 'Visit' }, { key: 'day', col: 'DY', type: 'linear', title: 'Study day' }], default: 'day' }`. In Visit view the slider and the play-through step through the visits in visit-number order; in Study day view they step through the study days. The default view is Study day. When null it is built from `visitn_col`, `visit_col` and `studyday_col`; when given, its day option's column is the study-day column every day-based reading uses — the 30-day timing test whatever the view, the tooltips and the visit path — falling back to `studyday_col` when it has no day option (HEP-XAX-001..003).
@@ -341,10 +341,26 @@ export function syncSettings(settings) {
 /**
  * The time slider's x-axis setting in its full shape (HEP-XAX-001): the
  * caller's `x_axis`, or one built from `visitn_col`, `visit_col` and
- * `studyday_col`, defaulting to Study day.
+ * `studyday_col`, defaulting to Study day. Both a Visit and a Study day option
+ * are always present; one with no column is offered greyed out.
  * @param {HepExplorerSettings} settings Normalized settings.
  * @returns {{options: Object[], default: string}} The normalized x-axis setting.
  */
 export function timeAxis(settings) {
-  return normalizeXAxis(settings, { fallback: X_AXIS_DEFAULT });
+  const axis = normalizeXAxis(settings, { fallback: X_AXIS_DEFAULT });
+  // Both views are always offered, so a missing one is greyed out with its
+  // reason rather than silently absent: "No study day in this data" is what
+  // tells a reader why the timing test was not evaluated (HEP-XAX-007).
+  ['visit', 'day'].forEach((key, index) => {
+    if (axis.options.some((entry) => entry.key === key)) return;
+    const missing = {
+      key,
+      col: null,
+      label_col: null,
+      type: key === 'day' ? 'linear' : 'ordinal',
+      title: key === 'day' ? 'Study day' : 'Visit'
+    };
+    axis.options.splice(index === 0 ? 0 : axis.options.length, 0, missing);
+  });
+  return axis;
 }

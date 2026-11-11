@@ -55,6 +55,7 @@ import {
   assignSequence,
   cleanData,
   deriveBaseline,
+  hasStudyDay,
   partitionUnscheduledRows,
   maxRRatio,
   unique,
@@ -128,6 +129,9 @@ class SafetyHepExplorer {
     this.unscheduledRecords = 0;
     this.hasUnscheduled = false;
     this.removedRecords = 0;
+    // Whether the data carries a study day, so the timing test could run
+    // (HEP-XAX-007); true until data says otherwise.
+    this.timingEvaluated = true;
     this.droppedParticipants = 0;
     this.droppedRows = [];
     this.droppedParticipantList = [];
@@ -467,14 +471,26 @@ class SafetyHepExplorer {
 
   /**
    * The base footnote: usage hint plus the timing-window sentence explaining
-   * filled vs hollow points (HEP-DISPLAY-005).
+   * filled vs hollow points (HEP-DISPLAY-005) — or, when the data has no study
+   * day, that the timing was not evaluated, why, and how the points are drawn
+   * instead (HEP-XAX-007).
    * @private
    */
   baseFootnote() {
+    const usage = 'Use controls to update the chart or click a point to see participant details. ';
+    const { measureX, measureY, visitWindow } = this.state;
+    if (!this.timingEvaluated) {
+      return (
+        usage +
+        'Timing was not evaluated: the data has no study day, so each point is drawn as a ' +
+        `cross, neither filled (peak ${measureX} and peak ${measureY} within ${visitWindow} ` +
+        'days of each other) nor hollow.'
+      );
+    }
     return (
-      'Use controls to update the chart or click a point to see participant details. ' +
-      `Points are filled when a participant's peak ${this.state.measureX} and peak ` +
-      `${this.state.measureY} occur within ${this.state.visitWindow} days of each other.`
+      usage +
+      `Points are filled when a participant's peak ${measureX} and peak ` +
+      `${measureY} occur within ${visitWindow} days of each other.`
     );
   }
 
@@ -576,6 +592,9 @@ class SafetyHepExplorer {
     // fallback used when the data carries no usable study day (HEP-DATA-004).
     assignSequence(retained, this.settings);
     this.cleanRows = retained;
+    // The timing test needs study days; without them it is not evaluated, and
+    // the footnote says so (HEP-XAX-007).
+    this.timingEvaluated = hasStudyDay(retained);
     this.removedRecords = removed + imputation.dropped.length;
     // Precompute the data-derived R-Ratio maximum so the R-Ratio range filter's
     // max input seeds correctly on the first buildControls, before render()
