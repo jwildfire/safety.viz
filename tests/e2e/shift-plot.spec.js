@@ -235,8 +235,12 @@ test.describe('safety.viz shift-plot module', () => {
     await expect(page.locator('.sv-listing table')).toBeVisible();
     await expect(page.locator('.sv-listing-actions')).toContainText('4 of 4 records');
     const headers = await page.locator('.sv-listing th').allTextContents();
+    // Visit and Study day name what each pair compares (#374, SSP-XAX-001);
+    // the fixture sets studyday_col.
     expect(headers.map((header) => header.replace(/[ ▲▼]+$/, ''))).toEqual([
       'Participant ID',
+      'Visit',
+      'Study day',
       'Baseline',
       'Comparison',
       'Change',
@@ -290,7 +294,9 @@ test.describe('safety.viz shift-plot module', () => {
     const csvDownload = await download;
     expect(csvDownload.suggestedFilename()).toMatch(/\.csv$/);
     const csv = fs.readFileSync(await csvDownload.path(), 'utf8');
-    expect(csv.split('\n')[0]).toBe('Participant ID,Baseline,Comparison,Change,Percent Change');
+    expect(csv.split('\n')[0]).toBe(
+      'Participant ID,Visit,Study day,Baseline,Comparison,Change,Percent Change'
+    );
     expect(csv).toContain('S12');
   });
 

@@ -243,10 +243,10 @@ describe('demo app: chart recipes', () => {
     const noDay = { ...mappings, bds: setColumn(mappings.bds, 'DY', null, files.bds) };
     expect(chartSettings('hep-waterfall', noDay, manifest).studyday_col).toBe('VISITNUM');
     expect(chartSettings('nep-explorer', noDay, manifest).studyday_col).toBeNull();
-    // A chart with no use for the study day is not passed one.
-    expect(chartSettings('results-over-time', mappings, manifest)).not.toHaveProperty(
-      'studyday_col'
-    );
+    // Results over time reads the study day only for its tooltip's median day
+    // (#374): it is passed the mapped column, and nothing when it is cleared.
+    expect(chartSettings('results-over-time', mappings, manifest).studyday_col).toBe('DY');
+    expect(chartSettings('results-over-time', noDay, manifest).studyday_col).toBeNull();
   });
 
   it('APP-CHART-007: time to event is handed its events without the placeholder rows, and its population (#150)', () => {

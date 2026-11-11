@@ -517,10 +517,16 @@ class SafetyDeltaDelta {
               label: (ctx) => `Participant: ${points[ctx.dataIndex].id}`,
               afterLabel: (ctx) => {
                 const point = points[ctx.dataIndex];
-                return (
-                  `Change in ${this.state.measureX}: ${formatDelta(point.delta_x)}\n` +
-                  `Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`
-                );
+                // The visits the point compares and their study days (#374,
+                // SDD-XAX-001): this chart has no listing, so its tooltip is
+                // where a participant's record is shown.
+                const span = point.span || {};
+                return [
+                  `Change in ${this.state.measureX}: ${formatDelta(point.delta_x)}`,
+                  `Change in ${this.state.measureY}: ${formatDelta(point.delta_y)}`,
+                  ...(span.visits ? [`Visit: ${span.visits}`] : []),
+                  ...(span.days ? [`Study day: ${span.days}`] : [])
+                ].join('\n');
               }
             }
           }

@@ -22,7 +22,7 @@
       "type": "array",
       "items": { "$ref": "#/$defs/lbRow" },
       "requiredSettings": ["id_col", "lb_test_col", "lb_value_col", "lb_day_col"],
-      "description": "Lab records (an ADLB or LB projection), one row per result: the participant id, the test name and code (lb_test_col, lb_testcd_col — lb_tests matches either), the numeric result and unit (lb_value_col, lb_unit_col), the reference range (lb_lo_col, lb_hi_col), the normal-range indicator (lb_nrind_col), the study day (lb_day_col — LBDY/ADY by default), the analysis-baseline flag (lb_baseline_flag_col, consulted first when resolving a test's baseline, D17) and optionally the collection date (lb_dtc_col). Each configured test draws as a small multiple with its reference band (PJE-LANE-005); a point is abnormal by flag when the indicator is present and not normal, or by change when it is at least lb_change_factor times, or at most 1/lb_change_factor of, the baseline (PJE-CTX-002). A row with a blank test name or a non-numeric result is dropped with a named reason."
+      "description": "Lab records (an ADLB or LB projection), one row per result: the participant id, the test name and code (lb_test_col, lb_testcd_col — lb_tests matches either), the numeric result and unit (lb_value_col, lb_unit_col), the reference range (lb_lo_col, lb_hi_col), the normal-range indicator (lb_nrind_col), the study day (lb_day_col — LBDY/ADY by default), the analysis-baseline flag (lb_baseline_flag_col, consulted first when resolving a test's baseline, D17) and optionally the collection date (lb_dtc_col) and the visit name (lb_visit_col — VISIT by default, shown beside the day in the tooltip). Each configured test draws as a small multiple with its reference band (PJE-LANE-005); a point is abnormal by flag when the indicator is present and not normal, or by change when it is at least lb_change_factor times, or at most 1/lb_change_factor of, the baseline (PJE-CTX-002). A row with a blank test name or a non-numeric result is dropped with a named reason."
     },
     "cm": {
       "type": "array",
@@ -227,6 +227,11 @@
           "type": "string",
           "default": "LBDTC",
           "description": "Lab collection date column (--DTC), shown as recorded."
+        },
+        "lb_visit_col": {
+          "type": ["string", "null"],
+          "default": "VISIT",
+          "description": "Optional lab visit-name column. The chart stays on its one study-day axis; a lab result's tooltip and accessible name name its visit beside the day (\"Week 8 · Day 57\"), and a record with no visit, or null here, shows the day alone (#374, PJE-XAX-001)."
         },
         "lb_tests": {
           "type": "array",
@@ -507,7 +512,7 @@
     },
     "lbRow": {
       "type": "object",
-      "description": "One lab result as passed to init: the participant id, test name and code, numeric result and unit, reference range, normal-range indicator, study day, baseline flag and optionally the collection date, under the columns named by the lb_* settings. Retained by reference and shown verbatim in the source drawer."
+      "description": "One lab result as passed to init: the participant id, test name and code, numeric result and unit, reference range, normal-range indicator, study day, baseline flag and optionally the collection date and visit name, under the columns named by the lb_* settings. Retained by reference and shown verbatim in the source drawer."
     },
     "cmRow": {
       "type": "object",

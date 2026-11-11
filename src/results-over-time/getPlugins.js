@@ -39,16 +39,20 @@ export function groupColors(groups) {
 /**
  * The hover-tooltip summary for a box plot: the original renderer's field list
  * (N, Min, 5th %, Q1, Median, Q3, 95th %, Max, Mean, StDev) at the precision
- * levels from statPrecisions (SROT-REG-014/015).
+ * levels from statPrecisions (SROT-REG-014/015). Under the heading, the
+ * median study day of the box's records ("Median study day 57") when the
+ * stats carry one, so a visit says when it was (#374, SROT-XAX-001).
  * @param {string} group The group key ('All' when ungrouped).
  * @param {string} visit The visit name.
- * @param {Object} stats Summary statistics from summarize().
+ * @param {Object} stats Summary statistics from summarize(), with `median_day` from summarizeVisitGroups.
  * @param {{p0:number, p1:number, p2:number}} precisions Precision levels from statPrecisions.
  * @returns {string} A newline-separated summary.
  */
 export function summaryTooltip(group, visit, stats, { p0, p1, p2 }) {
+  const day = Number.isFinite(stats.median_day) ? [`Median study day ${stats.median_day}`] : [];
   return [
     `${group} at ${visit}:`,
+    ...day,
     `N = ${stats.n}`,
     `Min = ${formatFixed(stats.min, p0)}`,
     `5th % = ${formatFixed(stats.q5, p1)}`,
