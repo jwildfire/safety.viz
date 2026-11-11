@@ -12,6 +12,12 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 - **The demo data carries both the visit and the study day.** Every lab, vital-sign and ECG record in the gallery's data keeps its ADaM study day (`DY`) and baseline flag (`ABLFL`) beside its visit, and every file numbers visits one way (Week 26 = 26). The gallery demos plot real study days, so the participant profile shows a late result late, and hep-explorer's 30-day timing test measures days. The Patient Journey's lab extract gains the visit. [obot.roadmap#435](https://github.com/jwildfire/obot.roadmap/issues/435), [#365](https://github.com/jwildfire/safety.viz/issues/365), [#366](https://github.com/jwildfire/safety.viz/issues/366)
 - **The ×Baseline display reads the baseline flag.** Given `baseline_col`, the participant profile, hep-explorer and hep-waterfall divide by the flagged record, not by a screening draw. Without the setting nothing changes. [#367](https://github.com/jwildfire/safety.viz/issues/367)
+- **Charts that show change over time switch between Visit and Study day.** The participant profile, the outlier explorer and the QT drill-down carry an X-axis control; an option the data lacks is greyed with its reason, and the app remembers the chosen view. Every chart takes the one setting, `x_axis`. [obot.roadmap#436](https://github.com/jwildfire/obot.roadmap/issues/436), [#368](https://github.com/jwildfire/safety.viz/issues/368), [#369](https://github.com/jwildfire/safety.viz/issues/369), [#371](https://github.com/jwildfire/safety.viz/issues/371), [#372](https://github.com/jwildfire/safety.viz/issues/372), [#373](https://github.com/jwildfire/safety.viz/issues/373), [#374](https://github.com/jwildfire/safety.viz/issues/374)
+- **With neither a visit nor a study day, the profile and the outlier explorer say so instead of drawing.** The outlier explorer's Measurement sequence axis is gone. [#369](https://github.com/jwildfire/safety.viz/issues/369), [#371](https://github.com/jwildfire/safety.viz/issues/371)
+
+## Also in this release
+
+- **The histogram, outlier explorer, shift plot and delta-delta read the study day from `DY` by default.** The shift-plot listing gains a Study day column, delta-delta's tooltip shows study days, and an outlier explorer given no time setting plots by study day. [#370](https://github.com/jwildfire/safety.viz/issues/370)
 
 # safety.viz v1.11.3
 
