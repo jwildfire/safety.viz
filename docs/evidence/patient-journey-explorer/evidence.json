@@ -1,15 +1,15 @@
 {
   "module": "patient-journey-explorer",
-  "generatedAt": "2026-11-11T07:57:41.496Z",
+  "generatedAt": "2026-11-25T13:00:07.171Z",
   "environment": {
     "os": "linux 7.0.0-1017-azure",
-    "node": "v22.23.4",
+    "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "42981434271",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/42981434271"
+    "id": "45616920586",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45616920586"
   },
   "records": [
     {
@@ -3349,6 +3349,22 @@
       "screenshots": []
     },
     {
+      "test": "a source a library brings is left out when it has no id or an id already used, and brings no tab",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "a source a library brings says so in its place when it throws, and the page stands",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "a study the reader’s mapping gives R little of (#258) APP-RBQM-042: a column the mapping names that the file does not have is not handed to R, which then says the column is not mapped (#258)",
       "suite": "unit",
       "status": "pass",
@@ -3442,6 +3458,46 @@
       "status": "pass",
       "requirementIds": ["PJE-CFG-002"],
       "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "an R that connections share answers that R did not start when it cannot be fetched, and tries again on the next run",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "an R that connections share closes R for both when either is closed, and each makes itself ready again in the next",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "an R that connections share leaves a connection made without a host with an R of its own",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "an R that connections share starts one R for two connections, and each makes itself ready in it once",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "an R that connections share tries a connection’s own packages again when they could not be installed, without starting R again",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -3554,6 +3610,62 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [142],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view hands the widget the app’s own connection factory, where its files and gsm’s packages are served, and its button’s words",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view is a way to load data in step one, not a tab; it fetches study.builder’s script when first opened, and nothing before",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view is closed by a reset",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view keeps the one widget across a close, a reopening and the page’s redraws",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view loads the study the reader hands over: raw files kept as they are, standard files placed, and the source closed on the loaded files",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view offers no builder on a page that cannot start R, and says why",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view says so when study.builder’s script does not load, and tries again when it is opened again",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -10091,6 +10203,22 @@
       "screenshots": []
     },
     {
+      "test": "the copy of study.builder defines the global the source looks for, and carries the options it is mounted with",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the copy of study.builder matches its record, which names where it was copied from",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "the Data tab: gsm raw files and the RBQM card APP-RBQM-075: a study’s files and gsm raw files dropped together each go where they belong: the raw files are kept as they are and named with their raw domain, the study’s files are placed and mapped as ever, a demo study gives way once and the page says so once, and a raw file that is not a CSV is refused with its sentence (#282)",
       "suite": "unit",
       "status": "pass",
@@ -10528,6 +10656,30 @@
       "status": "pass",
       "requirementIds": ["APP-R-029"],
       "issueRefs": [229, 229],
+      "screenshots": []
+    },
+    {
+      "test": "the page and the source agree on the source the page mounts, with the app’s own connection",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the page and the source agree on the source’s id, and that it is no tab of site/config.json",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the page and the source agree on what is served: every copied file, in a folder of its own beside the app",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
