@@ -83,7 +83,7 @@ steps:
     name: workr::RunQuery
     params:
       df: Temp_LBDated
-      strQuery: "SELECT DISTINCT subjid AS USUBJID, ARM, SITEID, SEX, RACE, visnam AS VISIT, VISITNUM, CASE WHEN lower(lbtstnam) LIKE 'creatinine%' THEN 'Creatinine' ELSE lbtstnam END AS TEST, lbresu AS STRESU, CAST(lbresn AS DOUBLE) AS STRESN, CAST(lbnrlo AS DOUBLE) AS STNRLO, CAST(lbnrhi AS DOUBLE) AS STNRHI, CAST(CASE WHEN visit_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(visit_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(visit_dt AS DATE)) END AS INTEGER) AS DY FROM df WHERE lbresn IS NOT NULL ORDER BY TEST, USUBJID, VISITNUM"
+      strQuery: "SELECT DISTINCT subjid AS USUBJID, ARM, SITEID, SEX, RACE, visnam AS VISIT, VISITNUM, CASE WHEN lower(lbtstnam) LIKE 'creatinine%' THEN 'Creatinine' ELSE regexp_replace(lbtstnam, ' (Concentration )?in Serum/Plasma$', '') END AS TEST, lbresu AS STRESU, CAST(lbresn AS DOUBLE) AS STRESN, CAST(lbnrlo AS DOUBLE) AS STNRLO, CAST(lbnrhi AS DOUBLE) AS STNRHI, CAST(CASE WHEN visit_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(visit_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(visit_dt AS DATE)) END AS INTEGER) AS DY FROM df WHERE lbresn IS NOT NULL ORDER BY TEST, USUBJID, VISITNUM"
 columns:
   USUBJID:
     label: Unique Subject Identifier
@@ -116,7 +116,7 @@ columns:
   TEST:
     label: Test Name
     from: Raw_LB.lbtstnam
-    how: "Copied, but for creatinine, which the lab names with its method and is written 'Creatinine'"
+    how: "Copied, but for creatinine, which the lab names with its method and is written 'Creatinine', and for a name that ends 'in Serum/Plasma' or 'Concentration in Serum/Plasma', as a protocol's lab list writes it, which loses that ending"
   STRESU:
     label: Standard Units
     from: Raw_LB.lbresu

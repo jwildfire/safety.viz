@@ -67,7 +67,7 @@
     {
       "id": "cdisc-pilot-protocol",
       "name": "CDISC pilot protocol: 16 visits on its schedule of activities",
-      "about": "Read from the pilot study's CDISC USDM file. Visits, vital signs and labs follow the protocol's schedule of activities.",
+      "about": "Read from the pilot study's CDISC USDM file. Visits, vital signs and labs follow the protocol's schedule of activities. Bilirubin is added to its chemistry panel, which the file's lab list leaves out.",
       "settings": {
         "name": "PILOT-PROTOCOL",
         "phase": "P2",
@@ -355,7 +355,8 @@
                 "Aspartate Aminotransferase in Serum/Plasma",
                 "Creatinine Concentration in Urine",
                 "Potassium Concentration in Urine",
-                "Sodium Concentration in Urine"
+                "Sodium Concentration in Urine",
+                "Bilirubin"
               ]
             },
             {
@@ -597,7 +598,7 @@
         }
       },
       "study": "cdisc-pilot-protocol.study.json.gz",
-      "key": "sha256:a2377532749cd273641447411969f8a089c014d1739bc726733d00c4af90a041",
+      "key": "sha256:d86945757fdf36a6362e99968e230a57b0baa0c36bf8d05ee0eaa733d3c292ac",
       "megabytes": 0.7
     }
   ]

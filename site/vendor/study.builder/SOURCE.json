@@ -1,17 +1,17 @@
 {
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
-  "ref": "v0.3.0-rc.8",
-  "commit": "00b24673067b4094e6ba0e53c5a29ad51ff8bcdb",
-  "version": "0.3.0-rc.8",
+  "ref": "v0.3.0-rc.9",
+  "commit": "9e03eef7e9912666c12849ef59aaea584634e3a4",
+  "version": "0.3.0-rc.9",
   "license": "Apache-2.0",
-  "tag": "v0.3.0-rc.8",
+  "tag": "v0.3.0-rc.9",
   "merged_to_dev": false,
   "files": [
     {
       "file": "study.builder.js",
       "source": "dist/study.builder.js",
-      "sha256": "423bc675c58d1496a489cbda475039f3f78b61c581b4a816e83e102eb9e0f8fe",
+      "sha256": "55b80856494d5809ee51d96d4b6a5281eaf6c2f4ca70abdb55dbc066491438ba",
       "bytes": 104822
     },
     {
@@ -431,8 +431,8 @@
     {
       "file": "workflows/adam/ADLB.yaml",
       "source": "workflows/adam/ADLB.yaml",
-      "sha256": "a18531b4b342f250d494dfb93fdfe65ecfceafed86a816f133a5b6b4790cd4af",
-      "bytes": 3987
+      "sha256": "b603fa273465ce5b89ad35529561a731dd8a389427eda6fa8f0242b49f831b7e",
+      "bytes": 4185
     },
     {
       "file": "workflows/adam/ADSL.yaml",
@@ -461,26 +461,26 @@
     {
       "file": "presets/index.json",
       "source": "presets/index.json",
-      "sha256": "3f111781858b76c8abd0ec5961acd448ce6a3dadc522f2c5315097aea941ab80",
-      "bytes": 18254
+      "sha256": "511244f3b295058f0411602e552d89e9565ef743184a59dd29ef2c0a23e0f533",
+      "bytes": 18364
     },
     {
       "file": "presets/phase1-small.study.json.gz",
       "source": "presets/phase1-small.study.json.gz",
-      "sha256": "e0131ddb7df47cdac70bb38ca2fa4bb85656ddaf3ab0d921c150e575674a253d",
-      "bytes": 581181
+      "sha256": "f2211ab9b39bd21d6c4c851c166d9d9275f6f835c90f673fd50b66c40b3a5483",
+      "bytes": 581279
     },
     {
       "file": "presets/phase2-oncology.study.json.gz",
       "source": "presets/phase2-oncology.study.json.gz",
-      "sha256": "69595013532442c753009f988eeb256b5f0cb7cf2ad8914be198c8fdacecf95e",
-      "bytes": 2027587
+      "sha256": "f446e86349e2054f7a0c6ca5ebe2ea432facb554c923094856b7f72a2b93b5c2",
+      "bytes": 2027668
     },
     {
       "file": "presets/cdisc-pilot-protocol.study.json.gz",
       "source": "presets/cdisc-pilot-protocol.study.json.gz",
-      "sha256": "bb49dfcd3a838a6843e25cfafab78879d8a7afe8cca6a260fb7289d6b3d39c6a",
-      "bytes": 680743
+      "sha256": "e01919b63d7eded5798bc0e24e6e1d635755b2a9560900879487b87782b22bd7",
+      "bytes": 694472
     },
     {
       "file": "LICENSE",
