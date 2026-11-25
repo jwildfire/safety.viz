@@ -8,7 +8,12 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.13.0 (Upcoming)
 
-_Nothing merged yet._
+## What's new
+
+- **The demo app can build a study, from its Data tab.** Step one of the Data tab offers Build a study beside Choose files. It opens [study.builder](https://github.com/jwildfire/study.builder) in place of the loaded files: describe a trial's phase, therapeutic area, participants, sites and months, choose its layers and domains, and gsm.datasim simulates the study with R in the browser. The study comes in layers, each shown with its tables: Raw, Raw.RBQM (gsm's mapped tables), ADaM, Analysis (gsm's site metrics and an adverse event summary) and Reporting. Load into the demo hands the study to the app and returns to the loaded files: gsm's raw files, so the RBQM tab runs every site metric on it, and three standard files (participants, adverse events and vital signs), so the adverse event charts and the lab and vitals charts that need no normal range draw it too. The builder says what the study is not: every row is synthetic, phase and therapeutic area are labels, and there are no lab results, treatment arms or ECGs. study.builder is copied into `site/vendor/study.builder/` with a record, held by `npm run study-builder:check`; the copy is from the head of its main branch, ahead of its v0.1.0 release, until v0.2.0 is released.
+- **Every loaded file shows what it holds.** Each file's card on the Data tab has a folded Details section: its rows and columns, each column's kind (number, date or text), its first 20 rows, and a Download CSV button. It is there for a reader's own files, a demo study's and a built study's alike.
+- **A library can bring a way to load data.** Beside a tab, a library handed to the app may bring a `source`: the Data tab offers it in step one and draws it in place of the loaded files while it is open. Build a study is the first.
+- **The demo app starts R once.** The RBQM tab and Build a study share one R in the browser: starting it for either starts it for both.
 
 # safety.viz v1.12.0
 

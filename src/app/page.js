@@ -204,6 +204,11 @@ export function mountApp(
   const handed = Array.isArray(libraries) ? libraries : [];
   const bringsView = (library) =>
     isRecord(library) && isRecord(library.view) && typeof library.view.render === 'function';
+  // A library that brings a source brings a way to load data: the data view
+  // offers it beside the demo studies and the file picker, and draws it in
+  // place of the loaded files while it is open.
+  const bringsSource = (library) =>
+    isRecord(library) && isRecord(library.source) && typeof library.source.render === 'function';
   // Every chart the page lists, safety.viz's and any other library's, in one
   // manifest; and for those that cannot be drawn, why.
   const {
@@ -216,13 +221,14 @@ export function mountApp(
   } = mergeLibraries(
     ownManifest,
     charts,
-    handed.filter((library) => !bringsView(library))
+    handed.filter((library) => !bringsView(library) && !bringsSource(library))
   );
   // Every tab has a colour (#268): a standard domain's is its class's, and a
   // library's is the one it names or the first no other tab uses, in the order
   // the libraries were handed in (libraries.js::tabColours).
   const colours = tabColours(
-    handed,
+    // A library that brings only a source has no tab to colour.
+    handed.filter((library) => bringsView(library) || !bringsSource(library)),
     groupCharts(manifest)
       .map(([group]) => group)
       .filter((group) => !has(declaredBy, group) && has(DOMAIN_COLOURS, group))
@@ -239,6 +245,17 @@ export function mountApp(
   /** One of a list of notes (#321): what a load left to say, or a library that did not load, as an amber note. */
   const noteItem = (sentence) =>
     note({ kind: 'warning', say: sentence, tag: 'li', className: 'sva-note', role: null });
+  const sources = [];
+  for (const { source } of handed.filter(bringsSource)) {
+    const id = typeof source.id === 'string' ? source.id : '';
+    if (!id || sources.some((other) => other.id === id)) {
+      console.warn(
+        `safety.viz app: a source was handed in with no id or an id already used (${id}); it was left out.`
+      );
+      continue;
+    }
+    sources.push(source);
+  }
   const views = new Map();
   const viewLibrary = new Map(); // a view's id → the name of the library that brought it
   for (const { name, view } of handed.filter(bringsView)) {
@@ -298,6 +315,8 @@ export function mountApp(
     failed: {}, // module → the message of a chart that was ready and threw
     focus: null, // the mapping row to return the keyboard focus to after a re-render
     selected: 'data',
+    source: null, // the id of the source open on the data view, when one is
+    details: new Set(), // the names of the loaded files whose details are open on the data view
     item: null, // the open item of the open view, when the view brings a row of its own (#279)
     busy: ''
   };
@@ -1148,6 +1167,7 @@ export function mountApp(
     state.notes = [];
     state.failed = {};
     state.focus = null;
+    state.source = null;
   }
 
   /** The first chart the loaded data supports that is drawn in the main pane. */
@@ -1206,6 +1226,64 @@ export function mountApp(
 
     /** The current status of every chart, including any that did not draw. */
     status,
+
+    /**
+     * Offer a text file to download.
+     * @param {string} name The file's name.
+     * @param {string} text What it holds.
+     * @param {string} [type] Its media type.
+     * @returns {void}
+     */
+    saveFile(name, text, type = 'text/csv') {
+      const link = el('a');
+      link.href = URL.createObjectURL(new Blob([text], { type }));
+      link.download = name;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+    },
+
+    /** The ways to load data that libraries brought: each an id, a label and one sentence. */
+    sources: sources.map(({ id, label, about }) => ({
+      id,
+      label: typeof label === 'string' && label ? label : id,
+      about: typeof about === 'string' ? about : ''
+    })),
+
+    /**
+     * Open one of those on the data view, in place of the loaded files, or
+     * close the one that is open.
+     * @param {?string} id A source's id, or null to close.
+     * @returns {void}
+     */
+    openSource(id) {
+      state.source = sources.some((source) => source.id === id) ? id : null;
+      if (state.selected === 'data') render();
+      else handle.select('data');
+    },
+
+    /**
+     * Draw the open source into an element of the data view.
+     * @param {Element} container The element.
+     * @returns {?{destroy?: Function}} What the source returned, or null when none is open or it threw.
+     */
+    drawSource(container) {
+      const source = sources.find((one) => one.id === state.source);
+      if (!source) return null;
+      try {
+        return source.render(container, handle) || null;
+      } catch (error) {
+        container.append(
+          el(
+            'p',
+            'sva-message sva-problem',
+            `Did not draw. ${error && error.message ? error.message : String(error)}`
+          )
+        );
+        return null;
+      }
+    },
 
     /** Whether a tab takes files of its own, which the app then keeps as they are (#282). */
     ownFiles: claimants.length > 0,

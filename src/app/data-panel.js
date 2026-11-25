@@ -8,6 +8,13 @@
 // live status, each carrying its own actions, and the loaded files, each
 // flagged only where a row wants a look.
 //
+// A library may bring another way to load data, a source (page.js): step one
+// offers it beside the demo studies and the file picker, and while it is open
+// it is drawn here in place of the drop zone and the loaded files.
+//
+// Every loaded file's card ends with its details, folded shut (file-details.js):
+// its rows and columns, what each column holds, its first rows and a download.
+//
 // Every file comes in here (#282, obot.roadmap#406), a tab's own files too. A
 // tab that takes files of its own says so through the seam (libraries.js): the
 // page asks it of each file loaded, and this panel draws what the tab says the
@@ -21,6 +28,7 @@ import { MEASURES, distinctValues, measureColumn } from './mapping.js';
 import { neededBy, supportedCount } from './status.js';
 import { el, plural } from './dom.js';
 import { icon } from './icons.js';
+import { fileDetails } from './file-details.js';
 
 /** Files larger than this are refused: they are parsed in memory. */
 export const MAX_FILE_BYTES = 100 * 1024 * 1024;
@@ -222,7 +230,7 @@ function fileCard(domain, app, rows) {
   }
 
   scroll.append(table);
-  card.append(scroll);
+  card.append(scroll, detailsOf(file, app));
   return card;
 }
 
@@ -252,8 +260,16 @@ function unplacedCard(item, index, app) {
     select,
     el('span', 'sva-file-rows', rowCount(item.file.rows.length))
   );
-  card.append(head);
+  card.append(head, detailsOf(item.file, app));
   return card;
+}
+
+/** A loaded file's details, folded shut, as the page remembers them open or shut. */
+function detailsOf(file, app) {
+  return fileDetails(file, {
+    open: app.state.details,
+    save: typeof app.saveFile === 'function' ? (name, text) => app.saveFile(name, text) : null
+  });
 }
 
 /**
@@ -261,7 +277,7 @@ function unplacedCard(item, index, app) {
  * is. Its tag is what the tab that took it says of it (#281), which names the
  * raw domain it was read as; with no such tab, that it is kept as it is.
  */
-function rawCard(file, said) {
+function rawCard(file, said, app) {
   const card = el('section', 'sva-file sva-raw');
   card.dataset.raw = file.name;
   card.tabIndex = -1;
@@ -275,7 +291,7 @@ function rawCard(file, said) {
     tag,
     el('span', 'sva-file-rows', `${rowCount(file.rows)}, ${plural(file.columns.length, 'column')}`)
   );
-  card.append(head);
+  card.append(head, detailsOf(file, app));
   return card;
 }
 
@@ -446,6 +462,15 @@ function sidebar(container, app, { input, domains, rows, support }) {
     if (current) extras.push(el('p', 'sva-study-note', current.description));
   }
   const loadActions = [actionButton('choose-files', 'Choose files', () => input.click())];
+  // Each way to load data a library brought (page.js), beside the file picker.
+  for (const source of app.sources || []) {
+    const button = actionButton(`source-${source.id}`, source.label, () =>
+      app.openSource(state.source === source.id ? null : source.id)
+    );
+    if (source.about) button.title = source.about;
+    button.setAttribute('aria-pressed', String(state.source === source.id));
+    loadActions.push(button);
+  }
   if (anything) loadActions.push(actionButton('reset', 'Reset', () => app.reset()));
 
   const steps = el('ol', 'sva-steps');
@@ -569,6 +594,8 @@ export function renderDataPanel(container, app) {
   input.className = 'sva-file-input';
   const take = async (fileList) => {
     const { loaded, refused } = await readFiles(fileList);
+    // Files of the reader's own are another way in: a source that is open is closed.
+    if (state.source) state.source = null;
     app.loadFiles(loaded, { notes: refused });
   };
   input.onchange = () => take(input.files);
@@ -594,6 +621,26 @@ export function renderDataPanel(container, app) {
     ),
     input
   );
+  // A source that is open takes the place of the drop zone and the loaded
+  // files; the sidebar stays, so the reader can leave it by any other way in.
+  const open = (app.sources || []).find((source) => source.id === state.source);
+  if (open) {
+    const pane = el('section', 'sva-source');
+    pane.dataset.source = open.id;
+    pane.setAttribute('aria-label', open.label);
+    const head = el('div', 'sva-source-head');
+    head.append(
+      el('h2', 'sva-source-title', open.label),
+      actionButton('close-source', 'Back to the loaded files', () => app.openSource(null))
+    );
+    const body = el('div', 'sva-source-body');
+    pane.append(head, body);
+    // The file picker's input stays on the page for the sidebar's button.
+    main.append(input, pane);
+    container.append(sidebar(container, app, { input, domains: [], rows: {}, support: [] }), main);
+    app.drawSource(body);
+    return { refresh: () => {} };
+  }
   main.append(drop);
 
   // What each tab says the loaded data supports (#281), between the drop zone
@@ -624,7 +671,7 @@ export function renderDataPanel(container, app) {
   state.unplaced.forEach((item, index) => main.append(unplacedCard(item, index, app)));
   // A raw file's card says what the tab that took it says of it.
   const saidOf = (file) => support.map((tab) => tab.files.get(file.name)).find(Boolean) || null;
-  for (const file of state.raw) main.append(rawCard(file, saidOf(file)));
+  for (const file of state.raw) main.append(rawCard(file, saidOf(file), app));
 
   container.append(sidebar(container, app, { input, domains, rows, support }), main);
 
