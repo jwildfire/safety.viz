@@ -1,15 +1,15 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-11-25T13:00:07.171Z",
+  "generatedAt": "2026-11-25T14:51:04.794Z",
   "environment": {
-    "os": "linux 7.0.0-1017-azure",
+    "os": "linux 7.0.0-1014-aws",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "45616920586",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45616920586"
+    "id": "45636269208",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45636269208"
   },
   "records": [
     {
@@ -3213,6 +3213,14 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-027"],
       "issueRefs": [193, 197],
+      "screenshots": []
+    },
+    {
+      "test": "a page that does not ask has no chip, no Studies tab and no second face of the data view",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -8477,6 +8485,38 @@
       "screenshots": []
     },
     {
+      "test": "the data view’s second face hands the viewer each placed file’s mapping as roles, and a role set in the viewer sets the app’s mapping",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face is the face the data view opens on once files are loaded, on a page that serves the viewer: study.viewer on the loaded files, with what the data supports and the study’s actions above it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face reads the loaded files as tables: placed, set aside, and gsm’s raw files",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face says so when the viewer’s script does not load",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "the demo app’s own label APP-TIER-012: how many charts stand on each rung is said in a sentence or two, with a tab named as a tab (#273)",
       "suite": "unit",
       "status": "pass",
@@ -9962,6 +10002,46 @@
       "status": "pass",
       "requirementIds": ["APP-TIER-005"],
       "issueRefs": [272],
+      "screenshots": []
+    },
+    {
+      "test": "the Studies view lists every study with the one in use marked, opens another, and offers the ways to add one, a source’s among them",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the study chip Add a study and All studies both open the Studies view",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the study chip calls a reader’s own files Your files, and a study that says its name by it",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the study chip names the study in use, and lists every study under it: the one in use ticked, another opened by a press",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the study chip the i beside it says what the study is, and Escape closes what is open",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
