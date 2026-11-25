@@ -1,4 +1,4 @@
-// Vendors study.builder for the demo app's Build a study tab: copies its built
+// Vendors study.builder for the demo app's Build a study source: copies its built
 // bundle and the files its R reads, as scripts/vendor-lib.mjs lists them, into
 // site/vendor/study.builder/, byte for byte, and writes SOURCE.json beside
 // them with the repository, the commit, the version and the licence and every

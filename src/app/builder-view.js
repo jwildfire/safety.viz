@@ -1,47 +1,48 @@
-// Demo app: the Build a study tab. A tab of its own, brought by a library
-// through the second-library seam (page.js), as the RBQM tab is. The tab is
-// study.builder's widget (github.com/jwildfire/study.builder): the reader
+// Demo app: Build a study, a way to load data. A library brings it through
+// the second-library seam (page.js) as a source: the data view offers it
+// beside the demo studies and the file picker, and draws it in place of the
+// loaded files while it is open. It is study.builder's widget
+// (github.com/jwildfire/study.builder): the reader
 // describes a trial and chooses its domains, R in the browser has gsm.datasim
 // simulate it, and every domain can be looked at. When the reader hands the
 // study over, the app loads it as it loads a reader's own files: gsm's raw
 // files for the RBQM tab, and the standard files for the other charts.
 //
 // Nothing of study.builder is in the app's bundle. Its script is fetched from
-// the page's own address when the tab is first opened, and R is not asked for
+// the page's own address when the source is first opened, and R is not asked for
 // until the reader presses Build. The widget is handed the app's own way of
 // making a connection to R, so it and the RBQM tab share one R.
 //
 // This module loads the script, keeps the one widget across the page's
-// redraws, and hands the study to the app. Everything the tab shows of a study
-// is the widget's.
+// redraws, and hands the study to the app, which closes the source and shows
+// the loaded files. Everything shown of a study while it is built is the
+// widget's.
 
 import { el } from './dom.js';
 import { note } from './note.js';
 
-/** The tab's address in the app. */
-export const BUILDER_TAB_ID = 'build';
+/** The source's id in the app. */
+export const BUILDER_SOURCE_ID = 'build';
 
 const messageOf = (error) =>
   (error && typeof error.message === 'string' && error.message) || String(error);
 
 /**
- * The Build a study tab.
+ * Build a study, as a source the data view offers.
  * @param {Object} options
  * @param {(options: Object) => {run: Function}} [options.createConnection] The app's own connection factory (main.js's), so the widget shares the app's one R. Left out on a page that cannot start R.
  * @param {{url: string, global: string}} [options.library] study.builder's bundle: where the page serves it and the global it defines.
  * @param {string} [options.base] Where the page serves the files study.builder's R reads: its `r/` and `vendor/` folders.
  * @param {string} [options.repository] Where the page serves gsm's packages, as a package repository.
- * @param {?string} [options.unavailable] On a page that cannot start R, the sentence that says so; the tab then offers no builder.
- * @param {?string} [options.open] The tab to offer once a study is loaded: the RBQM tab's address.
- * @returns {{id: string, title: string, tag: Function, render: Function, state: Function}} The view, as page.js takes one.
+ * @param {?string} [options.unavailable] On a page that cannot start R, the sentence that says so; the source then offers no builder.
+ * @returns {{id: string, label: string, about: string, render: Function, state: Function}} The source, as page.js takes one.
  */
-export function builderTab({
+export function builderSource({
   createConnection,
   library = null,
   base = './',
   repository = null,
-  unavailable = null,
-  open = null
+  unavailable = null
 } = {}) {
   let loading = null; // the promise of study.builder's global
   let problem = '';
@@ -77,17 +78,19 @@ export function builderTab({
   }
 
   function redraw() {
-    if (!shown) return;
-    if (typeof shown.app.redrawView === 'function') shown.app.redrawView(BUILDER_TAB_ID);
+    if (shown && shown.container.isConnected) draw(shown.container, shown.app);
   }
 
-  /** Hand a study to the app: its raw files kept as they are, its standard files placed. */
+  /**
+   * Hand a study to the app: its raw files kept as they are, its standard
+   * files placed, and the source closed, so the data view shows what loaded.
+   */
   function use(study, app) {
     const { raw, standard } = study.files();
     loaded = { id: study.id, said: study.said };
     app.loadRaw(raw);
-    if (standard.length) app.loadFiles(standard);
-    redraw();
+    app.loadFiles(standard, { notes: [] });
+    app.openSource(null);
   }
 
   function mountWidget(builder, app) {
@@ -115,18 +118,6 @@ export function builderTab({
       );
       return;
     }
-    if (loaded) {
-      const done = el('div', 'sva-build-done');
-      done.setAttribute('role', 'status');
-      done.append(el('p', 'sva-message', `${loaded.id} is loaded into the demo. ${loaded.said}`));
-      if (open) {
-        const go = el('button', 'sva-button sva-build-open', 'Open the RBQM tab');
-        go.type = 'button';
-        go.onclick = () => app.select(open);
-        done.append(go);
-      }
-      container.append(done);
-    }
     if (holder) {
       container.append(holder);
       return;
@@ -151,11 +142,10 @@ export function builderTab({
   }
 
   return {
-    id: BUILDER_TAB_ID,
-    title: 'Build a study',
-    /** What the tab's count says: nothing until a study is handed to the app. */
-    tag: () => (loaded ? 'loaded' : ''),
-    /** The tab's state, for the tests and the page. */
+    id: BUILDER_SOURCE_ID,
+    label: 'Build a study',
+    about: 'Simulate a study with gsm.datasim, in this browser.',
+    /** The source's state, for the tests and the page. */
     state: () => ({ loaded, problem, mounted: Boolean(widget), widget }),
     render(container, app) {
       shown = { container, app };

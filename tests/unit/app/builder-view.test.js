@@ -5,25 +5,26 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
-import { BUILDER_TAB_ID, builderTab } from '../../../src/app/builder-view.js';
+import { BUILDER_SOURCE_ID, builderSource } from '../../../src/app/builder-view.js';
 import {
-  BUILDER_TAB_ID as PAGE_TAB_ID,
+  BUILDER_SOURCE_ID as PAGE_SOURCE_ID,
   builderFiles,
-  builderTabExpression,
-  builderTabOptions
+  builderSourceExpression,
+  builderSourceOptions
 } from '../../../scripts/builder-lib.mjs';
 import { STUDY_BUILDER, readRecord, verifyVendored } from '../../../scripts/vendor-lib.mjs';
 
-// The Build a study tab on the page: a tab a library brings through the
-// second-library seam, which is study.builder's widget. The tab loads
-// study.builder's script when it is first opened, hands it the app's own way
-// of making a connection to R, keeps the one widget across the page's
-// redraws, and loads the study the reader hands over. study.builder is a
-// stand-in here; the real one has its own tests in its own repository, and a
-// run in a browser holds the two together.
+// Build a study on the page: a way to load data that a library brings through
+// the second-library seam, which is study.builder's widget. The data view
+// offers it in step one, beside the file picker, and draws it in place of the
+// loaded files while it is open. It loads study.builder's script when it is
+// first opened, hands it the app's own way of making a connection to R, keeps
+// the one widget across the page's redraws, and loads the study the reader
+// hands over. study.builder is a stand-in here; the real one has its own tests
+// in its own repository, and a run in a browser holds the two together.
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const OPTIONS = builderTabOptions();
+const OPTIONS = builderSourceOptions();
 const STUDY = {
   id: 'BUILT-001',
   said: 'BUILT-001 is a simulated Phase 2 Oncology study.',
@@ -52,8 +53,7 @@ function fakeBuilder() {
   const mounts = [];
   const mount = vi.fn((target, options) => {
     target.append(Object.assign(document.createElement('p'), { textContent: 'the widget' }));
-    const mounted = { target, options };
-    mounts.push(mounted);
+    mounts.push({ target, options });
     return { destroy: vi.fn() };
   });
   return { mount, mounts };
@@ -68,47 +68,47 @@ afterEach(() => {
   delete globalThis.StudyBuilder;
 });
 
-function mounted(view) {
+/** The app with the source handed in; the source is not yet open. */
+function mounted(source) {
   document.body.innerHTML = '<div id="app"></div>';
   app = mountApp('#app', {
     charts: {},
     manifest,
-    libraries: [{ name: 'study.builder', view }]
+    libraries: [{ name: 'study.builder', source }]
   });
-  app.select(BUILDER_TAB_ID);
   return app;
 }
 const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
 const createConnection = () => ({ run: async () => ({ status: 'ok', value: {} }) });
+const button = () => document.querySelector('[data-action="source-build"]');
 
-describe('the Build a study tab', () => {
-  it('is a tab of its own; it fetches study.builder’s script from the page’s own address when first opened, and nothing before', async () => {
-    document.body.innerHTML = '<div id="app"></div>';
-    const view = builderTab({ createConnection, ...OPTIONS });
-    app = mountApp('#app', {
-      charts: {},
-      manifest,
-      libraries: [{ name: 'study.builder', view }]
-    });
-    expect(document.querySelector('[data-tab="build"]').textContent).toContain('Build a study');
+describe('Build a study, on the data view', () => {
+  it('is a way to load data in step one, not a tab; it fetches study.builder’s script when first opened, and nothing before', async () => {
+    mounted(builderSource({ createConnection, ...OPTIONS }));
+    expect(document.querySelector('[data-tab="build"]')).toBeNull();
+    expect(button().textContent).toBe('Build a study');
+    expect(button().getAttribute('aria-pressed')).toBe('false');
     expect(document.head.querySelector('script')).toBeNull();
-    app.select(BUILDER_TAB_ID);
+    button().click();
+    expect(button().getAttribute('aria-pressed')).toBe('true');
     const script = document.head.querySelector('script');
     expect(script.getAttribute('src')).toBe('./study.builder/study.builder.js');
-    expect(document.querySelector('.sva-build').textContent).toContain('Loading the builder');
+    const pane = document.querySelector('.sva-source[data-source="build"]');
+    expect(pane.querySelector('.sva-source-title').textContent).toBe('Build a study');
+    expect(pane.textContent).toContain('Loading the builder');
     // The script defines the global, and the widget is mounted.
     const builder = fakeBuilder();
     globalThis.StudyBuilder = builder;
     script.onload();
     await settle();
     expect(builder.mount).toHaveBeenCalledTimes(1);
-    expect(document.querySelector('.sva-build-widget').textContent).toBe('the widget');
+    expect(document.querySelector('.sva-source .sva-build-widget').textContent).toBe('the widget');
   });
 
   it('hands the widget the app’s own connection factory, where its files and gsm’s packages are served, and its button’s words', async () => {
     const builder = fakeBuilder();
     globalThis.StudyBuilder = builder;
-    mounted(builderTab({ createConnection, ...OPTIONS }));
+    mounted(builderSource({ createConnection, ...OPTIONS })).openSource(BUILDER_SOURCE_ID);
     await settle();
     const { options } = builder.mounts[0];
     expect(options.createConnection).toBe(createConnection);
@@ -118,69 +118,133 @@ describe('the Build a study tab', () => {
     expect(typeof options.onStudy).toBe('function');
   });
 
-  it('keeps the one widget across the page’s redraws and a visit to another tab', async () => {
+  it('keeps the one widget across a close, a reopening and the page’s redraws', async () => {
     const builder = fakeBuilder();
     globalThis.StudyBuilder = builder;
-    const handle = mounted(builderTab({ createConnection, ...OPTIONS }));
+    const handle = mounted(builderSource({ createConnection, ...OPTIONS }));
+    handle.openSource(BUILDER_SOURCE_ID);
     await settle();
     const widget = document.querySelector('.sva-build-widget');
-    handle.select('data');
-    expect(document.querySelector('.sva-build-widget')).toBeNull();
-    handle.select(BUILDER_TAB_ID);
-    handle.redrawView(BUILDER_TAB_ID);
+    document.querySelector('[data-action="close-source"]').click();
+    expect(document.querySelector('.sva-source')).toBeNull();
+    expect(handle.state.source).toBeNull();
+    handle.openSource(BUILDER_SOURCE_ID);
+    expect(handle.state.selected).toBe('data');
+    handle.redrawView('data');
     expect(document.querySelector('.sva-build-widget')).toBe(widget);
     expect(builder.mount).toHaveBeenCalledTimes(1);
   });
 
-  it('loads the study the reader hands over: raw files kept as they are, standard files placed, and offers the RBQM tab', async () => {
+  it('loads the study the reader hands over: raw files kept as they are, standard files placed, and the source closed on the loaded files', async () => {
     const builder = fakeBuilder();
     globalThis.StudyBuilder = builder;
-    const view = builderTab({ createConnection, ...OPTIONS });
-    const handle = mounted(view);
+    const source = builderSource({ createConnection, ...OPTIONS });
+    const handle = mounted(source);
+    handle.openSource(BUILDER_SOURCE_ID);
     await settle();
-    expect(view.tag()).toBe('');
+    expect(source.state().loaded).toBeNull();
     builder.mounts[0].options.onStudy(STUDY);
     expect(handle.state.raw.map((file) => file.name)).toEqual(['Raw_SUBJ.csv', 'Raw_SITE.csv']);
     expect(Object.keys(handle.state.files).sort()).toEqual(['bds', 'subject']);
     expect(handle.state.files.bds.name).toBe('advs.csv');
-    expect(document.querySelector('[data-tab="build"]').textContent).toContain('loaded');
-    const done = document.querySelector('.sva-build-done');
-    expect(done.textContent).toContain('BUILT-001 is loaded into the demo.');
-    // The widget is still there, under the line that says what was loaded.
-    expect(document.querySelector('.sva-build-widget')).not.toBeNull();
-    const select = vi.spyOn(handle, 'select');
-    done.querySelector('.sva-build-open').click();
-    expect(select).toHaveBeenCalledWith('rbqm');
+    expect(source.state().loaded).toEqual({ id: STUDY.id, said: STUDY.said });
+    expect(handle.state.source).toBeNull();
+    expect(document.querySelector('.sva-source')).toBeNull();
+    // Every loaded file, raw or placed, has its details on its card.
+    expect(
+      [...document.querySelectorAll('.sva-file-details')].map((item) => item.dataset.details).sort()
+    ).toEqual(['Raw_SITE.csv', 'Raw_SUBJ.csv', 'adsl.csv', 'advs.csv']);
   });
 
-  it('says so when study.builder’s script does not load, and tries again when the tab is opened again', async () => {
-    const view = builderTab({ createConnection, ...OPTIONS });
-    const handle = mounted(view);
+  it('is closed by a reset', async () => {
+    globalThis.StudyBuilder = fakeBuilder();
+    const handle = mounted(builderSource({ createConnection, ...OPTIONS }));
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    handle.reset();
+    expect(handle.state.source).toBeNull();
+    expect(document.querySelector('.sva-source')).toBeNull();
+  });
+
+  it('says so when study.builder’s script does not load, and tries again when it is opened again', async () => {
+    const source = builderSource({ createConnection, ...OPTIONS });
+    const handle = mounted(source);
+    handle.openSource(BUILDER_SOURCE_ID);
     document.head.querySelector('script').onerror();
     await settle();
-    expect(document.querySelector('.sva-build [role="alert"]').textContent).toBe(
+    expect(document.querySelector('.sva-source [role="alert"]').textContent).toBe(
       'The builder cannot be shown: ./study.builder/study.builder.js did not load on this page.'
     );
-    expect(view.state().mounted).toBe(false);
-    handle.select('data');
+    expect(source.state().mounted).toBe(false);
+    handle.openSource(null);
     expect(document.head.querySelectorAll('script')).toHaveLength(1);
   });
 
   it('offers no builder on a page that cannot start R, and says why', () => {
-    mounted(builderTab({ unavailable: 'Building a study needs R, and this file cannot start R.' }));
+    mounted(
+      builderSource({ unavailable: 'Building a study needs R, and this file cannot start R.' })
+    ).openSource(BUILDER_SOURCE_ID);
     expect(document.querySelector('.sva-build-widget')).toBeNull();
     expect(document.head.querySelector('script')).toBeNull();
-    expect(document.querySelector('.sva-build').textContent).toContain(
+    expect(document.querySelector('.sva-source').textContent).toContain(
       'Building a study needs R, and this file cannot start R.'
     );
   });
 });
 
-describe('the page and the tab agree', () => {
-  it('on the tab’s address, which site/config.json lists', () => {
-    expect(PAGE_TAB_ID).toBe(BUILDER_TAB_ID);
+describe('a source a library brings', () => {
+  it('is left out when it has no id or an id already used, and brings no tab', () => {
+    const render = vi.fn();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    document.body.innerHTML = '<div id="app"></div>';
+    app = mountApp('#app', {
+      charts: {},
+      manifest,
+      libraries: [
+        { name: 'one', source: { id: 'one', label: 'One', about: 'The first.', render } },
+        { name: 'again', source: { id: 'one', label: 'Again', render } },
+        { name: 'none', source: { label: 'No id', render } }
+      ]
+    });
+    expect(app.sources).toEqual([{ id: 'one', label: 'One', about: 'The first.' }]);
+    expect(document.querySelectorAll('[data-action^="source-"]')).toHaveLength(1);
+    expect(document.querySelector('[data-action="source-one"]').title).toBe('The first.');
+    expect(warn).toHaveBeenCalledTimes(2);
+    warn.mockRestore();
+  });
+
+  it('says so in its place when it throws, and the page stands', () => {
+    document.body.innerHTML = '<div id="app"></div>';
+    app = mountApp('#app', {
+      charts: {},
+      manifest,
+      libraries: [
+        {
+          name: 'broken',
+          source: {
+            id: 'broken',
+            label: 'Broken',
+            render() {
+              throw new Error('no good');
+            }
+          }
+        }
+      ]
+    });
+    app.openSource('broken');
+    expect(document.querySelector('.sva-source .sva-problem').textContent).toBe(
+      'Did not draw. no good'
+    );
+    app.openSource('not one');
+    expect(app.state.source).toBeNull();
+  });
+});
+
+describe('the page and the source agree', () => {
+  it('on the source’s id, and that it is no tab of site/config.json', () => {
+    expect(PAGE_SOURCE_ID).toBe(BUILDER_SOURCE_ID);
     const config = JSON.parse(readFileSync(path.join(root, 'site/config.json'), 'utf8'));
-    expect(config.appTabs.map((tab) => tab.id)).toContain(BUILDER_TAB_ID);
+    expect(config.appTabs.map((tab) => tab.id)).not.toContain(BUILDER_SOURCE_ID);
   });
 
   it('on what is served: every copied file, in a folder of its own beside the app', () => {
@@ -189,28 +253,34 @@ describe('the page and the tab agree', () => {
       file: 'site/vendor/study.builder/study.builder.js',
       served: 'study.builder/study.builder.js'
     });
-    expect(files.map((entry) => entry.served)).toContain('study.builder/r/builder.R');
+    const served = files.map((entry) => entry.served);
+    expect(served).toContain('study.builder/r/builder.R');
+    expect(served).toContain('study.builder/workflows/adam/ADSL.yaml');
+    expect(served).toContain(
+      'study.builder/vendor/gsm.reporting/workflow/3_reporting/Results.yaml'
+    );
     expect(
       files.filter((entry) => /study\.builder\/vendor\/gsm\.datasim\/R\/.+\.R$/.test(entry.served))
     ).toHaveLength(41);
+    expect(
+      files.filter((entry) =>
+        /study\.builder\/vendor\/gsm\.kri\/workflow\/.+\.yaml$/.test(entry.served)
+      )
+    ).toHaveLength(8);
     for (const entry of files)
       expect(existsSync(path.join(root, entry.file)), entry.file).toBe(true);
   });
 
-  it('on the view the page mounts: the app’s own connection, or a sentence where R cannot start', () => {
-    expect(builderTabExpression()).toBe(
-      "{ name: 'study.builder', view: SafetyVizApp.builderTab({ createConnection: " +
+  it('on the source the page mounts, with the app’s own connection', () => {
+    expect(builderSourceExpression()).toBe(
+      "{ name: 'study.builder', source: SafetyVizApp.builderSource({ createConnection: " +
         `SafetyVizApp.createRConnection, ...${JSON.stringify(OPTIONS)} }) }`
     );
     expect(OPTIONS).toEqual({
       library: { url: './study.builder/study.builder.js', global: 'StudyBuilder' },
       base: './study.builder/',
-      repository: './r-wasm',
-      open: 'rbqm'
+      repository: './r-wasm'
     });
-    expect(builderTabExpression({ r: 'unavailable' })).toContain(
-      '"unavailable":"Building a study needs R'
-    );
   });
 });
 
@@ -221,14 +291,22 @@ describe('the copy of study.builder', () => {
     const record = readRecord(directory);
     expect(record.repository).toBe(STUDY_BUILDER.repository);
     expect(record.commit).toMatch(/^[0-9a-f]{40}$/);
-    expect(record.tag).toBe(STUDY_BUILDER.tag);
-    expect(record.version).toBe(STUDY_BUILDER.tag.replace(/^v/, ''));
+    // A copy from a release names its tag, the one scripts/vendor-lib.mjs
+    // names; a copy from the head of main names none, and says why.
+    if (record.tag !== undefined) {
+      expect(record.tag).toBe(STUDY_BUILDER.tag);
+      expect(record.version).toBe(STUDY_BUILDER.tag.replace(/^v/, ''));
+    } else {
+      expect(record.ref).toBe('main');
+      expect(record.merged_to_dev).toBe(false);
+      expect(record.note).toMatch(/v0\.2\.0/);
+    }
     expect(record.files.map((entry) => entry.file).sort()).toEqual(
       STUDY_BUILDER.files.map((entry) => entry.file).sort()
     );
   });
 
-  it('defines the global the tab looks for, and carries the functions the tab calls', () => {
+  it('defines the global the source looks for, and carries the options it is mounted with', () => {
     const bundle = readFileSync(
       path.join(root, STUDY_BUILDER.directory, 'study.builder.js'),
       'utf8'

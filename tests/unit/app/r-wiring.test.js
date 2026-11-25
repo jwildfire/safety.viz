@@ -18,7 +18,7 @@ import {
   noRFactory,
   rbqmTabExpression
 } from '../../../scripts/app-libraries.mjs';
-import { builderTabExpression } from '../../../scripts/builder-lib.mjs';
+import { builderSourceExpression } from '../../../scripts/builder-lib.mjs';
 import { APP_STATISTICS, SCENARIO, derivedFrom } from '../../../scripts/app-statistics-lib.mjs';
 import { renderAppHtml } from '../../../scripts/build-app.mjs';
 import { renderDemoAppPage } from '../../../scripts/site-lib.mjs';
@@ -128,7 +128,7 @@ describe('the pages', () => {
     });
     // After bio.viz's entry comes the RBQM tab's, a library that brings a view (#235).
     expect(html).toContain(
-      `libraries: ${librariesExpression(APP_LIBRARIES, { r: 'request', more: [rbqmTabExpression(), builderTabExpression()] })}`
+      `libraries: ${librariesExpression(APP_LIBRARIES, { r: 'request', more: [rbqmTabExpression(), builderSourceExpression()] })}`
     );
     expect(html).toContain(
       'SafetyVizApp.rOnRequest({ createConnection: window.BioViz?.r?.createConnection, ' +

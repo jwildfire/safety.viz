@@ -31,9 +31,7 @@ const REASONS = {
   'participant-profile':
     'Experimental: what it lists for a participant, and how, may still change.',
   'qt-explorer': 'Experimental: its settings and its table may still change.',
-  rbqm: 'Experimental: new in 1.10. R runs in the browser, and what the tab shows may still change.',
-  build:
-    'Experimental: new in 1.13. gsm.datasim simulates a study in the browser, and what the tab asks may still change.'
+  rbqm: 'Experimental: new in 1.10. R runs in the browser, and what the tab shows may still change.'
 };
 
 describe('the status ladder: the rung an entry stands on', () => {
@@ -148,9 +146,7 @@ describe('the status ladder: the rung reaches the app', () => {
     const tiers = chartTiers();
     expect(ownModules).toHaveLength(13);
     expect(libraryModules).toHaveLength(5);
-    expect(Object.keys(tiers).sort()).toEqual(
-      [...ownModules, ...libraryModules, 'rbqm', 'build'].sort()
-    );
+    expect(Object.keys(tiers).sort()).toEqual([...ownModules, ...libraryModules, 'rbqm'].sort());
     const on = (tier) => Object.keys(tiers).filter((id) => tiers[id].tier === tier);
     expect(on('exploratory')).toHaveLength(13);
     expect(on('experimental').sort()).toEqual(Object.keys(REASONS).sort());

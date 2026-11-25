@@ -1,24 +1,24 @@
 {
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
-  "ref": "v0.1.0",
-  "commit": "30467c4681d50e38970d4d2f49982d6f78c8d621",
-  "version": "0.1.0",
+  "ref": "main",
+  "commit": "7c87a0ef58bcb58c23baf9a577fbe977fbb32f20",
+  "version": "0.2.0",
   "license": "Apache-2.0",
-  "tag": "v0.1.0",
   "merged_to_dev": false,
+  "note": "study.builder has no dev branch: this is the head of main, after its v0.1.0 tag and before v0.2.0, which adds the layers the Data tab reads. Copy again from the v0.2.0 tag when it is released.",
   "files": [
     {
       "file": "study.builder.js",
       "source": "dist/study.builder.js",
-      "sha256": "4d631b9bd449a15d8d546bd6dac1d7f24c41146f9d43ed7ad5c60f145e89d40e",
-      "bytes": 31103
+      "sha256": "af7e8e4e2596d051488e4a09198eea1717e9a71a4db827cb09fd0dd55914a7f8",
+      "bytes": 52743
     },
     {
       "file": "r/builder.R",
       "source": "r/builder.R",
-      "sha256": "8f95fe44c78ded81b6618d1baa75562f20a7d3493fd9de3357783dc469caab50",
-      "bytes": 21120
+      "sha256": "9e25403f7bfae2bc9a6917a90f47699cc3af1af2491dfddff1684b93c7abcfbb",
+      "bytes": 26807
     },
     {
       "file": "vendor/gsm.datasim/R/Raw_AE.R",
@@ -307,6 +307,120 @@
       "source": "vendor/gsm.mapping-vitals/SOURCE.json",
       "sha256": "c720fafa935685daa56d42c42fab0a5a0b8e1805d44512e49e430667b031e562",
       "bytes": 536
+    },
+    {
+      "file": "vendor/gsm.kri/workflow/2_metrics/kri0001.yaml",
+      "source": "vendor/gsm.kri/workflow/2_metrics/kri0001.yaml",
+      "sha256": "a25e831f1c81283e8c0d54922dcdb2beb4a019e1bdb469dbc730f71368a1a33d",
+      "bytes": 2180
+    },
+    {
+      "file": "vendor/gsm.kri/workflow/2_metrics/kri0002.yaml",
+      "source": "vendor/gsm.kri/workflow/2_metrics/kri0002.yaml",
+      "sha256": "944d934d5810ce37b2d43ae7e56b8abe5f270d630dd824ab0e44de2be11ed9d3",
+      "bytes": 2372
+    },
+    {
+      "file": "vendor/gsm.kri/workflow/2_metrics/kri0003.yaml",
+      "source": "vendor/gsm.kri/workflow/2_metrics/kri0003.yaml",
+      "sha256": "644ae43348ac8160a60958a742b26c2402145c43c3f19a8d958a3090c3e5a857",
+      "bytes": 2433
+    },
+    {
+      "file": "vendor/gsm.kri/workflow/2_metrics/kri0004.yaml",
+      "source": "vendor/gsm.kri/workflow/2_metrics/kri0004.yaml",
+      "sha256": "d9a55c5bbe06b5aa2511dba5b5258bb4ccfcbb7ac9bb9a689c60c03250eda3c3",
+      "bytes": 2422
+    },
+    {
+      "file": "vendor/gsm.kri/workflow/2_metrics/kri0005.yaml",
+      "source": "vendor/gsm.kri/workflow/2_metrics/kri0005.yaml",
+      "sha256": "d8660e662c6074c10a800228cb5f18608f89d5f40cbb762ece30591b9c7a5212",
+      "bytes": 2483
+    },
+    {
+      "file": "vendor/gsm.kri/workflow/2_metrics/kri0006.yaml",
+      "source": "vendor/gsm.kri/workflow/2_metrics/kri0006.yaml",
+      "sha256": "273c28b8333d24d9db241bb12e44b3ca34882e296f1dba89c8126c2749d1b9b0",
+      "bytes": 2321
+    },
+    {
+      "file": "vendor/gsm.kri/workflow/2_metrics/kri0007.yaml",
+      "source": "vendor/gsm.kri/workflow/2_metrics/kri0007.yaml",
+      "sha256": "db9c3218b41556941d77bfb6023654bfbf50ddb81f5c52446cdc37b8ac2eedca",
+      "bytes": 2386
+    },
+    {
+      "file": "vendor/gsm.kri/workflow/2_metrics/kri0012.yaml",
+      "source": "vendor/gsm.kri/workflow/2_metrics/kri0012.yaml",
+      "sha256": "cbd774c1c967daffd3fadc352d83bd3d1372351e42a524f56a342f32279d0bc6",
+      "bytes": 2263
+    },
+    {
+      "file": "vendor/gsm.kri/R/util-Report.R",
+      "source": "vendor/gsm.kri/R/util-Report.R",
+      "sha256": "e361f682d3738e76c0f99f140306a0390b34bcd4a22b8f44b561f1b7c7331815",
+      "bytes": 4769
+    },
+    {
+      "file": "vendor/gsm.kri/SOURCE.json",
+      "source": "vendor/gsm.kri/SOURCE.json",
+      "sha256": "46e47f594303839f185dee5a4084800f79c1e9e04b4914865ad0e179ed38e765",
+      "bytes": 2283
+    },
+    {
+      "file": "vendor/gsm.reporting/workflow/3_reporting/Results.yaml",
+      "source": "vendor/gsm.reporting/workflow/3_reporting/Results.yaml",
+      "sha256": "9af4f317bef0acd16a4098417aa5c1a7cb4bd945bd00d560b2ef4c8a7f7b1d36",
+      "bytes": 1061
+    },
+    {
+      "file": "vendor/gsm.reporting/workflow/3_reporting/Bounds.yaml",
+      "source": "vendor/gsm.reporting/workflow/3_reporting/Bounds.yaml",
+      "sha256": "e135ba9a945ff844878560101605d448edfd992c07a127697d2baa358cd2f2ce",
+      "bytes": 753
+    },
+    {
+      "file": "vendor/gsm.reporting/workflow/3_reporting/Groups.yaml",
+      "source": "vendor/gsm.reporting/workflow/3_reporting/Groups.yaml",
+      "sha256": "aa6b4440c67a6b94d7f89c638b9fe42d87bc3949dd3f1b812ffc4705ce0d31ca",
+      "bytes": 410
+    },
+    {
+      "file": "vendor/gsm.reporting/workflow/3_reporting/Metrics.yaml",
+      "source": "vendor/gsm.reporting/workflow/3_reporting/Metrics.yaml",
+      "sha256": "e96d36a9aa8656e8d3ed4a0e7ffb02161b4384cc5c6cd6d9050b0f4cfe2df41f",
+      "bytes": 272
+    },
+    {
+      "file": "vendor/gsm.reporting/SOURCE.json",
+      "source": "vendor/gsm.reporting/SOURCE.json",
+      "sha256": "2bf58adceb53e35fd419e92976dc127bf8a185494b60426f923ad2abd30b050a",
+      "bytes": 1800
+    },
+    {
+      "file": "workflows/adam/ADAE.yaml",
+      "source": "workflows/adam/ADAE.yaml",
+      "sha256": "ee1bde102d6e89b296c94b06886385e7f45a2c7cbf0857b077519e2fde43db6a",
+      "bytes": 2883
+    },
+    {
+      "file": "workflows/adam/ADSL.yaml",
+      "source": "workflows/adam/ADSL.yaml",
+      "sha256": "00ed00126e0ebba1b46b865674af399544ed9da576b759ab3621961038f44221",
+      "bytes": 1723
+    },
+    {
+      "file": "workflows/adam/ADVS.yaml",
+      "source": "workflows/adam/ADVS.yaml",
+      "sha256": "20cd6a2c639d9a47f766d84d34e95145cdf3271f83ce70b8350036e3c4ed6a43",
+      "bytes": 4129
+    },
+    {
+      "file": "workflows/analysis/AESummary.yaml",
+      "source": "workflows/analysis/AESummary.yaml",
+      "sha256": "cec7496cb2715ecb82abb279d9e549923f1cc0027524a2de1798c04214dfeee7",
+      "bytes": 2323
     },
     {
       "file": "LICENSE",

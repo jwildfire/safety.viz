@@ -204,12 +204,13 @@ export const GSM_VIZ = {
 };
 
 /**
- * study.builder, for the demo app's Build a study tab: the tool that simulates
+ * study.builder, for the demo app's Build a study source: the tool that simulates
  * a study with gsm.datasim in browser R and hands its data to a page. Its
  * built bundle defines the global `StudyBuilder`; with it are copied the files
- * its R reads, which the demo app serves beside it: study.builder's own R, its
- * copy of gsm.datasim's source and of gsm.mapping's vital signs spec, each with
- * the record study.builder keeps of where it came from, and the licence. None
+ * its R reads, which the demo app serves beside it: study.builder's own R and
+ * workflows, and its copies of gsm.datasim's source, of gsm.mapping's vital
+ * signs spec and of gsm.kri's and gsm.reporting's workflows, each with the
+ * record study.builder keeps of where it came from, and the licence. None
  * is edited. study.builder is public, under jwildfire, and is only ever read.
  */
 export const STUDY_BUILDER = {
@@ -217,6 +218,9 @@ export const STUDY_BUILDER = {
   label: 'bundle',
   repository: 'https://github.com/jwildfire/study.builder',
   directory: 'site/vendor/study.builder',
+  // The release a copy with no argument is made from. The copy here is from
+  // the head of main, ahead of it (SOURCE.json says why); move this to v0.2.0
+  // when study.builder releases it, and copy again.
   tag: 'v0.1.0',
   global: 'StudyBuilder',
   files: [
@@ -272,6 +276,25 @@ export const STUDY_BUILDER = {
     'vendor/gsm.datasim/SOURCE.json',
     'vendor/gsm.mapping-vitals/workflow/1_mappings/VS.yaml',
     'vendor/gsm.mapping-vitals/SOURCE.json',
+    'vendor/gsm.kri/workflow/2_metrics/kri0001.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0002.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0003.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0004.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0005.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0006.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0007.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0012.yaml',
+    'vendor/gsm.kri/R/util-Report.R',
+    'vendor/gsm.kri/SOURCE.json',
+    'vendor/gsm.reporting/workflow/3_reporting/Results.yaml',
+    'vendor/gsm.reporting/workflow/3_reporting/Bounds.yaml',
+    'vendor/gsm.reporting/workflow/3_reporting/Groups.yaml',
+    'vendor/gsm.reporting/workflow/3_reporting/Metrics.yaml',
+    'vendor/gsm.reporting/SOURCE.json',
+    'workflows/adam/ADAE.yaml',
+    'workflows/adam/ADSL.yaml',
+    'workflows/adam/ADVS.yaml',
+    'workflows/analysis/AESummary.yaml',
     'LICENSE'
   ].map((entry) => (typeof entry === 'string' ? { file: entry, source: entry } : entry))
 };

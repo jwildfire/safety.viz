@@ -30,7 +30,6 @@ import {
   rbqmTabOptions
 } from './app-libraries.mjs';
 import { RBQM_TAB } from './rbqm-lib.mjs';
-import { builderTabExpression } from './builder-lib.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, '..');
@@ -68,7 +67,7 @@ export function renderAppHtml({ script, libraries = [], chartLinks = {}, tiers =
   const options = [
     ...(libraries.length
       ? [
-          `libraries: ${librariesExpression(libraries, { r: 'unavailable', fromFile: false, more: [rbqmTabExpression({ r: 'unavailable' }), builderTabExpression({ r: 'unavailable' })] })}`,
+          `libraries: ${librariesExpression(libraries, { r: 'unavailable', fromFile: false, more: [rbqmTabExpression({ r: 'unavailable' })] })}`,
           `pitch: ${JSON.stringify(FILE_PITCH)}`
         ]
       : []),

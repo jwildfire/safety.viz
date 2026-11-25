@@ -27,7 +27,6 @@ import {
   libraryScript,
   rbqmTabExpression
 } from '../../../scripts/app-libraries.mjs';
-import { builderTabExpression } from '../../../scripts/builder-lib.mjs';
 import { renderAppHtml } from '../../../scripts/build-app.mjs';
 
 // The biomarker charts in the demo app (#182, obot.roadmap#366): bio.viz's
@@ -300,7 +299,7 @@ describe('the single file with the biomarker charts', () => {
     expect(html).toContain(
       // The single file cannot start R (#183): its biomarker charts are told so.
       // The RBQM tab's entry follows, and says the same of itself (#235).
-      `window.__safetyVizApp = SafetyVizApp.mount('#app', { libraries: ${librariesExpression([bioViz], { r: 'unavailable', fromFile: false, more: [rbqmTabExpression({ r: 'unavailable' }), builderTabExpression({ r: 'unavailable' })] })}, pitch: ${JSON.stringify(FILE_PITCH)} });`
+      `window.__safetyVizApp = SafetyVizApp.mount('#app', { libraries: ${librariesExpression([bioViz], { r: 'unavailable', fromFile: false, more: [rbqmTabExpression({ r: 'unavailable' })] })}, pitch: ${JSON.stringify(FILE_PITCH)} });`
     );
     expect(html).not.toContain('sourceMappingURL');
     expect(html).not.toMatch(/<script[^>]*\ssrc=/i);

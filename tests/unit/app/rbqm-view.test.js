@@ -312,8 +312,7 @@ describe('the page: a library that brings a view', () => {
 describe('the RBQM tab on the page', () => {
   it('APP-RBQM-026: the tab is Experimental by its entry in site/config.json, which says why; the tab, its row and its view carry no pill of their own, and the page shows the status label on the tab’s corner (#235, #274)', () => {
     const config = JSON.parse(readFileSync(path.join(root, 'site/config.json'), 'utf8'));
-    // The RBQM tab's entry is the first; the Build a study tab's follows it.
-    expect(config.appTabs.filter((tab) => tab.id === 'rbqm')).toEqual([
+    expect(config.appTabs).toEqual([
       expect.objectContaining({
         id: 'rbqm',
         title: 'RBQM',

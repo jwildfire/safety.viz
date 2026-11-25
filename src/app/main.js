@@ -66,7 +66,7 @@ const appHost = createHost();
  * @returns {{run: Function, close: Function}} The connection.
  */
 export const createRConnection = (options = {}) => createConnection({ host: appHost, ...options });
-// The Build a study tab: a view a library brings, which has R in the browser
-// simulate a study with gsm.datasim and loads it as gsm's raw files. The page
-// that mounts the app says where R's files are served from.
-export { builderTab } from './builder-view.js';
+// Build a study: a way to load data that a library brings, which the data view
+// offers beside the demo studies and the file picker. It is study.builder's
+// widget; the page that mounts the app says where study.builder is served.
+export { builderSource } from './builder-view.js';

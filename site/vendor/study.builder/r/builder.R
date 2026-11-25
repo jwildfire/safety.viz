@@ -1,7 +1,7 @@
 # study.builder's R: given a few facts about a trial and the domains wanted,
-# gsm.datasim simulates the study and this file returns each domain as a
-# table, with its columns and their types, and the standard files made from
-# them, each with a line for every column saying where it came from.
+# gsm.datasim simulates the study and this file returns it in layers: the raw
+# tables, and each layer built off them by workr workflows. Every table comes
+# with its columns and their types and what made it.
 #
 # gsm.datasim is not installed: it has no WebAssembly build, and it is plain R,
 # so its own source files, copied from a release tag (vendor/gsm.datasim), are
@@ -12,8 +12,9 @@
 # nowhere else to look.
 #
 # R in the browser and desktop R source this one file. Nothing here makes up a
-# row: every row is gsm.datasim's. This file asks for the study, takes the last
-# snapshot, and writes it out.
+# row or derives a column: every raw row is gsm.datasim's, and every table
+# built off raw is a workflow's. This file asks for the study, takes the last
+# snapshot, runs the workflows and writes the tables out.
 #
 # Three things are changed in the raw tables, and `builder_notes` says each:
 # - A column gsm.datasim names as the source system does is given gsm's name
@@ -26,7 +27,7 @@
 # The packages gsm.datasim's code calls by bare name, or by package.
 builder_packages <- c(
   "dplyr", "lubridate", "purrr", "glue", "logger", "magrittr", "rlang",
-  "stringr", "tictoc", "yaml", "workr", "gsm.core", "gsm.mapping"
+  "stringr", "tictoc", "yaml", "workr", "gsm.core", "gsm.mapping", "gsm.reporting"
 )
 
 # The domains every study has: gsm.datasim builds every other from them.
@@ -147,6 +148,9 @@ builder_load <- function(simulator) {
         have <- names(tables[[table]])
         if (source %in% have && !(column %in% have)) {
           names(tables[[table]])[have == source] <- column
+          # Kept, so the table can say what gsm.datasim called the column.
+          was <- attr(tables[[table]], "renamed")
+          attr(tables[[table]], "renamed") <- c(was, stats::setNames(source, column))
         }
       }
     }
@@ -184,153 +188,203 @@ builder_load <- function(simulator) {
   as.data.frame(generate_domain_from_registry("Raw_VS", context))
 }
 
-# ---- The standard files, for charts of participants ----
+# ---- The layers built off raw ----
 #
-# Charts of participants read standard domains (Subject-level, Adverse events,
-# Labs and vitals), not gsm's raw tables. These functions write a file for each
-# from the raw tables. No value is made up. Each column is a raw column under
-# the standard name, or one of the plain derivations below, and every file is
-# handed back with a line for each of its columns saying which (`mapping`).
+# Every table that is not raw is made by a workr workflow: a YAML file with a
+# spec (the tables and columns it reads) and steps. Nothing is derived in this
+# file. Two layers are built here:
+#
+# - Raw.RBQM: gsm's own mapping workflows, as installed with gsm.mapping, run
+#   on the raw tables. gsm calls these tables Mapped.
+# - ADaM: study.builder's own workflows (workflows/adam), which write the
+#   tables charts of participants read. Each says, in a `columns` block, where
+#   every column came from.
+#
+# A workflow is run only when every table its spec names is there, so a study
+# with no adverse events has no ADAE and nothing fails.
 
-# The one group every participant is in: gsm.datasim makes no treatment arms.
-builder_arm <- "All participants"
-
-# The vital signs gsm.datasim makes, each with the name the Labs and vitals
-# file gives it and the unit its averages are in. Its generator states none.
-builder_vital_signs <- list(
-  weight = c("Weight", "kg"),
-  height = c("Height", "cm"),
-  bsa = c("Body surface area", "m2"),
-  sysbp = c("Systolic blood pressure", "mmHg"),
-  diabp = c("Diastolic blood pressure", "mmHg"),
-  pulse = c("Pulse", "beats/min"),
-  temp = c("Temperature", "C"),
-  resp = c("Respiratory rate", "breaths/min")
+# The layers a study may be asked for besides raw, in the order they are shown.
+builder_layers <- list(
+  list(id = "raw.rbqm", label = "Raw.RBQM", type = "Mapped"),
+  list(id = "adam", label = "ADaM", type = "ADaM"),
+  list(id = "analysis", label = "Analysis", type = "Analysis"),
+  list(id = "reporting", label = "Reporting", type = "Reporting")
 )
 
-# How each kind of column came to be, in the words the mapping says.
-.builder_how <- list(
-  copied = "Copied",
-  day = "Derived: the date less the participant's first dose date, plus one; from enrolment for a participant with no dose",
-  label = "A label of study.builder's: gsm.datasim makes no treatment arms",
-  severity = "Derived: the toxicity grade in words, 1 mild, 2 moderate, 3 or more severe",
-  sequence = "Derived: the event's number within the participant, in order of start date",
-  long = "Reshaped: one row for each vital sign that was taken",
-  unit = "The unit gsm.datasim's own averages are in; its generator states none",
-  visit_number = "Derived: the visit's place in the order of first visit dates across the study",
-  joined = "Joined from the participant's row"
-)
-.builder_line <- function(column, from, how) list(column = column, from = from, how = .builder_how[[how]])
+# A layer that is made from another's tables: asking for it brings the other.
+builder_layer_needs <- list(analysis = c("raw.rbqm", "adam"), reporting = "analysis")
 
-# Each participant's day one: the first dose date, or enrolment without one.
-.builder_day_one <- function(subjects) {
-  day_one <- as.Date(as.character(subjects$firstdosedate))
-  enrolled <- as.Date(as.character(subjects$enrolldt))
-  day_one[is.na(day_one)] <- enrolled[is.na(day_one)]
-  stats::setNames(day_one, as.character(subjects$subjid))
+# The workflows of a list whose inputs are all there. A workflow may read
+# another's output (Type_ID), so the list is walked in order of priority.
+.builder_runnable <- function(workflows, have) {
+  order_of <- order(vapply(workflows, function(workflow) {
+    as.numeric(if (is.null(workflow$meta$Priority)) 1 else workflow$meta$Priority)
+  }, numeric(1)))
+  keep <- list()
+  for (workflow in workflows[order_of]) {
+    if (all(names(workflow$spec) %in% have)) {
+      keep[[length(keep) + 1]] <- workflow
+      have <- c(have, paste0(workflow$meta$Type, "_", workflow$meta$ID))
+    }
+  }
+  keep
 }
 
-# A study day: day one is 1 and the day before it is -1.
-.builder_day <- function(date, subjid, day_one) {
-  days <- as.integer(as.Date(as.character(date)) - day_one[as.character(subjid)])
-  ifelse(is.na(days), NA_integer_, ifelse(days >= 0L, days + 1L, days))
+# Run a layer's workflows on what is there, and hand back each one's table with
+# what made it. A workflow that stops is named in `notes` and leaves no table.
+.builder_layer <- function(layer, workflows, data) {
+  workflows <- .builder_runnable(workflows, names(data))
+  tables <- list()
+  notes <- character(0)
+  if (length(workflows)) {
+    names(workflows) <- vapply(workflows, function(workflow) workflow$meta$ID, character(1))
+    run <- suppressMessages(workr::RunWorkflows(workflows, lData = data, bContinueOnError = TRUE))
+    for (workflow in workflows) {
+      name <- paste0(workflow$meta$Type, "_", workflow$meta$ID)
+      made <- run$results[[name]]
+      if (!is.data.frame(made)) {
+        notes <- c(notes, paste0(name, " was not made: its workflow stopped."))
+        next
+      }
+      columns <- workflow$columns
+      mapping <- if (is.null(columns)) {
+        NULL
+      } else {
+        lapply(intersect(names(made), names(columns)), function(column) {
+          list(
+            column = column,
+            label = if (is.null(columns[[column]]$label)) "" else columns[[column]]$label,
+            from = if (is.null(columns[[column]]$from)) "" else columns[[column]]$from,
+            how = columns[[column]]$how
+          )
+        })
+      }
+      file <- if (is.null(workflow$meta$File)) paste0(name, ".csv") else workflow$meta$File
+      tables[[length(tables) + 1]] <- .builder_table(made, c(
+        list(
+          id = workflow$meta$ID, table = name, name = file, layer = layer$id,
+          description = workflow$meta$Description,
+          made = list(workflow = name, from = as.list(names(workflow$spec)))
+        ),
+        if (is.null(workflow$meta$Domain)) list() else list(domain = workflow$meta$Domain),
+        if (is.null(workflow$meta$Keys)) list() else list(keys = as.list(workflow$meta$Keys)),
+        if (is.null(mapping)) list() else list(mapping = mapping)
+      ))
+    }
+  }
+  list(tables = tables, notes = notes, data = if (length(workflows)) run$results else list())
 }
 
-# The Subject-level file: one row per participant.
-.builder_subject <- function(subjects) {
-  data.frame(
-    USUBJID = as.character(subjects$subjid),
-    ARM = rep(builder_arm, nrow(subjects)),
-    SITEID = as.character(subjects$invid),
-    SEX = as.character(subjects$sex),
-    RACE = as.character(subjects$race),
-    EOSDY = suppressWarnings(as.integer(subjects$timeonstudy)),
-    stringsAsFactors = FALSE
-  )
-}
-.builder_subject_mapping <- list(
-  .builder_line("USUBJID", "Raw_SUBJ.subjid", "copied"),
-  .builder_line("ARM", "", "label"),
-  .builder_line("SITEID", "Raw_SUBJ.invid", "copied"),
-  .builder_line("SEX", "Raw_SUBJ.sex", "copied"),
-  .builder_line("RACE", "Raw_SUBJ.race", "copied"),
-  .builder_line("EOSDY", "Raw_SUBJ.timeonstudy", "copied")
-)
+# ---- Analysis and Reporting ----
+#
+# Analysis works statistics out of a data layer; Reporting shapes results for a
+# chart or a table to read. Neither belongs to one domain. Two kinds of
+# analysis are run here, to show it:
+#
+# - gsm's site metrics (gsm.kri's metric workflows, copied from its release
+#   tag), which read Raw.RBQM. Each leaves the participant-level input it
+#   counted from and the site-level summary it came to.
+# - study.builder's own analysis workflows (workflows/analysis), which read
+#   ADaM.
+#
+# Reporting is gsm.reporting's four workflows over every metric that ran:
+# Results, Bounds, Groups and Metrics.
 
-# The Adverse events file: one row per event.
-.builder_events <- function(events, day_one) {
-  events <- as.data.frame(events)
-  events <- events[order(as.character(events$subjid), as.character(events$aest_dt)), , drop = FALSE]
-  grade <- suppressWarnings(as.integer(events$aetoxgr))
-  severity <- ifelse(is.na(grade), NA_character_,
-    ifelse(grade <= 1L, "MILD", ifelse(grade == 2L, "MODERATE", "SEVERE")))
-  data.frame(
-    USUBJID = as.character(events$subjid),
-    ARM = rep(builder_arm, nrow(events)),
-    AESEQ = stats::ave(seq_len(nrow(events)), as.character(events$subjid), FUN = seq_along),
-    AEBODSYS = as.character(events$mdrsoc_nsv),
-    AEDECOD = as.character(events$mdrpt_nsv),
-    AETERM = as.character(events$mdrpt_nsv),
-    AESEV = severity,
-    AESER = as.character(events$aeser),
-    ASTDY = .builder_day(events$aest_dt, events$subjid, day_one),
-    AENDY = .builder_day(events$aeen_dt, events$subjid, day_one),
-    stringsAsFactors = FALSE
-  )
-}
-.builder_events_mapping <- list(
-  .builder_line("USUBJID", "Raw_AE.subjid", "copied"),
-  .builder_line("ARM", "", "label"),
-  .builder_line("AESEQ", "Raw_AE.aest_dt", "sequence"),
-  .builder_line("AEBODSYS", "Raw_AE.mdrsoc_nsv", "copied"),
-  .builder_line("AEDECOD", "Raw_AE.mdrpt_nsv", "copied"),
-  .builder_line("AETERM", "Raw_AE.mdrpt_nsv", "copied"),
-  .builder_line("AESEV", "Raw_AE.aetoxgr", "severity"),
-  .builder_line("AESER", "Raw_AE.aeser", "copied"),
-  .builder_line("ASTDY", "Raw_AE.aest_dt", "day"),
-  .builder_line("AENDY", "Raw_AE.aeen_dt", "day")
-)
-
-# The Labs and vitals file: one row per participant, visit and vital sign that
-# was taken.
-.builder_results <- function(vitals, subject, day_one) {
-  vitals <- as.data.frame(vitals)
-  first_seen <- tapply(as.numeric(as.Date(as.character(vitals$vs_dt))), as.character(vitals$visit), min, na.rm = TRUE)
-  order_of <- stats::setNames(seq_along(first_seen) - 1L, names(sort(first_seen)))
-  who <- match(as.character(vitals$subjid), subject$USUBJID)
-  long <- lapply(intersect(names(builder_vital_signs), names(vitals)), function(column) {
-    value <- suppressWarnings(as.numeric(vitals[[column]]))
-    keep <- !is.na(value)
-    data.frame(
-      USUBJID = as.character(vitals$subjid)[keep],
-      ARM = rep(builder_arm, sum(keep)),
-      SITEID = subject$SITEID[who][keep],
-      SEX = subject$SEX[who][keep],
-      RACE = subject$RACE[who][keep],
-      VISIT = as.character(vitals$visit)[keep],
-      VISITNUM = unname(order_of[as.character(vitals$visit)])[keep],
-      TEST = rep(builder_vital_signs[[column]][1], sum(keep)),
-      STRESU = rep(builder_vital_signs[[column]][2], sum(keep)),
-      STRESN = value[keep],
-      DY = .builder_day(vitals$vs_dt, vitals$subjid, day_one)[keep],
-      stringsAsFactors = FALSE
+# gsm's metric workflows on the mapped tables. A metric runs when every table
+# its spec names is there; one that stops is named and leaves no table.
+.builder_metrics <- function(layer, folder, mapped) {
+  workflows <- suppressMessages(workr::MakeWorkflowList(
+    strPath = file.path(folder, "workflow", "2_metrics"), strPackage = NULL
+  ))
+  tables <- list()
+  notes <- character(0)
+  analyzed <- list()
+  ran <- list()
+  for (id in names(workflows)) {
+    workflow <- workflows[[id]]
+    if (!all(names(workflow$spec) %in% names(mapped))) next
+    name <- paste0(workflow$meta$Type, "_", workflow$meta$ID)
+    made <- tryCatch(
+      suppressWarnings(suppressMessages(workr::RunWorkflows(
+        list(workflow), c(mapped, list(lWorkflows = workflows[id]))
+      ))),
+      error = function(e) e
     )
-  })
-  do.call(rbind, long)
+    if (inherits(made, "error") || !is.list(made[[name]])) {
+      notes <- c(notes, paste0(name, " was not made: its workflow stopped."))
+      next
+    }
+    analyzed[[name]] <- made[[name]]
+    ran[[id]] <- workflow
+    about <- paste0(
+      workflow$meta$Metric, ": ", workflow$meta$Numerator, " over ", workflow$meta$Denominator,
+      ", by ", tolower(workflow$meta$GroupLevel), "; ", workflow$meta$Model, "."
+    )
+    from <- as.list(names(workflow$spec))
+    for (part in c("Summary", "Input")) {
+      table <- made[[name]][[paste0("Analysis_", part)]]
+      if (!is.data.frame(table)) next
+      tables[[length(tables) + 1]] <- .builder_table(table, list(
+        id = if (part == "Summary") workflow$meta$ID else paste0(workflow$meta$ID, "_input"),
+        table = paste0(name, "_", part),
+        name = paste0(name, "_", part, ".csv"),
+        layer = layer$id,
+        description = if (part == "Summary") workflow$meta$Metric else paste0(workflow$meta$Metric, ": input"),
+        about = if (part == "Summary") about else paste0("One row per participant: what ", workflow$meta$Metric, " was counted from."),
+        made = list(workflow = name, from = from)
+      ))
+    }
+  }
+  list(tables = tables, notes = notes, analyzed = analyzed, ran = ran)
 }
-.builder_results_mapping <- list(
-  .builder_line("USUBJID", "Raw_VS.subjid", "copied"),
-  .builder_line("ARM", "", "label"),
-  .builder_line("SITEID", "Raw_SUBJ.invid", "joined"),
-  .builder_line("SEX", "Raw_SUBJ.sex", "joined"),
-  .builder_line("RACE", "Raw_SUBJ.race", "joined"),
-  .builder_line("VISIT", "Raw_VS.visit", "copied"),
-  .builder_line("VISITNUM", "Raw_VS.vs_dt", "visit_number"),
-  .builder_line("TEST", paste0("Raw_VS: ", paste(names(builder_vital_signs), collapse = ", ")), "long"),
-  .builder_line("STRESU", "", "unit"),
-  .builder_line("STRESN", paste0("Raw_VS: ", paste(names(builder_vital_signs), collapse = ", ")), "long"),
-  .builder_line("DY", "Raw_VS.vs_dt", "day")
-)
+
+# gsm.reporting's workflows over the metrics that ran.
+.builder_reporting <- function(layer, folder, helpers, mapped, metrics, snapshot_date) {
+  if (!length(metrics$ran)) return(list(tables = list(), notes = character(0)))
+  # gsm.kri is not installed where gsm has no WebAssembly build of it: the one
+  # function of it the Results workflow calls is in this file, copied from it.
+  sys.source(helpers, envir = globalenv())
+  workflows <- suppressMessages(workr::MakeWorkflowList(
+    strPath = file.path(folder, "workflow", "3_reporting"), strPackage = NULL
+  ))
+  # One reads another's table (Bounds reads Results), so a table one of them
+  # makes counts as there.
+  theirs <- vapply(workflows, function(workflow) {
+    paste0(workflow$meta$Type, "_", workflow$meta$ID)
+  }, character(1))
+  workflows <- workflows[vapply(workflows, function(workflow) {
+    all(names(workflow$spec) %in% c(names(mapped), theirs))
+  }, logical(1))]
+  made <- tryCatch(
+    suppressWarnings(suppressMessages(workr::RunWorkflows(workflows, c(mapped, list(
+      lAnalyzed = metrics$analyzed, lWorkflows = metrics$ran,
+      dSnapshotDate = as.Date(snapshot_date)
+    ))))),
+    error = function(e) e
+  )
+  if (inherits(made, "error")) {
+    return(list(tables = list(), notes = paste0("gsm's reporting workflows stopped: ", conditionMessage(made))))
+  }
+  tables <- list()
+  for (workflow in workflows) {
+    name <- paste0(workflow$meta$Type, "_", workflow$meta$ID)
+    if (!is.data.frame(made[[name]])) next
+    # What it read: the tables its spec names, and every metric's analysis
+    # where it binds them.
+    reads_metrics <- any(grepl(
+      "lAnalyzed|lWorkflows", unlist(lapply(workflow$steps, function(step) step$params))
+    ))
+    tables[[length(tables) + 1]] <- .builder_table(made[[name]], list(
+      id = workflow$meta$ID, table = name, name = paste0(name, ".csv"), layer = layer$id,
+      description = workflow$meta$Description,
+      made = list(
+        workflow = name,
+        from = as.list(c(names(workflow$spec), if (reads_metrics) names(metrics$analyzed)))
+      )
+    ))
+  }
+  list(tables = tables, notes = character(0))
+}
 
 #' Simulate one study and return its domains.
 #'
@@ -350,11 +404,22 @@ builder_vital_signs <- list(
 #' @param vitals The path of gsm.mapping's vital signs mapping workflow
 #'   (VS.yaml), whose spec gsm.datasim's vital signs generator is given.
 #'   Needed when `domains` holds "VS".
-#' @param standard Whether the standard files are made as well.
+#' @param layers The layers wanted besides raw: "raw.rbqm" (gsm's mapped
+#'   tables), "adam", "analysis" and "reporting". A layer made from
+#'   another brings it.
+#' @param workflows The folder that holds study.builder's own workflows (its
+#'   `adam` and `analysis` folders). Needed when `layers` holds "adam".
+#' @param kri,reporting The folders that hold the copies of gsm.kri's metric
+#'   workflows and gsm.reporting's reporting workflows. Needed for the
+#'   analysis and the reporting layer.
 #' @return A list: `study_id`, `snapshot_date`, `snapshots`, `seconds`,
-#'   `simulator` (gsm.datasim's version), `notes`, `domains`, one entry per
-#'   raw table with its `id`, `table`, `name`, `rows`, `columns` and `text`,
-#'   and `standard`, the same for each standard file with its `mapping`.
+#'   `simulator` (gsm.datasim's version), `packages` (the version of each
+#'   package that had a hand in it), `notes`, and `layers`: raw first, then
+#'   each layer asked for, each with its `id`, its `label` and its `tables`.
+#'   A table has its `id`, `table`, `name`, `layer`, `rows`, `columns` and
+#'   `text`; a table built off raw also has `made` (the workflow and the
+#'   tables it read) and, where its workflow says, a `mapping` line for each
+#'   column.
 builder_run <- function(
   simulator,
   study_name = "BUILT-001",
@@ -367,7 +432,10 @@ builder_run <- function(
   seed = NULL,
   domains = NULL,
   vitals = NULL,
-  standard = TRUE
+  layers = c("raw.rbqm", "adam", "analysis", "reporting"),
+  workflows = NULL,
+  kri = NULL,
+  reporting = NULL
 ) {
   participants <- .builder_whole(participants, "Participants", builder_limits$participants)
   sites <- .builder_whole(sites, "Sites", builder_limits$sites)
@@ -428,6 +496,7 @@ builder_run <- function(
     stop("gsm.datasim did not make ", paste(missing, collapse = ", "), ".", call. = FALSE)
   }
   snapshot <- .builder_gsm_names(snapshot[made], vitals_spec)
+  renames <- lapply(snapshot, function(table) attr(table, "renamed"))
   snapshot <- lapply(snapshot, function(table) {
     table <- as.data.frame(table, stringsAsFactors = FALSE)
     if ("invid" %in% names(table)) table$invid <- .builder_site_id(table$invid)
@@ -442,31 +511,86 @@ builder_run <- function(
 
   raw <- lapply(made, function(table) {
     .builder_table(snapshot[[table]], list(
-      id = sub("^Raw_", "", table), table = table, name = paste0(table, ".csv")
+      id = sub("^Raw_", "", table), table = table, name = paste0(table, ".csv"), layer = "raw",
+      made = list(workflow = "gsm.datasim", from = list()),
+      renamed = lapply(names(renames[[table]]), function(column) {
+        list(column = column, was = unname(renames[[table]][[column]]))
+      })
     ))
   })
+  out <- list(list(id = "raw", label = "Raw", tables = raw))
+  notes <- builder_notes
 
-  files <- list()
-  if (isTRUE(standard)) {
-    subject <- .builder_subject(snapshot$Raw_SUBJ)
-    day_one <- .builder_day_one(snapshot$Raw_SUBJ)
-    files <- list(.builder_table(subject, list(
-      id = "subject", name = "adsl.csv", label = "Subject-level", from = list("SUBJ"),
-      mapping = .builder_subject_mapping
-    )))
-    if ("Raw_AE" %in% made) {
-      files <- c(files, list(.builder_table(.builder_events(snapshot$Raw_AE, day_one), list(
-        id = "ae", name = "adae.csv", label = "Adverse events", from = list("AE", "SUBJ"),
-        mapping = .builder_events_mapping
-      ))))
-    }
-    if (with_vitals) {
-      files <- c(files, list(.builder_table(.builder_results(snapshot$Raw_VS, subject, day_one), list(
-        id = "bds", name = "advs.csv", label = "Labs and vitals", from = list("VS", "SUBJ"),
-        mapping = .builder_results_mapping
-      ))))
-    }
+  # "raw" may be named among them and asks for nothing more: a page always
+  # names it, so that a study of raw alone is not asked for with an empty list.
+  wanted_layers <- setdiff(as.character(unlist(layers)), "raw")
+  unknown_layers <- setdiff(wanted_layers, vapply(builder_layers, function(layer) layer$id, character(1)))
+  if (length(unknown_layers)) {
+    stop("Not a layer study.builder makes: ", paste(unknown_layers, collapse = ", "), ".", call. = FALSE)
   }
+  # A layer made from another brings it.
+  repeat {
+    more <- unique(unlist(builder_layer_needs[intersect(names(builder_layer_needs), wanted_layers)]))
+    if (all(more %in% wanted_layers)) break
+    wanted_layers <- union(wanted_layers, more)
+  }
+  data <- snapshot
+  metrics <- NULL
+  for (layer in builder_layers) {
+    if (!(layer$id %in% wanted_layers)) next
+    if (layer$id == "raw.rbqm") {
+      # gsm's own mapping workflows for the domains made, the one that lists
+      # countries from them, and the vital signs one handed in.
+      found <- suppressMessages(workr::MakeWorkflowList(
+        strPath = "workflow/1_mappings", strPackage = "gsm.mapping",
+        strNames = c(sub("^Raw_", "", made), "COUNTRY")
+      ))
+      if (with_vitals) {
+        found <- c(found, suppressMessages(workr::MakeWorkflowList(
+          strPath = dirname(vitals), strPackage = NULL
+        )))
+      }
+      built <- .builder_layer(layer, found, data)
+    } else if (layer$id == "adam") {
+      if (is.null(workflows)) stop("The ADaM layer needs study.builder's workflows (workflows).", call. = FALSE)
+      found <- suppressMessages(workr::MakeWorkflowList(
+        strPath = file.path(workflows, "adam"), strPackage = NULL
+      ))
+      built <- .builder_layer(layer, found, data)
+    } else if (layer$id == "analysis") {
+      if (is.null(kri) || is.null(workflows)) {
+        stop("The analysis layer needs gsm.kri's workflows (kri) and study.builder's (workflows).", call. = FALSE)
+      }
+      metrics <- .builder_metrics(layer, kri, data)
+      own <- .builder_layer(layer, suppressMessages(workr::MakeWorkflowList(
+        strPath = file.path(workflows, "analysis"), strPackage = NULL
+      )), data)
+      built <- list(
+        tables = c(metrics$tables, own$tables), notes = c(metrics$notes, own$notes), data = own$data
+      )
+    } else {
+      if (is.null(reporting) || is.null(kri)) {
+        stop("The reporting layer needs gsm.reporting's workflows (reporting) and gsm.kri's (kri).", call. = FALSE)
+      }
+      built <- .builder_reporting(
+        layer, reporting, file.path(kri, "R", "util-Report.R"), data, metrics, dates[length(dates)]
+      )
+      built$data <- list()
+    }
+    notes <- c(notes, built$notes)
+    # What a layer made is there for the layers after it.
+    for (name in names(built$data)) if (is.data.frame(built$data[[name]])) data[[name]] <- built$data[[name]]
+    out[[length(out) + 1]] <- list(id = layer$id, label = layer$label, tables = built$tables)
+  }
+
+  versions <- c(
+    list(gsm.datasim = version),
+    lapply(
+      stats::setNames(nm = c("gsm.mapping", "gsm.core", "gsm.reporting", "workr")),
+      function(package) as.character(utils::packageVersion(package))
+    ),
+    list(R = paste(R.version$major, R.version$minor, sep = "."))
+  )
 
   list(
     study_id = as.character(study$study_id),
@@ -474,8 +598,8 @@ builder_run <- function(
     snapshots = length(dates),
     seconds = round(as.numeric(difftime(Sys.time(), started, units = "secs")), 1),
     simulator = version,
-    notes = as.list(builder_notes),
-    domains = raw,
-    standard = files
+    packages = versions,
+    notes = as.list(notes),
+    layers = out
   )
 }

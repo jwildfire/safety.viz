@@ -129,7 +129,7 @@ export async function buildDemoAppDir(outDir, { links, site = '../' } = {}) {
     mkdirSync(path.dirname(served), { recursive: true });
     copyFileSync(path.join(rootDir, entry.file), served);
   }
-  // study.builder, for the Build a study tab: its bundle and the files its R
+  // study.builder, for the Build a study source: its bundle and the files its R
   // reads, served in a folder of their own beside the app.
   for (const entry of builderFiles()) {
     const served = path.join(outDir, entry.served);
