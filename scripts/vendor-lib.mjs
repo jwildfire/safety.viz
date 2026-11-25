@@ -217,6 +217,7 @@ export const STUDY_BUILDER = {
   label: 'bundle',
   repository: 'https://github.com/jwildfire/study.builder',
   directory: 'site/vendor/study.builder',
+  tag: 'v0.1.0',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },

@@ -221,6 +221,8 @@ describe('the copy of study.builder', () => {
     const record = readRecord(directory);
     expect(record.repository).toBe(STUDY_BUILDER.repository);
     expect(record.commit).toMatch(/^[0-9a-f]{40}$/);
+    expect(record.tag).toBe(STUDY_BUILDER.tag);
+    expect(record.version).toBe(STUDY_BUILDER.tag.replace(/^v/, ''));
     expect(record.files.map((entry) => entry.file).sort()).toEqual(
       STUDY_BUILDER.files.map((entry) => entry.file).sort()
     );

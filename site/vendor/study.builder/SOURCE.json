@@ -1,12 +1,12 @@
 {
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
-  "ref": "main",
-  "commit": "4d5f8954dc766b74c23655428c117fa8417e54f4",
+  "ref": "v0.1.0",
+  "commit": "30467c4681d50e38970d4d2f49982d6f78c8d621",
   "version": "0.1.0",
   "license": "Apache-2.0",
+  "tag": "v0.1.0",
   "merged_to_dev": false,
-  "note": "study.builder has no dev branch: this is the head of main before its v0.1.0 tag. Copy again from the tag when it is released.",
   "files": [
     {
       "file": "study.builder.js",
