@@ -166,7 +166,8 @@ describe('the Studies view', () => {
     });
     await app.loadDemo('one');
     app.select(STUDIES_VIEW_ID);
-    expect(q(`[data-tab="${STUDIES_VIEW_ID}"] .sva-tab-count`).textContent).toBe('3');
+    // The Studies view has no tab of its own: the chip leads to it.
+    expect(q(`[data-tab="${STUDIES_VIEW_ID}"]`)).toBeNull();
     const rows = [...document.querySelectorAll('.sva-studies-row[data-study]')];
     expect(rows.map((row) => row.dataset.study)).toEqual(['demo:one', 'demo:two', 'preset:a']);
     expect(rows[0].dataset.current).toBe('true');

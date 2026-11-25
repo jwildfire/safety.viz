@@ -671,6 +671,9 @@ export function mountApp(
     // A library's view (#235): a tab after the domains', with what the view
     // says of itself where a domain's tab counts its charts.
     for (const [id, view] of views) {
+      // A view reached some other way than a tab has none: the Studies view,
+      // which the study chip leads to.
+      if (view.tab === false) continue;
       const tab = paint(
         el('button', 'sva-tab sva-view-tab sva-library-group'),
         viewLibrary.get(id)
@@ -1196,7 +1199,7 @@ export function mountApp(
     state.focus = null;
     state.source = null;
     state.named = null;
-    state.exploring = isRecord(viewer);
+    // The face of the data view a reader chose stays chosen across studies.
     state.viewing = null;
   }
 

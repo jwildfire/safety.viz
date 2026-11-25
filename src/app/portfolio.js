@@ -165,6 +165,8 @@ export function studiesView() {
   return {
     id: STUDIES_VIEW_ID,
     title: 'Studies',
+    // Reached from the study chip, not from a tab of its own: the header's one row is full.
+    tab: false,
     tag: (app) => String(app.portfolio().studies.length),
     render(container, app) {
       const said = app.portfolio();

@@ -386,6 +386,8 @@ test.describe('docs site', () => {
     await expect(tab.locator('.sva-tab-title')).toHaveText('RBQM');
     await expect(tab.locator('.sva-badge')).toHaveCount(0);
     await page.locator('.sva-item[data-view="data"]').click();
+    // The demo page's data view opens on the viewer; the files one by one are its other face.
+    await page.locator('.sva-face[data-action="files"]').click();
     await page.locator('.sva-side select.sva-study').selectOption('rbqm');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
     await tab.click();
@@ -507,8 +509,10 @@ test.describe('docs site', () => {
     // A file of the user's own, named and filled in Greek, Cyrillic and
     // accented Latin: a subsetted web font would fetch more of itself now.
     const after = [];
-    page.on('request', record(after));
     await page.locator('.sva-item[data-view="data"]').click();
+    // The demo page's data view opens on the viewer; the files one by one are its other face.
+    await page.locator('.sva-face[data-action="files"]').click();
+    page.on('request', record(after));
     const rows = ['01', '02', '03'].flatMap((id) => [
       `${id},Креатинин,80,μmol/L,60,110,Wizyta Łódź 1,1,1,Ασθενής,01,F,WHITE`,
       `${id},Alanine Aminotransferase,20,U/L,5,40,Wizyta Łódź 1,1,1,Ασθενής,01,F,WHITE`
@@ -585,6 +589,8 @@ test.describe('docs site', () => {
     });
     await page.goto('/_site/demo/index.html#data');
     await page.evaluate('window.__safetyVizApp.ready');
+    // The demo page's data view opens on the viewer; the files one by one are its other face.
+    await page.locator('.sva-face[data-action="files"]').click();
     const menu = page.locator('.sva-side select.sva-study');
     await expect(menu).toHaveValue('pilot');
     for (const [study, files] of [
