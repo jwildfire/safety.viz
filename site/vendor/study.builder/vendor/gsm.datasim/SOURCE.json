@@ -1,11 +1,10 @@
 {
   "source": "gsm.datasim R source",
-  "repository": "https://github.com/Gilead-Public/gsm.datasim",
-  "ref": "v2.1.0",
-  "commit": "29fc61c1ca83ceaf38c4c2ba54613872aa5a1d66",
+  "repository": "https://github.com/jwildfire/gsm.datasim",
+  "ref": "safety-results-2.1",
+  "commit": "35607af8cf8ba3a32312509912a938e37ca4949b",
   "version": "2.1.0",
   "license": "Apache License (>= 2)",
-  "tag": "v2.1.0",
   "merged_to_dev": false,
   "files": [
     {
@@ -161,8 +160,20 @@
     {
       "file": "R/create_longitudinal_study.R",
       "source": "R/create_longitudinal_study.R",
-      "sha256": "8a0925fe8fac17792920d10a32bd255a8a3eb722b3f8802f0618622c0df8737e",
-      "bytes": 30362
+      "sha256": "e140c2822a497dc709b296df5dedcf19cb91ea4aba94072062498240dc9f8a02",
+      "bytes": 31557
+    },
+    {
+      "file": "R/study_design.R",
+      "source": "R/study_design.R",
+      "sha256": "4f996cb0683e6fcb411903f469196bd7921cbbbb5403d6d7c75384f3d2a65451",
+      "bytes": 12604
+    },
+    {
+      "file": "R/study_results.R",
+      "source": "R/study_results.R",
+      "sha256": "c102e825b15fe290cdd85fff8583e47d31c0eac12eca5b03e5fad0e792f39516",
+      "bytes": 13613
     },
     {
       "file": "R/create_snapshot_reports.R",
@@ -278,5 +289,11 @@
       "sha256": "aceb00c59753ef901ff0d57d5a7ed03f91bdc52245eb69992890322489bba194",
       "bytes": 10468
     }
-  ]
+  ],
+  "upstream": {
+    "repository": "https://github.com/Gilead-Public/gsm.datasim",
+    "tag": "v2.1.0",
+    "commit": "29fc61c1ca83ceaf38c4c2ba54613872aa5a1d66"
+  },
+  "note": "A staging copy of gsm.datasim under jwildfire: v2.1.0 with two features added, a study design (R/study_design.R) and study results (R/study_results.R: treatment arms, lab results and ECGs), each an argument of create_longitudinal_study. It is here so study.builder makes no data itself. Not yet raised with gsm.datasim's maintainers."
 }

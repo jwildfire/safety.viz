@@ -220,7 +220,7 @@ export const STUDY_BUILDER = {
   directory: 'site/vendor/study.builder',
   // The release the copy is made from: a candidate of v0.3.0, until that is
   // released. Move this to v0.3.0 then, and copy again.
-  tag: 'v0.3.0-rc.5',
+  tag: 'v0.3.0-rc.7',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },
@@ -254,6 +254,8 @@ export const STUDY_BUILDER = {
       'Raw_gilda_STUDY',
       'column_type_generator',
       'create_longitudinal_study',
+      'study_design',
+      'study_results',
       'create_snapshot_reports',
       'domain_registry',
       'endpoints_domains_helper',
@@ -293,6 +295,8 @@ export const STUDY_BUILDER = {
     'vendor/gsm.reporting/workflow/3_reporting/Metrics.yaml',
     'vendor/gsm.reporting/SOURCE.json',
     'workflows/adam/ADAE.yaml',
+    'workflows/adam/ADEG.yaml',
+    'workflows/adam/ADLB.yaml',
     'workflows/adam/ADSL.yaml',
     'workflows/adam/ADVS.yaml',
     'workflows/analysis/AESummary.yaml',

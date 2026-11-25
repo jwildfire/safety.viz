@@ -261,7 +261,7 @@ describe('the page and the source agree', () => {
     );
     expect(
       files.filter((entry) => /study\.builder\/vendor\/gsm\.datasim\/R\/.+\.R$/.test(entry.served))
-    ).toHaveLength(41);
+    ).toHaveLength(43);
     expect(
       files.filter((entry) =>
         /study\.builder\/vendor\/gsm\.kri\/workflow\/.+\.yaml$/.test(entry.served)

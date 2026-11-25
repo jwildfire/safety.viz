@@ -32,8 +32,17 @@ spec:
       type: numeric
     resp:
       type: numeric
+  Raw_VISIT:
+    subjid:
+      type: character
+    visit:
+      type: character
+    visit_dt:
+      type: Date
   ADaM_ADSL:
     USUBJID:
+      type: character
+    ARM:
       type: character
     SITEID:
       type: character
@@ -48,14 +57,19 @@ steps:
     name: workr::RunQuery
     params:
       df: ADaM_ADSL
-      strQuery: 'SELECT USUBJID AS subjid, SITEID, SEX, RACE, TRTSDT FROM df'
+      strQuery: 'SELECT USUBJID AS subjid, ARM, SITEID, SEX, RACE, TRTSDT FROM df'
   - output: Temp_VisitOrder
     name: workr::RunQuery
     params:
-      df: Raw_VS
-      strQuery: 'SELECT visit, CAST(ROW_NUMBER() OVER (ORDER BY MIN(vs_dt)) - 1 AS INTEGER) AS VISITNUM FROM df GROUP BY visit'
+      df: Raw_VISIT
+      strQuery: 'SELECT visit, CAST(ROW_NUMBER() OVER (ORDER BY MIN(visit_dt), visit) - 1 AS INTEGER) AS VISITNUM FROM df GROUP BY visit'
+  - output: Temp_VisitDate
+    name: workr::RunQuery
+    params:
+      df: Raw_VISIT
+      strQuery: 'SELECT subjid, visit, MIN(CAST(visit_dt AS DATE)) AS visit_dt FROM df GROUP BY subjid, visit'
   - output: Temp_VS
-    name: dplyr::left_join
+    name: dplyr::inner_join
     params:
       x: Raw_VS
       'y': Temp_Subject
@@ -66,11 +80,17 @@ steps:
       x: Temp_VS
       'y': Temp_VisitOrder
       by: visit
+  - output: Temp_VSDated
+    name: dplyr::left_join
+    params:
+      x: Temp_VSOrdered
+      'y': Temp_VisitDate
+      by: [subjid, visit]
   - output: ADaM_ADVS
     name: workr::RunQuery
     params:
-      df: Temp_VSOrdered
-      strQuery: "SELECT subjid AS USUBJID, 'All participants' AS ARM, SITEID, SEX, RACE, visit AS VISIT, VISITNUM, CASE vital WHEN 'weight' THEN 'Weight' WHEN 'height' THEN 'Height' WHEN 'bsa' THEN 'Body surface area' WHEN 'sysbp' THEN 'Systolic blood pressure' WHEN 'diabp' THEN 'Diastolic blood pressure' WHEN 'pulse' THEN 'Pulse' WHEN 'temp' THEN 'Temperature' ELSE 'Respiratory rate' END AS TEST, CASE vital WHEN 'weight' THEN 'kg' WHEN 'height' THEN 'cm' WHEN 'bsa' THEN 'm2' WHEN 'sysbp' THEN 'mmHg' WHEN 'diabp' THEN 'mmHg' WHEN 'pulse' THEN 'beats/min' WHEN 'temp' THEN 'C' ELSE 'breaths/min' END AS STRESU, STRESN, CAST(CASE WHEN vs_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(vs_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(vs_dt AS DATE)) END AS INTEGER) AS DY FROM (UNPIVOT (SELECT subjid, SITEID, SEX, RACE, visit, VISITNUM, vs_dt, TRTSDT, CAST(weight AS DOUBLE) AS weight, CAST(height AS DOUBLE) AS height, CAST(bsa AS DOUBLE) AS bsa, CAST(sysbp AS DOUBLE) AS sysbp, CAST(diabp AS DOUBLE) AS diabp, CAST(pulse AS DOUBLE) AS pulse, CAST(temp AS DOUBLE) AS temp, CAST(resp AS DOUBLE) AS resp FROM df) ON weight, height, bsa, sysbp, diabp, pulse, temp, resp INTO NAME vital VALUE STRESN) ORDER BY TEST, USUBJID, VISITNUM"
+      df: Temp_VSDated
+      strQuery: "SELECT subjid AS USUBJID, ARM, SITEID, SEX, RACE, visit AS VISIT, VISITNUM, CASE vital WHEN 'weight' THEN 'Weight' WHEN 'height' THEN 'Height' WHEN 'bsa' THEN 'Body surface area' WHEN 'sysbp' THEN 'Systolic blood pressure' WHEN 'diabp' THEN 'Diastolic blood pressure' WHEN 'pulse' THEN 'Pulse' WHEN 'temp' THEN 'Temperature' ELSE 'Respiratory rate' END AS TEST, CASE vital WHEN 'weight' THEN 'kg' WHEN 'height' THEN 'cm' WHEN 'bsa' THEN 'm2' WHEN 'sysbp' THEN 'mmHg' WHEN 'diabp' THEN 'mmHg' WHEN 'pulse' THEN 'beats/min' WHEN 'temp' THEN 'C' ELSE 'breaths/min' END AS STRESU, STRESN, CAST(NULL AS DOUBLE) AS STNRLO, CAST(NULL AS DOUBLE) AS STNRHI, CAST(CASE WHEN vs_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(vs_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(vs_dt AS DATE)) END AS INTEGER) AS DY FROM (UNPIVOT (SELECT subjid, ARM, SITEID, SEX, RACE, visit, VISITNUM, COALESCE(visit_dt, CAST(vs_dt AS DATE)) AS vs_dt, TRTSDT, CAST(weight AS DOUBLE) AS weight, CAST(height AS DOUBLE) AS height, CAST(bsa AS DOUBLE) AS bsa, CAST(sysbp AS DOUBLE) AS sysbp, CAST(diabp AS DOUBLE) AS diabp, CAST(pulse AS DOUBLE) AS pulse, CAST(temp AS DOUBLE) AS temp, CAST(resp AS DOUBLE) AS resp FROM df) ON weight, height, bsa, sysbp, diabp, pulse, temp, resp INTO NAME vital VALUE STRESN) ORDER BY TEST, USUBJID, VISITNUM"
 columns:
   USUBJID:
     label: Unique Subject Identifier
@@ -78,8 +98,8 @@ columns:
     how: Copied
   ARM:
     label: Description of Planned Arm
-    from: ''
-    how: "A label of study.builder's: gsm.datasim makes no treatment arms"
+    from: ADSL.ARM
+    how: Joined from the participant's row
   SITEID:
     label: Study Site Identifier
     from: ADSL.SITEID
@@ -98,7 +118,7 @@ columns:
     how: Copied
   VISITNUM:
     label: Visit Number
-    from: Raw_VS.vs_dt
+    from: Raw_VISIT.visit_dt
     how: "Derived: the visit's place in the order of first visit dates across the study"
   TEST:
     label: Test Name
@@ -112,7 +132,15 @@ columns:
     label: Numeric Result in Standard Units
     from: 'Raw_VS: weight, height, bsa, sysbp, diabp, pulse, temp, resp'
     how: 'Reshaped: one row for each vital sign that was taken'
+  STNRLO:
+    label: Reference Range Lower Limit
+    from: ''
+    how: 'Empty: a vital sign has no normal range here. The column is kept so vital signs and labs stack'
+  STNRHI:
+    label: Reference Range Upper Limit
+    from: ''
+    how: 'Empty: a vital sign has no normal range here. The column is kept so vital signs and labs stack'
   DY:
     label: Study Day
-    from: Raw_VS.vs_dt, ADSL.TRTSDT
-    how: 'Derived: the date less day one, plus one; a day before day one counts back from -1'
+    from: Raw_VISIT.visit_dt, ADSL.TRTSDT
+    how: "Derived: the date of the participant's visit less day one, plus one; a day before day one counts back from -1"

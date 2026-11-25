@@ -1,18 +1,18 @@
 {
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
-  "ref": "v0.3.0-rc.5",
-  "commit": "98e2a479263b40d97928bd33155ae642f062b0c8",
-  "version": "0.3.0-rc.5",
+  "ref": "v0.3.0-rc.7",
+  "commit": "dba270713d5f08d6a7ea2fe265c270d675a76765",
+  "version": "0.3.0-rc.7",
   "license": "Apache-2.0",
-  "tag": "v0.3.0-rc.5",
+  "tag": "v0.3.0-rc.7",
   "merged_to_dev": false,
   "files": [
     {
       "file": "study.builder.js",
       "source": "dist/study.builder.js",
-      "sha256": "af08663ca307aabcc20b4477df0eb736f89dbfbac8f21fc49b2ae3eb437d3262",
-      "bytes": 101023
+      "sha256": "c16ff7eafd812d3ee446a6d2e1121a87b35600936013ba4582516fbda97345b3",
+      "bytes": 103182
     },
     {
       "file": "study.viewer.js",
@@ -23,8 +23,8 @@
     {
       "file": "r/builder.R",
       "source": "r/builder.R",
-      "sha256": "0daa2802199f4e6bf0cdeb51bf1856a04968273bf6b1aad9dd2100559766c0f3",
-      "bytes": 33568
+      "sha256": "702660c71be8c0ba57e4e9b5d23b2cbb6ed643a6584eb1ae443daf7d1da0a0fe",
+      "bytes": 29850
     },
     {
       "file": "vendor/gsm.datasim/R/Raw_AE.R",
@@ -179,8 +179,20 @@
     {
       "file": "vendor/gsm.datasim/R/create_longitudinal_study.R",
       "source": "vendor/gsm.datasim/R/create_longitudinal_study.R",
-      "sha256": "8a0925fe8fac17792920d10a32bd255a8a3eb722b3f8802f0618622c0df8737e",
-      "bytes": 30362
+      "sha256": "e140c2822a497dc709b296df5dedcf19cb91ea4aba94072062498240dc9f8a02",
+      "bytes": 31557
+    },
+    {
+      "file": "vendor/gsm.datasim/R/study_design.R",
+      "source": "vendor/gsm.datasim/R/study_design.R",
+      "sha256": "4f996cb0683e6fcb411903f469196bd7921cbbbb5403d6d7c75384f3d2a65451",
+      "bytes": 12604
+    },
+    {
+      "file": "vendor/gsm.datasim/R/study_results.R",
+      "source": "vendor/gsm.datasim/R/study_results.R",
+      "sha256": "c102e825b15fe290cdd85fff8583e47d31c0eac12eca5b03e5fad0e792f39516",
+      "bytes": 13613
     },
     {
       "file": "vendor/gsm.datasim/R/create_snapshot_reports.R",
@@ -299,8 +311,8 @@
     {
       "file": "vendor/gsm.datasim/SOURCE.json",
       "source": "vendor/gsm.datasim/SOURCE.json",
-      "sha256": "dde88ae5173ecde824b1803e944af486c8f82ce987517399e5b11811cc26877d",
-      "bytes": 8878
+      "sha256": "d4457f562029820ea2d28fb42de3d355a8f6f76727644ad8498b0068e67703a1",
+      "bytes": 9757
     },
     {
       "file": "vendor/gsm.mapping-vitals/workflow/1_mappings/VS.yaml",
@@ -407,20 +419,32 @@
     {
       "file": "workflows/adam/ADAE.yaml",
       "source": "workflows/adam/ADAE.yaml",
-      "sha256": "ee1bde102d6e89b296c94b06886385e7f45a2c7cbf0857b077519e2fde43db6a",
-      "bytes": 2883
+      "sha256": "fc74f541da8ec1b61b6678deb2ca12e0884ec9f0e7223f1bce5633124ceb5a53",
+      "bytes": 2872
+    },
+    {
+      "file": "workflows/adam/ADEG.yaml",
+      "source": "workflows/adam/ADEG.yaml",
+      "sha256": "309878b656bd2dd4f7911970cdd1030611739a3ab5e9538ac8382b6f199ff6df",
+      "bytes": 4089
+    },
+    {
+      "file": "workflows/adam/ADLB.yaml",
+      "source": "workflows/adam/ADLB.yaml",
+      "sha256": "a18531b4b342f250d494dfb93fdfe65ecfceafed86a816f133a5b6b4790cd4af",
+      "bytes": 3987
     },
     {
       "file": "workflows/adam/ADSL.yaml",
       "source": "workflows/adam/ADSL.yaml",
-      "sha256": "00ed00126e0ebba1b46b865674af399544ed9da576b759ab3621961038f44221",
-      "bytes": 1723
+      "sha256": "a5756234c1624a56c04f3e9509b5159f1abd9bd4aa3144bd6633797d3ce3ff0f",
+      "bytes": 1921
     },
     {
       "file": "workflows/adam/ADVS.yaml",
       "source": "workflows/adam/ADVS.yaml",
-      "sha256": "20cd6a2c639d9a47f766d84d34e95145cdf3271f83ce70b8350036e3c4ed6a43",
-      "bytes": 4129
+      "sha256": "edd4ce56ed4f44014bc83b5d62cbe287bf5134009aae518f80590d001144463f",
+      "bytes": 5063
     },
     {
       "file": "workflows/analysis/AESummary.yaml",
@@ -437,20 +461,20 @@
     {
       "file": "presets/index.json",
       "source": "presets/index.json",
-      "sha256": "c96784c923491b056f33f09b368806ac6f3e67a5e442fd6c621e895db1d16bad",
-      "bytes": 18109
+      "sha256": "6b37422f3a6be19dd5fc0b3585c77ea88e9d40e48255d45039dc6b2a541632e4",
+      "bytes": 18107
     },
     {
       "file": "presets/phase1-small.study.json.gz",
       "source": "presets/phase1-small.study.json.gz",
-      "sha256": "02e05a4f470729ef58fca214783f27937b2aae39602454b1c0ba0e6eb520899d",
-      "bytes": 388400
+      "sha256": "8d79c2896197ad28fe8a26d44d4735b77d98c859eff6b883f02001798090a9d2",
+      "bytes": 581181
     },
     {
       "file": "presets/phase2-oncology.study.json.gz",
       "source": "presets/phase2-oncology.study.json.gz",
-      "sha256": "2da70ebfa4a77365239168fe76ba257a49caa84bfc559f7a0cb9ae60c404f314",
-      "bytes": 1143768
+      "sha256": "aa969de150573348f9f944a406e7b0076d1c38572bc1ea4fb93f10d3a78f80d1",
+      "bytes": 2027587
     },
     {
       "file": "LICENSE",

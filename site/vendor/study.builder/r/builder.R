@@ -35,13 +35,14 @@ builder_core <- c("STUDY", "SITE", "SUBJ", "ENROLL")
 
 # The domains a study may be asked to hold besides, by gsm's name for each.
 # VS is made by gsm.datasim's own generator from a spec handed in (`vitals`).
+# EG (ECGs) is made by gsm.datasim's study results, with the arms and lab results.
 builder_optional <- c(
-  "VISIT", "AE", "LB", "VS", "PD", "STUDCOMP", "SDRGCOMP", "IE", "PK",
+  "VISIT", "AE", "LB", "VS", "EG", "PD", "STUDCOMP", "SDRGCOMP", "IE", "PK",
   "Randomization", "OverallResponse", "Death", "QUERY", "DATAENT", "DATACHG"
 )
 
 # A domain that needs another: gsm.datasim makes each from the other's rows.
-builder_needs <- list(VS = "VISIT", OverallResponse = "VISIT", Death = "STUDCOMP")
+builder_needs <- list(VS = "VISIT", EG = "VISIT", OverallResponse = "VISIT", Death = "STUDCOMP")
 
 # What a study may be asked to hold. The page holds the same limits.
 builder_limits <- list(
@@ -53,6 +54,7 @@ builder_limits <- list(
 
 # What was changed in the raw tables, one sentence each.
 builder_notes <- c(
+  "Arms, lab results and ECGs are gsm.datasim's study results: a lab's toxicity grade is not worked out from its result, and adverse events do not follow the arm.",
   "Columns gsm.datasim names as the source system does are given gsm's names, as gsm.mapping's specs say.",
   "Site ids are written SITE1234 where gsm.datasim writes 0X1234, which R would read back from a file as a number.",
   "The study table's phase and therapeutic area are what was asked for. gsm.datasim does not shape the data by either."
@@ -133,6 +135,20 @@ builder_load <- function(simulator) {
   c(more, list(rows = nrow(table), columns = columns, text = .builder_csv(table)))
 }
 
+# ==== TO MOVE TO gsm.datasim: begin ====
+#
+# study.builder makes no data: every row is gsm.datasim's. Everything between
+# this line and the matching "end" breaks that rule today, and is here only
+# until gsm.datasim does it itself. Nothing that makes or changes a table may
+# be written outside this fence (tests/architecture.test.js holds that), and
+# nothing new is added inside it.
+#
+#   Piece               What it does here                         Leaves when gsm.datasim
+#   .builder_gsm_names  renames columns to gsm's names            emits gsm's names
+#   .builder_site_id    rewrites site ids R reads as numbers      makes ids that survive a CSV
+#   .builder_study      writes phase and area over random ones    takes them as arguments
+#   .builder_vitals     calls the vitals generator by hand        makes vitals when asked for a study
+
 # Each raw table under gsm's column names, as the spec of the mapping workflows
 # installed with gsm.mapping says, and the spec handed in for vital signs.
 .builder_gsm_names <- function(tables, more = list()) {
@@ -188,158 +204,26 @@ builder_load <- function(simulator) {
   as.data.frame(generate_domain_from_registry("Raw_VS", context))
 }
 
-# ---- A protocol's schedule ----
-#
-# With a protocol, the visits, vital signs and labs follow its schedule of
-# activities in place of gsm.datasim's fixed list of eight visits. The protocol
-# arrives as text (JSON), with a plan study.builder's page worked out: each
-# visit's name, study day and window, whether vital signs are taken at it, and
-# the lab panels drawn at it.
-#
-# gsm.datasim's own tables are the source of everything but the schedule: each
-# participant keeps their own vital signs and their own lab grades, redrawn at
-# the protocol's visits, so a site that stood out still does.
-#
-# - A participant's day 1 is their first dose, else their enrolment.
-# - A visit is made when its day is within the participant's time on study and
-#   on or before the last date in the snapshot.
-# - A participant who was not enrolled has only the visits before day 1.
-# - A visit's date is its planned day, moved within its window.
-.builder_schedule <- function(snapshot, protocol) {
-  plan <- yaml::yaml.load(protocol)$plan
-  if (!length(plan)) stop("The protocol has no visits.", call. = FALSE)
-  subj <- snapshot$Raw_SUBJ
-  old_visit <- snapshot$Raw_VISIT
-  as_date <- function(x) as.Date(substr(as.character(x), 1, 10))
-  last <- suppressWarnings(max(as_date(old_visit$visit_dt), na.rm = TRUE))
-  day <- vapply(plan, function(visit) as.integer(visit$day), integer(1))
-  # A study day as days from day 1: day 1 is 0, day -1 is the day before.
-  offset <- ifelse(day > 0, day - 1L, day)
-  before <- vapply(plan, function(visit) as.integer(visit$before %||% 0L), integer(1))
-  after <- vapply(plan, function(visit) as.integer(visit$after %||% 0L), integer(1))
-  names_of <- vapply(plan, function(visit) as.character(visit$name), character(1))
-
-  first_of <- function(...) {
-    out <- as.Date(rep(NA_character_, nrow(subj)))
-    for (column in c(...)) {
-      if (column %in% names(subj)) {
-        value <- as_date(subj[[column]])
-        out[is.na(out)] <- value[is.na(out)]
-      }
-    }
-    out
+# The study table says the phase and the area the reader chose: gsm.datasim
+# draws both at random and takes neither as an argument.
+.builder_study <- function(study, phase, therapeutic_area) {
+  if (!is.null(phase) && "phase" %in% names(study)) study$phase <- as.character(phase)
+  if (!is.null(therapeutic_area) && "therapeutic_area" %in% names(study)) {
+    study$therapeutic_area <- as.character(therapeutic_area)
   }
-  enrolled <- !is.na(subj$enrollyn) & subj$enrollyn == "Y"
-  day_one <- first_of("firstdosedate", "enrolldt", "firstparticipantdate")
-  screened <- first_of("mincreated_dts", "firstparticipantdate")
-  on_study <- suppressWarnings(as.integer(subj$timeonstudy))
-  on_study[is.na(on_study)] <- .Machine$integer.max
-
-  rows <- lapply(seq_len(nrow(subj)), function(i) {
-    if (enrolled[i] && !is.na(day_one[i])) {
-      keep <- which(offset <= on_study[i])
-      anchor <- day_one[i]
-    } else {
-      # Screened and not enrolled: the visits before day 1, from the day they were screened.
-      keep <- which(day < 1)
-      if (is.na(screened[i]) || !length(keep)) return(NULL)
-      anchor <- screened[i] - min(offset[keep])
-    }
-    if (!length(keep)) return(NULL)
-    moved <- vapply(keep, function(k) {
-      if (before[k] + after[k] == 0L) 0L else sample(seq(-before[k], after[k]), 1L)
-    }, integer(1))
-    dates <- anchor + offset[keep] + moved
-    ok <- is.na(last) | dates <= last
-    if (!any(ok)) return(NULL)
-    data.frame(
-      subjid = subj$subjid[i], invid = subj$invid[i], at = keep[ok], date = dates[ok],
-      stringsAsFactors = FALSE
-    )
-  })
-  made <- do.call(rbind, rows)
-  if (is.null(made) || !nrow(made)) stop("The protocol's schedule gave no visits to this study.", call. = FALSE)
-
-  study_id <- old_visit$studyid[1]
-  visit <- data.frame(
-    studyid = study_id,
-    visit_dt = format(made$date, "%Y-%m-%d"),
-    visit = names_of[made$at],
-    instancename = names_of[made$at],
-    subjid = made$subjid,
-    invid = made$invid,
-    stringsAsFactors = FALSE
-  )
-  snapshot$Raw_VISIT <- visit[, intersect(names(old_visit), names(visit)), drop = FALSE]
-
-  # Vital signs: a participant's own, drawn again at each visit that takes them.
-  if ("Raw_VS" %in% names(snapshot)) {
-    old <- snapshot$Raw_VS
-    takes <- vapply(plan, function(one) isTRUE(one$vs), logical(1))
-    at <- made[takes[made$at], , drop = FALSE]
-    by_subj <- split(seq_len(nrow(old)), old$subjid)
-    pick <- vapply(at$subjid, function(id) {
-      own <- by_subj[[id]]
-      if (length(own)) own[sample.int(length(own), 1L)] else sample.int(nrow(old), 1L)
-    }, integer(1))
-    new <- old[pick, , drop = FALSE]
-    new$subjid <- at$subjid
-    new$vs_dt <- at$date
-    new$visit <- names_of[at$at]
-    rownames(new) <- NULL
-    snapshot$Raw_VS <- new
-  }
-
-  # Labs: at each visit, the panels the protocol draws there. A panel that
-  # lists its tests has those; one that lists none has gsm.datasim's tests of
-  # that panel, or one test of the panel's name. Each grade is one of the
-  # participant's own.
-  if ("Raw_LB" %in% names(snapshot)) {
-    old <- snapshot$Raw_LB
-    known <- unique(old[, c("battrnam", "lbtstnam")])
-    tests_of <- function(panel) {
-      listed <- as.character(unlist(panel$tests))
-      name <- as.character(panel$panel)
-      if (!length(listed)) {
-        match <- known$lbtstnam[grepl(name, known$battrnam, ignore.case = TRUE)]
-        listed <- if (length(match)) match else name
-      }
-      data.frame(battrnam = toupper(name), lbtstnam = listed, stringsAsFactors = FALSE)
-    }
-    panels <- lapply(plan, function(one) {
-      if (!length(one$lb)) return(NULL)
-      unique(do.call(rbind, lapply(one$lb, tests_of)))
-    })
-    grades <- split(as.character(old$toxgrg_nsv), old$subjid)
-    every <- as.character(old$toxgrg_nsv)
-    rows <- lapply(seq_len(nrow(made)), function(i) {
-      tests <- panels[[made$at[i]]]
-      if (is.null(tests)) return(NULL)
-      own <- grades[[made$subjid[i]]]
-      if (!length(own)) own <- every
-      data.frame(
-        studyid = study_id,
-        toxgrg_nsv = own[sample.int(length(own), nrow(tests), replace = TRUE)],
-        lb_dt = made$date[i],
-        battrnam = tests$battrnam,
-        lbtstnam = tests$lbtstnam,
-        subjid = made$subjid[i],
-        visnam = names_of[made$at[i]],
-        stringsAsFactors = FALSE
-      )
-    })
-    new <- do.call(rbind, rows)
-    if (is.null(new)) new <- old[0, , drop = FALSE]
-    snapshot$Raw_LB <- new[, intersect(names(old), names(new)), drop = FALSE]
-  }
-  list(
-    tables = snapshot,
-    note = paste0(
-      "Visits, vital signs and labs follow the protocol's schedule: ", length(plan),
-      " planned visits, ", nrow(snapshot$Raw_VISIT), " made. Arms and activities of no domain are not simulated."
-    )
-  )
+  study
 }
+
+# Every table's site ids, under a name R reads as text.
+.builder_site_ids <- function(tables) {
+  lapply(tables, function(table) {
+    table <- as.data.frame(table, stringsAsFactors = FALSE)
+    if ("invid" %in% names(table)) table$invid <- .builder_site_id(table$invid)
+    table
+  })
+}
+
+# ==== TO MOVE TO gsm.datasim: end ====
 
 # ---- The layers built off raw ----
 #
@@ -609,7 +493,7 @@ builder_run <- function(
     stop("The study needs a name.", call. = FALSE)
   }
   wanted <- if (is.null(domains)) {
-    c("VISIT", "AE", "LB", "VS", "PD", "STUDCOMP", "SDRGCOMP")
+    c("VISIT", "AE", "LB", "VS", "EG", "PD", "STUDCOMP", "SDRGCOMP")
   } else {
     setdiff(as.character(unlist(domains)), builder_core)
   }
@@ -627,6 +511,21 @@ builder_run <- function(
   version <- builder_load(simulator)
   if (!is.null(seed)) set.seed(.builder_whole(seed, "Seed", c(0L, .Machine$integer.max)))
 
+  # The protocol arrives as text, with the plan the page worked out: each
+  # visit's name, day and window, whether vital signs are taken, and the lab
+  # panels drawn. That plan is gsm.datasim's study design.
+  design <- NULL
+  arms <- NULL
+  if (!is.null(protocol)) {
+    if (!("VISIT" %in% wanted)) stop("A protocol's schedule needs the visits domain.", call. = FALSE)
+    read <- yaml::yaml.load(as.character(protocol))
+    design <- list(visits = read$plan)
+    arms <- as.character(unlist(read$arms))
+  }
+  # Arms, lab results and ECGs are gsm.datasim's to make: its `results`. The
+  # arms are the protocol's when there is one, and gsm.datasim's own otherwise.
+  results <- list(ecg = "EG" %in% wanted)
+  if (length(arms)) results$arms <- arms
   started <- Sys.time()
   study <- suppressMessages(create_longitudinal_study(
     study_id = gsub("[^A-Za-z0-9]", "-", toupper(trimws(study_name))),
@@ -634,15 +533,24 @@ builder_run <- function(
     sites = sites,
     snapshots = months,
     interval = "1 month",
-    domains = setdiff(wanted, "VS"),
+    domains = setdiff(wanted, c("VS", "EG")),
     run_analytics = FALSE,
     run_reporting = FALSE,
     outlier_intensity = intensity,
+    # A protocol's schedule is gsm.datasim's to follow: its `design`.
+    design = design,
+    results = results,
     verbose = FALSE
   ))
   dates <- names(study$raw_data)
   snapshot <- study$raw_data[[length(dates)]]
-  if (with_vitals) snapshot$Raw_VS <- .builder_vitals(snapshot, vitals_spec)
+  if (with_vitals) {
+    snapshot$Raw_VS <- .builder_vitals(snapshot, vitals_spec)
+    # The vital signs were made after the study, so they are put on its design here.
+    snapshot <- apply_study_design(snapshot, design)
+    # Putting the labs on the design again leaves their results to be worked out again.
+    snapshot <- apply_study_results(snapshot, results)
+  }
 
   made <- paste0("Raw_", c(builder_core, intersect(builder_optional, wanted)))
   missing <- setdiff(made, names(snapshot))
@@ -651,25 +559,17 @@ builder_run <- function(
   }
   snapshot <- .builder_gsm_names(snapshot[made], vitals_spec)
   renames <- lapply(snapshot, function(table) attr(table, "renamed"))
-  snapshot <- lapply(snapshot, function(table) {
-    table <- as.data.frame(table, stringsAsFactors = FALSE)
-    if ("invid" %in% names(table)) table$invid <- .builder_site_id(table$invid)
-    table
-  })
-  if (!is.null(phase) && "phase" %in% names(snapshot$Raw_STUDY)) {
-    snapshot$Raw_STUDY$phase <- as.character(phase)
-  }
-  if (!is.null(therapeutic_area) && "therapeutic_area" %in% names(snapshot$Raw_STUDY)) {
-    snapshot$Raw_STUDY$therapeutic_area <- as.character(therapeutic_area)
-  }
+  snapshot <- .builder_site_ids(snapshot)
+  snapshot$Raw_STUDY <- .builder_study(snapshot$Raw_STUDY, phase, therapeutic_area)
 
-  # A protocol's schedule takes the place of the simulator's visits.
-  schedule_note <- NULL
-  if (!is.null(protocol)) {
-    if (!("Raw_VISIT" %in% names(snapshot))) stop("A protocol's schedule needs the visits domain.", call. = FALSE)
-    scheduled <- .builder_schedule(snapshot, as.character(protocol))
-    snapshot <- scheduled$tables
-    schedule_note <- scheduled$note
+  schedule_note <- if (is.null(design)) {
+    NULL
+  } else {
+    paste0(
+      "Visits, vital signs and labs follow the protocol's schedule: ", length(design$visits),
+      " planned visits, ", nrow(snapshot$Raw_VISIT),
+      " made, by gsm.datasim's study design. Activities of no domain are not simulated."
+    )
   }
 
   raw <- lapply(made, function(table) {

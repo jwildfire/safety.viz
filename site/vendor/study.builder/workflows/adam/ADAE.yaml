@@ -27,6 +27,8 @@ spec:
   ADaM_ADSL:
     USUBJID:
       type: character
+    ARM:
+      type: character
     TRTSDT:
       type: Date
 steps:
@@ -34,9 +36,9 @@ steps:
     name: workr::RunQuery
     params:
       df: ADaM_ADSL
-      strQuery: 'SELECT USUBJID AS subjid, TRTSDT FROM df'
+      strQuery: 'SELECT USUBJID AS subjid, ARM, TRTSDT FROM df'
   - output: Temp_AE
-    name: dplyr::left_join
+    name: dplyr::inner_join
     params:
       x: Raw_AE
       'y': Temp_DayOne
@@ -45,7 +47,7 @@ steps:
     name: workr::RunQuery
     params:
       df: Temp_AE
-      strQuery: "SELECT subjid AS USUBJID, 'All participants' AS ARM, CAST(ROW_NUMBER() OVER (PARTITION BY subjid ORDER BY aest_dt) AS INTEGER) AS AESEQ, mdrsoc_nsv AS AEBODSYS, mdrpt_nsv AS AEDECOD, mdrpt_nsv AS AETERM, CASE WHEN aetoxgr IS NULL THEN NULL WHEN aetoxgr <= 1 THEN 'MILD' WHEN aetoxgr = 2 THEN 'MODERATE' ELSE 'SEVERE' END AS AESEV, aeser AS AESER, CAST(CASE WHEN aest_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(aest_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(aest_dt AS DATE)) END AS INTEGER) AS ASTDY, CAST(CASE WHEN aeen_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(aeen_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(aeen_dt AS DATE)) END AS INTEGER) AS AENDY FROM df ORDER BY subjid, aest_dt"
+      strQuery: "SELECT subjid AS USUBJID, ARM, CAST(ROW_NUMBER() OVER (PARTITION BY subjid ORDER BY aest_dt) AS INTEGER) AS AESEQ, mdrsoc_nsv AS AEBODSYS, mdrpt_nsv AS AEDECOD, mdrpt_nsv AS AETERM, CASE WHEN aetoxgr IS NULL THEN NULL WHEN aetoxgr <= 1 THEN 'MILD' WHEN aetoxgr = 2 THEN 'MODERATE' ELSE 'SEVERE' END AS AESEV, aeser AS AESER, CAST(CASE WHEN aest_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(aest_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(aest_dt AS DATE)) END AS INTEGER) AS ASTDY, CAST(CASE WHEN aeen_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(aeen_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(aeen_dt AS DATE)) END AS INTEGER) AS AENDY FROM df ORDER BY subjid, aest_dt"
 columns:
   USUBJID:
     label: Unique Subject Identifier
@@ -53,8 +55,8 @@ columns:
     how: Copied
   ARM:
     label: Description of Planned Arm
-    from: ''
-    how: "A label of study.builder's: gsm.datasim makes no treatment arms"
+    from: ADSL.ARM
+    how: Joined from the participant's row
   AESEQ:
     label: Sequence Number
     from: Raw_AE.aest_dt

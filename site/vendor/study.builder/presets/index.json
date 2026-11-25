@@ -15,8 +15,8 @@
         "seed": 101
       },
       "study": "phase1-small.study.json.gz",
-      "key": "sha256:e721f7ea05b291edd5fcd220caac3907369b467fa86beea40270c0dc5b3868b2",
-      "megabytes": 0.4
+      "key": "sha256:897786653c2496ec1e3c481e7f0427cf9c7b3b73adca82e294060a27faf3bf74",
+      "megabytes": 0.6
     },
     {
       "id": "phase2-oncology",
@@ -32,8 +32,8 @@
         "seed": 202
       },
       "study": "phase2-oncology.study.json.gz",
-      "key": "sha256:c01c738ad68b6391ba4ab5c3727c3814a096fbe4269a4a9c302f700e9dbce556",
-      "megabytes": 1.1
+      "key": "sha256:7c7a8273fc1aff68bc71526cf723022a13b2b1e40574c75664b548befb5a9082",
+      "megabytes": 2
     },
     {
       "id": "phase2-many-outliers",

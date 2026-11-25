@@ -18,6 +18,13 @@
 #' @param analytics_workflows Specific workflows to run (optional)
 #' @param run_reporting Whether to run the reporting pipeline after analytics (default FALSE)
 #' @param outlier_intensity Global multiplier for outlier-like values in domain generators.
+#' @param design Optional study design: a schedule of activities that the
+#'   visits, labs and vital signs follow in place of the fixed list of visits.
+#'   See [validate_study_design()] for its format. Default `NULL`.
+#' @param results Optional study results: `TRUE`, or a list with `arms` and
+#'   `ecg`, adds a treatment arm for each enrolled participant, a result, unit
+#'   and normal range for each lab, and an ECG table. See
+#'   [apply_study_results()]. Default `NULL`.
 #' @param verbose Whether to print progress/output messages
 #' @inheritParams create_study_config
 #' @return LongitudinalStudy object with generated data
@@ -47,9 +54,13 @@ create_longitudinal_study <- function(study_id = "STUDY-001",
                                       run_reporting = FALSE,
                                       outlier_intensity = 1,
                                       risk_profile = NULL,
+                                      design = NULL,
+                                      results = NULL,
                                       verbose = FALSE) {
   # Validate inputs
   validate_study_inputs(participants, sites, snapshots, domains)
+  design <- validate_study_design(design)
+  results <- validate_study_results(results)
 
   # Ensure required mappings are included
   mappings <- ensure_core_mappings(domains)
@@ -67,6 +78,18 @@ create_longitudinal_study <- function(study_id = "STUDY-001",
     verbose = verbose
   )
 
+  # A study design puts every snapshot's visits, labs and vital signs on its
+  # schedule (see `validate_study_design()`).
+  if (!is.null(design)) {
+    raw_data <- lapply(raw_data, apply_study_design, design = design)
+  }
+
+  # Study results add treatment arms, lab results and ECGs to every snapshot
+  # (see `apply_study_results()`), after the design has set the visits.
+  if (!is.null(results)) {
+    raw_data <- lapply(raw_data, apply_study_results, results = results)
+  }
+
   # Create study object with proper config
   config <- list(
     participants = participants,
@@ -78,6 +101,8 @@ create_longitudinal_study <- function(study_id = "STUDY-001",
     analytics_package = analytics_package,
     analytics_workflows = analytics_workflows,
     risk_profile = risk_profile,
+    design = design,
+    results = results,
     verbose = verbose
   )
 
