@@ -55,3 +55,7 @@ export { rOnRequest, rUnavailable } from './r-on-request.js';
 // where R's files and gsm.viz's bundle are served from.
 export { rbqmTab } from './rbqm-view.js';
 export { createConnection as createRConnection } from './r-browser.js';
+// The Build a study tab: a view a library brings, which has R in the browser
+// simulate a study with gsm.datasim and loads it as gsm's raw files. The page
+// that mounts the app says where R's files are served from.
+export { builderTab } from './builder-view.js';

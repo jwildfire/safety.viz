@@ -204,6 +204,73 @@ export const GSM_VIZ = {
 };
 
 /**
+ * gsm.datasim's R source, for the demo app's Build a study tab (the study
+ * builder). gsm.datasim has no WebAssembly build, and it is plain R with no
+ * compiled code, so R in the browser sources these files as they are
+ * (site/builder/builder.R) and nothing is installed. Every file under R/ at
+ * the release tag is copied, with the two column templates the generators
+ * read, the DESCRIPTION, for the version the tab names, and the licence. None
+ * is edited. gsm.datasim is public, in the Gilead-Public organisation, and is
+ * only ever read.
+ */
+export const GSM_DATASIM = {
+  name: 'gsm.datasim R source',
+  label: 'source',
+  repository: 'https://github.com/Gilead-Public/gsm.datasim',
+  directory: 'site/vendor/gsm.datasim',
+  tag: 'v2.1.0',
+  files: [
+    ...[
+      'Raw_AE',
+      'Raw_AntiCancer',
+      'Raw_Baseline',
+      'Raw_Consents',
+      'Raw_DATACHG',
+      'Raw_DATAENT',
+      'Raw_Death',
+      'Raw_ENROLL',
+      'Raw_GENERAL',
+      'Raw_IE',
+      'Raw_LB',
+      'Raw_OverallResponse',
+      'Raw_PD',
+      'Raw_PK',
+      'Raw_QUERY',
+      'Raw_Randomization',
+      'Raw_SDRGCOMP',
+      'Raw_SITE',
+      'Raw_STUDCOMP',
+      'Raw_STUDY',
+      'Raw_SUBJ',
+      'Raw_VISIT',
+      'Raw_VS',
+      'Raw_gilda_STUDY',
+      'column_type_generator',
+      'create_longitudinal_study',
+      'create_snapshot_reports',
+      'domain_registry',
+      'endpoints_domains_helper',
+      'export_study_data',
+      'generate_data_from_workflows',
+      'generate_rawdata_for_single_study',
+      'generate_risk_signals',
+      'gsm.datasim-package',
+      'gsm_utils',
+      'import-gsm.mapping-CombineSpecs',
+      'raw_data_generator',
+      'study_builder',
+      'util-pipe',
+      'utils-longitudinal',
+      'utils'
+    ].map((name) => ({ file: `R/${name}.R`, source: `R/${name}.R` })),
+    { file: 'inst/template.csv', source: 'inst/template.csv' },
+    { file: 'inst/small_template.csv', source: 'inst/small_template.csv' },
+    { file: 'DESCRIPTION', source: 'DESCRIPTION' },
+    { file: 'LICENSE.md', source: 'LICENSE.md' }
+  ]
+};
+
+/**
  * A file's checksum.
  * @param {Uint8Array} bytes The file's bytes.
  * @returns {string} Its SHA-256, in hex.

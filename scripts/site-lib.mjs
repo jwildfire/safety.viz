@@ -12,6 +12,7 @@ import {
   librariesExpression,
   rbqmTabExpression
 } from './app-libraries.mjs';
+import { builderTabExpression } from './builder-lib.mjs';
 
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
@@ -1735,7 +1736,7 @@ body{margin:0;background:#fafaf8}
 <script src="./${escapeHtml(bundle)}"></script>
 ${libraries.map((library) => `<script src="./${escapeHtml(library.file)}"></script>\n`).join('')}<script>
 window.__safetyVizApp = SafetyVizApp.mount('#app', {
-  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}${Object.keys(chartLinks).length ? `\n  chartLinks: ${inlineJson(chartLinks)},` : ''}${Object.keys(tiers).length ? `\n  tiers: ${inlineJson(tiers)},` : ''}
+  demo: { base: './' },${libraries.length ? `\n  libraries: ${librariesExpression(libraries, { r: 'request', more: [rbqmTabExpression(), builderTabExpression()] })},\n  pitch: ${js(HOSTED_PITCH)},` : ''}${Object.keys(chartLinks).length ? `\n  chartLinks: ${inlineJson(chartLinks)},` : ''}${Object.keys(tiers).length ? `\n  tiers: ${inlineJson(tiers)},` : ''}
   links: {${Object.keys(DEMO_APP_SITE_LINKS)
     .filter((name) => siteLinks[name])
     .map((name) => `\n    ${name}: ${js(siteLinks[name])},`)

@@ -8,7 +8,9 @@ from the section here when the release-candidate PR (dev -> main) merges and is 
 
 # safety.viz v1.13.0 (Upcoming)
 
-_Nothing merged yet._
+## What's new
+
+- **The demo app can build a study.** A new tab, Build a study, asks a trial's phase, therapeutic area, participants, sites, months and how many outliers, and has gsm.datasim v2.1.0 simulate the study with R in the browser. The study is loaded as gsm's nine raw files, so the RBQM tab runs every site metric on it. The tab is Experimental and says what the study is not: every row is synthetic, phase and therapeutic area are labels that do not shape the data, the labs file has no lab results, and only the last monthly snapshot is loaded. gsm.datasim is not installed in browser R: its own R source is copied from the release tag into `site/vendor/gsm.datasim/` and held to its record by `npm run gsm-datasim:check`.
 
 # safety.viz v1.12.0
 
