@@ -1,45 +1,25 @@
 // Demo app: the Build a study tab. A tab of its own, brought by a library
-// through the second-library seam (page.js), as the RBQM tab is. The reader
-// says a few facts about a trial, presses Build, and R in the browser has
-// gsm.datasim simulate the study (site/builder/builder.R). What R returns is
-// gsm's raw files, which the app loads as it loads a reader's own raw files,
-// so the RBQM tab runs gsm's workflows on the study that was just made.
+// through the second-library seam (page.js), as the RBQM tab is. The tab is
+// study.builder's widget (github.com/jwildfire/study.builder): the reader
+// describes a trial and chooses its domains, R in the browser has gsm.datasim
+// simulate it, and every domain can be looked at. When the reader hands the
+// study over, the app loads it as it loads a reader's own files: gsm's raw
+// files for the RBQM tab, and the standard files for the other charts.
 //
-// Before the reader presses Build nothing is asked of R's hosts. The press
-// makes one connection to R in the browser (r-browser.js) and keeps it, so a
-// second study is built without starting R again. The RBQM tab starts an R of
-// its own when the reader asks it to.
+// Nothing of study.builder is in the app's bundle. Its script is fetched from
+// the page's own address when the tab is first opened, and R is not asked for
+// until the reader presses Build. The widget is handed the app's own way of
+// making a connection to R, so it and the RBQM tab share one R.
 //
-// R makes every row. This module draws the form, decides when R is asked,
-// hands the files to the app and writes the sentences (builder.js says them).
+// This module loads the script, keeps the one widget across the page's
+// redraws, and hands the study to the app. Everything the tab shows of a study
+// is the widget's.
 
 import { el } from './dom.js';
 import { note } from './note.js';
-import {
-  BUILDER_AREAS,
-  BUILDER_CAVEATS,
-  BUILDER_DEFAULTS,
-  BUILDER_LIMITS,
-  BUILDER_OUTLIERS,
-  BUILDER_PHASES,
-  BUILDER_TAB_ID,
-  builtFiles,
-  builtSaid,
-  downloadsSaid,
-  readForm,
-  withPhase
-} from './builder.js';
 
-/** What waiting on R comes to when R gave no answer in time. */
-const SILENT = Symbol('R gave no answer');
-
-/** What R is doing while it starts, by the step r-browser.js names. */
-const STAGE_WORDS = {
-  runtime: 'Starting R in this browser…',
-  packages: 'Installing R’s packages…',
-  files: 'Fetching gsm.datasim…',
-  source: 'Reading the builder…'
-};
+/** The tab's address in the app. */
+export const BUILDER_TAB_ID = 'build';
 
 const messageOf = (error) =>
   (error && typeof error.message === 'string' && error.message) || String(error);
@@ -47,197 +27,87 @@ const messageOf = (error) =>
 /**
  * The Build a study tab.
  * @param {Object} options
- * @param {(options: Object) => {run: Function, close: Function}} [options.createConnection] The connection factory (r-browser.js's). Left out on a page that cannot start R.
- * @param {Object} [options.r] What R is given: `packages` and `repos` to install them from, `files` (each `{ path, url }`) and the `source` among them, the `call` function, and `simulator`, the folder of R's file system gsm.datasim's files are under.
- * @param {Array<{what: string, host: ?string, megabytes: number}>} [options.downloads] What starting R downloads; a null host is the page's own address.
- * @param {?string} [options.unavailable] On a page that cannot start R, the sentence that says so; the tab then offers no form.
- * @param {?string} [options.open] The tab to offer once a study is built: the RBQM tab's address.
- * @param {number} [options.limit] How long R is waited on, in seconds, before the tab gives up.
+ * @param {(options: Object) => {run: Function}} [options.createConnection] The app's own connection factory (main.js's), so the widget shares the app's one R. Left out on a page that cannot start R.
+ * @param {{url: string, global: string}} [options.library] study.builder's bundle: where the page serves it and the global it defines.
+ * @param {string} [options.base] Where the page serves the files study.builder's R reads: its `r/` and `vendor/` folders.
+ * @param {string} [options.repository] Where the page serves gsm's packages, as a package repository.
+ * @param {?string} [options.unavailable] On a page that cannot start R, the sentence that says so; the tab then offers no builder.
+ * @param {?string} [options.open] The tab to offer once a study is loaded: the RBQM tab's address.
  * @returns {{id: string, title: string, tag: Function, render: Function, state: Function}} The view, as page.js takes one.
  */
 export function builderTab({
   createConnection,
-  r = {},
-  downloads = [],
+  library = null,
+  base = './',
+  repository = null,
   unavailable = null,
-  open = null,
-  limit = 600
+  open = null
 } = {}) {
-  // idle → building → done, or → failed.
-  let phase = 'idle';
-  let stage = '';
-  let form = { ...BUILDER_DEFAULTS };
-  let problems = [];
-  let failure = '';
-  let built = null; // { said, files } of the last study built
-  let connection = null;
+  let loading = null; // the promise of study.builder's global
+  let problem = '';
+  let holder = null; // the element the widget is mounted in, kept across redraws
+  let widget = null;
+  let loaded = null; // { id, said } of the study last handed to the app
   let shown = null; // { container, app } of the view as it is on the page now
-  let builds = 0;
 
   const canBuild = typeof createConnection === 'function' && !unavailable;
 
-  /** Draw the view again where it is on the page, and say again what its tab says. */
+  /** study.builder, loaded once from the page's own address when the tab is first opened. */
+  function loadLibrary() {
+    if (loading) return loading;
+    const found = () => (library && globalThis[library.global]) || null;
+    loading = new Promise((resolve, reject) => {
+      if (found()) return resolve(found());
+      if (!library || !library.url) return reject(new Error('this page serves no study.builder'));
+      const script = el('script');
+      script.src = library.url;
+      script.onload = () =>
+        found()
+          ? resolve(found())
+          : reject(new Error(`${library.url} did not define ${library.global}`));
+      script.onerror = () => reject(new Error(`${library.url} did not load on this page`));
+      document.head.append(script);
+      return undefined;
+    }).catch((error) => {
+      problem = `The builder cannot be shown: ${messageOf(error)}.`;
+      loading = null;
+      return null;
+    });
+    return loading;
+  }
+
   function redraw() {
     if (!shown) return;
     if (typeof shown.app.redrawView === 'function') shown.app.redrawView(BUILDER_TAB_ID);
-    else draw(shown.container, shown.app);
   }
 
-  /** Wait on R, but not for ever: an R that stops answering is given up on. */
-  function within(promise) {
-    let timer;
-    const silent = new Promise((resolve) => {
-      timer = setTimeout(() => resolve(SILENT), limit * 1000);
+  /** Hand a study to the app: its raw files kept as they are, its standard files placed. */
+  function use(study, app) {
+    const { raw, standard } = study.files();
+    loaded = { id: study.id, said: study.said };
+    app.loadRaw(raw);
+    if (standard.length) app.loadFiles(standard);
+    redraw();
+  }
+
+  function mountWidget(builder, app) {
+    holder = el('div', 'sva-build-widget');
+    widget = builder.mount(holder, {
+      base,
+      ...(repository ? { repository } : {}),
+      createConnection,
+      useLabel: 'Load into the demo',
+      // The app the study is handed to is the one on the page when the button is pressed.
+      onStudy: (study) => use(study, shown ? shown.app : app)
     });
-    return Promise.race([promise, silent]).finally(() => clearTimeout(timer));
-  }
-
-  async function build(app) {
-    const read = readForm(form);
-    problems = read.problems;
-    if (!read.args || phase === 'building') {
-      redraw();
-      return;
-    }
-    const mine = ++builds;
-    phase = 'building';
-    failure = '';
-    stage = connection ? 'Simulating the study…' : STAGE_WORDS.runtime;
-    redraw();
-    if (!connection) {
-      connection = createConnection({
-        packages: r.packages || [],
-        repos: r.repos || [],
-        files: r.files || [],
-        source: r.source || [],
-        onStage: (name) => {
-          if (mine !== builds || phase !== 'building') return;
-          stage = STAGE_WORDS[name] || stage;
-          redraw();
-        }
-      });
-    }
-    let answer;
-    try {
-      answer = await within(
-        connection.run(r.call, {
-          args: {
-            simulator: r.simulator,
-            // gsm.mapping's vital signs spec, where the page serves one.
-            ...(r.vitals ? { vitals: r.vitals } : {}),
-            ...read.args
-          },
-          onFiles: () => {
-            if (mine !== builds || phase !== 'building') return;
-            stage = 'Simulating the study…';
-            redraw();
-          }
-        })
-      );
-    } catch (error) {
-      answer = { status: 'error', message: messageOf(error) };
-    }
-    if (mine !== builds) return;
-    if (answer === SILENT) {
-      // An R that gave no answer is let go of: the next build starts another.
-      const stale = connection;
-      connection = null;
-      if (stale && typeof stale.close === 'function') stale.close();
-      phase = 'failed';
-      failure = `R gave no answer in ${limit} seconds, so the build was stopped. Press Build to try again.`;
-      redraw();
-      return;
-    }
-    if (!answer || answer.status !== 'ok') {
-      phase = 'failed';
-      failure =
-        answer && answer.status === 'unavailable'
-          ? `R could not be started in this browser: ${answer.message}`
-          : `The study was not built. R said: ${answer ? answer.message : 'nothing'}`;
-      redraw();
-      return;
-    }
-    const files = builtFiles(answer.value);
-    if (!files) {
-      phase = 'failed';
-      failure = 'The study was not built: R returned no files that can be read.';
-      redraw();
-      return;
-    }
-    // The standard domains' files, for the other charts; a page that serves no
-    // vital signs spec still gets participants and adverse events.
-    const standard = builtFiles(answer.value, 'standard') || [];
-    const said = builtSaid(answer.value, read.args);
-    const listed = (list) => list.map(({ name, rows }) => ({ name, rows }));
-    built = { said, files: listed(files), standard: listed(standard) };
-    phase = 'done';
-    // The app loads the raw files as it loads a reader's own, for the RBQM
-    // tab, then places the standard files in their domains, and draws the open
-    // view again: this one, which now says what was built. The sentence is
-    // said here and not as a note of the load, which is amber.
-    const texts = (list) => list.map(({ name, text }) => ({ name, text }));
-    app.loadRaw(texts(files));
-    if (standard.length) app.loadFiles(texts(standard));
-    redraw();
-  }
-
-  function field(labelText, control, hint) {
-    const wrap = el('label', 'sva-build-field');
-    wrap.append(el('span', 'sva-build-label', labelText), control);
-    if (hint) wrap.append(el('span', 'sva-build-hint', hint));
-    return wrap;
-  }
-
-  function select(name, options, app) {
-    const control = el('select', 'sva-select');
-    control.name = name;
-    for (const [value, label] of options) {
-      const option = el('option', null, label);
-      option.value = value;
-      control.append(option);
-    }
-    control.value = form[name];
-    control.disabled = phase === 'building';
-    control.onchange = () => {
-      // A phase fills in a typical size; every other choice is its own.
-      form = name === 'phase' ? withPhase(form, control.value) : { ...form, [name]: control.value };
-      if (name === 'phase') redraw();
-    };
-    return control;
-  }
-
-  function input(name, { type = 'text', min, max } = {}) {
-    const control = el('input', 'sva-select sva-build-input');
-    control.name = name;
-    control.type = type;
-    if (type === 'number') {
-      control.inputMode = 'numeric';
-      control.step = '1';
-      if (min !== undefined) control.min = String(min);
-      if (max !== undefined) control.max = String(max);
-    }
-    control.value = form[name];
-    control.disabled = phase === 'building';
-    control.oninput = () => {
-      form = { ...form, [name]: control.value };
-    };
-    return control;
   }
 
   function draw(container, app) {
     container.textContent = '';
     container.classList.add('sva-build');
-    container.append(el('h2', 'sva-rbqm-heading', 'Build a study'));
-    container.append(
-      el(
-        'p',
-        'sva-message',
-        'Describe a trial, and gsm.datasim simulates it in this browser. The study is loaded for ' +
-          'the RBQM tab and for the charts of participants, adverse events and vital signs.'
-      )
-    );
     if (!canBuild) {
       container.append(
+        el('h2', 'sva-rbqm-heading', 'Build a study'),
         note({
           kind: 'warning',
           say: unavailable || 'This page cannot start R, so it cannot build a study.'
@@ -245,109 +115,10 @@ export function builderTab({
       );
       return;
     }
-
-    const body = el('form', 'sva-build-form');
-    body.noValidate = true;
-    body.onsubmit = (event) => {
-      event.preventDefault();
-      build(app);
-    };
-    const { participants, sites, months } = BUILDER_LIMITS;
-    body.append(
-      field('Study name', input('name')),
-      field(
-        'Phase',
-        select(
-          'phase',
-          BUILDER_PHASES.map((entry) => [entry.id, entry.label]),
-          app
-        ),
-        'Fills in a typical size.'
-      ),
-      field(
-        'Therapeutic area',
-        select(
-          'area',
-          BUILDER_AREAS.map((area) => [area, area]),
-          app
-        )
-      ),
-      field(
-        'Participants',
-        input('participants', { type: 'number', ...participants }),
-        `${participants.min} to ${participants.max}`
-      ),
-      field('Sites', input('sites', { type: 'number', ...sites }), `${sites.min} to ${sites.max}`),
-      field(
-        'Months',
-        input('months', { type: 'number', ...months }),
-        `${months.min} to ${months.max}`
-      ),
-      field(
-        'Outliers',
-        select(
-          'outliers',
-          BUILDER_OUTLIERS.map((entry) => [entry.id, entry.label]),
-          app
-        )
-      ),
-      field(
-        'Seed',
-        input('seed', { type: 'number', min: 0 }),
-        'Optional: the same seed builds the same study.'
-      )
-    );
-    const actions = el('div', 'sva-build-actions');
-    const press = el(
-      'button',
-      'sva-button sva-build-go',
-      phase === 'building' ? 'Building…' : 'Build'
-    );
-    press.type = 'submit';
-    press.disabled = phase === 'building';
-    actions.append(press);
-    body.append(actions);
-    container.append(body);
-
-    if (problems.length) {
-      const list = el('ul', 'sva-build-problems');
-      for (const problem of problems) list.append(el('li', null, problem));
-      const box = el('div', 'sva-message sva-problem');
-      box.setAttribute('role', 'alert');
-      box.append(list);
-      container.append(box);
-    }
-    if (phase === 'building') {
-      const status = note({ say: stage, busy: true, role: 'status' });
-      status.classList.add('sva-build-status');
-      container.append(status);
-    }
-    if (phase === 'failed') {
-      const box = el('p', 'sva-message sva-problem', failure);
-      box.setAttribute('role', 'alert');
-      container.append(box);
-    }
-    if (phase === 'done' && built) {
+    if (loaded) {
       const done = el('div', 'sva-build-done');
       done.setAttribute('role', 'status');
-      done.append(el('p', 'sva-message', built.said));
-      const filesList = (heading, files) => {
-        if (!files.length) return;
-        done.append(el('h3', 'sva-build-subheading', heading));
-        const list = el('ul', 'sva-build-files');
-        for (const file of files) {
-          list.append(
-            el(
-              'li',
-              null,
-              `${file.name}: ${file.rows.toLocaleString('en-US')} row${file.rows === 1 ? '' : 's'}`
-            )
-          );
-        }
-        done.append(list);
-      };
-      filesList('For the RBQM tab, as gsm’s raw files', built.files);
-      filesList('For the other charts, as standard files', built.standard || []);
+      done.append(el('p', 'sva-message', `${loaded.id} is loaded into the demo. ${loaded.said}`));
       if (open) {
         const go = el('button', 'sva-button sva-build-open', 'Open the RBQM tab');
         go.type = 'button';
@@ -356,21 +127,36 @@ export function builderTab({
       }
       container.append(done);
     }
-
-    const said = downloadsSaid(downloads);
-    if (said && !connection) container.append(note({ say: said }));
-    const caveats = el('ul', 'sva-build-caveats');
-    for (const caveat of BUILDER_CAVEATS) caveats.append(el('li', null, caveat));
-    container.append(el('h3', 'sva-build-subheading', 'What this study is, and is not'), caveats);
+    if (holder) {
+      container.append(holder);
+      return;
+    }
+    if (problem) {
+      const box = el('p', 'sva-message sva-problem', problem);
+      box.setAttribute('role', 'alert');
+      container.append(box);
+      return;
+    }
+    container.append(note({ say: 'Loading the builder…', busy: true, role: 'status' }));
+    loadLibrary().then((builder) => {
+      if (builder && !holder) {
+        try {
+          mountWidget(builder, app);
+        } catch (error) {
+          problem = `The builder cannot be shown: ${messageOf(error)}.`;
+        }
+      }
+      redraw();
+    });
   }
 
   return {
     id: BUILDER_TAB_ID,
     title: 'Build a study',
-    /** What the tab's count says: nothing until a study is being built or was. */
-    tag: () => ({ building: 'building', done: 'built', failed: 'failed' })[phase] || '',
+    /** What the tab's count says: nothing until a study is handed to the app. */
+    tag: () => (loaded ? 'loaded' : ''),
     /** The tab's state, for the tests and the page. */
-    state: () => ({ phase, stage, form: { ...form }, problems: [...problems], failure, built }),
+    state: () => ({ loaded, problem, mounted: Boolean(widget), widget }),
     render(container, app) {
       shown = { container, app };
       draw(container, app);

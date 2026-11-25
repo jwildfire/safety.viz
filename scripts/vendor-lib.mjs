@@ -204,22 +204,23 @@ export const GSM_VIZ = {
 };
 
 /**
- * gsm.datasim's R source, for the demo app's Build a study tab (the study
- * builder). gsm.datasim has no WebAssembly build, and it is plain R with no
- * compiled code, so R in the browser sources these files as they are
- * (site/builder/builder.R) and nothing is installed. Every file under R/ at
- * the release tag is copied, with the two column templates the generators
- * read, the DESCRIPTION, for the version the tab names, and the licence. None
- * is edited. gsm.datasim is public, in the Gilead-Public organisation, and is
- * only ever read.
+ * study.builder, for the demo app's Build a study tab: the tool that simulates
+ * a study with gsm.datasim in browser R and hands its data to a page. Its
+ * built bundle defines the global `StudyBuilder`; with it are copied the files
+ * its R reads, which the demo app serves beside it: study.builder's own R, its
+ * copy of gsm.datasim's source and of gsm.mapping's vital signs spec, each with
+ * the record study.builder keeps of where it came from, and the licence. None
+ * is edited. study.builder is public, under jwildfire, and is only ever read.
  */
-export const GSM_DATASIM = {
-  name: 'gsm.datasim R source',
-  label: 'source',
-  repository: 'https://github.com/Gilead-Public/gsm.datasim',
-  directory: 'site/vendor/gsm.datasim',
-  tag: 'v2.1.0',
+export const STUDY_BUILDER = {
+  name: 'study.builder bundle and the files its R reads',
+  label: 'bundle',
+  repository: 'https://github.com/jwildfire/study.builder',
+  directory: 'site/vendor/study.builder',
+  global: 'StudyBuilder',
   files: [
+    { file: 'study.builder.js', source: 'dist/study.builder.js' },
+    { file: 'r/builder.R', source: 'r/builder.R' },
     ...[
       'Raw_AE',
       'Raw_AntiCancer',
@@ -262,33 +263,17 @@ export const GSM_DATASIM = {
       'util-pipe',
       'utils-longitudinal',
       'utils'
-    ].map((name) => ({ file: `R/${name}.R`, source: `R/${name}.R` })),
-    { file: 'inst/template.csv', source: 'inst/template.csv' },
-    { file: 'inst/small_template.csv', source: 'inst/small_template.csv' },
-    { file: 'DESCRIPTION', source: 'DESCRIPTION' },
-    { file: 'LICENSE.md', source: 'LICENSE.md' }
-  ]
+    ].map((name) => `vendor/gsm.datasim/R/${name}.R`),
+    'vendor/gsm.datasim/inst/template.csv',
+    'vendor/gsm.datasim/inst/small_template.csv',
+    'vendor/gsm.datasim/DESCRIPTION',
+    'vendor/gsm.datasim/LICENSE.md',
+    'vendor/gsm.datasim/SOURCE.json',
+    'vendor/gsm.mapping-vitals/workflow/1_mappings/VS.yaml',
+    'vendor/gsm.mapping-vitals/SOURCE.json',
+    'LICENSE'
+  ].map((entry) => (typeof entry === 'string' ? { file: entry, source: entry } : entry))
 };
-
-/**
- * gsm.mapping's vital signs mapping workflow, for the study builder. Its spec
- * says what a raw vital signs table holds, and gsm.datasim's vital signs
- * generator is given it. The release of gsm.mapping built for R in the browser
- * (scripts/vendor-lib.mjs's GSM_MAPPING_WORKFLOWS and the r-wasm pins) is
- * older than this workflow, so the one file is copied from a later release
- * tag, as it is. Only its spec is read: the workflow is not run.
- */
-export const GSM_MAPPING_VITALS = {
-  name: 'gsm.mapping vital signs mapping workflow',
-  label: 'workflow',
-  repository: 'https://github.com/Gilead-Public/gsm.mapping',
-  directory: 'site/vendor/gsm.mapping-vitals',
-  tag: 'v1.3.0',
-  files: [{ file: 'workflow/1_mappings/VS.yaml', source: 'inst/workflow/1_mappings/VS.yaml' }]
-};
-
-/** What the study builder copies in: the simulator, and the one spec it lacks. */
-export const BUILDER_SOURCES = [GSM_DATASIM, GSM_MAPPING_VITALS];
 
 /**
  * A file's checksum.

@@ -129,10 +129,10 @@ export async function buildDemoAppDir(outDir, { links, site = '../' } = {}) {
     mkdirSync(path.dirname(served), { recursive: true });
     copyFileSync(path.join(rootDir, entry.file), served);
   }
-  // What R is given for the Build a study tab: the builder's R and
-  // gsm.datasim's own source, each served under the path R keeps it at.
+  // study.builder, for the Build a study tab: its bundle and the files its R
+  // reads, served in a folder of their own beside the app.
   for (const entry of builderFiles()) {
-    const served = path.join(outDir, `.${entry.path}`);
+    const served = path.join(outDir, entry.served);
     mkdirSync(path.dirname(served), { recursive: true });
     copyFileSync(path.join(rootDir, entry.file), served);
   }

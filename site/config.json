@@ -16,7 +16,7 @@
       "title": "Build a study",
       "tier": "experimental",
       "tierNote": "Experimental: new in 1.13. gsm.datasim simulates a study in the browser, and what the tab asks may still change.",
-      "blurb": "A study builder in the demo app: say a trial's phase, size and length, and gsm.datasim simulates it in the browser as gsm's raw files for the RBQM tab."
+      "blurb": "study.builder in the demo app: describe a trial and choose its domains, gsm.datasim simulates it in the browser, and the study is loaded for the RBQM tab and the charts of participants."
     }
   ],
   "renderers": [

@@ -164,23 +164,9 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-notes{margin:0 0 1rem;padding:0;list-style:none;max-width:62rem}
 .sva-note{margin:0 0 .45rem}
 
-.sva-build{min-width:0;max-width:62rem}
-.sva-build-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(12.5rem,1fr));gap:.9rem 1.1rem;margin:0 0 1.1rem;padding:1.1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px}
-.sva-build-field{display:flex;flex-direction:column;gap:.3rem;min-width:0}
-.sva-build-label{font:500 .68rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
-.sva-build-hint{font-size:.74rem;line-height:1.3;color:var(--soft)}
-.sva-build-field .sva-select{width:100%;box-sizing:border-box}
-.sva-build-actions{grid-column:1/-1;display:flex;gap:.6rem;align-items:center}
-.sva-build-go{color:var(--card);background:var(--accent);border-color:var(--accent)}
-.sva-build-go:hover{color:var(--card);opacity:.88}
-.sva-build-go:disabled{opacity:.55;cursor:default}
-.sva-build-problems,.sva-build-files,.sva-build-caveats{margin:0;padding-left:1.15rem}
-.sva-build-files{margin:0 0 .9rem;font-family:var(--mono);font-size:.78rem;columns:2 16rem}
-.sva-build-caveats{max-width:62rem;font-size:.86rem;line-height:1.5;color:var(--soft)}
-.sva-build-caveats li{margin:.2rem 0}
+.sva-build{min-width:0;max-width:72rem}
+.sva-build-widget .sb{--sb-accent:var(--accent);--sb-card:var(--card);--sb-ink:var(--ink);--sb-soft:var(--soft);--sb-line:var(--line);--sb-rule:var(--rule);--sb-mono:var(--mono)}
 .sva-build-done{margin:0 0 1.1rem;padding:.9rem 1.1rem;background:var(--card);border:1px solid var(--line);border-radius:10px}
-.sva-app .sva-build-subheading{margin:1.4rem 0 .4rem;font:500 .72rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
-.sva-build-status{margin:0 0 1.1rem}
 .sva-rbqm{min-width:0;max-width:100%}
 .sva-app .sva-rbqm-subheading{margin:.7rem 0 .3rem;font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
 .sva-rbqm-section{margin:0 0 1.1rem;padding:1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px;min-width:0}
