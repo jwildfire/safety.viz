@@ -1,24 +1,24 @@
 {
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
-  "ref": "v0.3.0-rc.7",
-  "commit": "dba270713d5f08d6a7ea2fe265c270d675a76765",
-  "version": "0.3.0-rc.7",
+  "ref": "v0.3.0-rc.8",
+  "commit": "00b24673067b4094e6ba0e53c5a29ad51ff8bcdb",
+  "version": "0.3.0-rc.8",
   "license": "Apache-2.0",
-  "tag": "v0.3.0-rc.7",
+  "tag": "v0.3.0-rc.8",
   "merged_to_dev": false,
   "files": [
     {
       "file": "study.builder.js",
       "source": "dist/study.builder.js",
-      "sha256": "c16ff7eafd812d3ee446a6d2e1121a87b35600936013ba4582516fbda97345b3",
-      "bytes": 103182
+      "sha256": "423bc675c58d1496a489cbda475039f3f78b61c581b4a816e83e102eb9e0f8fe",
+      "bytes": 104822
     },
     {
       "file": "study.viewer.js",
       "source": "dist/study.viewer.js",
-      "sha256": "766c8ad7cc89c2ee398b55c775886c1603c678a084c518008373c2de34aed1f7",
-      "bytes": 28656
+      "sha256": "c17d790218c69c7e540de8c4e1bd1ab714fd35b123e9e3ecc7cd73dbc2b01abc",
+      "bytes": 30148
     },
     {
       "file": "r/builder.R",
@@ -461,20 +461,26 @@
     {
       "file": "presets/index.json",
       "source": "presets/index.json",
-      "sha256": "6b37422f3a6be19dd5fc0b3585c77ea88e9d40e48255d45039dc6b2a541632e4",
-      "bytes": 18107
+      "sha256": "3f111781858b76c8abd0ec5961acd448ce6a3dadc522f2c5315097aea941ab80",
+      "bytes": 18254
     },
     {
       "file": "presets/phase1-small.study.json.gz",
       "source": "presets/phase1-small.study.json.gz",
-      "sha256": "8d79c2896197ad28fe8a26d44d4735b77d98c859eff6b883f02001798090a9d2",
+      "sha256": "e0131ddb7df47cdac70bb38ca2fa4bb85656ddaf3ab0d921c150e575674a253d",
       "bytes": 581181
     },
     {
       "file": "presets/phase2-oncology.study.json.gz",
       "source": "presets/phase2-oncology.study.json.gz",
-      "sha256": "aa969de150573348f9f944a406e7b0076d1c38572bc1ea4fb93f10d3a78f80d1",
+      "sha256": "69595013532442c753009f988eeb256b5f0cb7cf2ad8914be198c8fdacecf95e",
       "bytes": 2027587
+    },
+    {
+      "file": "presets/cdisc-pilot-protocol.study.json.gz",
+      "source": "presets/cdisc-pilot-protocol.study.json.gz",
+      "sha256": "bb49dfcd3a838a6843e25cfafab78879d8a7afe8cca6a260fb7289d6b3d39c6a",
+      "bytes": 680743
     },
     {
       "file": "LICENSE",

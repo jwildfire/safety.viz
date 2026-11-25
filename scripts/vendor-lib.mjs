@@ -220,7 +220,7 @@ export const STUDY_BUILDER = {
   directory: 'site/vendor/study.builder',
   // The release the copy is made from: a candidate of v0.3.0, until that is
   // released. Move this to v0.3.0 then, and copy again.
-  tag: 'v0.3.0-rc.7',
+  tag: 'v0.3.0-rc.8',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },
@@ -306,6 +306,7 @@ export const STUDY_BUILDER = {
     'presets/index.json',
     'presets/phase1-small.study.json.gz',
     'presets/phase2-oncology.study.json.gz',
+    'presets/cdisc-pilot-protocol.study.json.gz',
     'LICENSE'
   ].map((entry) => (typeof entry === 'string' ? { file: entry, source: entry } : entry))
 };
