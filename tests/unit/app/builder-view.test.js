@@ -25,6 +25,20 @@ const ANSWER = {
       text: 'studyid,subjid,invid\nBUILT-001,S1,SITE1\nBUILT-001,S2,SITE1\n'
     },
     { name: 'Raw_SITE.csv', rows: 1, text: 'studyid,invid\nBUILT-001,SITE1\n' }
+  ],
+  standard: [
+    {
+      name: 'adsl.csv',
+      rows: 2,
+      text: 'USUBJID,SITEID,SEX,RACE,EOSDY\nS1,SITE1,F,Other,90\nS2,SITE1,M,Asian,80\n'
+    },
+    {
+      name: 'advs.csv',
+      rows: 2,
+      text:
+        'USUBJID,SITEID,SEX,RACE,VISIT,VISITNUM,TEST,STRESU,STRESN,DY\n' +
+        'S1,SITE1,F,Other,Screening,0,Pulse,beats/min,70,-3\nS1,SITE1,F,Other,VISIT 1,1,Pulse,beats/min,74,2\n'
+    }
   ]
 };
 
@@ -149,6 +163,7 @@ describe('the Build a study tab', () => {
     expect(connection.runs[0].name).toBe('builder_run');
     expect(connection.runs[0].request.args).toEqual({
       simulator: '/builder/gsm.datasim',
+      vitals: '/builder/gsm.mapping/VS.yaml',
       study_name: 'BUILT-001',
       participants: 150,
       sites: 20,
@@ -163,6 +178,10 @@ describe('the Build a study tab', () => {
     const done = document.querySelector('.sva-build-done');
     expect(done.textContent).toContain('BUILT-001 is a simulated Phase 2 Oncology study');
     expect(done.textContent).toContain('Raw_SUBJ.csv: 2 rows');
+    // The standard files are placed in their domains, for the other charts.
+    expect(done.textContent).toContain('advs.csv: 2 rows');
+    expect(Object.keys(handle.state.files).sort()).toEqual(['bds', 'subject']);
+    expect(handle.state.files.bds.name).toBe('advs.csv');
     expect(document.querySelector('[data-tab="build"]').textContent).toContain('built');
   });
 

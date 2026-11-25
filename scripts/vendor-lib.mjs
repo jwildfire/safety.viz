@@ -271,6 +271,26 @@ export const GSM_DATASIM = {
 };
 
 /**
+ * gsm.mapping's vital signs mapping workflow, for the study builder. Its spec
+ * says what a raw vital signs table holds, and gsm.datasim's vital signs
+ * generator is given it. The release of gsm.mapping built for R in the browser
+ * (scripts/vendor-lib.mjs's GSM_MAPPING_WORKFLOWS and the r-wasm pins) is
+ * older than this workflow, so the one file is copied from a later release
+ * tag, as it is. Only its spec is read: the workflow is not run.
+ */
+export const GSM_MAPPING_VITALS = {
+  name: 'gsm.mapping vital signs mapping workflow',
+  label: 'workflow',
+  repository: 'https://github.com/Gilead-Public/gsm.mapping',
+  directory: 'site/vendor/gsm.mapping-vitals',
+  tag: 'v1.3.0',
+  files: [{ file: 'workflow/1_mappings/VS.yaml', source: 'inst/workflow/1_mappings/VS.yaml' }]
+};
+
+/** What the study builder copies in: the simulator, and the one spec it lacks. */
+export const BUILDER_SOURCES = [GSM_DATASIM, GSM_MAPPING_VITALS];
+
+/**
  * A file's checksum.
  * @param {Uint8Array} bytes The file's bytes.
  * @returns {string} Its SHA-256, in hex.

@@ -61,8 +61,11 @@ export const BUILDER_DEFAULTS = Object.freeze({
 export const BUILDER_CAVEATS = Object.freeze([
   'Every row is synthetic, made by gsm.datasim. No real participant or site is in it.',
   'Phase and therapeutic area are labels. gsm.datasim does not shape the data by either, so a phase only fills in a typical size, which you can change.',
-  'The labs file keeps four columns: study, participant, date and toxicity grade. It has no lab results, so the lab charts cannot draw it.',
-  'Only the study’s last monthly snapshot is loaded, as gsm’s raw files, for the RBQM tab.',
+  'Only the study’s last monthly snapshot is loaded: as gsm’s raw files for the RBQM tab, and as three standard files (participants, adverse events, vital signs) for the other charts.',
+  'gsm.datasim makes no lab results, only toxicity grades, so the Labs and vitals charts draw its eight vital signs. Their units are the ones its averages are in; it states none.',
+  'Adverse event terms are gsm.datasim’s placeholders (term1, soc1). Severity is the toxicity grade in words: 1 mild, 2 moderate, 3 or more severe.',
+  'Study days count from the first dose, or from enrolment for a participant with none.',
+  'gsm.datasim makes no treatment arms and no ECGs. Charts that compare arms show one group, All participants.',
   'Site ids are written SITE1234 where gsm.datasim writes 0X1234, which R would read back as a number.'
 ]);
 
@@ -149,10 +152,11 @@ export function readForm(form) {
 /**
  * The files R returned, as the app loads raw files: each a name and its text.
  * @param {Object} answer What `builder_run` returned.
+ * @param {string} [key] Which of its lists: `files`, gsm's raw files, or `standard`, the standard domains' files.
  * @returns {?Array<{name: string, text: string, rows: number}>} The files, or null when the answer does not hold any that can be read.
  */
-export function builtFiles(answer) {
-  const files = isRecord(answer) && Array.isArray(answer.files) ? answer.files : null;
+export function builtFiles(answer, key = 'files') {
+  const files = isRecord(answer) && Array.isArray(answer[key]) ? answer[key] : null;
   if (!files || !files.length) return null;
   const read = [];
   for (const file of files) {

@@ -8,6 +8,7 @@ import * as bundle from '../main.js';
 import { mountApp } from './page.js';
 import { DEMO_STUDIES } from './studies.js';
 import { SITE } from './site.js';
+import { createConnection, createHost } from './r-browser.js';
 
 /* global __SAFETY_VIZ_VERSION__ */
 
@@ -54,7 +55,17 @@ export { rOnRequest, rUnavailable } from './r-on-request.js';
 // browser it starts when the reader asks. The page that mounts the app says
 // where R's files and gsm.viz's bundle are served from.
 export { rbqmTab } from './rbqm-view.js';
-export { createConnection as createRConnection } from './r-browser.js';
+// The connections the app's own tabs make share one R (r-browser.js's host):
+// the reader starts R once, for the RBQM tab or to build a study, and the
+// other tab uses the same one. A page may still hand a connection a host of
+// its own, or `host: null` for an R of its own.
+const appHost = createHost();
+/**
+ * A connection to R in the browser that shares the app's one R.
+ * @param {Object} [options] createConnection's options (r-browser.js).
+ * @returns {{run: Function, close: Function}} The connection.
+ */
+export const createRConnection = (options = {}) => createConnection({ host: appHost, ...options });
 // The Build a study tab: a view a library brings, which has R in the browser
 // simulate a study with gsm.datasim and loads it as gsm's raw files. The page
 // that mounts the app says where R's files are served from.

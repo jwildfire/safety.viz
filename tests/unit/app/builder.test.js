@@ -23,7 +23,12 @@ import {
   builderTabExpression,
   builderTabOptions
 } from '../../../scripts/builder-lib.mjs';
-import { GSM_DATASIM, readRecord, verifyVendored } from '../../../scripts/vendor-lib.mjs';
+import {
+  GSM_DATASIM,
+  GSM_MAPPING_VITALS,
+  readRecord,
+  verifyVendored
+} from '../../../scripts/vendor-lib.mjs';
 
 // The study builder's rules (the Build a study tab): what the form may hold,
 // what R is asked for, the sentences, and what the page hands R. R itself is
@@ -133,6 +138,12 @@ describe('what R returned', () => {
     ]);
   });
 
+  it('reads the standard domains’ files by their own key', () => {
+    const standard = [{ name: 'adsl.csv', rows: 1, text: 'USUBJID\nS1\n' }];
+    expect(builtFiles({ ...answer, standard }, 'standard')).toEqual(standard);
+    expect(builtFiles(answer, 'standard')).toBeNull();
+  });
+
   it('is not read when a file has no name or no text, or there are none', () => {
     expect(builtFiles(null)).toBeNull();
     expect(builtFiles({ files: [] })).toBeNull();
@@ -166,7 +177,8 @@ describe('what the tab says', () => {
   it('says the study is synthetic and that phase and area are labels', () => {
     expect(BUILDER_CAVEATS.join(' ')).toMatch(/synthetic/);
     expect(BUILDER_CAVEATS.join(' ')).toMatch(/Phase and therapeutic area are labels/);
-    expect(BUILDER_CAVEATS.join(' ')).toMatch(/no lab results/);
+    expect(BUILDER_CAVEATS.join(' ')).toMatch(/makes no lab results/);
+    expect(BUILDER_CAVEATS.join(' ')).toMatch(/placeholders/);
   });
 });
 
@@ -212,6 +224,7 @@ describe('what R is given', () => {
     expect(files.filter((entry) => /\/R\/[^/]+\.R$/.test(entry.path)).length).toBe(41);
     expect(files.map((entry) => entry.path)).toContain('/builder/gsm.datasim/inst/template.csv');
     expect(files.map((entry) => entry.path)).toContain('/builder/gsm.datasim/DESCRIPTION');
+    expect(files.at(-1).path).toBe('/builder/gsm.mapping/VS.yaml');
     for (const entry of files)
       expect(existsSync(path.join(root, entry.file)), entry.file).toBe(true);
   });
@@ -223,6 +236,7 @@ describe('what R is given', () => {
     expect(options.r.repos).toEqual(['./r-wasm', 'https://repo.r-wasm.org']);
     expect(options.r.call).toBe('builder_run');
     expect(options.r.simulator).toBe('/builder/gsm.datasim');
+    expect(options.r.vitals).toBe('/builder/gsm.mapping/VS.yaml');
     expect(options.open).toBe('rbqm');
   });
 
@@ -233,6 +247,21 @@ describe('what R is given', () => {
     expect(builderTabExpression({ r: 'unavailable' })).toContain(
       '"unavailable":"Building a study needs R'
     );
+  });
+});
+
+describe('the copy of the vital signs spec', () => {
+  it('matches its record, and names the raw vital signs table the generator is given', () => {
+    const directory = path.join(root, GSM_MAPPING_VITALS.directory);
+    expect(verifyVendored(directory)).toEqual([]);
+    expect(readRecord(directory).tag).toBe(GSM_MAPPING_VITALS.tag);
+    const text = readFileSync(path.join(directory, GSM_MAPPING_VITALS.files[0].file), 'utf8');
+    expect(text).toMatch(/^ {2}Raw_VS:$/m);
+    // Every vital sign the builder names a unit for is a column of the spec.
+    const [, listed] = builderR.match(/builder_vital_signs <- list\(([\s\S]*?)\n\)/);
+    for (const [, column] of listed.matchAll(/^ {2}(\w+) = c\(/gm)) {
+      expect(text, column).toMatch(new RegExp(`^ {4}${column}:$`, 'm'));
+    }
   });
 });
 

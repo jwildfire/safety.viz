@@ -3,6 +3,7 @@ import {
   WEBR_BASE_URL,
   WEBR_VERSION,
   createConnection,
+  createHost,
   foldersOf,
   fromWire
 } from '../../../src/app/r-browser.js';
@@ -425,5 +426,103 @@ describe('letting go of R (#258)', () => {
     const offline = standIn({ fail: { import: 'Failed to fetch' } });
     await createConnection(options(offline)).run('rbqm_run');
     expect(count(offline, 'close')).toBe(0);
+  });
+});
+
+// One R that several connections share: the Build a study tab and the RBQM tab
+// each need R, and a reader who starts it for one has started it for both.
+describe('an R that connections share', () => {
+  const count = (webR, call) => webR.calls.filter(([name]) => name === call).length;
+  const shared = (webR) => createHost({ importWebR: webR.importWebR });
+  const first = (host, extra = {}) =>
+    createConnection({
+      host,
+      packages: ['workr'],
+      files: [{ path: '/a/a.R', text: 'a' }],
+      source: ['/a/a.R'],
+      ...extra
+    });
+  const second = (host, extra = {}) =>
+    createConnection({
+      host,
+      packages: ['dplyr'],
+      files: [{ path: '/b/b.R', text: 'b' }],
+      source: ['/b/b.R'],
+      ...extra
+    });
+
+  it('starts one R for two connections, and each makes itself ready in it once', async () => {
+    const webR = standIn();
+    const host = shared(webR);
+    const stages = { a: [], b: [] };
+    const a = first(host, { onStage: (name) => stages.a.push(name) });
+    const b = second(host, { onStage: (name) => stages.b.push(name) });
+    expect(count(webR, 'new')).toBe(0);
+    expect((await a.run('f')).status).toBe('ok');
+    expect((await b.run('g')).status).toBe('ok');
+    await a.run('f');
+    await b.run('g');
+    expect(webR.imported).toHaveLength(1);
+    expect(count(webR, 'new')).toBe(1);
+    expect(count(webR, 'init')).toBe(1);
+    expect(
+      webR.calls.filter(([name]) => name === 'install').map(([, packages]) => packages)
+    ).toEqual([['workr'], ['dplyr']]);
+    const sourced = webR.calls
+      .filter(([name, code]) => name === 'evalRVoid' && code.startsWith('source('))
+      .map(([, code]) => code);
+    expect(sourced).toEqual(['source("/a/a.R", local = FALSE)', 'source("/b/b.R", local = FALSE)']);
+    // The connection whose run started R says so; the other names only its own steps.
+    expect(stages.a).toEqual(['runtime', 'packages', 'files', 'source']);
+    expect(stages.b).toEqual(['packages', 'files', 'source']);
+  });
+
+  it('closes R for both when either is closed, and each makes itself ready again in the next', async () => {
+    const webR = standIn();
+    const host = shared(webR);
+    const a = first(host);
+    const b = second(host);
+    await a.run('f');
+    await b.run('g');
+    await b.close();
+    expect(count(webR, 'close')).toBe(1);
+    expect((await a.run('f')).status).toBe('ok');
+    expect((await b.run('g')).status).toBe('ok');
+    expect(count(webR, 'new')).toBe(2);
+    expect(count(webR, 'install')).toBe(4);
+  });
+
+  it('answers that R did not start when it cannot be fetched, and tries again on the next run', async () => {
+    const offline = standIn({ fail: { import: 'Failed to fetch' } });
+    const host = shared(offline);
+    const a = first(host);
+    const answer = await a.run('f');
+    expect(answer).toEqual({
+      status: 'unavailable',
+      reason: 'load-failed',
+      message: 'Failed to fetch'
+    });
+    await a.run('f');
+    expect(offline.imported).toHaveLength(2);
+  });
+
+  it('tries a connection’s own packages again when they could not be installed, without starting R again', async () => {
+    const webR = standIn({ fail: { install: 'no such package' } });
+    const host = shared(webR);
+    const a = first(host);
+    expect((await a.run('f')).status).toBe('unavailable');
+    expect((await a.run('f')).status).toBe('unavailable');
+    expect(count(webR, 'new')).toBe(1);
+    expect(count(webR, 'install')).toBe(2);
+  });
+
+  it('leaves a connection made without a host with an R of its own', async () => {
+    const webR = standIn();
+    const host = shared(webR);
+    const own = standIn();
+    await first(host).run('f');
+    await createConnection({ importWebR: own.importWebR }).run('f');
+    expect(count(webR, 'new')).toBe(1);
+    expect(count(own, 'new')).toBe(1);
   });
 });

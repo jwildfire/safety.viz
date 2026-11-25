@@ -4,7 +4,7 @@
 // own R source, copied from a release tag (site/vendor/gsm.datasim), is
 // served beside the app and evaluated as it is by site/builder/builder.R.
 
-import { GSM_DATASIM } from './vendor-lib.mjs';
+import { GSM_DATASIM, GSM_MAPPING_VITALS } from './vendor-lib.mjs';
 import { SERVED_AS } from './r-wasm-lib.mjs';
 import { RBQM_TAB } from './rbqm-lib.mjs';
 
@@ -16,6 +16,8 @@ export const BUILDER = {
   root: '/builder',
   /** The folder gsm.datasim's copied files are under, in R's file system. */
   simulator: '/builder/gsm.datasim',
+  /** gsm.mapping's vital signs workflow, in R's file system. */
+  vitals: '/builder/gsm.mapping/VS.yaml',
   call: 'builder_run',
   /**
    * The packages R installs: the ones gsm.datasim's code calls, from the
@@ -63,7 +65,8 @@ export const FILE_NO_BUILDER =
 /**
  * The files R is given for a build: the builder's own R, then every copied
  * gsm.datasim file that R reads (its R source, its two templates and its
- * DESCRIPTION), each with the path R keeps it at.
+ * DESCRIPTION), then gsm.mapping's vital signs workflow, each with the path R
+ * keeps it at.
  * @returns {Array<{file: string, path: string}>} `file` is the path in the repository, `path` the one in R's file system.
  */
 export function builderFiles() {
@@ -74,7 +77,11 @@ export function builderFiles() {
       .map((entry) => ({
         file: `${GSM_DATASIM.directory}/${entry.file}`,
         path: `${BUILDER.simulator}/${entry.file}`
-      }))
+      })),
+    {
+      file: `${GSM_MAPPING_VITALS.directory}/${GSM_MAPPING_VITALS.files[0].file}`,
+      path: BUILDER.vitals
+    }
   ];
 }
 
@@ -100,7 +107,8 @@ export function builderTabOptions({
       files: files.map((entry) => ({ path: entry.path, url: fileUrl(entry) })),
       source: [files[0].path],
       call: BUILDER.call,
-      simulator: BUILDER.simulator
+      simulator: BUILDER.simulator,
+      vitals: BUILDER.vitals
     },
     downloads: BUILDER_DOWNLOADS,
     open

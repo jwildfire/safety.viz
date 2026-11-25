@@ -16,7 +16,8 @@
 # gsm.datasim's. This file asks for the study, picks the last snapshot, keeps
 # the tables the RBQM tab reads, and writes them out.
 #
-# Five things are changed after the simulation, and the tab says each:
+# Five things are changed in the raw files after the simulation, and the tab
+# says each. The standard domains' files are written further down.
 # - A site id gsm.datasim writes as "0X1234" is written "SITE1234". R reads a
 #   column of such values from a CSV file as hexadecimal numbers, so the RBQM
 #   pipeline, which reads the files as R does by default, would lose the ids.
@@ -154,6 +155,148 @@ builder_load <- function(simulator) {
   id
 }
 
+# ---- The standard domains' files, for the app's other charts ----
+#
+# The app's charts of participants read standard domains (Subject-level,
+# Adverse events, Labs and vitals), not gsm's raw tables. These functions write
+# a file for each from the raw tables. No value is made up: each column is a
+# raw column under the standard name, or one of three plain derivations that
+# the tab states:
+# - A study day is the date less the participant's first dose date, plus one
+#   (less one day before it, with no day nought); a participant with no dose
+#   date is counted from enrolment.
+# - An event's severity is its toxicity grade in words, as CTCAE grades are
+#   named: 1 mild, 2 moderate, 3 or more severe.
+# - A vital sign's unit is the one gsm.datasim's own averages are in. Its
+#   generator states none.
+# One column is a label of ours: gsm.datasim makes no treatment arms, and the
+# charts that compare groups need one, so every participant is in one group,
+# named for what it is.
+
+# The one group every participant is in.
+builder_arm <- "All participants"
+
+# gsm.datasim's vital signs, by its own generator, for the study as it stands.
+.builder_vitals <- function(snapshot, spec_file, intensity) {
+  spec <- yaml::read_yaml(spec_file)$spec
+  if (is.null(spec$Raw_VS)) stop("The vital signs spec names no Raw_VS table.", call. = FALSE)
+  if (is.null(snapshot$Raw_VISIT)) stop("gsm.datasim made no visits to take vital signs at.", call. = FALSE)
+  context <- list(
+    data = snapshot,
+    previous_data = list(),
+    combined_specs = list(Raw_VS = spec$Raw_VS),
+    n = nrow(snapshot$Raw_SUBJ),
+    start_date = NULL,
+    end_date = NULL,
+    snapshot_idx = 1,
+    snapshot_count = 1,
+    snapshot_width = "months",
+    study_id = NULL,
+    risk_profile = NULL,
+    total_site_count = nrow(snapshot$Raw_SITE)
+  )
+  made <- as.data.frame(generate_domain_from_registry("Raw_VS", context))
+  # Under gsm's names, as the spec gives them.
+  for (column in names(spec$Raw_VS)) {
+    source <- spec$Raw_VS[[column]]$source_col
+    if (!is.null(source) && source %in% names(made) && !(column %in% names(made))) {
+      names(made)[names(made) == source] <- column
+    }
+  }
+  made
+}
+
+# Each participant's day one: the first dose date, or enrolment without one.
+.builder_day_one <- function(subjects) {
+  day_one <- as.Date(as.character(subjects$firstdosedate))
+  enrolled <- as.Date(as.character(subjects$enrolldt))
+  day_one[is.na(day_one)] <- enrolled[is.na(day_one)]
+  stats::setNames(day_one, as.character(subjects$subjid))
+}
+
+# A study day: day one is 1 and the day before it is -1.
+.builder_day <- function(date, subjid, day_one) {
+  days <- as.integer(as.Date(as.character(date)) - day_one[as.character(subjid)])
+  ifelse(is.na(days), NA_integer_, ifelse(days >= 0L, days + 1L, days))
+}
+
+# The Subject-level file: one row per participant.
+.builder_subject <- function(subjects) {
+  data.frame(
+    USUBJID = as.character(subjects$subjid),
+    ARM = builder_arm,
+    SITEID = as.character(subjects$invid),
+    SEX = as.character(subjects$sex),
+    RACE = as.character(subjects$race),
+    EOSDY = suppressWarnings(as.integer(subjects$timeonstudy)),
+    stringsAsFactors = FALSE
+  )
+}
+
+# The Adverse events file: one row per event, numbered within a participant
+# in the order the events started.
+.builder_events <- function(events, day_one) {
+  events <- as.data.frame(events)
+  events <- events[order(as.character(events$subjid), as.character(events$aest_dt)), , drop = FALSE]
+  grade <- suppressWarnings(as.integer(events$aetoxgr))
+  severity <- ifelse(is.na(grade), NA_character_,
+    ifelse(grade <= 1L, "MILD", ifelse(grade == 2L, "MODERATE", "SEVERE")))
+  data.frame(
+    USUBJID = as.character(events$subjid),
+    ARM = builder_arm,
+    AESEQ = stats::ave(seq_len(nrow(events)), as.character(events$subjid), FUN = seq_along),
+    AEBODSYS = as.character(events$mdrsoc_nsv),
+    AEDECOD = as.character(events$mdrpt_nsv),
+    AETERM = as.character(events$mdrpt_nsv),
+    AESEV = severity,
+    AESER = as.character(events$aeser),
+    ASTDY = .builder_day(events$aest_dt, events$subjid, day_one),
+    AENDY = .builder_day(events$aeen_dt, events$subjid, day_one),
+    stringsAsFactors = FALSE
+  )
+}
+
+# The vital signs gsm.datasim makes, each with the name the Labs and vitals
+# file gives it and the unit its averages are in.
+builder_vital_signs <- list(
+  weight = c("Weight", "kg"),
+  height = c("Height", "cm"),
+  bsa = c("Body surface area", "m2"),
+  sysbp = c("Systolic blood pressure", "mmHg"),
+  diabp = c("Diastolic blood pressure", "mmHg"),
+  pulse = c("Pulse", "beats/min"),
+  temp = c("Temperature", "C"),
+  resp = c("Respiratory rate", "breaths/min")
+)
+
+# The Labs and vitals file: one row per participant, visit and vital sign that
+# was taken. Visits are numbered in the order of their dates across the study.
+.builder_results <- function(vitals, subject, day_one) {
+  vitals <- as.data.frame(vitals)
+  first_seen <- tapply(as.numeric(as.Date(as.character(vitals$vs_dt))), as.character(vitals$visit), min, na.rm = TRUE)
+  order_of <- stats::setNames(seq_along(first_seen) - 1L, names(sort(first_seen)))
+  who <- match(as.character(vitals$subjid), subject$USUBJID)
+  long <- lapply(intersect(names(builder_vital_signs), names(vitals)), function(column) {
+    value <- suppressWarnings(as.numeric(vitals[[column]]))
+    keep <- !is.na(value)
+    data.frame(
+      USUBJID = as.character(vitals$subjid)[keep],
+      ARM = builder_arm,
+      SITEID = subject$SITEID[who][keep],
+      SEX = subject$SEX[who][keep],
+      RACE = subject$RACE[who][keep],
+      VISIT = as.character(vitals$visit)[keep],
+      VISITNUM = unname(order_of[as.character(vitals$visit)])[keep],
+      TEST = builder_vital_signs[[column]][1],
+      STRESU = builder_vital_signs[[column]][2],
+      STRESN = value[keep],
+      DY = .builder_day(vitals$vs_dt, vitals$subjid, day_one)[keep],
+      stringsAsFactors = FALSE
+    )
+  })
+  do.call(rbind, long)
+}
+
 #' Simulate one study and return the RBQM tab's raw files.
 #'
 #' @param simulator The folder that holds the copy of gsm.datasim.
@@ -165,9 +308,13 @@ builder_load <- function(simulator) {
 #' @param phase,therapeutic_area What the study file says of each, or `NULL`
 #'   to keep what gsm.datasim drew.
 #' @param seed A whole number to seed R's random numbers with, or `NULL`.
+#' @param vitals The path of gsm.mapping's vital signs mapping workflow
+#'   (VS.yaml), whose spec gsm.datasim's vital signs generator is given, or
+#'   `NULL` to make no vital signs.
 #' @return A list: `study_id`, `snapshot_date`, `snapshots`, `seconds`,
-#'   `simulator` (gsm.datasim's version), and `files`, one entry per raw table
-#'   with its `name`, its `rows` and its `text`.
+#'   `simulator` (gsm.datasim's version), `files`, one entry per raw table
+#'   with its `name`, its `rows` and its `text`, and `standard`, the same for
+#'   each file of a standard domain the other charts read.
 builder_run <- function(
   simulator,
   study_name = "BUILT-001",
@@ -177,7 +324,8 @@ builder_run <- function(
   outlier_intensity = 1,
   phase = NULL,
   therapeutic_area = NULL,
-  seed = NULL
+  seed = NULL,
+  vitals = NULL
 ) {
   participants <- .builder_whole(participants, "Participants", builder_limits$participants)
   sites <- .builder_whole(sites, "Sites", builder_limits$sites)
@@ -219,6 +367,11 @@ builder_run <- function(
     stop("gsm.datasim did not make ", paste(missing, collapse = ", "), ".", call. = FALSE)
   }
 
+  # Vital signs, when their spec is given: gsm.datasim's own generator, run on
+  # the study as it stands at the last snapshot, so every row is of a
+  # participant and a visit the study has.
+  raw_vitals <- if (is.null(vitals)) NULL else .builder_vitals(snapshot, vitals, intensity)
+
   snapshot <- .builder_gsm_names(snapshot[builder_tables])
 
   snapshot <- lapply(snapshot, function(table) {
@@ -238,10 +391,22 @@ builder_run <- function(
   }
   snapshot$Raw_LB <- snapshot$Raw_LB[, builder_lab_columns, drop = FALSE]
 
-  files <- lapply(builder_tables, function(name) {
-    table <- as.data.frame(snapshot[[name]])
-    list(name = paste0(name, ".csv"), rows = nrow(table), text = .builder_csv(table))
-  })
+  as_file <- function(name, table) {
+    table <- as.data.frame(table)
+    list(name = name, rows = nrow(table), text = .builder_csv(table))
+  }
+  files <- lapply(builder_tables, function(name) as_file(paste0(name, ".csv"), snapshot[[name]]))
+
+  # The standard domains' files, made from the raw tables above.
+  subject <- .builder_subject(snapshot$Raw_SUBJ)
+  day_one <- .builder_day_one(snapshot$Raw_SUBJ)
+  standard <- list(
+    as_file("adsl.csv", subject),
+    as_file("adae.csv", .builder_events(snapshot$Raw_AE, day_one))
+  )
+  if (!is.null(raw_vitals)) {
+    standard <- c(standard, list(as_file("advs.csv", .builder_results(raw_vitals, subject, day_one))))
+  }
 
   list(
     study_id = as.character(study$study_id),
@@ -249,6 +414,7 @@ builder_run <- function(
     snapshots = length(dates),
     seconds = round(as.numeric(difftime(Sys.time(), started, units = "secs")), 1),
     simulator = version,
-    files = files
+    files = files,
+    standard = standard
   )
 }

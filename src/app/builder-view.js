@@ -121,7 +121,12 @@ export function builderTab({
     try {
       answer = await within(
         connection.run(r.call, {
-          args: { simulator: r.simulator, ...read.args },
+          args: {
+            simulator: r.simulator,
+            // gsm.mapping's vital signs spec, where the page serves one.
+            ...(r.vitals ? { vitals: r.vitals } : {}),
+            ...read.args
+          },
           onFiles: () => {
             if (mine !== builds || phase !== 'building') return;
             stage = 'Simulating the study…';
@@ -159,13 +164,20 @@ export function builderTab({
       redraw();
       return;
     }
+    // The standard domains' files, for the other charts; a page that serves no
+    // vital signs spec still gets participants and adverse events.
+    const standard = builtFiles(answer.value, 'standard') || [];
     const said = builtSaid(answer.value, read.args);
-    built = { said, files: files.map(({ name, rows }) => ({ name, rows })) };
+    const listed = (list) => list.map(({ name, rows }) => ({ name, rows }));
+    built = { said, files: listed(files), standard: listed(standard) };
     phase = 'done';
-    // The app loads the files as it loads a reader's own raw files, and draws
-    // the open view again: this one, which now says what was built. The
-    // sentence is said here and not as a note of the load, which is amber.
-    app.loadRaw(files.map(({ name, text }) => ({ name, text })));
+    // The app loads the raw files as it loads a reader's own, for the RBQM
+    // tab, then places the standard files in their domains, and draws the open
+    // view again: this one, which now says what was built. The sentence is
+    // said here and not as a note of the load, which is amber.
+    const texts = (list) => list.map(({ name, text }) => ({ name, text }));
+    app.loadRaw(texts(files));
+    if (standard.length) app.loadFiles(texts(standard));
     redraw();
   }
 
@@ -220,8 +232,8 @@ export function builderTab({
       el(
         'p',
         'sva-message',
-        'Describe a trial, and gsm.datasim simulates it in this browser. The study is loaded as ' +
-          'gsm’s raw files, ready for the RBQM tab.'
+        'Describe a trial, and gsm.datasim simulates it in this browser. The study is loaded for ' +
+          'the RBQM tab and for the charts of participants, adverse events and vital signs.'
       )
     );
     if (!canBuild) {
@@ -319,17 +331,23 @@ export function builderTab({
       const done = el('div', 'sva-build-done');
       done.setAttribute('role', 'status');
       done.append(el('p', 'sva-message', built.said));
-      const list = el('ul', 'sva-build-files');
-      for (const file of built.files) {
-        list.append(
-          el(
-            'li',
-            null,
-            `${file.name}: ${file.rows.toLocaleString('en-US')} row${file.rows === 1 ? '' : 's'}`
-          )
-        );
-      }
-      done.append(list);
+      const filesList = (heading, files) => {
+        if (!files.length) return;
+        done.append(el('h3', 'sva-build-subheading', heading));
+        const list = el('ul', 'sva-build-files');
+        for (const file of files) {
+          list.append(
+            el(
+              'li',
+              null,
+              `${file.name}: ${file.rows.toLocaleString('en-US')} row${file.rows === 1 ? '' : 's'}`
+            )
+          );
+        }
+        done.append(list);
+      };
+      filesList('For the RBQM tab, as gsm’s raw files', built.files);
+      filesList('For the other charts, as standard files', built.standard || []);
       if (open) {
         const go = el('button', 'sva-button sva-build-open', 'Open the RBQM tab');
         go.type = 'button';
