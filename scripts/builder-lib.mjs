@@ -59,3 +59,13 @@ export function builderSourceExpression({ where } = {}) {
     `SafetyVizApp.createRConnection, ...${JSON.stringify(builderSourceOptions(where))} }) }`
   );
 }
+
+/**
+ * What the page is told so it shows the studies a reader has and explores one
+ * with study.viewer: options of `SafetyVizApp.mount`, as source text.
+ * @param {{base?: string}} [where] The folder study.builder is served in.
+ * @returns {string} Two options, each followed by a comma.
+ */
+export function portfolioOptionsExpression({ base = `./${BUILDER_SERVED_AS}/` } = {}) {
+  return `portfolio: true, viewer: ${JSON.stringify({ url: `${base}study.viewer.js`, global: 'StudyViewer' })},`;
+}

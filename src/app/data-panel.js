@@ -28,6 +28,7 @@ import { MEASURES, distinctValues, measureColumn } from './mapping.js';
 import { neededBy, supportedCount } from './status.js';
 import { el, plural } from './dom.js';
 import { icon } from './icons.js';
+import { drawViewer, loadedStudy } from './viewer-view.js';
 import { fileDetails } from './file-details.js';
 
 /** Files larger than this are refused: they are parsed in memory. */
@@ -640,6 +641,46 @@ export function renderDataPanel(container, app) {
     container.append(sidebar(container, app, { input, domains: [], rows: {}, support: [] }), main);
     app.drawSource(body);
     return { refresh: () => {} };
+  }
+  // Two faces of the data view, on a page that serves the viewer: the files
+  // and their mapping, or the loaded study looked through.
+  const loadedFiles = Object.keys(state.files).length + state.unplaced.length + state.raw.length;
+  if (app.viewer && loadedFiles) {
+    const faces = el('div', 'sva-faces');
+    faces.setAttribute('role', 'tablist');
+    faces.setAttribute('aria-label', 'The data view');
+    for (const [exploring, label] of [
+      [false, 'Files and mapping'],
+      [true, 'Explore the data']
+    ]) {
+      const face = actionButton(exploring ? 'explore' : 'files', label, () => {
+        state.exploring = exploring;
+        app.select('data');
+      });
+      face.className = 'sva-face';
+      face.setAttribute('role', 'tab');
+      face.setAttribute('aria-selected', String(Boolean(state.exploring) === exploring));
+      faces.append(face);
+    }
+    main.append(faces);
+    if (state.exploring) {
+      const body = el('div', 'sva-explore-body');
+      // The viewer has the whole width: the steps of loading are a press away,
+      // on the other face. The file picker's input stays for the page's own use.
+      main.append(input, body);
+      container.classList.add('sva-data-wide');
+      container.append(main);
+      const named = state.named;
+      const current = app.portfolio().studies.find((entry) => entry.current);
+      drawViewer(
+        body,
+        app,
+        named && named.built
+          ? { fromBuilt: named.built }
+          : loadedStudy(app, current ? current.name : 'Study')
+      );
+      return { refresh: () => {} };
+    }
   }
   main.append(drop);
 

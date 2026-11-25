@@ -225,6 +225,8 @@ export const STUDY_BUILDER = {
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },
+    // study.viewer, the module the data view explores a study with.
+    { file: 'study.viewer.js', source: 'dist/study.viewer.js' },
     { file: 'r/builder.R', source: 'r/builder.R' },
     ...[
       'Raw_AE',
@@ -295,6 +297,10 @@ export const STUDY_BUILDER = {
     'workflows/adam/ADSL.yaml',
     'workflows/adam/ADVS.yaml',
     'workflows/analysis/AESummary.yaml',
+    // The ready-made studies, and the list that names them.
+    'presets/index.json',
+    'presets/phase1-small.study.json.gz',
+    'presets/phase2-oncology.study.json.gz',
     'LICENSE'
   ].map((entry) => (typeof entry === 'string' ? { file: entry, source: entry } : entry))
 };

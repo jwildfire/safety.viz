@@ -2,17 +2,23 @@
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
   "ref": "main",
-  "commit": "7c87a0ef58bcb58c23baf9a577fbe977fbb32f20",
+  "commit": "f3a5e247bcde774feaf3932aa498216e41c52c95",
   "version": "0.2.0",
   "license": "Apache-2.0",
   "merged_to_dev": false,
-  "note": "study.builder has no dev branch: this is the head of main, after its v0.1.0 tag and before v0.2.0, which adds the layers the Data tab reads. Copy again from the v0.2.0 tag when it is released.",
+  "note": "study.builder has no dev branch: this is the head of main, after its v0.1.0 tag and before v0.2.0, which adds the layers, the saved studies and presets, and study.viewer, all of which the demo app uses. Copy again from the v0.2.0 tag when it is released.",
   "files": [
     {
       "file": "study.builder.js",
       "source": "dist/study.builder.js",
-      "sha256": "af7e8e4e2596d051488e4a09198eea1717e9a71a4db827cb09fd0dd55914a7f8",
-      "bytes": 52743
+      "sha256": "07be87e8c12e16a0b38d0b5ab47427f838a66208c18b60100ce1aac65f40eee7",
+      "bytes": 63479
+    },
+    {
+      "file": "study.viewer.js",
+      "source": "dist/study.viewer.js",
+      "sha256": "6e2ada8004a98ab509a4a84cf51619ce5b0b0a660155e66026dec0351f5583a4",
+      "bytes": 24700
     },
     {
       "file": "r/builder.R",
@@ -421,6 +427,24 @@
       "source": "workflows/analysis/AESummary.yaml",
       "sha256": "cec7496cb2715ecb82abb279d9e549923f1cc0027524a2de1798c04214dfeee7",
       "bytes": 2323
+    },
+    {
+      "file": "presets/index.json",
+      "source": "presets/index.json",
+      "sha256": "d1a25607115698dc39ba501a5ca0404508073496cdb08ec2b4a043dfebed7195",
+      "bytes": 2026
+    },
+    {
+      "file": "presets/phase1-small.study.json.gz",
+      "source": "presets/phase1-small.study.json.gz",
+      "sha256": "02e05a4f470729ef58fca214783f27937b2aae39602454b1c0ba0e6eb520899d",
+      "bytes": 388400
+    },
+    {
+      "file": "presets/phase2-oncology.study.json.gz",
+      "source": "presets/phase2-oncology.study.json.gz",
+      "sha256": "2da70ebfa4a77365239168fe76ba257a49caa84bfc559f7a0cb9ae60c404f314",
+      "bytes": 1143768
     },
     {
       "file": "LICENSE",

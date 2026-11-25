@@ -22,6 +22,7 @@
 // each one before it places it in a standard domain.
 
 import { parseFile } from './parse.js';
+import { STUDIES_VIEW_ID, drawChip, studiesView } from './portfolio.js';
 import { placeFile } from './detect.js';
 import {
   applySavedMapping,
@@ -196,7 +197,11 @@ export function mountApp(
         if (!response.ok) throw new Error(`${url} was answered with HTTP ${response.status}.`);
         return response.text();
       }),
-    dataView = renderDataPanel
+    dataView = renderDataPanel,
+    // The studies a reader has, as a chip in the header and a Studies view
+    // (portfolio.js); and the viewer the data view explores a study with.
+    portfolio: withPortfolio = false,
+    viewer = null
   } = {}
 ) {
   const root = typeof target === 'string' ? document.querySelector(target) : target;
@@ -269,6 +274,8 @@ export function mountApp(
     views.set(id, view);
     viewLibrary.set(id, name);
   }
+  // The Studies view is the app's own, the last tab, on a page that asks for it.
+  if (withPortfolio && !views.has(STUDIES_VIEW_ID)) views.set(STUDIES_VIEW_ID, studiesView());
   // The tabs that take files of their own (#282): every file a reader loads is
   // asked of each, in the tabs' order, and the first to claim it has it.
   const claimants = [...views.values()].filter((view) => typeof view.claims === 'function');
@@ -316,6 +323,10 @@ export function mountApp(
     focus: null, // the mapping row to return the keyboard focus to after a re-render
     selected: 'data',
     source: null, // the id of the source open on the data view, when one is
+    named: null, // what the loaded study is called, when what loaded it said: { name, kind, facts, about, viewer }
+    chip: null, // what is open under the study chip: 'menu', 'info' or nothing
+    exploring: false, // whether the data view shows the viewer in place of the files
+    viewing: null, // where the reader is in the viewer: its view, its table and its participant
     details: new Set(), // the names of the loaded files whose details are open on the data view
     item: null, // the open item of the open view, when the view brings a row of its own (#279)
     busy: ''
@@ -326,6 +337,10 @@ export function mountApp(
   let dataShown = null; // what the data view returned, while it is the view on the page
   const studies = demo ? demo.studies || DEMO_STUDIES : [];
   let demoRun = 0; // the latest demo study asked for; an earlier one still loading is dropped
+
+  /** How many files are loaded: placed, set aside, or kept as gsm's raw files. */
+  const loadedCount = () =>
+    Object.keys(state.files).length + state.unplaced.length + state.raw.length;
 
   const status = () => {
     const computed = chartStatus(state.mappings, manifest, problems);
@@ -387,7 +402,9 @@ export function mountApp(
       marks: { exploratory: ['This app'] }
     })
   );
-  bar.append(brand, tabs, appStatus);
+  // The study chip, between the wordmark and the tabs, on a page that asks for it.
+  const chipSlot = el('div', 'sva-chip-slot');
+  bar.append(brand, ...(withPortfolio ? [chipSlot] : []), tabs, appStatus);
   const chartRow = el('nav', 'sva-charts');
   chartRow.setAttribute('aria-label', 'Charts');
   // The R control's details open under the row, at its right end (#276).
@@ -542,7 +559,14 @@ export function mountApp(
       navItem(
         'data',
         'Data',
-        { className: 'sva-tag', text: dataTag({ study: state.study, loaded, studies }) },
+        {
+          className: 'sva-tag',
+          // A study that says its name is called by it.
+          text:
+            state.named && state.named.name && loaded
+              ? state.named.name
+              : dataTag({ study: state.study, loaded, studies })
+        },
         'sva-hex sva-spectrum'
       )
     );
@@ -1104,6 +1128,7 @@ export function mountApp(
     const current = status();
     renderHead(current);
     renderNav(current);
+    if (withPortfolio) drawChip(chipSlot, handle);
     renderMain(current);
     revealOpen();
     // The browser tab's title follows the open view (#270).
@@ -1168,6 +1193,9 @@ export function mountApp(
     state.failed = {};
     state.focus = null;
     state.source = null;
+    state.named = null;
+    state.exploring = false;
+    state.viewing = null;
   }
 
   /** The first chart the loaded data supports that is drawn in the main pane. */
@@ -1242,6 +1270,124 @@ export function mountApp(
       link.click();
       link.remove();
       URL.revokeObjectURL(link.href);
+    },
+
+    /** The viewer the data view explores a study with, when the page serves one: `{ url, global }`. */
+    viewer: isRecord(viewer) ? viewer : null,
+
+    /**
+     * Show the data view with the viewer open on the loaded study.
+     * @returns {void}
+     */
+    explore() {
+      state.exploring = true;
+      state.source = null;
+      if (state.selected === 'data') render();
+      else handle.select('data');
+    },
+
+    /**
+     * The studies a reader has, and the ways to add one (portfolio.js). A demo
+     * study is one; so are the reader's own files while they are loaded; so is
+     * each study a source says it has, as study.builder's ready-made and saved
+     * studies. The one that is loaded is `current`.
+     * @returns {{studies: Object[], add: Object[], busy: string, problem: string}} What the chip and the Studies view draw.
+     */
+    portfolio() {
+      const loaded = loadedCount();
+      const current = status();
+      const ready = Object.values(current).filter((one) => one.state === 'ready').length;
+      const support = { ready, total: Object.keys(manifest.modules).length };
+      const list = [];
+      for (const study of studies) {
+        const isCurrent = state.study === study.id && !state.named;
+        list.push({
+          id: `demo:${study.id}`,
+          name: study.label,
+          kind: 'Demo',
+          size: plural(study.files.length, 'file'),
+          about: study.description,
+          current: isCurrent,
+          ...(isCurrent ? { support, files: loaded } : {}),
+          open: () => handle.loadDemo(study.id)
+        });
+      }
+      let busy = '';
+      let problem = '';
+      let namedListed = false;
+      for (const source of sources) {
+        if (!isRecord(source.studies) || typeof source.studies.list !== 'function') continue;
+        let said = null;
+        try {
+          said = source.studies.list(handle);
+        } catch (error) {
+          console.warn('safety.viz app: a source could not list its studies.', error);
+        }
+        if (!isRecord(said)) continue;
+        if (said.busy) busy = said.busy;
+        if (said.problem) problem = said.problem;
+        for (const entry of Array.isArray(said.studies) ? said.studies : []) {
+          const isCurrent = Boolean(
+            state.named && state.named.id && state.named.id === entry.id && loaded
+          );
+          if (isCurrent) namedListed = true;
+          list.push({
+            ...entry,
+            current: isCurrent,
+            ...(isCurrent
+              ? { support, files: loaded, facts: state.named.facts, about: state.named.about }
+              : {})
+          });
+        }
+      }
+      if (loaded && state.named && !namedListed) {
+        list.push({
+          id: state.named.id || 'named',
+          name: state.named.name || 'Study',
+          kind: state.named.kind || 'Simulated',
+          size: state.named.size || plural(loaded, 'file'),
+          about: state.named.about || '',
+          facts: state.named.facts,
+          current: true,
+          support,
+          files: loaded,
+          open: () => {}
+        });
+      }
+      if (loaded && !state.named && !studies.some((study) => study.id === state.study)) {
+        list.push({
+          id: 'own',
+          name: 'Your files',
+          kind: 'Your files',
+          size: plural(loaded, 'file'),
+          about: 'Read in this browser, and sent nowhere.',
+          current: true,
+          support,
+          files: loaded,
+          open: () => {}
+        });
+      }
+      const add = [
+        {
+          id: 'files',
+          label: 'From your files',
+          about: 'CSV or JSON. They are read in this browser and sent nowhere.',
+          action: 'Choose files',
+          run: () => {
+            state.exploring = false;
+            state.source = null;
+            handle.select('data');
+            const input = root.querySelector('.sva-data input[type="file"]');
+            if (input) input.click();
+          }
+        }
+      ];
+      for (const source of sources) {
+        if (isRecord(source.studies) && Array.isArray(source.studies.add)) {
+          for (const way of source.studies.add) add.push({ ...way, run: () => way.run(handle) });
+        }
+      }
+      return { studies: list, add, busy, problem };
     },
 
     /** The ways to load data that libraries brought: each an id, a label and one sentence. */
@@ -1323,7 +1469,9 @@ export function mountApp(
      * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
      * @returns {void}
      */
-    loadFiles(list, { notes = [], study = null } = {}) {
+    loadFiles(list, { notes = [], study = null, as = null } = {}) {
+      // What loads the files may say what study they are; files with no such word are the reader's own.
+      state.named = isRecord(as) ? as : null;
       // Files of the user's own outrank a demo study still on its way: it is
       // dropped when it arrives, instead of replacing them.
       if (!study) {
@@ -1397,7 +1545,8 @@ export function mountApp(
      * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
      * @returns {void}
      */
-    loadRaw(list, { notes = [], study = null } = {}) {
+    loadRaw(list, { notes = [], study = null, as = null } = {}) {
+      state.named = isRecord(as) ? as : null;
       if (!study) {
         demoRun += 1;
         state.busy = '';
@@ -1652,6 +1801,7 @@ export function mountApp(
       const current = status();
       renderHead(current);
       renderNav(current);
+      if (withPortfolio) drawChip(chipSlot, handle);
       revealOpen();
     },
 

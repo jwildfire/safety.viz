@@ -53,6 +53,95 @@ export function builderSource({
 
   const canBuild = typeof createConnection === 'function' && !unavailable;
 
+  // The studies study.builder has for this page: the ready-made ones it hosts,
+  // and what the reader saved in this browser. Found once, when first asked.
+  let offered = null; // { presets, shelf, saved } once found
+  let finding = null;
+  let opening = '';
+  let listProblem = '';
+
+  /** What the page keeps of a study: its name, its facts, and its tables for the viewer. */
+  function named(study, id) {
+    const args = study.args || {};
+    const layers = Array.isArray(study.layers) ? study.layers : [];
+    const size = args.participants ? `${args.participants} participants · ${args.sites} sites` : '';
+    return {
+      id,
+      name: study.id,
+      kind: 'Simulated',
+      size,
+      about: 'Every row is synthetic.',
+      facts: [
+        {
+          label: 'Phase and area',
+          value: args.phase && `${args.phase} · ${args.therapeutic_area}`
+        },
+        {
+          label: 'Participants',
+          value: args.participants && `${args.participants} at ${args.sites} sites`
+        },
+        { label: 'Duration', value: study.snapshots && `${study.snapshots} monthly snapshots` },
+        {
+          label: 'Tables',
+          value:
+            layers.length &&
+            `${layers.reduce((sum, layer) => sum + layer.tables.length, 0)} in ${layers.length} layers`
+        },
+        { label: 'Made by', value: study.simulator && `gsm.datasim ${study.simulator}` }
+      ].filter((fact) => fact.value),
+      // Every layer, for the data view's viewer, when the study has them.
+      ...(layers.length ? { built: study } : {})
+    };
+  }
+
+  function find(app) {
+    if (finding || offered || !canBuild) return;
+    finding = loadLibrary()
+      .then(async (builder) => {
+        if (!builder) throw new Error(problem || 'study.builder did not load');
+        const shelf = typeof builder.createShelf === 'function' ? builder.createShelf() : null;
+        const presets =
+          typeof builder.fetchPresets === 'function'
+            ? await builder.fetchPresets(`${base}presets/index.json`)
+            : [];
+        const saved = shelf && shelf.available ? await shelf.list() : [];
+        offered = { builder, presets, shelf, saved };
+      })
+      .catch((error) => {
+        listProblem = `study.builder's studies could not be listed: ${messageOf(error)}.`;
+        offered = { builder: null, presets: [], shelf: null, saved: [] };
+      })
+      .then(() => {
+        finding = null;
+        app.retag();
+        app.redrawView('studies');
+      });
+  }
+
+  async function refreshSaved(app) {
+    if (offered && offered.shelf && offered.shelf.available) {
+      offered.saved = await offered.shelf.list();
+      app.retag();
+      app.redrawView('studies');
+    }
+  }
+
+  /** Open one of study.builder's studies and hand it to the app, with no R. */
+  async function openOffered(app, id, name, get) {
+    opening = `Opening ${name}…`;
+    listProblem = '';
+    app.retag();
+    app.redrawView('studies');
+    try {
+      use(await get(), app, id);
+    } catch (error) {
+      listProblem = messageOf(error);
+    }
+    opening = '';
+    app.retag();
+    app.redrawView('studies');
+  }
+
   /** study.builder, loaded once from the page's own address when the tab is first opened. */
   function loadLibrary() {
     if (loading) return loading;
@@ -85,12 +174,21 @@ export function builderSource({
    * Hand a study to the app: its raw files kept as they are, its standard
    * files placed, and the source closed, so the data view shows what loaded.
    */
-  function use(study, app) {
+  function use(study, app, id = null) {
     const { raw, standard } = study.files();
     loaded = { id: study.id, said: study.said };
-    app.loadRaw(raw);
-    app.loadFiles(standard, { notes: [] });
-    app.openSource(null);
+    const as = named(study, id || `saved:study:${study.id}`);
+    app.loadRaw(raw, { as });
+    app.loadFiles(standard, { notes: [], as });
+    // A study built here closes the builder; one opened from the list leaves the reader where they are.
+    if (app.state.source) app.openSource(null);
+    // A study that was built is kept in this browser, so it opens at once next time.
+    if (!id && offered && offered.shelf && offered.shelf.available && offered.builder) {
+      offered.shelf
+        .save(offered.builder.savedOf(study))
+        .then(() => refreshSaved(app))
+        .catch(() => {});
+    }
   }
 
   function mountWidget(builder, app) {
@@ -145,6 +243,70 @@ export function builderSource({
     id: BUILDER_SOURCE_ID,
     label: 'Build a study',
     about: 'Simulate a study with gsm.datasim, in this browser.',
+    /** study.builder's studies, for the app's list of studies (page.js's `portfolio`). */
+    studies: {
+      list(app) {
+        if (!canBuild) return { studies: [] };
+        if (!offered) {
+          find(app);
+          return { studies: [], busy: 'Looking for study.builder’s studies…' };
+        }
+        const { builder, presets, shelf, saved } = offered;
+        const entries = [];
+        for (const entry of saved.filter((one) => one.kind === 'study')) {
+          const id = `saved:${entry.id}`;
+          entries.push({
+            id,
+            name: entry.name,
+            kind: 'Simulated',
+            size: entry.size.replace(/, /g, ' · ').replace(/ · \d+ months$/, ''),
+            about: `Saved in this browser, ${String(entry.saved).slice(0, 10)}`,
+            open: () =>
+              openOffered(app, id, entry.name, async () =>
+                builder.openStudy(await shelf.open(entry.id))
+              ),
+            remove: async () => {
+              await shelf.remove(entry.id);
+              refreshSaved(app);
+            }
+          });
+        }
+        for (const preset of presets.filter((one) => one.study)) {
+          const id = `preset:${preset.id}`;
+          entries.push({
+            id,
+            name: preset.settings.name,
+            kind: 'Simulated',
+            size: `${preset.settings.participants} participants · ${preset.settings.sites} sites`,
+            about: `Ready-made: ${preset.name}`,
+            open: () =>
+              openOffered(
+                app,
+                id,
+                preset.settings.name,
+                async () => (await builder.openPreset(preset)).study
+              )
+          });
+        }
+        return { studies: entries, busy: opening, problem: listProblem };
+      },
+      add: canBuild
+        ? [
+            {
+              id: 'describe',
+              label: 'Describe a simulated study',
+              about:
+                'Phase, size, domains and layers. study.builder makes it in this browser: a few seconds, and about half a minute the first time.',
+              action: 'Describe a study',
+              primary: true,
+              run: (app) => {
+                app.state.exploring = false;
+                app.openSource(BUILDER_SOURCE_ID);
+              }
+            }
+          ]
+        : []
+    },
     /** The source's state, for the tests and the page. */
     state: () => ({ loaded, problem, mounted: Boolean(widget), widget }),
     render(container, app) {
