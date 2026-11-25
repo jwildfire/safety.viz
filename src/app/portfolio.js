@@ -183,6 +183,21 @@ export function studiesView() {
       );
       container.append(head);
 
+      // The ways to add a study come first: a reader with none of their own starts there.
+      container.append(el('h3', 'sva-studies-sub', 'Add a study'));
+      const ways = el('div', 'sva-studies-ways');
+      for (const way of said.add) {
+        const card = el('div', 'sva-studies-way');
+        card.append(el('strong', null, way.label), el('p', null, way.about));
+        const go = button(`sva-button${way.primary ? ' sva-primary' : ''}`, way.action, () =>
+          way.run()
+        );
+        go.dataset.add = way.id;
+        card.append(go);
+        ways.append(card);
+      }
+      container.append(ways);
+      container.append(el('h3', 'sva-studies-sub', 'Open a study'));
       const list = el('div', 'sva-studies-list');
       list.setAttribute('role', 'table');
       list.setAttribute('aria-label', 'Studies');
@@ -241,19 +256,6 @@ export function studiesView() {
         container.append(box);
       }
 
-      container.append(el('h3', 'sva-studies-sub', 'Add a study'));
-      const ways = el('div', 'sva-studies-ways');
-      for (const way of said.add) {
-        const card = el('div', 'sva-studies-way');
-        card.append(el('strong', null, way.label), el('p', null, way.about));
-        const go = button(`sva-button${way.primary ? ' sva-primary' : ''}`, way.action, () =>
-          way.run()
-        );
-        go.dataset.add = way.id;
-        card.append(go);
-        ways.append(card);
-      }
-      container.append(ways);
       return { destroy() {} };
     }
   };
