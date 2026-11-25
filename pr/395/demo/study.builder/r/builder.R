@@ -232,7 +232,8 @@ builder_load <- function(simulator) {
 # file. Two layers are built here:
 #
 # - Raw.RBQM: gsm's own mapping workflows, as installed with gsm.mapping, run
-#   on the raw tables. gsm calls these tables Mapped.
+#   on the raw tables. gsm calls these tables Mapped. One that comes out the
+#   same as its raw table is not kept: the site metrics are fed the raw table.
 # - ADaM: study.builder's own workflows (workflows/adam), which write the
 #   tables charts of participants read. Each says, in a `columns` block, where
 #   every column came from.
@@ -310,6 +311,45 @@ builder_layer_needs <- list(analysis = c("raw.rbqm", "adam"), reporting = "analy
     }
   }
   list(tables = tables, notes = notes, data = if (length(workflows)) run$results else list())
+}
+
+# A mapped table that is its raw table again, row for row and column for
+# column, is not kept: the raw table is used in its place, and whatever read
+# the mapped one says it read raw. Only the mapped tables that differ stay.
+.builder_same_table <- function(one, other) {
+  one <- as.data.frame(one, stringsAsFactors = FALSE)
+  other <- as.data.frame(other, stringsAsFactors = FALSE)
+  nrow(one) == nrow(other) && setequal(names(one), names(other)) &&
+    isTRUE(all.equal(one[names(other)], other, check.attributes = FALSE))
+}
+.builder_drop_copies <- function(built, data) {
+  same <- character(0)
+  keep <- list()
+  for (table in built$tables) {
+    from <- unlist(table$made$from)
+    if (length(from) == 1 && is.data.frame(data[[from]]) &&
+      .builder_same_table(built$data[[table$table]], data[[from]])) {
+      same[[table$table]] <- from
+      built$data[[table$table]] <- data[[from]]
+    } else {
+      keep[[length(keep) + 1]] <- table
+    }
+  }
+  built$tables <- keep
+  built$same <- same
+  built
+}
+
+# Where a table says what it was made from, a dropped copy is named as the raw
+# table it was.
+.builder_from_raw <- function(tables, same) {
+  lapply(tables, function(table) {
+    from <- unlist(table$made$from)
+    if (length(from)) {
+      table$made$from <- as.list(unique(ifelse(from %in% names(same), same[from], from)))
+    }
+    table
+  })
 }
 
 # ---- Analysis and Reporting ----
@@ -599,6 +639,7 @@ builder_run <- function(
   }
   data <- snapshot
   metrics <- NULL
+  same <- character(0)
   for (layer in builder_layers) {
     if (!(layer$id %in% wanted_layers)) next
     if (layer$id == "raw.rbqm") {
@@ -613,7 +654,8 @@ builder_run <- function(
           strPath = dirname(vitals), strPackage = NULL
         )))
       }
-      built <- .builder_layer(layer, found, data)
+      built <- .builder_drop_copies(.builder_layer(layer, found, data), data)
+      same <- built$same
     } else if (layer$id == "adam") {
       if (is.null(workflows)) stop("The ADaM layer needs study.builder's workflows (workflows).", call. = FALSE)
       found <- suppressMessages(workr::MakeWorkflowList(
@@ -643,7 +685,9 @@ builder_run <- function(
     notes <- c(notes, built$notes)
     # What a layer made is there for the layers after it.
     for (name in names(built$data)) if (is.data.frame(built$data[[name]])) data[[name]] <- built$data[[name]]
-    out[[length(out) + 1]] <- list(id = layer$id, label = layer$label, tables = built$tables)
+    out[[length(out) + 1]] <- list(
+      id = layer$id, label = layer$label, tables = .builder_from_raw(built$tables, same)
+    )
   }
 
   versions <- c(
