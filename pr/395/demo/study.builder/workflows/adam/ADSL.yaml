@@ -1,5 +1,6 @@
 # ADaM subject-level table, from the raw participants table. One row per
-# participant. TRTSDT is each participant's day one, which the other ADaM
+# enrolled participant: a participant who was screened and not enrolled has no
+# arm and no day one, and is in no ADaM table. TRTSDT is each participant's day one, which the other ADaM
 # tables count study days from.
 meta:
   Type: ADaM
@@ -14,6 +15,10 @@ spec:
     subjid:
       type: character
     invid:
+      type: character
+    enrollyn:
+      type: character
+    arm:
       type: character
     sex:
       type: character
@@ -30,17 +35,17 @@ steps:
     name: workr::RunQuery
     params:
       df: Raw_SUBJ
-      strQuery: "SELECT subjid AS USUBJID, 'All participants' AS ARM, invid AS SITEID, sex AS SEX, race AS RACE, CAST(timeonstudy AS INTEGER) AS EOSDY, COALESCE(CAST(firstdosedate AS DATE), CAST(enrolldt AS DATE)) AS TRTSDT FROM df ORDER BY subjid"
+      strQuery: "SELECT subjid AS USUBJID, arm AS ARM, invid AS SITEID, sex AS SEX, race AS RACE, CAST(timeonstudy AS INTEGER) AS EOSDY, COALESCE(CAST(firstdosedate AS DATE), CAST(enrolldt AS DATE)) AS TRTSDT FROM df WHERE enrollyn = 'Y' ORDER BY subjid"
 # Where each column came from. study.builder reads this block; workr does not.
 columns:
   USUBJID:
     label: Unique Subject Identifier
     from: Raw_SUBJ.subjid
-    how: Copied
+    how: 'Copied, for a participant who was enrolled (Raw_SUBJ.enrollyn is Y)'
   ARM:
     label: Description of Planned Arm
-    from: ''
-    how: "A label of study.builder's: gsm.datasim makes no treatment arms"
+    from: Raw_SUBJ.arm
+    how: Copied
   SITEID:
     label: Study Site Identifier
     from: Raw_SUBJ.invid
