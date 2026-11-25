@@ -1,18 +1,18 @@
 {
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
-  "ref": "v0.3.0-rc.2",
-  "commit": "2e8241236403b091e2c6b7908af18261be9a43ee",
-  "version": "0.3.0-rc.2",
+  "ref": "v0.3.0-rc.5",
+  "commit": "98e2a479263b40d97928bd33155ae642f062b0c8",
+  "version": "0.3.0-rc.5",
   "license": "Apache-2.0",
-  "tag": "v0.3.0-rc.2",
+  "tag": "v0.3.0-rc.5",
   "merged_to_dev": false,
   "files": [
     {
       "file": "study.builder.js",
       "source": "dist/study.builder.js",
-      "sha256": "cb80ea2d742f157e8b8fec78535f7717e622f98ddd64d4898f16ceafff4d80c2",
-      "bytes": 86965
+      "sha256": "af08663ca307aabcc20b4477df0eb736f89dbfbac8f21fc49b2ae3eb437d3262",
+      "bytes": 101023
     },
     {
       "file": "study.viewer.js",
@@ -23,8 +23,8 @@
     {
       "file": "r/builder.R",
       "source": "r/builder.R",
-      "sha256": "9e25403f7bfae2bc9a6917a90f47699cc3af1af2491dfddff1684b93c7abcfbb",
-      "bytes": 26807
+      "sha256": "0daa2802199f4e6bf0cdeb51bf1856a04968273bf6b1aad9dd2100559766c0f3",
+      "bytes": 33568
     },
     {
       "file": "vendor/gsm.datasim/R/Raw_AE.R",
@@ -429,10 +429,16 @@
       "bytes": 2323
     },
     {
+      "file": "protocols/cdisc-pilot.protocol.json",
+      "source": "protocols/cdisc-pilot.protocol.json",
+      "sha256": "8393d50583202f873065b8b914dc32781242c3a0e375e84e25816ba1d5f1759b",
+      "bytes": 11608
+    },
+    {
       "file": "presets/index.json",
       "source": "presets/index.json",
-      "sha256": "d1a25607115698dc39ba501a5ca0404508073496cdb08ec2b4a043dfebed7195",
-      "bytes": 2026
+      "sha256": "c96784c923491b056f33f09b368806ac6f3e67a5e442fd6c621e895db1d16bad",
+      "bytes": 18109
     },
     {
       "file": "presets/phase1-small.study.json.gz",

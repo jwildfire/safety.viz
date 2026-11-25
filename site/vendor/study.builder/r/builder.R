@@ -188,6 +188,159 @@ builder_load <- function(simulator) {
   as.data.frame(generate_domain_from_registry("Raw_VS", context))
 }
 
+# ---- A protocol's schedule ----
+#
+# With a protocol, the visits, vital signs and labs follow its schedule of
+# activities in place of gsm.datasim's fixed list of eight visits. The protocol
+# arrives as text (JSON), with a plan study.builder's page worked out: each
+# visit's name, study day and window, whether vital signs are taken at it, and
+# the lab panels drawn at it.
+#
+# gsm.datasim's own tables are the source of everything but the schedule: each
+# participant keeps their own vital signs and their own lab grades, redrawn at
+# the protocol's visits, so a site that stood out still does.
+#
+# - A participant's day 1 is their first dose, else their enrolment.
+# - A visit is made when its day is within the participant's time on study and
+#   on or before the last date in the snapshot.
+# - A participant who was not enrolled has only the visits before day 1.
+# - A visit's date is its planned day, moved within its window.
+.builder_schedule <- function(snapshot, protocol) {
+  plan <- yaml::yaml.load(protocol)$plan
+  if (!length(plan)) stop("The protocol has no visits.", call. = FALSE)
+  subj <- snapshot$Raw_SUBJ
+  old_visit <- snapshot$Raw_VISIT
+  as_date <- function(x) as.Date(substr(as.character(x), 1, 10))
+  last <- suppressWarnings(max(as_date(old_visit$visit_dt), na.rm = TRUE))
+  day <- vapply(plan, function(visit) as.integer(visit$day), integer(1))
+  # A study day as days from day 1: day 1 is 0, day -1 is the day before.
+  offset <- ifelse(day > 0, day - 1L, day)
+  before <- vapply(plan, function(visit) as.integer(visit$before %||% 0L), integer(1))
+  after <- vapply(plan, function(visit) as.integer(visit$after %||% 0L), integer(1))
+  names_of <- vapply(plan, function(visit) as.character(visit$name), character(1))
+
+  first_of <- function(...) {
+    out <- as.Date(rep(NA_character_, nrow(subj)))
+    for (column in c(...)) {
+      if (column %in% names(subj)) {
+        value <- as_date(subj[[column]])
+        out[is.na(out)] <- value[is.na(out)]
+      }
+    }
+    out
+  }
+  enrolled <- !is.na(subj$enrollyn) & subj$enrollyn == "Y"
+  day_one <- first_of("firstdosedate", "enrolldt", "firstparticipantdate")
+  screened <- first_of("mincreated_dts", "firstparticipantdate")
+  on_study <- suppressWarnings(as.integer(subj$timeonstudy))
+  on_study[is.na(on_study)] <- .Machine$integer.max
+
+  rows <- lapply(seq_len(nrow(subj)), function(i) {
+    if (enrolled[i] && !is.na(day_one[i])) {
+      keep <- which(offset <= on_study[i])
+      anchor <- day_one[i]
+    } else {
+      # Screened and not enrolled: the visits before day 1, from the day they were screened.
+      keep <- which(day < 1)
+      if (is.na(screened[i]) || !length(keep)) return(NULL)
+      anchor <- screened[i] - min(offset[keep])
+    }
+    if (!length(keep)) return(NULL)
+    moved <- vapply(keep, function(k) {
+      if (before[k] + after[k] == 0L) 0L else sample(seq(-before[k], after[k]), 1L)
+    }, integer(1))
+    dates <- anchor + offset[keep] + moved
+    ok <- is.na(last) | dates <= last
+    if (!any(ok)) return(NULL)
+    data.frame(
+      subjid = subj$subjid[i], invid = subj$invid[i], at = keep[ok], date = dates[ok],
+      stringsAsFactors = FALSE
+    )
+  })
+  made <- do.call(rbind, rows)
+  if (is.null(made) || !nrow(made)) stop("The protocol's schedule gave no visits to this study.", call. = FALSE)
+
+  study_id <- old_visit$studyid[1]
+  visit <- data.frame(
+    studyid = study_id,
+    visit_dt = format(made$date, "%Y-%m-%d"),
+    visit = names_of[made$at],
+    instancename = names_of[made$at],
+    subjid = made$subjid,
+    invid = made$invid,
+    stringsAsFactors = FALSE
+  )
+  snapshot$Raw_VISIT <- visit[, intersect(names(old_visit), names(visit)), drop = FALSE]
+
+  # Vital signs: a participant's own, drawn again at each visit that takes them.
+  if ("Raw_VS" %in% names(snapshot)) {
+    old <- snapshot$Raw_VS
+    takes <- vapply(plan, function(one) isTRUE(one$vs), logical(1))
+    at <- made[takes[made$at], , drop = FALSE]
+    by_subj <- split(seq_len(nrow(old)), old$subjid)
+    pick <- vapply(at$subjid, function(id) {
+      own <- by_subj[[id]]
+      if (length(own)) own[sample.int(length(own), 1L)] else sample.int(nrow(old), 1L)
+    }, integer(1))
+    new <- old[pick, , drop = FALSE]
+    new$subjid <- at$subjid
+    new$vs_dt <- at$date
+    new$visit <- names_of[at$at]
+    rownames(new) <- NULL
+    snapshot$Raw_VS <- new
+  }
+
+  # Labs: at each visit, the panels the protocol draws there. A panel that
+  # lists its tests has those; one that lists none has gsm.datasim's tests of
+  # that panel, or one test of the panel's name. Each grade is one of the
+  # participant's own.
+  if ("Raw_LB" %in% names(snapshot)) {
+    old <- snapshot$Raw_LB
+    known <- unique(old[, c("battrnam", "lbtstnam")])
+    tests_of <- function(panel) {
+      listed <- as.character(unlist(panel$tests))
+      name <- as.character(panel$panel)
+      if (!length(listed)) {
+        match <- known$lbtstnam[grepl(name, known$battrnam, ignore.case = TRUE)]
+        listed <- if (length(match)) match else name
+      }
+      data.frame(battrnam = toupper(name), lbtstnam = listed, stringsAsFactors = FALSE)
+    }
+    panels <- lapply(plan, function(one) {
+      if (!length(one$lb)) return(NULL)
+      unique(do.call(rbind, lapply(one$lb, tests_of)))
+    })
+    grades <- split(as.character(old$toxgrg_nsv), old$subjid)
+    every <- as.character(old$toxgrg_nsv)
+    rows <- lapply(seq_len(nrow(made)), function(i) {
+      tests <- panels[[made$at[i]]]
+      if (is.null(tests)) return(NULL)
+      own <- grades[[made$subjid[i]]]
+      if (!length(own)) own <- every
+      data.frame(
+        studyid = study_id,
+        toxgrg_nsv = own[sample.int(length(own), nrow(tests), replace = TRUE)],
+        lb_dt = made$date[i],
+        battrnam = tests$battrnam,
+        lbtstnam = tests$lbtstnam,
+        subjid = made$subjid[i],
+        visnam = names_of[made$at[i]],
+        stringsAsFactors = FALSE
+      )
+    })
+    new <- do.call(rbind, rows)
+    if (is.null(new)) new <- old[0, , drop = FALSE]
+    snapshot$Raw_LB <- new[, intersect(names(old), names(new)), drop = FALSE]
+  }
+  list(
+    tables = snapshot,
+    note = paste0(
+      "Visits, vital signs and labs follow the protocol's schedule: ", length(plan),
+      " planned visits, ", nrow(snapshot$Raw_VISIT), " made. Arms and activities of no domain are not simulated."
+    )
+  )
+}
+
 # ---- The layers built off raw ----
 #
 # Every table that is not raw is made by a workr workflow: a YAML file with a
@@ -435,7 +588,8 @@ builder_run <- function(
   layers = c("raw.rbqm", "adam", "analysis", "reporting"),
   workflows = NULL,
   kri = NULL,
-  reporting = NULL
+  reporting = NULL,
+  protocol = NULL
 ) {
   participants <- .builder_whole(participants, "Participants", builder_limits$participants)
   sites <- .builder_whole(sites, "Sites", builder_limits$sites)
@@ -509,6 +663,15 @@ builder_run <- function(
     snapshot$Raw_STUDY$therapeutic_area <- as.character(therapeutic_area)
   }
 
+  # A protocol's schedule takes the place of the simulator's visits.
+  schedule_note <- NULL
+  if (!is.null(protocol)) {
+    if (!("Raw_VISIT" %in% names(snapshot))) stop("A protocol's schedule needs the visits domain.", call. = FALSE)
+    scheduled <- .builder_schedule(snapshot, as.character(protocol))
+    snapshot <- scheduled$tables
+    schedule_note <- scheduled$note
+  }
+
   raw <- lapply(made, function(table) {
     .builder_table(snapshot[[table]], list(
       id = sub("^Raw_", "", table), table = table, name = paste0(table, ".csv"), layer = "raw",
@@ -519,7 +682,7 @@ builder_run <- function(
     ))
   })
   out <- list(list(id = "raw", label = "Raw", tables = raw))
-  notes <- builder_notes
+  notes <- c(builder_notes, schedule_note)
 
   # "raw" may be named among them and asks for nothing more: a page always
   # names it, so that a study of raw alone is not asked for with an empty list.

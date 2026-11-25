@@ -220,7 +220,7 @@ export const STUDY_BUILDER = {
   directory: 'site/vendor/study.builder',
   // The release the copy is made from: a candidate of v0.3.0, until that is
   // released. Move this to v0.3.0 then, and copy again.
-  tag: 'v0.3.0-rc.2',
+  tag: 'v0.3.0-rc.5',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },
@@ -297,6 +297,8 @@ export const STUDY_BUILDER = {
     'workflows/adam/ADVS.yaml',
     'workflows/analysis/AESummary.yaml',
     // The ready-made studies, and the list that names them.
+    // The ready-made protocol the builder's form offers to try.
+    'protocols/cdisc-pilot.protocol.json',
     'presets/index.json',
     'presets/phase1-small.study.json.gz',
     'presets/phase2-oncology.study.json.gz',

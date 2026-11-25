@@ -305,6 +305,16 @@ export function builderSource({
               run: (app) => {
                 app.openSource(BUILDER_SOURCE_ID);
               }
+            },
+            {
+              id: 'protocol',
+              label: 'From a protocol',
+              about:
+                'Open a CDISC USDM study definition, the data form of an ICH M11 protocol. The study is built on its schedule of activities, which you can change first.',
+              action: 'Open the builder',
+              run: (app) => {
+                app.openSource(BUILDER_SOURCE_ID);
+              }
             }
           ]
         : []

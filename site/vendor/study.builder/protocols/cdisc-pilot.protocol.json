@@ -1,0 +1,558 @@
+{
+  "format": "study.builder/protocol/1",
+  "name": "CDISC PILOT - LZZT",
+  "title": "LZZT",
+  "source": {
+    "kind": "usdm",
+    "version": "4.0.0",
+    "timeline": "Main Timeline",
+    "file": "https://github.com/cdisc-org/DDF-RA · CDISC_Pilot_Study.json",
+    "license": "CC-BY-4.0 (the repository's content licence)"
+  },
+  "phase": "P2",
+  "indication": "Alzheimer's disease",
+  "participants": 300,
+  "arms": [
+    "Placebo",
+    "Xanomeline Low Dose",
+    "Xanomeline High Dose"
+  ],
+  "epochs": [
+    "Screening",
+    "Treatment One",
+    "Treatment Two",
+    "Treatment Three",
+    "Follow Up"
+  ],
+  "visits": [
+    {
+      "id": "ScheduledActivityInstance_9",
+      "name": "Screening 1",
+      "epoch": "Screening",
+      "day": -14,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_10",
+      "name": "Screening 2",
+      "epoch": "Screening",
+      "day": -2,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_11",
+      "name": "Baseline",
+      "epoch": "Treatment One",
+      "day": 1,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_12",
+      "name": "Week 2",
+      "epoch": "Treatment One",
+      "day": 15,
+      "before": 3,
+      "after": 3
+    },
+    {
+      "id": "ScheduledActivityInstance_13",
+      "name": "Week 4",
+      "epoch": "Treatment Two",
+      "day": 29,
+      "before": 3,
+      "after": 3
+    },
+    {
+      "id": "ScheduledActivityInstance_14",
+      "name": "Week 6",
+      "epoch": "Treatment Two",
+      "day": 43,
+      "before": 3,
+      "after": 3
+    },
+    {
+      "id": "ScheduledActivityInstance_15",
+      "name": "Week 8",
+      "epoch": "Treatment Two",
+      "day": 57,
+      "before": 3,
+      "after": 3
+    },
+    {
+      "id": "ScheduledActivityInstance_16",
+      "name": "Week 8 Home",
+      "epoch": "Treatment Two",
+      "day": 71,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_17",
+      "name": "Week 12",
+      "epoch": "Treatment Two",
+      "day": 85,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "id": "ScheduledActivityInstance_18",
+      "name": "Week 12 Home",
+      "epoch": "Treatment Two",
+      "day": 99,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_19",
+      "name": "Week 16",
+      "epoch": "Treatment Two",
+      "day": 113,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "id": "ScheduledActivityInstance_20",
+      "name": "Week 16 Home",
+      "epoch": "Treatment Two",
+      "day": 127,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_21",
+      "name": "Week 20",
+      "epoch": "Treatment Two",
+      "day": 141,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "id": "ScheduledActivityInstance_22",
+      "name": "Week 20 Home",
+      "epoch": "Treatment Two",
+      "day": 155,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_23",
+      "name": "Week 24",
+      "epoch": "Treatment Three",
+      "day": 169,
+      "before": 4,
+      "after": 4
+    },
+    {
+      "id": "ScheduledActivityInstance_24",
+      "name": "Week 26",
+      "epoch": "Follow Up",
+      "day": 183,
+      "before": 3,
+      "after": 3
+    }
+  ],
+  "activities": [
+    {
+      "id": "Activity_1",
+      "name": "Informed consent",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_2",
+      "name": "Inclusion and exclusion criteria",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_3",
+      "name": "Patient number assigned",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_4",
+      "name": "Demographics",
+      "domain": null,
+      "collects": [
+        "Sex",
+        "Race"
+      ]
+    },
+    {
+      "id": "Activity_5",
+      "name": "Hachinski Ischemic Scale",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_6",
+      "name": "MMSE",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_7",
+      "name": "Physical examination",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_8",
+      "name": "Medical history",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_9",
+      "name": "Habits",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_10",
+      "name": "Chest X-ray",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_11",
+      "name": "Apo E genotyping",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_12",
+      "name": "Patient randomised",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_13",
+      "name": "Vital Signs and Temperature",
+      "domain": "VS",
+      "collects": [
+        "Temperature",
+        "Weight",
+        "Height"
+      ]
+    },
+    {
+      "id": "Activity_14",
+      "name": "Ambulatory ECG placed",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_15",
+      "name": "Ambulatory ECG removed",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_16",
+      "name": "ECG",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_17",
+      "name": "Placebo TTS test",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_18",
+      "name": "CT scan",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_19",
+      "name": "Concomitant medications",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_20",
+      "name": "Hematology",
+      "domain": "LB",
+      "collects": []
+    },
+    {
+      "id": "Activity_21",
+      "name": "Chemistry",
+      "domain": "LB",
+      "collects": [
+        "Alanine Aminotransferase Concentration in Serum/Plasma",
+        "Albumin Presence in Urine",
+        "Alkaline Phosphatase Concentration in Serum/Plasma",
+        "Aspartate Aminotransferase in Serum/Plasma",
+        "Creatinine Concentration in Urine",
+        "Potassium Concentration in Urine",
+        "Sodium Concentration in Urine"
+      ]
+    },
+    {
+      "id": "Activity_22",
+      "name": "Uninalysis",
+      "domain": "LB",
+      "collects": []
+    },
+    {
+      "id": "Activity_23",
+      "name": "Plasma Specimen (Xanomeline)",
+      "domain": "LB",
+      "collects": []
+    },
+    {
+      "id": "Activity_24",
+      "name": "Hemoglobin A1C",
+      "domain": "LB",
+      "collects": [
+        "Hemoglobin A1C Concentration in Blood"
+      ]
+    },
+    {
+      "id": "Activity_25",
+      "name": "Study drug record , Medications dispensed, Medications returned",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_26",
+      "name": "TTS Acceptability Survey",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_27",
+      "name": "ADAS-Cog",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_28",
+      "name": "CIBIC+",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_29",
+      "name": "DAD",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_30",
+      "name": "NPI-X",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_31",
+      "name": "Adverse events",
+      "domain": "AE",
+      "collects": [
+        "Adverse Event Prespecified"
+      ]
+    },
+    {
+      "id": "Activity_32",
+      "name": "Check adverse events",
+      "domain": "AE",
+      "collects": []
+    },
+    {
+      "id": "Activity_33",
+      "name": "Subject supine",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_34",
+      "name": "Vital signs while supine",
+      "domain": "VS",
+      "collects": [
+        "Systolic Blood Pressure",
+        "Diastolic Blood Pressure",
+        "Heart Rate"
+      ]
+    },
+    {
+      "id": "Activity_35",
+      "name": "Subject Standing",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_36",
+      "name": "Vital signs while standing",
+      "domain": "VS",
+      "collects": [
+        "Systolic Blood Pressure",
+        "Diastolic Blood Pressure",
+        "Heart Rate"
+      ]
+    }
+  ],
+  "schedule": {
+    "ScheduledActivityInstance_9": [
+      "Activity_1",
+      "Activity_2",
+      "Activity_3",
+      "Activity_4",
+      "Activity_5",
+      "Activity_6",
+      "Activity_7",
+      "Activity_8",
+      "Activity_9",
+      "Activity_10",
+      "Activity_13",
+      "Activity_16",
+      "Activity_17",
+      "Activity_18",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_22",
+      "Activity_24",
+      "Activity_27",
+      "Activity_28",
+      "Activity_29",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_10": [
+      "Activity_13",
+      "Activity_14"
+    ],
+    "ScheduledActivityInstance_11": [
+      "Activity_12",
+      "Activity_13",
+      "Activity_15",
+      "Activity_19",
+      "Activity_23",
+      "Activity_25",
+      "Activity_27",
+      "Activity_28",
+      "Activity_29",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_12": [
+      "Activity_11",
+      "Activity_13",
+      "Activity_16",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_22",
+      "Activity_23",
+      "Activity_25",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_13": [
+      "Activity_13",
+      "Activity_16",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_23",
+      "Activity_25",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_14": [
+      "Activity_13",
+      "Activity_16",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_23",
+      "Activity_25",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_15": [
+      "Activity_13",
+      "Activity_16",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_25",
+      "Activity_27",
+      "Activity_28",
+      "Activity_29",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_16": [
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_17": [
+      "Activity_13",
+      "Activity_16",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_22",
+      "Activity_23",
+      "Activity_25",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_18": [
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_19": [
+      "Activity_13",
+      "Activity_16",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_25",
+      "Activity_27",
+      "Activity_28",
+      "Activity_29",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_20": [
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_21": [
+      "Activity_13",
+      "Activity_16",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_23",
+      "Activity_25",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_22": [
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_23": [
+      "Activity_13",
+      "Activity_16",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_22",
+      "Activity_25",
+      "Activity_27",
+      "Activity_28",
+      "Activity_29",
+      "Activity_30"
+    ],
+    "ScheduledActivityInstance_24": [
+      "Activity_7",
+      "Activity_13",
+      "Activity_16",
+      "Activity_19",
+      "Activity_20",
+      "Activity_21",
+      "Activity_25",
+      "Activity_26",
+      "Activity_30"
+    ]
+  }
+}
