@@ -28,7 +28,7 @@ import { MEASURES, distinctValues, measureColumn } from './mapping.js';
 import { neededBy, supportedCount } from './status.js';
 import { el, plural } from './dom.js';
 import { icon } from './icons.js';
-import { drawViewer, loadedStudy } from './viewer-view.js';
+import { drawStudy, drawViewer, loadedStudy, studyModule } from './viewer-view.js';
 import { fileDetails } from './file-details.js';
 
 /** Files larger than this are refused: they are parsed in memory. */
@@ -646,6 +646,33 @@ export function renderDataPanel(container, app) {
   // study looked through, which is the face it opens on, and the files one by
   // one, where a file is placed by hand.
   const loadedFiles = Object.keys(state.files).length + state.unplaced.length + state.raw.length;
+  // A study study.builder built is shown whole by study.builder's own study
+  // view: its facts, its overview, its schedule and its tables. It is the data
+  // view; only what the data supports is said above it.
+  const builtStudy = state.named && state.named.built;
+  if (app.viewer && loadedFiles && builtStudy && studyModule()) {
+    container.classList.add('sva-data-wide');
+    const cards = el('div', 'sva-support-cards');
+    const drawCards = (said) => cards.replaceChildren(...said.map((one) => supportCard(one, app)));
+    drawCards(app.support());
+    const current = app.portfolio().studies.find((entry) => entry.current);
+    const supports = el('details', 'sva-explore-support');
+    supports.open = Boolean(state.supportOpen);
+    supports.addEventListener('toggle', () => {
+      state.supportOpen = supports.open;
+    });
+    const said =
+      current && current.support
+        ? `${current.support.ready} of ${plural(current.support.total, 'chart')} ready`
+        : 'What this data supports';
+    supports.append(el('summary', null, `${said}. What each tab says`), cards);
+    const body = el('div', 'sva-explore-body');
+    main.append(supports, body);
+    container.append(main);
+    if (drawStudy(body, app, builtStudy)) return { refresh: () => drawCards(app.support()) };
+    main.textContent = '';
+    container.classList.remove('sva-data-wide');
+  }
   if (app.viewer && loadedFiles) {
     const faces = el('div', 'sva-faces');
     faces.setAttribute('role', 'tablist');

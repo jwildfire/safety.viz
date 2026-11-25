@@ -1,18 +1,18 @@
 {
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
-  "ref": "v0.3.0-rc.9",
-  "commit": "9e03eef7e9912666c12849ef59aaea584634e3a4",
-  "version": "0.3.0-rc.9",
+  "ref": "v0.3.0-rc.10",
+  "commit": "558b5e6d230756ce940ed73646af62f3c94564e8",
+  "version": "0.3.0-rc.10",
   "license": "Apache-2.0",
-  "tag": "v0.3.0-rc.9",
+  "tag": "v0.3.0-rc.10",
   "merged_to_dev": false,
   "files": [
     {
       "file": "study.builder.js",
       "source": "dist/study.builder.js",
-      "sha256": "55b80856494d5809ee51d96d4b6a5281eaf6c2f4ca70abdb55dbc066491438ba",
-      "bytes": 104822
+      "sha256": "e034974f58ab0495003809a0186d634ec905aaab4b270cf64ca8455dd65ff335",
+      "bytes": 105205
     },
     {
       "file": "study.viewer.js",
@@ -23,8 +23,8 @@
     {
       "file": "r/builder.R",
       "source": "r/builder.R",
-      "sha256": "702660c71be8c0ba57e4e9b5d23b2cbb6ed643a6584eb1ae443daf7d1da0a0fe",
-      "bytes": 29850
+      "sha256": "7123a00905485bf565a855e3fe612a928daece941012fc159326729c71a7d066",
+      "bytes": 31429
     },
     {
       "file": "vendor/gsm.datasim/R/Raw_AE.R",
@@ -461,26 +461,26 @@
     {
       "file": "presets/index.json",
       "source": "presets/index.json",
-      "sha256": "511244f3b295058f0411602e552d89e9565ef743184a59dd29ef2c0a23e0f533",
-      "bytes": 18364
+      "sha256": "b389cbfff70fdafea177ec0c53858d46131ea1497d964b13f696e47dc556aca9",
+      "bytes": 18366
     },
     {
       "file": "presets/phase1-small.study.json.gz",
       "source": "presets/phase1-small.study.json.gz",
-      "sha256": "f2211ab9b39bd21d6c4c851c166d9d9275f6f835c90f673fd50b66c40b3a5483",
-      "bytes": 581279
+      "sha256": "e82938cae2be4091e12bef8107d8f95085014767c0994b06a6d014c837965ad8",
+      "bytes": 428527
     },
     {
       "file": "presets/phase2-oncology.study.json.gz",
       "source": "presets/phase2-oncology.study.json.gz",
-      "sha256": "f446e86349e2054f7a0c6ca5ebe2ea432facb554c923094856b7f72a2b93b5c2",
-      "bytes": 2027668
+      "sha256": "8a74b65100c9bdb9c14091da265c9df58b7a0092a2e809f55067c80da0ef7bfe",
+      "bytes": 1332803
     },
     {
       "file": "presets/cdisc-pilot-protocol.study.json.gz",
       "source": "presets/cdisc-pilot-protocol.study.json.gz",
-      "sha256": "e01919b63d7eded5798bc0e24e6e1d635755b2a9560900879487b87782b22bd7",
-      "bytes": 694472
+      "sha256": "6b398c5dbaacd9f12205e41864371ed5a20f66b64cd1823c1e88f4ec0c4ee5f8",
+      "bytes": 552018
     },
     {
       "file": "LICENSE",

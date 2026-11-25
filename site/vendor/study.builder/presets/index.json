@@ -15,8 +15,8 @@
         "seed": 101
       },
       "study": "phase1-small.study.json.gz",
-      "key": "sha256:897786653c2496ec1e3c481e7f0427cf9c7b3b73adca82e294060a27faf3bf74",
-      "megabytes": 0.6
+      "key": "sha256:80c164d4313b4bade18367f3f36fb709cb73ab596a194fda955816712bcb7783",
+      "megabytes": 0.4
     },
     {
       "id": "phase2-oncology",
@@ -32,8 +32,8 @@
         "seed": 202
       },
       "study": "phase2-oncology.study.json.gz",
-      "key": "sha256:7c7a8273fc1aff68bc71526cf723022a13b2b1e40574c75664b548befb5a9082",
-      "megabytes": 2
+      "key": "sha256:4b0aabbc4e803f0aeba21cc101fc180f606ce8008db6ed25b705da76e04a3fee",
+      "megabytes": 1.3
     },
     {
       "id": "phase2-many-outliers",
@@ -598,8 +598,8 @@
         }
       },
       "study": "cdisc-pilot-protocol.study.json.gz",
-      "key": "sha256:d86945757fdf36a6362e99968e230a57b0baa0c36bf8d05ee0eaa733d3c292ac",
-      "megabytes": 0.7
+      "key": "sha256:04a6466fad10253d303e8ab8ca5cd8c5767107b94fa160355ee1b06b0a9e2d9a",
+      "megabytes": 0.6
     }
   ]
 }

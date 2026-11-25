@@ -108,6 +108,57 @@ export function loadedStudy(app, name, rolesOf = null) {
 }
 
 /**
+ * study.builder's own view of one built study (its facts, its overview, its
+ * schedule and its tables), when the page has study.builder loaded. A study
+ * it built or opened is always shown with it.
+ * @returns {?Function} `StudyBuilder.mountStudy`, or null.
+ */
+export function studyModule() {
+  const builder = globalThis.StudyBuilder;
+  return builder && typeof builder.mountStudy === 'function' ? builder.mountStudy : null;
+}
+
+// The study view on the page now, let go of when the next is drawn.
+let studyShown = null;
+
+/**
+ * Draw study.builder's view of a built study into an element of the data view.
+ * @param {HTMLElement} container The element.
+ * @param {Object} app The app handle.
+ * @param {Object} built The study, as study.builder built or opened it.
+ * @returns {boolean} Whether it was drawn; false leaves the element for the viewer.
+ */
+export function drawStudy(container, app, built) {
+  const mountStudy = studyModule();
+  if (!mountStudy) return false;
+  if (studyShown) {
+    try {
+      studyShown.destroy();
+    } catch {
+      // It was already gone with its element.
+    }
+    studyShown = null;
+  }
+  container.textContent = '';
+  container.classList.add('sva-explore', 'sva-study');
+  try {
+    studyShown = mountStudy(container, {
+      study: built,
+      viewing: app.state.viewing || null,
+      save: typeof app.saveFile === 'function' ? app.saveFile.bind(app) : undefined,
+      // Where the reader was is kept, so a redraw of the page finds it.
+      onView: (at) => {
+        app.state.viewing = at;
+      }
+    });
+    return true;
+  } catch {
+    container.textContent = '';
+    return false;
+  }
+}
+
+/**
  * Draw the viewer into an element of the data view.
  * @param {HTMLElement} container The element.
  * @param {Object} app The app handle.

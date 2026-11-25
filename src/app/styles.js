@@ -217,6 +217,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-explore-support summary{cursor:pointer;min-height:2.2rem;display:flex;align-items:center;color:var(--soft)}
 .sva-explore-support[open] summary{margin-bottom:.6rem}
 .sva-data.sva-data-wide{display:block}
+.sva-study .sb{--sb-accent:var(--accent);--sb-card:var(--card);--sb-ink:var(--ink);--sb-soft:var(--soft);--sb-line:var(--line);--sb-rule:var(--rule);--sb-mono:var(--mono)}
 .sva-explore .sv{--sv-accent:var(--accent);--sv-card:var(--card);--sv-ink:var(--ink);--sv-soft:var(--soft);--sv-rule:var(--rule);--sv-line:var(--line);--sv-sink:var(--rail)}
 .sva-source-head{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:0 0 1rem}
 .sva-app .sva-source-title{margin:0;font-family:var(--serif);font-weight:normal;font-size:1.35rem;line-height:1.2}
