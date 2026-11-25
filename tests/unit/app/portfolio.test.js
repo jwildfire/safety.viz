@@ -1,5 +1,8 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
 import { STUDIES_VIEW_ID } from '../../../src/app/portfolio.js';
@@ -189,7 +192,7 @@ describe('the Studies view', () => {
 describe('the data view’s second face', () => {
   const viewer = { url: './study.viewer.js', global: 'StudyViewer' };
 
-  it('is offered once files are loaded on a page that serves the viewer, and hands study.viewer the loaded files', async () => {
+  it('is the face the data view opens on once files are loaded, on a page that serves the viewer: study.viewer on the loaded files, with what the data supports and the study’s actions above it', async () => {
     const mount = vi.fn((target) => {
       target.append('the viewer');
     });
@@ -197,14 +200,17 @@ describe('the data view’s second face', () => {
     mounted({ demo: null, viewer });
     expect(q('.sva-faces')).toBeNull();
     app.loadFiles([DM]);
-    expect([...document.querySelectorAll('.sva-face')].map((face) => face.textContent)).toEqual([
-      'Files and mapping',
-      'Explore the data'
-    ]);
-    q('[data-action="explore"]').click();
     await settle();
+    expect([...document.querySelectorAll('.sva-face')].map((face) => face.textContent)).toEqual([
+      'Explore the data',
+      'Files'
+    ]);
+    expect(q('[data-action="explore"]').getAttribute('aria-selected')).toBe('true');
     expect(q('.sva-explore-body').textContent).toBe('the viewer');
     expect(q('.sva-data').classList.contains('sva-data-wide')).toBe(true);
+    expect(
+      [...document.querySelectorAll('.sva-explore-acts button')].map((act) => act.dataset.action)
+    ).toEqual(['choose-files', 'download']);
     const { study } = mount.mock.calls[0][1];
     expect(study.name).toBe('Your files');
     expect(study.tables.map((table) => [table.id, table.group])).toEqual([
@@ -215,17 +221,41 @@ describe('the data view’s second face', () => {
     });
     // A study that brings its own layers is handed over whole.
     app.loadFiles([DM], { as: { id: 'x', name: 'BUILT', built: { id: 'BUILT' } } });
-    app.explore();
     await settle();
     expect(mount.mock.calls.at(-1)[1].study).toEqual({ name: 'BUILT', tables: [] });
+    // The other face is the files, one by one, as the data view was.
     q('[data-action="files"]').click();
     expect(q('.sva-explore-body')).toBeNull();
+    expect(q('.sva-file')).not.toBeNull();
+  });
+
+  it('hands the viewer each placed file’s mapping as roles, and a role set in the viewer sets the app’s mapping', async () => {
+    const mount = vi.fn();
+    globalThis.StudyViewer = { mount };
+    mounted({ demo: null, viewer });
+    // The renamed-column study's participants file: its arm is called TREATMENT.
+    const renamed = readFileSync(
+      path.join(path.dirname(fileURLToPath(import.meta.url)), '../../e2e/fixtures/app/dm.csv'),
+      'utf8'
+    );
+    app.loadFiles([{ name: 'dm.csv', text: renamed }]);
+    await settle();
+    const options = mount.mock.calls.at(-1)[1];
+    const [table] = options.study.tables;
+    const arm = table.roles.find((role) => role.id === 'column|subject|ARM');
+    expect(arm).toMatchObject({ kind: 'column', value: '' });
+    expect(arm.options).toContain('TREATMENT');
+    expect(table.roles.find((role) => role.id === 'column|subject|USUBJID').value).not.toBe('');
+    options.onRole(table, arm, 'TREATMENT');
+    await settle();
+    expect(app.state.mappings.subject.columns.ARM.value).toBe('TREATMENT');
+    const again = mount.mock.calls.at(-1)[1].study.tables[0];
+    expect(again.roles.find((role) => role.id === 'column|subject|ARM').value).toBe('TREATMENT');
   });
 
   it('says so when the viewer’s script does not load', async () => {
     mounted({ demo: null, viewer });
     app.loadFiles([DM]);
-    app.explore();
     document.head.querySelector('script[src="./study.viewer.js"]').onerror();
     await settle();
     expect(q('.sva-explore-body [role="alert"]').textContent).toBe(

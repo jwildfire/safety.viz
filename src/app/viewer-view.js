@@ -45,9 +45,10 @@ function loadViewer(library) {
  * each of gsm's raw files.
  * @param {Object} app The app handle.
  * @param {string} name What to call the study.
+ * @param {(domain: string) => Object[]} [rolesOf] What a placed file's columns are read as, for the viewer's mapping.
  * @returns {Object} What study.viewer's `viewerStudy` takes.
  */
-export function loadedStudy(app, name) {
+export function loadedStudy(app, name, rolesOf = null) {
   const { state, manifest } = app;
   const tables = [];
   for (const domain of Object.keys(manifest.domains)) {
@@ -72,7 +73,7 @@ export function loadedStudy(app, name) {
       file: file.name,
       records: file.rows,
       about: `Placed as ${label}`,
-      note: unmapped ? `${unmapped} of this domain's columns are not mapped` : '',
+      ...(typeof rolesOf === 'function' ? { roles: rolesOf(domain) } : {}),
       columns: file.columns.map((column) => ({
         name: column,
         ...(usedAs.has(column) ? { used: usedAs.get(column) } : {}),
@@ -113,7 +114,7 @@ export function loadedStudy(app, name) {
  * @param {Object} study The study to show, as study.viewer takes one; or `{ fromBuilt }`, a study study.builder built.
  * @returns {void}
  */
-export function drawViewer(container, app, study) {
+export function drawViewer(container, app, study, { onRole = null } = {}) {
   container.textContent = '';
   container.classList.add('sva-explore');
   container.append(note({ say: 'Loading the viewer…', busy: true, role: 'status' }));
@@ -128,6 +129,7 @@ export function drawViewer(container, app, study) {
           study: study && study.fromBuilt ? viewer.fromBuilt(study.fromBuilt) : study,
           view: remembered.view,
           table: remembered.table,
+          ...(typeof onRole === 'function' ? { onRole } : {}),
           save: typeof app.saveFile === 'function' ? app.saveFile.bind(app) : null,
           // Where the reader was is kept, so a redraw of the page finds it.
           onChange: (at) => {

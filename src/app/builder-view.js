@@ -198,6 +198,9 @@ export function builderSource({
       ...(repository ? { repository } : {}),
       createConnection,
       useLabel: 'Load into the demo',
+      // The app has its own list of studies: the loader opens on its form.
+      screen: 'describe',
+      presets: false,
       // The app the study is handed to is the one on the page when the button is pressed.
       onStudy: (study) => use(study, shown ? shown.app : app)
     });
@@ -300,7 +303,6 @@ export function builderSource({
               action: 'Describe a study',
               primary: true,
               run: (app) => {
-                app.state.exploring = false;
                 app.openSource(BUILDER_SOURCE_ID);
               }
             }

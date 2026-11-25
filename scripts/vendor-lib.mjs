@@ -218,10 +218,9 @@ export const STUDY_BUILDER = {
   label: 'bundle',
   repository: 'https://github.com/jwildfire/study.builder',
   directory: 'site/vendor/study.builder',
-  // The release a copy with no argument is made from. The copy here is from
-  // the head of main, ahead of it (SOURCE.json says why); move this to v0.2.0
-  // when study.builder releases it, and copy again.
-  tag: 'v0.1.0',
+  // The release the copy is made from: a candidate of v0.3.0, until that is
+  // released. Move this to v0.3.0 then, and copy again.
+  tag: 'v0.3.0-rc.1',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },

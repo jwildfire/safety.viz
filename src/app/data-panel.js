@@ -642,16 +642,17 @@ export function renderDataPanel(container, app) {
     app.drawSource(body);
     return { refresh: () => {} };
   }
-  // Two faces of the data view, on a page that serves the viewer: the files
-  // and their mapping, or the loaded study looked through.
+  // Two faces of the data view, on a page that serves the viewer: the loaded
+  // study looked through, which is the face it opens on, and the files one by
+  // one, where a file is placed by hand.
   const loadedFiles = Object.keys(state.files).length + state.unplaced.length + state.raw.length;
   if (app.viewer && loadedFiles) {
     const faces = el('div', 'sva-faces');
     faces.setAttribute('role', 'tablist');
     faces.setAttribute('aria-label', 'The data view');
     for (const [exploring, label] of [
-      [false, 'Files and mapping'],
-      [true, 'Explore the data']
+      [true, 'Explore the data'],
+      [false, 'Files']
     ]) {
       const face = actionButton(exploring ? 'explore' : 'files', label, () => {
         state.exploring = exploring;
@@ -664,22 +665,85 @@ export function renderDataPanel(container, app) {
     }
     main.append(faces);
     if (state.exploring) {
-      const body = el('div', 'sva-explore-body');
-      // The viewer has the whole width: the steps of loading are a press away,
-      // on the other face. The file picker's input stays for the page's own use.
-      main.append(input, body);
+      // The viewer has the whole width. Above it: what the data supports, and
+      // the few things done to a study as a whole.
       container.classList.add('sva-data-wide');
+      const cards = el('div', 'sva-support-cards');
+      const drawCards = (said) =>
+        cards.replaceChildren(...said.map((one) => supportCard(one, app)));
+      drawCards(app.support());
+      const acts = el('div', 'sva-explore-acts');
+      const add = actionButton('choose-files', 'Add files', () => input.click());
+      acts.append(add);
+      if (Object.keys(state.files).length) {
+        acts.append(actionButton('download', 'Download mapping', () => app.downloadMapping()));
+      }
+      const ready = app.firstReady ? app.firstReady() : null;
+      if (ready) {
+        const first = actionButton('open-first', 'Open first chart', () => app.select(ready));
+        first.classList.add('sva-primary');
+        acts.append(first);
+      }
+      const body = el('div', 'sva-explore-body');
+      const current = app.portfolio().studies.find((entry) => entry.current);
+      // What the data supports is one line, with each tab's account folded under it.
+      const supports = el('details', 'sva-explore-support');
+      supports.open = Boolean(state.supportOpen);
+      supports.addEventListener('toggle', () => {
+        state.supportOpen = supports.open;
+      });
+      const said =
+        current && current.support
+          ? `${current.support.ready} of ${plural(current.support.total, 'chart')} ready`
+          : 'What this data supports';
+      supports.append(el('summary', null, `${said}. What each tab says`), cards);
+      main.append(input, acts, supports, body);
       container.append(main);
       const named = state.named;
-      const current = app.portfolio().studies.find((entry) => entry.current);
+      // What each placed file's columns are read as, for the viewer's Columns view.
+      const needed = neededBy(manifest, app.problems);
+      const rolesOf = (domain) => {
+        const rows = mappingRows(domain, app, needed);
+        const file = state.files[domain];
+        const waits = (charts) =>
+          charts && charts.length ? `Needed by ${plural(charts.length, 'chart')}` : '';
+        return [
+          ...rows.columns.map((row) => ({
+            id: `column|${domain}|${row.key}`,
+            label: row.label,
+            kind: 'column',
+            value: row.row.value || '',
+            options: file.columns,
+            needed: row.row.value ? '' : waits(row.charts),
+            source: row.row.source || ''
+          })),
+          ...rows.measures.map((row) => ({
+            id: `measure|${domain}|${row.key}`,
+            label: row.label,
+            kind: 'value',
+            value: row.row.value || '',
+            options: rows.names,
+            needed: row.row.value ? '' : waits(row.charts),
+            source: row.row.source || ''
+          }))
+        ];
+      };
       drawViewer(
         body,
         app,
         named && named.built
           ? { fromBuilt: named.built }
-          : loadedStudy(app, current ? current.name : 'Study')
+          : loadedStudy(app, current ? current.name : 'Study', rolesOf),
+        {
+          // A mapping row set in the viewer is the app's own mapping, set.
+          onRole: (table, role, value) => {
+            const [kind, domain, key] = role.id.split('|');
+            if (kind === 'measure') app.setMeasure(domain, key, value);
+            else app.setColumn(domain, key, value);
+          }
+        }
       );
-      return { refresh: () => {} };
+      return { refresh: () => drawCards(app.support()) };
     }
   }
   main.append(drop);

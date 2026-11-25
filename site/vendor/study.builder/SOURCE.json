@@ -1,24 +1,24 @@
 {
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
-  "ref": "main",
-  "commit": "f3a5e247bcde774feaf3932aa498216e41c52c95",
-  "version": "0.2.0",
+  "ref": "v0.3.0-rc.1",
+  "commit": "b6c0132b0d123a7460eef8e80e77a49b0c1d8e4f",
+  "version": "0.3.0-rc.1",
   "license": "Apache-2.0",
+  "tag": "v0.3.0-rc.1",
   "merged_to_dev": false,
-  "note": "study.builder has no dev branch: this is the head of main, after its v0.1.0 tag and before v0.2.0, which adds the layers, the saved studies and presets, and study.viewer, all of which the demo app uses. Copy again from the v0.2.0 tag when it is released.",
   "files": [
     {
       "file": "study.builder.js",
       "source": "dist/study.builder.js",
-      "sha256": "07be87e8c12e16a0b38d0b5ab47427f838a66208c18b60100ce1aac65f40eee7",
-      "bytes": 63479
+      "sha256": "e5d252884f72a63cd0a478209e8e4d5433d57a82edfc8ad6737f4fab9abb4e19",
+      "bytes": 85910
     },
     {
       "file": "study.viewer.js",
       "source": "dist/study.viewer.js",
-      "sha256": "6e2ada8004a98ab509a4a84cf51619ce5b0b0a660155e66026dec0351f5583a4",
-      "bytes": 24700
+      "sha256": "d99ec9b2ead1893fc502d11529d40a74401543f565327f8a4fb14b79b8f3cff7",
+      "bytes": 27578
     },
     {
       "file": "r/builder.R",

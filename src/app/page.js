@@ -325,7 +325,9 @@ export function mountApp(
     source: null, // the id of the source open on the data view, when one is
     named: null, // what the loaded study is called, when what loaded it said: { name, kind, facts, about, viewer }
     chip: null, // what is open under the study chip: 'menu', 'info' or nothing
-    exploring: false, // whether the data view shows the viewer in place of the files
+    // Whether the data view shows the viewer in place of the files: it does,
+    // from the start, on a page that serves the viewer.
+    exploring: isRecord(viewer),
     viewing: null, // where the reader is in the viewer: its view, its table and its participant
     details: new Set(), // the names of the loaded files whose details are open on the data view
     item: null, // the open item of the open view, when the view brings a row of its own (#279)
@@ -1194,7 +1196,7 @@ export function mountApp(
     state.focus = null;
     state.source = null;
     state.named = null;
-    state.exploring = false;
+    state.exploring = isRecord(viewer);
     state.viewing = null;
   }
 
@@ -1271,6 +1273,9 @@ export function mountApp(
       link.remove();
       URL.revokeObjectURL(link.href);
     },
+
+    /** The first chart the loaded data supports, or null. */
+    firstReady: () => firstReady(),
 
     /** The viewer the data view explores a study with, when the page serves one: `{ url, global }`. */
     viewer: isRecord(viewer) ? viewer : null,

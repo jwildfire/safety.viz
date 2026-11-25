@@ -212,6 +212,10 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-face{min-height:2.5rem;padding:0 .1rem;border:0;border-bottom:3px solid transparent;border-radius:0;background:none;color:var(--soft);font:inherit;font-size:.9rem;cursor:pointer}
 .sva-face[aria-selected=true]{border-color:var(--accent);color:var(--ink);font-weight:600}
 .sva-explore-body{min-width:0}
+.sva-explore-acts{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 .6rem}
+.sva-explore-support{margin:0 0 1rem;font-size:.88rem}
+.sva-explore-support summary{cursor:pointer;min-height:2.2rem;display:flex;align-items:center;color:var(--soft)}
+.sva-explore-support[open] summary{margin-bottom:.6rem}
 .sva-data.sva-data-wide{display:block}
 .sva-explore .sv{--sv-accent:var(--accent);--sv-card:var(--card);--sv-ink:var(--ink);--sv-soft:var(--soft);--sv-rule:var(--rule);--sv-line:var(--line);--sv-sink:var(--rail)}
 .sva-source-head{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:0 0 1rem}
