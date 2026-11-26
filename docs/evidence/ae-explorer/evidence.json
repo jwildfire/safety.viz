@@ -1,15 +1,15 @@
 {
   "module": "ae-explorer",
-  "generatedAt": "2026-11-25T14:51:04.794Z",
+  "generatedAt": "2026-11-26T03:40:09.966Z",
   "environment": {
-    "os": "linux 7.0.0-1014-aws",
+    "os": "linux 7.0.0-1017-azure",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "45636269208",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45636269208"
+    "id": "45748570212",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45748570212"
   },
   "records": [
     {
@@ -845,7 +845,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-033: the Data tab names the loaded study: each demo study by its name, a reader’s own files as \"Your 4 files\", and nothing as \"no files\" (#269)",
+      "test": "APP-PAGE-033: the Overview tab names the loaded study: each demo study by its name, a reader’s own files as \"Your 4 files\", and nothing as \"no files\" (#269)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-033"],
@@ -861,7 +861,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-PAGE-038: the browser tab’s title names the open view: a chart by the name on its chip, the RBQM tab, and the Data tab (#270)",
+      "test": "APP-PAGE-038: the browser tab’s title names the open view: a chart by the name on its chip, the RBQM tab, and the Overview tab (#270)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-PAGE-038"],
@@ -1021,7 +1021,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-R-054: Run details left open is closed when the reader comes back to the tab: on the keynote’s path, with the panel open on the pilot study’s result, choosing the RBQM study on the Data tab and coming back shows the new result with nothing over it; while it is open the panel covers the tab’s status label whole (#309)",
+      "test": "APP-R-054: Run details left open is closed when the reader comes back to the tab: on the keynote’s path, with the panel open on the pilot study’s result, choosing the RBQM study on the Overview tab and coming back shows the new result with nothing over it; while it is open the panel covers the tab’s status label whole (#309)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-R-054"],
@@ -1165,7 +1165,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-RBQM-036: a reader’s own raw files, with no demo study: files chosen from disk on the Data tab are kept as raw files, each card naming the raw domain it was placed in and one that lacks a column naming the column; a file of no raw domain dropped there is no raw file; the Data tab’s card says which metrics the files support before R is started, in the words desktop R said after running; Start R on the RBQM tab then draws the two adverse event metrics and says of each other metric which file it needs (#236, #281, #282)",
+      "test": "APP-RBQM-036: a reader’s own raw files, with no demo study: files chosen from disk on the Overview tab are kept as raw files, each card naming the raw domain it was placed in and one that lacks a column naming the column; a file of no raw domain dropped there is no raw file; the Overview tab’s card says which metrics the files support before R is started, in the words desktop R said after running; Start R on the RBQM tab then draws the two adverse event metrics and says of each other metric which file it needs (#236, #281, #282)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-RBQM-036"],
@@ -1189,7 +1189,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-RBQM-047: the study the other charts use in real R, and what leaves the browser: on the app as it opens, Start R runs gsm’s workflows on the study’s subject-level and adverse events files and draws three metrics at 17 sites; every Results row is desktop R’s to eight decimal places, and what R says of each metric is what the tab said before R started; with the site’s mapping cleared on the Data tab R runs at once and names the column. From the tab’s opening until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and no address names a participant (#253)",
+      "test": "APP-RBQM-047: the study the other charts use in real R, and what leaves the browser: on the app as it opens, Start R runs gsm’s workflows on the study’s subject-level and adverse events files and draws three metrics at 17 sites; every Results row is desktop R’s to eight decimal places, and what R says of each metric is what the tab said before R started; with the site’s mapping cleared on the Overview tab R runs at once and names the column. From the tab’s opening until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and no address names a participant (#253)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-RBQM-047"],
@@ -1229,7 +1229,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-RBQM-075: a study’s files and gsm raw files chosen together on the Data tab each go where they belong: the raw files are kept as they are, the Renamed columns study is read as a study with `ae.csv` its adverse events file, and its charts draw; a demo study gives way once; a raw file that is not a CSV is refused with its sentence (#282)",
+      "test": "APP-RBQM-075: a study’s files and gsm raw files chosen together on the Overview tab each go where they belong: the raw files are kept as they are, the Renamed columns study is read as a study with `ae.csv` its adverse events file, and its charts draw; a demo study gives way once; a raw file that is not a CSV is refused with its sentence (#282)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-RBQM-075"],
@@ -1237,7 +1237,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-RBQM-076: the Data tab’s one RBQM card, between the drop zone and the files, in its three states at 1,280 pixels and at 390: on three raw files, four of eight metrics with R’s reasons behind \"Why 4 cannot run\"; on the RBQM study, eight of eight and no reasons; on the study the app opens with, three of eight with the reasons in the open and which raw tables R makes from which file; each metric has the mark the RBQM tab’s row gives it, nothing scrolls sideways, and the card’s button opens the tab (#281)",
+      "test": "APP-RBQM-076: the Overview tab’s one RBQM card, between the drop zone and the files, in its three states at 1,280 pixels and at 390: on three raw files, four of eight metrics with R’s reasons behind \"Why 4 cannot run\"; on the RBQM study, eight of eight and no reasons; on the study the app opens with, three of eight with the reasons in the open and which raw tables R makes from which file; each metric has the mark the RBQM tab’s row gives it, nothing scrolls sideways, and the card’s button opens the tab (#281)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-RBQM-076"],
@@ -1253,7 +1253,7 @@
       "screenshots": []
     },
     {
-      "test": "APP-RBQM-078: three raw files dropped on the Data tab, in real R: the subjects, adverse events and protocol deviations files are dropped on the drop zone, the RBQM tab is opened from the card and Start R pressed; R runs the four metrics the card said the files support, every Results row of each is desktop R’s to eight decimal places, and what R says of each other metric is what the card said before R was started (#282)",
+      "test": "APP-RBQM-078: three raw files dropped on the Overview tab, in real R: the subjects, adverse events and protocol deviations files are dropped on the drop zone, the RBQM tab is opened from the card and Start R pressed; R runs the four metrics the card said the files support, every Results row of each is desktop R’s to eight decimal places, and what R says of each other metric is what the card said before R was started (#282)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-RBQM-078"],
@@ -3869,6 +3869,14 @@
       "screenshots": []
     },
     {
+      "test": "Build a study, on the data view leaves a study’s efficacy scores out of the files it places, so they do not take the labs’ place",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
       "test": "Build a study, on the data view loads the study the reader hands over: raw files kept as they are, standard files placed, and the source closed on the loaded files",
       "suite": "unit",
       "status": "pass",
@@ -5101,7 +5109,7 @@
       "screenshots": []
     },
     {
-      "test": "demo app: what a tab hands the Data tab APP-LOAD-028: a file the tab says is its own is kept as it is, neither placed in a domain nor mapped, and the study files dropped with it are placed as ever; one the tab cannot read is refused in the tab’s sentence; the drop zone says it takes both kinds (#282)",
+      "test": "demo app: what a tab hands the Overview tab APP-LOAD-028: a file the tab says is its own is kept as it is, neither placed in a domain nor mapped, and the study files dropped with it are placed as ever; one the tab cannot read is refused in the tab’s sentence; the drop zone says it takes both kinds (#282)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-028"],
@@ -5109,7 +5117,7 @@
       "screenshots": []
     },
     {
-      "test": "demo app: what a tab hands the Data tab APP-LOAD-028: files of the reader’s own, kept or placed, clear a loaded demo study whole, and the page says so once (#282)",
+      "test": "demo app: what a tab hands the Overview tab APP-LOAD-028: files of the reader’s own, kept or placed, clear a loaded demo study whole, and the page says so once (#282)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-028"],
@@ -5117,7 +5125,7 @@
       "screenshots": []
     },
     {
-      "test": "demo app: what a tab hands the Data tab APP-LOAD-028: the Data tab draws what the tab says the loaded data supports as one card between the drop zone and the files, in the tab’s words: its sentence, each item with the mark for its state and a name that says both, the key, why some cannot run behind its title, and a button that opens the tab; a kept file’s card carries the tab’s words for it; with nothing said there is no card (#281)",
+      "test": "demo app: what a tab hands the Overview tab APP-LOAD-028: the Overview tab draws what the tab says the loaded data supports as one card between the drop zone and the files, in the tab’s words: its sentence, each item with the mark for its state and a name that says both, the key, why some cannot run behind its title, and a button that opens the tab; a kept file’s card carries the tab’s words for it; with nothing said there is no card (#281)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-028"],
@@ -5125,7 +5133,7 @@
       "screenshots": []
     },
     {
-      "test": "demo app: what a tab hands the Data tab APP-LOAD-028: the Data tab’s own code names no site metric and no gsm raw domain: what it draws of them it is handed (#281, #282)",
+      "test": "demo app: what a tab hands the Overview tab APP-LOAD-028: the Overview tab’s own code names no site metric and no gsm raw domain: what it draws of them it is handed (#281, #282)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-028"],
@@ -5133,7 +5141,7 @@
       "screenshots": []
     },
     {
-      "test": "demo app: what a tab hands the Data tab APP-LOAD-028: what a tab hands over is read safely: a tab with neither function, one that throws, or one that answers with something else claims no file and has no card, and of a card only the parts that are words of the right kind are kept (#281, #282)",
+      "test": "demo app: what a tab hands the Overview tab APP-LOAD-028: what a tab hands over is read safely: a tab with neither function, one that throws, or one that answers with something else claims no file and has no card, and of a card only the parts that are words of the right kind are kept (#281, #282)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-028"],
@@ -5141,7 +5149,7 @@
       "screenshots": []
     },
     {
-      "test": "demo app: what a tab hands the Data tab APP-LOAD-028: with the tab’s own files loaded and no chart ready, the workflow’s third step is the tab: it is the current step, named for the tab, says how much the files support, and its button opens the tab; with a chart ready the step is the charts’, and counts what the tab supports beside them (#281)",
+      "test": "demo app: what a tab hands the Overview tab APP-LOAD-028: with the tab’s own files loaded and no chart ready, the workflow’s third step is the tab: it is the current step, named for the tab, says how much the files support, and its button opens the tab; with a chart ready the step is the charts’, and counts what the tab supports beside them (#281)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LOAD-028"],
@@ -6309,7 +6317,7 @@
       "screenshots": []
     },
     {
-      "test": "placing a raw file in a gsm raw domain APP-RBQM-074: among the files that come in on the Data tab, one is a gsm raw file only when its name starts with `Raw_`, in any case, or its columns are those of exactly one raw domain; a file named for a domain without `Raw_` is a study file, as every file of the three demo studies of standard domains is (#282)",
+      "test": "placing a raw file in a gsm raw domain APP-RBQM-074: among the files that come in on the Overview tab, one is a gsm raw file only when its name starts with `Raw_`, in any case, or its columns are those of exactly one raw domain; a file named for a domain without `Raw_` is a study file, as every file of the three demo studies of standard domains is (#282)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-074"],
@@ -8341,46 +8349,6 @@
       "screenshots": []
     },
     {
-      "test": "the Data tab: gsm raw files and the RBQM card APP-RBQM-075: a study’s files and gsm raw files dropped together each go where they belong: the raw files are kept as they are and named with their raw domain, the study’s files are placed and mapped as ever, a demo study gives way once and the page says so once, and a raw file that is not a CSV is refused with its sentence (#282)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["APP-RBQM-075"],
-      "issueRefs": [282],
-      "screenshots": []
-    },
-    {
-      "test": "the Data tab: gsm raw files and the RBQM card APP-RBQM-076: on three raw files the Data tab’s card says what desktop R said after running them: four of the eight metrics, and of each other metric and of the Groups table R’s own sentence, behind \"Why 4 cannot run\"; on the whole RBQM study it says eight of eight and gives no reasons; its button opens the RBQM tab (#281)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["APP-RBQM-076"],
-      "issueRefs": [281],
-      "screenshots": []
-    },
-    {
-      "test": "the Data tab: gsm raw files and the RBQM card APP-RBQM-076: the card’s marks follow the run while the Data tab is open: turning while R works, and what R said once it has answered, with the rest of the Data tab left as it is (#281)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["APP-RBQM-076"],
-      "issueRefs": [281],
-      "screenshots": []
-    },
-    {
-      "test": "the Data tab: gsm raw files and the RBQM card APP-RBQM-077: with gsm raw files loaded and no chart ready, the workflow’s third step is \"Open the RBQM tab\": the current step, counting the metrics the files support before the charts, with a button that opens the tab; with a study whose charts are ready the step is \"Open a chart\" and counts the RBQM metrics beside them (#281)",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["APP-RBQM-077"],
-      "issueRefs": [281],
-      "screenshots": []
-    },
-    {
-      "test": "the Data tab’s card, in the tab’s words (#281) APP-RBQM-076: the card counts the metrics the loaded data supports in a sentence, and the workflow’s third step counts them in a few words; each state a metric’s mark shows has its words; a kept raw file’s tag names its raw domain and how it was told",
-      "suite": "unit",
-      "status": "pass",
-      "requirementIds": ["APP-RBQM-076"],
-      "issueRefs": [281],
-      "screenshots": []
-    },
-    {
       "test": "the data view’s second face hands the viewer each placed file’s mapping as roles, and a role set in the viewer sets the app’s mapping",
       "suite": "unit",
       "status": "pass",
@@ -8469,7 +8437,7 @@
       "screenshots": []
     },
     {
-      "test": "the first screen: what a tab and the Data tab say APP-PAGE-032: a tab reads one number when every chart of it draws, \"5 of 9\" when some cannot, and \"0\" beside a hollow hex when none can (#269)",
+      "test": "the first screen: what a tab and the Overview tab say APP-PAGE-032: a tab reads one number when every chart of it draws, \"5 of 9\" when some cannot, and \"0\" beside a hollow hex when none can (#269)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-PAGE-032"],
@@ -8477,7 +8445,7 @@
       "screenshots": []
     },
     {
-      "test": "the first screen: what a tab and the Data tab say APP-PAGE-033: the Data tab names the loaded study: a demo study by its name, a reader’s own files as \"Your 3 files\", and nothing as \"no files\" (#269)",
+      "test": "the first screen: what a tab and the Overview tab say APP-PAGE-033: the Overview tab names the loaded study: a demo study by its name, a reader’s own files as \"Your 3 files\", and nothing as \"no files\" (#269)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-PAGE-033"],
@@ -8722,6 +8690,46 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-014"],
       "issueRefs": [234, 234],
+      "screenshots": []
+    },
+    {
+      "test": "the Overview tab: gsm raw files and the RBQM card APP-RBQM-075: a study’s files and gsm raw files dropped together each go where they belong: the raw files are kept as they are and named with their raw domain, the study’s files are placed and mapped as ever, a demo study gives way once and the page says so once, and a raw file that is not a CSV is refused with its sentence (#282)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-075"],
+      "issueRefs": [282],
+      "screenshots": []
+    },
+    {
+      "test": "the Overview tab: gsm raw files and the RBQM card APP-RBQM-076: on three raw files the Overview tab’s card says what desktop R said after running them: four of the eight metrics, and of each other metric and of the Groups table R’s own sentence, behind \"Why 4 cannot run\"; on the whole RBQM study it says eight of eight and gives no reasons; its button opens the RBQM tab (#281)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-076"],
+      "issueRefs": [281],
+      "screenshots": []
+    },
+    {
+      "test": "the Overview tab: gsm raw files and the RBQM card APP-RBQM-076: the card’s marks follow the run while the Overview tab is open: turning while R works, and what R said once it has answered, with the rest of the Overview tab left as it is (#281)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-076"],
+      "issueRefs": [281],
+      "screenshots": []
+    },
+    {
+      "test": "the Overview tab: gsm raw files and the RBQM card APP-RBQM-077: with gsm raw files loaded and no chart ready, the workflow’s third step is \"Open the RBQM tab\": the current step, counting the metrics the files support before the charts, with a button that opens the tab; with a study whose charts are ready the step is \"Open a chart\" and counts the RBQM metrics beside them (#281)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-077"],
+      "issueRefs": [281],
+      "screenshots": []
+    },
+    {
+      "test": "the Overview tab’s card, in the tab’s words (#281) APP-RBQM-076: the card counts the metrics the loaded data supports in a sentence, and the workflow’s third step counts them in a few words; each state a metric’s mark shows has its words; a kept raw file’s tag names its raw domain and how it was told",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-076"],
+      "issueRefs": [281],
       "screenshots": []
     },
     {
@@ -9301,7 +9309,7 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-034: a file that lacks a column its workflow names says so on its card, and the Data tab’s card says of each metric that needs the column that it does, before the press (#236, #281)",
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-034: a file that lacks a column its workflow names says so on its card, and the Overview tab’s card says of each metric that needs the column that it does, before the press (#236, #281)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-034"],
@@ -9309,7 +9317,7 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-036: before R is started the Data tab’s card says how many metrics the loaded raw files support and each file’s card names the raw domain it was placed in, and no connection is made; with no file there is no card, and the RBQM tab has nowhere to drop one (#236, #281, #282)",
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-036: before R is started the Overview tab’s card says how many metrics the loaded raw files support and each file’s card names the raw domain it was placed in, and no connection is made; with no file there is no card, and the RBQM tab has nowhere to drop one (#236, #281, #282)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-036"],
@@ -9317,7 +9325,7 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-037: files dropped on the Data tab, or chosen there, are read with the browser’s file reader, and a gsm raw file among them is kept as a raw file: it is not placed in a safety domain or given a mapping; a raw file that is not a CSV, told by its name or by its columns, is named and not kept (#236, #282)",
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-037: files dropped on the Overview tab, or chosen there, are read with the browser’s file reader, and a gsm raw file among them is kept as a raw file: it is not placed in a safety domain or given a mapping; a raw file that is not a CSV, told by its name or by its columns, is named and not kept (#236, #282)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-037"],
@@ -9325,7 +9333,7 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-038: R is handed the one file of each raw domain under gsm’s name for it, whatever the reader called it, and no file that was not placed; the Data tab’s card and the RBQM tab’s row say before the press which metrics the files support and of each other which file it needs, in the words R then says (#236, #281)",
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-038: R is handed the one file of each raw domain under gsm’s name for it, whatever the reader called it, and no file that was not placed; the Overview tab’s card and the RBQM tab’s row say before the press which metrics the files support and of each other which file it needs, in the words R then says (#236, #281)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-038"],
@@ -9365,7 +9373,7 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: a row of its own, one page at a time APP-RBQM-057: an address that names an item the tab does not list opens Overview and is written as #rbqm, and an item named for the Data tab or for a chart is dropped (#279)",
+      "test": "the RBQM tab: a row of its own, one page at a time APP-RBQM-057: an address that names an item the tab does not list opens Overview and is written as #rbqm, and an item named for the Overview tab or for a chart is dropped (#279)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-057"],
@@ -9397,7 +9405,7 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: a row of its own, one page at a time APP-RBQM-060: the tab has no place to load a file, on the Overview page or on a metric’s, before, during and after a run; each of its lines that say to change the data opens the Data tab, where every file comes in (#279, #282)",
+      "test": "the RBQM tab: a row of its own, one page at a time APP-RBQM-060: the tab has no place to load a file, on the Overview page or on a metric’s, before, during and after a run; each of its lines that say to change the data opens the Overview tab, where every file comes in (#279, #282)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-060"],
@@ -9509,7 +9517,7 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: a mapping changed on the Data tab is a different study to R: once R is up it is run again at once, and with the site not mapped the row says of each metric the column no column of the file is mapped to (#253, #279)",
+      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: a mapping changed on the Overview tab is a different study to R: once R is up it is run again at once, and with the site not mapped the row says of each metric the column no column of the file is mapped to (#253, #279)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-045"],
@@ -9517,7 +9525,7 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: a study with no subject-level or adverse events file has nothing for R to run, and the tab says which files the metrics run on; gsm raw files loaded beside a study are used as they are, and the study’s files only for the raw tables that are not loaded, as the Data tab’s card says (#253, #281)",
+      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: a study with no subject-level or adverse events file has nothing for R to run, and the tab says which files the metrics run on; gsm raw files loaded beside a study are used as they are, and the study’s files only for the raw tables that are not loaded, as the Overview tab’s card says (#253, #281)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-045"],
@@ -9533,7 +9541,7 @@
       "screenshots": []
     },
     {
-      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: with the study the other charts use loaded and nothing else, the tab says how many metrics it supports and its control can be pressed; the Data tab’s card says the same, which raw tables R makes from the subject-level and the adverse events file, and of each other metric why it cannot run, in the open (#253, #279, #281)",
+      "test": "the RBQM tab: the study the other charts use APP-RBQM-045: with the study the other charts use loaded and nothing else, the tab says how many metrics it supports and its control can be pressed; the Overview tab’s card says the same, which raw tables R makes from the subject-level and the adverse events file, and of each other metric why it cannot run, in the open (#253, #279, #281)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-045"],
@@ -10053,7 +10061,7 @@
       "screenshots": []
     },
     {
-      "test": "the wordmark and the browser tab’s title APP-PAGE-038: the browser tab’s title names the open view before the app’s name: the Data tab, a chart by the name on its chip, and a library’s tab by its own (#270)",
+      "test": "the wordmark and the browser tab’s title APP-PAGE-038: the browser tab’s title names the open view before the app’s name: the Overview tab, a chart by the name on its chip, and a library’s tab by its own (#270)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-PAGE-038"],
