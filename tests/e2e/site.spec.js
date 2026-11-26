@@ -612,6 +612,85 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  test('on the built demo page a ready-made simulated study opens from the Studies view with no R, and the Overview tab draws it with study.builder’s study view in sections: Overview, Design, Data, One participant and Reporting, with no RBQM view and no Safety view, since the app has tabs of its own for both; a view is reached through its section; at 1,400 pixels nothing of the overview runs past the page', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    // The study built on the CDISC pilot protocol: it has a protocol, snapshots
+    // and an efficacy score, so every section study.builder has is there.
+    const row = page.locator('.sva-studies-row[data-study="preset:cdisc-pilot-protocol"]');
+    await row.locator('[data-action="open"]').click();
+    await expect(row).toHaveAttribute('data-current', 'true');
+    await expect(page.locator('.sva-chip-name')).toHaveText('PILOT-PROTOCOL');
+    // No R was started: the study came whole from its file.
+    await expect(page.locator('.sva-chip.sva-r-ready')).toHaveCount(0);
+    await page.locator('.sva-item[data-view="data"]').click();
+    const view = page.locator('.sva-explore-body');
+    const sections = view.locator('.sv-views [data-section]');
+    const within = view.locator('.sv-subviews [data-view]');
+    // Operations is One participant alone: RBQM and Safety are the app's own tabs.
+    await expect(sections).toHaveText([
+      'Overview',
+      'Design',
+      'Data',
+      'One participant',
+      'Reporting'
+    ]);
+    await expect(view.locator('[data-section="overview"]')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    // On the overview at 1,400 pixels, the table of how the study grew is
+    // inside the page with the rest.
+    const grew = view.getByText('How the study grew, snapshot by snapshot');
+    await expect(grew).toBeVisible();
+    expect(
+      await page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        return {
+          wider: document.documentElement.scrollWidth - width,
+          past: [...document.querySelectorAll('.sva-explore-body *')].filter(
+            (element) =>
+              element.getClientRects().length > 0 &&
+              element.getBoundingClientRect().right > width + 0.5
+          ).length
+        };
+      })
+    ).toEqual({ wider: 0, past: 0 });
+    // A view's tab is on the page only while its section is open.
+    await expect(view.locator('[data-view]')).toHaveCount(0);
+    const inside = {};
+    for (const section of ['design', 'data', 'operations', 'reporting']) {
+      await view.locator(`[data-section="${section}"]`).click();
+      await expect(view.locator(`[data-section="${section}"]`)).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      inside[section] = await within.allTextContents();
+    }
+    expect(inside).toEqual({
+      design: ['Protocol', 'Schedule'],
+      data: ['Pipeline', 'Tables', 'Columns'],
+      operations: [],
+      reporting: ['Efficacy', 'Adverse events']
+    });
+    await view.locator('[data-section="data"]').click();
+    await view.locator('[data-view="tables"]').click();
+    await expect(view.locator('[data-view="tables"]')).toHaveAttribute('aria-selected', 'true');
+    // Where the reader was is kept when the page draws the tab again.
+    await page.locator('.sva-tab[data-domain="ae"]').click();
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(view.locator('[data-view="tables"]')).toHaveAttribute('aria-selected', 'true');
+    expect(errors).toEqual([]);
+  });
+
   // The status label on the docs site (#275, obot.roadmap#403): one chart of each
   // rung in use.
   const RUNGS = [

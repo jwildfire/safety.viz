@@ -3,7 +3,11 @@
 # baseline, and each arm's mean difference from the reference arm. One row per
 # result, in the manner of CDISC's Analysis Results Standard: each value says
 # which analysis, which analysis set, which score, which arm and visit, and
-# which statistic it is. It is a summary; no model is fitted.
+# which statistic it is. The last step adds a model: at the last visit, an
+# analysis of covariance of the change with baseline as covariate, giving each
+# arm's adjusted difference from the reference arm, its standard error, a 95%
+# interval and a p-value. The model is fitted by EfficacyModel(), in the R file
+# beside this one, since a query cannot fit it.
 meta:
   Type: Analysis
   ID: EfficacySummary
@@ -24,6 +28,8 @@ spec:
     TEST:
       type: character
     CHG:
+      type: numeric
+    BASE:
       type: numeric
     ABLFL:
       type: character
@@ -46,16 +52,25 @@ steps:
       x: Temp_Stats
       'y': Temp_Reference
       by: [TEST, VISIT]
-  - output: Analysis_EfficacySummary
+  - output: Temp_Summary
     name: workr::RunQuery
     params:
       df: Temp_Both
       strQuery: "SELECT 'Change from baseline by arm and visit' AS ANALYSIS, 'Enrolled participants with a score at the visit' AS ANALYSISSET, TEST AS PARAM, ARM, VISIT, VISITNUM, STATISTIC, ROUND(VALUE, 2) AS VALUE, REFARM FROM (SELECT TEST, ARM, VISIT, VISITNUM, REFARM, 1 AS ORD, 'n' AS STATISTIC, N AS VALUE FROM df UNION ALL SELECT TEST, ARM, VISIT, VISITNUM, REFARM, 2, 'mean', MEAN FROM df UNION ALL SELECT TEST, ARM, VISIT, VISITNUM, REFARM, 3, 'sd', SD FROM df WHERE SD IS NOT NULL UNION ALL SELECT TEST, ARM, VISIT, VISITNUM, REFARM, 4, 'difference', MEAN - REFMEAN FROM df WHERE REFARM IS NOT NULL AND ARM <> REFARM) ORDER BY PARAM, VISITNUM, ARM, ORD"
+  - output: Temp_Model
+    name: EfficacyModel
+    params:
+      df: ADaM_ADQS
+  - output: Analysis_EfficacySummary
+    name: dplyr::bind_rows
+    params:
+      x: Temp_Summary
+      'y': Temp_Model
 columns:
   ANALYSIS:
     label: Analysis
     from: ADQS
-    how: 'Fixed: the one analysis this table holds'
+    how: "One of two: 'Change from baseline by arm and visit', the summary; and 'Analysis of covariance at the last visit', the model"
   ANALYSISSET:
     label: Analysis Set
     from: ADQS.ARM, ADQS.DY
@@ -79,11 +94,11 @@ columns:
   STATISTIC:
     label: Statistic
     from: ADQS.CHG
-    how: "One of n (participants), mean and sd (of the change from baseline), and difference (the arm's mean less the reference arm's)"
+    how: "For the summary: n (participants), mean and sd (of the change from baseline), and difference (the arm's mean less the reference arm's). For the model: adjusted difference, standard error, lower 95% limit, upper 95% limit and p-value"
   VALUE:
     label: Value
     from: ADQS.CHG, ADQS.USUBJID
-    how: 'Worked out, to two decimal places'
+    how: 'Worked out, to two decimal places; a p-value to four'
   REFARM:
     label: Reference Arm
     from: ADQS.ARM

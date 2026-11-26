@@ -66,8 +66,10 @@ invid <- function(n, previous_data, ...) {
   # Generate all possible 3-digit numbers as strings with leading zeros
   possible_numbers <- sprintf("%03d", 0:9999)
 
-  # Create all possible strings starting with "0X" and ending with the 3-digit numbers
-  possible_strings_invids <- paste0("0X", possible_numbers)
+  # Create all possible strings starting with the site id prefix ("0X" unless
+  # the caller asked for another; see `create_longitudinal_study()`) and
+  # ending with the numbers. The prefix changes no random draw.
+  possible_strings_invids <- paste0(getOption("gsm.datasim.site_id_prefix", default = "0X"), possible_numbers)
 
 
   # Exclude the old strings to avoid duplication
