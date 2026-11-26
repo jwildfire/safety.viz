@@ -596,6 +596,320 @@
               "Activity_26",
               "Activity_30"
             ]
+          },
+          "design": {
+            "model": "Parallel Study",
+            "blinding": "Double Blind Study",
+            "arms": [
+              {
+                "name": "Placebo",
+                "type": "Placebo Control Arm",
+                "about": "Placebo"
+              },
+              {
+                "name": "Xanomeline Low Dose",
+                "type": "Active Comparator Arm",
+                "about": "Active Substance"
+              },
+              {
+                "name": "Xanomeline High Dose",
+                "type": "Active Comparator Arm",
+                "about": "Active Substance"
+              }
+            ],
+            "epochs": [
+              {
+                "name": "Screening",
+                "type": "Screening Epoch",
+                "about": "Screening Epoch"
+              },
+              {
+                "name": "Treatment One",
+                "type": "Treatment Epoch",
+                "about": "Treatment Epoch"
+              },
+              {
+                "name": "Treatment Two",
+                "type": "Treatment Epoch",
+                "about": "Treatment Epoch"
+              },
+              {
+                "name": "Treatment Three",
+                "type": "Treatment Epoch",
+                "about": "Treatment Epoch"
+              },
+              {
+                "name": "Follow Up",
+                "type": "Follow-Up Epoch",
+                "about": "Follow-up Epoch"
+              }
+            ],
+            "cells": [
+              {
+                "arm": "Placebo",
+                "epoch": "Screening",
+                "elements": [
+                  {
+                    "name": "Screening",
+                    "about": "Screening Element"
+                  }
+                ]
+              },
+              {
+                "arm": "Placebo",
+                "epoch": "Treatment One",
+                "elements": [
+                  {
+                    "name": "Placebo",
+                    "about": "Placebo TTS (adhesive patches)"
+                  }
+                ]
+              },
+              {
+                "arm": "Placebo",
+                "epoch": "Treatment Two",
+                "elements": [
+                  {
+                    "name": "Placebo",
+                    "about": "Placebo TTS (adhesive patches)"
+                  }
+                ]
+              },
+              {
+                "arm": "Placebo",
+                "epoch": "Treatment Three",
+                "elements": [
+                  {
+                    "name": "Placebo",
+                    "about": "Placebo TTS (adhesive patches)"
+                  }
+                ]
+              },
+              {
+                "arm": "Placebo",
+                "epoch": "Follow Up",
+                "elements": [
+                  {
+                    "name": "Follow up",
+                    "about": "Follow Up Element"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline Low Dose",
+                "epoch": "Screening",
+                "elements": [
+                  {
+                    "name": "Screening",
+                    "about": "Screening Element"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline Low Dose",
+                "epoch": "Treatment One",
+                "elements": [
+                  {
+                    "name": "Low",
+                    "about": "Xanomeline TTS (adhesive patches) 50 cm2, 54 mg"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline Low Dose",
+                "epoch": "Treatment Two",
+                "elements": [
+                  {
+                    "name": "Low",
+                    "about": "Xanomeline TTS (adhesive patches) 50 cm2, 54 mg"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline Low Dose",
+                "epoch": "Treatment Three",
+                "elements": [
+                  {
+                    "name": "Low",
+                    "about": "Xanomeline TTS (adhesive patches) 50 cm2, 54 mg"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline Low Dose",
+                "epoch": "Follow Up",
+                "elements": [
+                  {
+                    "name": "Follow up",
+                    "about": "Follow Up Element"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline High Dose",
+                "epoch": "Screening",
+                "elements": [
+                  {
+                    "name": "Screening",
+                    "about": "Screening Element"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline High Dose",
+                "epoch": "Treatment One",
+                "elements": [
+                  {
+                    "name": "High - Start",
+                    "about": "Xanomeline TTS (adhesive patches) 50 cm2, 54 mg"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline High Dose",
+                "epoch": "Treatment Two",
+                "elements": [
+                  {
+                    "name": "High - Middle",
+                    "about": "Xanomeline TTS (adhesive patches) 50 cm2, 54 mg + 25 cm2, 27 mg"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline High Dose",
+                "epoch": "Treatment Three",
+                "elements": [
+                  {
+                    "name": "High - End",
+                    "about": "Xanomeline TTS (adhesive patches) 50 cm2, 54 mg"
+                  }
+                ]
+              },
+              {
+                "arm": "Xanomeline High Dose",
+                "epoch": "Follow Up",
+                "elements": [
+                  {
+                    "name": "Follow up",
+                    "about": "Follow Up Element"
+                  }
+                ]
+              }
+            ],
+            "objectives": [
+              {
+                "level": "Primary Objective",
+                "text": "To determine if there is a statistically significant relationship (overall Type 1 erroralpha=0.05) between the change in both the ADAS-Cog (11) and CIBIC+ scores, and drug dose (0, 50 cm2 [54 mg], and 75 cm2 [81 mg]).",
+                "endpoints": [
+                  {
+                    "id": "Endpoint_1",
+                    "level": "Primary Endpoint",
+                    "text": "Alzheimer's Disease Assessment Scale - Cognitive Subscale, total of 11 items [ADAS-Cog (11)] at Week 24"
+                  },
+                  {
+                    "id": "Endpoint_2",
+                    "level": "Primary Endpoint",
+                    "text": "Video-referenced Clinician’s Interview-based Impression of Change (CIBIC+) at Week 24"
+                  }
+                ]
+              },
+              {
+                "level": "Primary Objective",
+                "text": "To document the safety profile of the xanomeline TTS.",
+                "endpoints": [
+                  {
+                    "id": "Endpoint_3",
+                    "level": "Primary Endpoint",
+                    "text": "Adverse events"
+                  },
+                  {
+                    "id": "Endpoint_4",
+                    "level": "Primary Endpoint",
+                    "text": "Vital signs (weight, standing and supine blood pressure, heart rate)"
+                  },
+                  {
+                    "id": "Endpoint_5",
+                    "level": "Primary Endpoint",
+                    "text": "Laboratory evaluations (Change from Baseline)"
+                  }
+                ]
+              },
+              {
+                "level": "Secondary Objective",
+                "text": "To assess the dose-dependent improvement in behavior. Improved scores on the Revised Neuropsychiatric Inventory (NPI-X) will indicate improvement in these areas.",
+                "endpoints": [
+                  {
+                    "id": "Endpoint_6",
+                    "level": "Secondary Endpoint",
+                    "text": "Alzheimer's Disease Assessment Scale - Cognitive Subscale, total of 11 items [ADAS-Cog (11)] at Weeks 8 and 16"
+                  },
+                  {
+                    "id": "Endpoint_7",
+                    "level": "Secondary Endpoint",
+                    "text": "Video-referenced Clinician’s Interview-based Impression of Change (CIBIC+) at Weeks 8 and 16"
+                  },
+                  {
+                    "id": "Endpoint_8",
+                    "level": "Secondary Endpoint",
+                    "text": "Mean Revised Neuropsychiatric Inventory (NPI-X) from Week 4 to Week 24"
+                  }
+                ]
+              },
+              {
+                "level": "Secondary Objective",
+                "text": "To assess the dose-dependent improvements in activities of daily living. Improved scores on the Disability Assessment for Dementia (DAD) will indicate improvement in these areas (see Attachment LZZT.5).",
+                "endpoints": [
+                  {
+                    "id": "Endpoint_9",
+                    "level": "Secondary Endpoint",
+                    "text": "*** To be determined from protocol ***"
+                  }
+                ]
+              },
+              {
+                "level": "Secondary Objective",
+                "text": "To assess the dose-dependent improvements in an extended assessment of cognition that integrates attention/concentration tasks. The Alzheimer's Disease Assessment Scale-14 item Cognitive Subscale, hereafter referred to as ADAS-Cog (14), will be used for this assessment (see Attachment LZZT.2).",
+                "endpoints": [
+                  {
+                    "id": "Endpoint_10",
+                    "level": "Secondary Endpoint",
+                    "text": "*** To be determined from protocol ***"
+                  }
+                ]
+              },
+              {
+                "level": "Secondary Objective",
+                "text": "To assess the treatment response as a function of Apo E genotype.",
+                "endpoints": [
+                  {
+                    "id": "Endpoint_11",
+                    "level": "Secondary Endpoint",
+                    "text": "*** To be determined from protocol ***"
+                  }
+                ]
+              }
+            ],
+            "estimands": [
+              {
+                "name": "EST1",
+                "summary": "Group mean changes from baseline in the primary efficacy parameters",
+                "population": "Patients with Mild to Moderate Alzheimer’s Disease.",
+                "endpoint": "Endpoint_1",
+                "interventions": ["Xinomiline"],
+                "events": [
+                  {
+                    "text": "Temporary Treatment Interruption",
+                    "strategy": "Treatment Policy – Continue to measure effect of treatment assignment regardless of interruption."
+                  }
+                ]
+              }
+            ],
+            "population": {
+              "about": "Patients with Probable Mild to Moderate Alzheimer's Disease",
+              "completes": 300,
+              "sex": "Both",
+              "analysis": ["Patients with Mild to Moderate Alzheimer’s Disease."]
+            }
           }
         }
       },
