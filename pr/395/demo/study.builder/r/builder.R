@@ -271,6 +271,42 @@ builder_layer_needs <- list(analysis = c("raw.rbqm", "adam"), reporting = "analy
 
 # Run a layer's workflows on what is there, and hand back each one's table with
 # what made it. A workflow that stops is named in `notes` and leaves no table.
+# A workflow as it is written, to be shown: what it says of itself, the tables
+# and columns it reads, and its steps in order, each with the function it calls
+# and what that function is told. Nothing is run or changed here.
+.builder_definition <- function(workflow) {
+  said <- function(value) {
+    if (is.null(value)) return("")
+    if (is.atomic(value) && length(value) == 1) return(as.character(value))
+    if (is.atomic(value)) return(paste(as.character(value), collapse = ", "))
+    trimws(yaml::as.yaml(value))
+  }
+  list(
+    meta = lapply(names(workflow$meta), function(key) list(key = key, value = said(workflow$meta[[key]]))),
+    spec = lapply(names(workflow$spec), function(table) {
+      columns <- workflow$spec[[table]]
+      list(
+        table = table,
+        columns = lapply(names(columns), function(column) {
+          one <- columns[[column]]
+          list(
+            name = column,
+            type = if (is.list(one)) said(one$type) else "",
+            required = is.list(one) && isTRUE(one$required)
+          )
+        })
+      )
+    }),
+    steps = lapply(workflow$steps, function(step) {
+      list(
+        output = said(step$output),
+        name = said(step$name),
+        params = lapply(names(step$params), function(key) list(key = key, value = said(step$params[[key]])))
+      )
+    })
+  )
+}
+
 .builder_layer <- function(layer, workflows, data) {
   workflows <- .builder_runnable(workflows, names(data))
   tables <- list()
@@ -303,7 +339,8 @@ builder_layer_needs <- list(analysis = c("raw.rbqm", "adam"), reporting = "analy
         list(
           id = workflow$meta$ID, table = name, name = file, layer = layer$id,
           description = workflow$meta$Description,
-          made = list(workflow = name, from = as.list(names(workflow$spec)))
+          made = list(workflow = name, from = as.list(names(workflow$spec))),
+          definition = .builder_definition(workflow)
         ),
         if (is.null(workflow$meta$Domain)) list() else list(domain = workflow$meta$Domain),
         if (is.null(workflow$meta$Keys)) list() else list(keys = as.list(workflow$meta$Keys)),
@@ -409,7 +446,8 @@ builder_layer_needs <- list(analysis = c("raw.rbqm", "adam"), reporting = "analy
         layer = layer$id,
         description = if (part == "Summary") workflow$meta$Metric else paste0(workflow$meta$Metric, ": input"),
         about = if (part == "Summary") about else paste0("One row per participant: what ", workflow$meta$Metric, " was counted from."),
-        made = list(workflow = name, from = from)
+        made = list(workflow = name, from = from),
+        definition = .builder_definition(workflow)
       ))
     }
   }
@@ -458,7 +496,8 @@ builder_layer_needs <- list(analysis = c("raw.rbqm", "adam"), reporting = "analy
       made = list(
         workflow = name,
         from = as.list(c(names(workflow$spec), if (reads_metrics) names(metrics$analyzed)))
-      )
+      ),
+      definition = .builder_definition(workflow)
     ))
   }
   list(tables = tables, notes = character(0))
