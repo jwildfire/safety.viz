@@ -158,6 +158,9 @@ run_domain_generation_loop <- function(combined_specs, config, source_domains) {
           GlobalMaxDate    = global_max_date
         ))
       }
+      # The phase and the area asked for, in place of the ones drawn. The draw
+      # above was still made, so nothing else moves.
+      data$Raw_STUDY <- .set_study_labels(data$Raw_STUDY, combined_specs$Raw_STUDY, sp)
     } else {
       data$Raw_STUDY <- snapshots[[1]]$Raw_STUDY
       data$Raw_STUDY$act_fpfv <- act_fpfv(
@@ -194,7 +197,13 @@ run_domain_generation_loop <- function(combined_specs, config, source_domains) {
         total_site_count = max(site_count_vec)
       )
 
-      migrated_data <- generate_domain_from_registry(data_type, registry_context)
+      # A domain whose spec was handed in draws from a random stream of its
+      # own, so that asking for it leaves every other table as it was.
+      migrated_data <- if (data_type %in% config$own_stream) {
+        .with_own_stream(snapshot_idx, generate_domain_from_registry(data_type, registry_context))
+      } else {
+        generate_domain_from_registry(data_type, registry_context)
+      }
 
       if (!is.null(migrated_data)) {
         data[[data_type]] <- migrated_data
@@ -280,6 +289,15 @@ generate_snapshots_from_config <- function(config,
   options(gsm.datasim.outlier_intensity = outlier_intensity)
   on.exit(options(gsm.datasim.outlier_intensity = old_outlier_intensity), add = TRUE)
 
+  # How a site id begins: "0X" unless the config says otherwise.
+  old_site_id_prefix <- getOption("gsm.datasim.site_id_prefix")
+  options(gsm.datasim.site_id_prefix = config$study_params$site_id_prefix %||% "0X")
+  on.exit(options(gsm.datasim.site_id_prefix = old_site_id_prefix), add = TRUE)
+
+  # Specs handed in for domains no mapping workflow of the package describes.
+  extra_specs <- config$extra_specs
+  if (is.null(extra_specs)) extra_specs <- list()
+
   domain_pkgs <- resolve_domain_package_df(config, domain_package_df, default_package)
   if (nrow(domain_pkgs) == 0) {
     return(list())
@@ -294,12 +312,19 @@ generate_snapshots_from_config <- function(config,
       cat("Generating raw data for package", pkg, "with", length(domains_in_pkg), "domains...\n")
     }
 
+    # A domain whose spec was handed in is not looked for among the package's
+    # workflows: its spec is added after the rest, so it is made last.
+    handed_in <- intersect(paste0("Raw_", domains_in_pkg), names(extra_specs))
     combined_specs <- load_specs(
       workflow_path = workflow_path,
-      mappings = domains_in_pkg,
+      mappings = setdiff(domains_in_pkg, sub("^Raw_", "", handed_in)),
       package = pkg
     )
     prepared_specs <- prepare_combined_specs_for_generation(combined_specs)
+    for (table in setdiff(handed_in, names(prepared_specs))) {
+      prepared_specs[[table]] <- extra_specs[[table]]
+    }
+    config$own_stream <- setdiff(handed_in, names(combined_specs))
 
     raw_by_package[[pkg]] <- run_domain_generation_loop(
       combined_specs = prepared_specs,
@@ -395,7 +420,8 @@ ensure_core_mappings <- function(domains) {
 #' @export
 generate_study_snapshots <- function(study_id, participants, sites, snapshots, interval, mappings,
                                      base_date = NULL, outlier_intensity = 1,
-                                     risk_profile = NULL, verbose = FALSE) {
+                                     risk_profile = NULL, phase = NULL, therapeutic_area = NULL,
+                                     indication = NULL, specs = NULL, site_id_prefix = "0X", verbose = FALSE) {
   snapshot_width <- parse_interval_to_snapshot_width(interval)
 
   # Calculate start dates for each snapshot
@@ -432,6 +458,13 @@ generate_study_snapshots <- function(study_id, participants, sites, snapshots, i
     snapshot_width = snapshot_width
   )
   config$temporal_config$snapshot_dates <- start_dates
+  # What the study table is to say, the specs handed in, and how a site id
+  # begins (see `create_longitudinal_study()`).
+  config$study_params$phase <- phase
+  config$study_params$therapeutic_area <- therapeutic_area
+  config$study_params$protocol_indication <- indication
+  config$study_params$site_id_prefix <- site_id_prefix
+  config$extra_specs <- specs
 
   # Add enabled datasets based on mappings
   for (mapping in mappings) {

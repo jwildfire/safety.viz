@@ -108,9 +108,9 @@ export function loadedStudy(app, name, rolesOf = null) {
 }
 
 /**
- * study.builder's own view of one built study (its facts, its overview, its
- * schedule and its tables), when the page has study.builder loaded. A study
- * it built or opened is always shown with it.
+ * study.builder's own view of one built study (its facts, then its sections:
+ * Overview, Design, Data, One participant and Reporting), when the page has
+ * study.builder loaded. A study it built or opened is always shown with it.
  * @returns {?Function} `StudyBuilder.mountStudy`, or null.
  */
 export function studyModule() {
@@ -144,6 +144,9 @@ export function drawStudy(container, app, built) {
   try {
     studyShown = mountStudy(container, {
       study: built,
+      // The app has its own RBQM tab and its own safety charts: the study
+      // view leaves its RBQM and Safety views out, so neither is there twice.
+      operations: false,
       viewing: app.state.viewing || null,
       save: typeof app.saveFile === 'function' ? app.saveFile.bind(app) : undefined,
       // Where the reader was is kept, so a redraw of the page finds it.

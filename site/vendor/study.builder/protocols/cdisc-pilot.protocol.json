@@ -179,7 +179,8 @@
       "domain": null,
       "collects": [
         "Sex",
-        "Race"
+        "Race",
+        "Date of Birth"
       ]
     },
     {
@@ -872,5 +873,9 @@
         "Patients with Mild to Moderate Alzheimer’s Disease."
       ]
     }
-  }
+  },
+  "notes": [
+    "3 other timelines in the file are not simulated (Adverse Event Timeline, Early Termination Timeline, Vital Sign Blood Pressure Timeline): the times within a visit, and what happens off the schedule.",
+    "2 activities have a timeline of their own within a visit (sampling at set hours, say); they are simulated once a visit."
+  ]
 }

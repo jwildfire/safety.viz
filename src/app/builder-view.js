@@ -210,6 +210,9 @@ export function builderSource({
       // The app has its own list of studies: the loader opens on its form.
       screen: 'describe',
       presets: false,
+      // The study it shows once built leaves its RBQM and Safety views out,
+      // as the study view on the data view does: the app has its own.
+      operations: false,
       // The app the study is handed to is the one on the page when the button is pressed.
       onStudy: (study) => use(study, shown ? shown.app : app)
     });

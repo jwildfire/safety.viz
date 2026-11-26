@@ -118,6 +118,14 @@ describe('Build a study, on the data view', () => {
     expect(typeof options.onStudy).toBe('function');
   });
 
+  it('tells the widget to leave the RBQM and Safety views out of the study it shows once built, since the app has tabs of its own for both', async () => {
+    const builder = fakeBuilder();
+    globalThis.StudyBuilder = builder;
+    mounted(builderSource({ createConnection, ...OPTIONS })).openSource(BUILDER_SOURCE_ID);
+    await settle();
+    expect(builder.mounts[0].options.operations).toBe(false);
+  });
+
   it('keeps the one widget across a close, a reopening and the page’s redraws', async () => {
     const builder = fakeBuilder();
     globalThis.StudyBuilder = builder;
@@ -287,9 +295,24 @@ describe('the page and the source agree', () => {
     expect(served).toContain(
       'study.builder/vendor/gsm.reporting/workflow/3_reporting/Results.yaml'
     );
+    // The workflows study.builder v0.5.0 added, and the R file one of them calls by name.
+    expect(served).toContain('study.builder/workflows/analysis/AESummaryByArm.yaml');
+    expect(served).toContain('study.builder/workflows/analysis/EfficacyModel.R');
+    // The five ready-made protocols the builder's form offers to try.
+    expect(
+      served.filter((file) => /^study\.builder\/protocols\/.+\.protocol\.json$/.test(file))
+    ).toEqual(
+      [
+        'cdisc-pilot',
+        'cdisc-pilot-devices',
+        'alexion-wilsons',
+        'lilly-nasal-glucagon',
+        'observational'
+      ].map((id) => `study.builder/protocols/${id}.protocol.json`)
+    );
     expect(
       files.filter((entry) => /study\.builder\/vendor\/gsm\.datasim\/R\/.+\.R$/.test(entry.served))
-    ).toHaveLength(43);
+    ).toHaveLength(45);
     expect(
       files.filter((entry) =>
         /study\.builder\/vendor\/gsm\.kri\/workflow\/.+\.yaml$/.test(entry.served)
@@ -340,7 +363,7 @@ describe('the copy of study.builder', () => {
       'utf8'
     );
     expect(bundle).toMatch(new RegExp(`var ${STUDY_BUILDER.global}=`));
-    for (const word of ['createConnection', 'repository', 'useLabel', 'onStudy']) {
+    for (const word of ['createConnection', 'repository', 'useLabel', 'onStudy', 'operations']) {
       expect(bundle, word).toContain(word);
     }
   });

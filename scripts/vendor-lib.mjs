@@ -218,9 +218,9 @@ export const STUDY_BUILDER = {
   label: 'bundle',
   repository: 'https://github.com/jwildfire/study.builder',
   directory: 'site/vendor/study.builder',
-  // The release the copy is made from: a candidate of v0.3.0, until that is
-  // released. Move this to v0.3.0 then, and copy again.
-  tag: 'v0.4.0',
+  // The release the copy is made from. While it names a release candidate,
+  // move it to the release when that is out, and copy again.
+  tag: 'v0.5.0-rc.3',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },
@@ -255,6 +255,9 @@ export const STUDY_BUILDER = {
       'column_type_generator',
       'create_longitudinal_study',
       'study_design',
+      // The options and the study profile the study results follow (v0.5.0).
+      'study_options',
+      'study_profile',
       'study_results',
       'create_snapshot_reports',
       'domain_registry',
@@ -301,10 +304,17 @@ export const STUDY_BUILDER = {
     'workflows/adam/ADSL.yaml',
     'workflows/adam/ADVS.yaml',
     'workflows/analysis/AESummary.yaml',
+    'workflows/analysis/AESummaryByArm.yaml',
     'workflows/analysis/EfficacySummary.yaml',
-    // The ready-made studies, and the list that names them.
-    // The ready-made protocol the builder's form offers to try.
+    // The R file beside them, whose function the Efficacy summary calls by name.
+    'workflows/analysis/EfficacyModel.R',
+    // The ready-made protocols the builder's form offers to try: CDISC's five examples.
     'protocols/cdisc-pilot.protocol.json',
+    'protocols/cdisc-pilot-devices.protocol.json',
+    'protocols/alexion-wilsons.protocol.json',
+    'protocols/lilly-nasal-glucagon.protocol.json',
+    'protocols/observational.protocol.json',
+    // The ready-made studies, and the list that names them.
     'presets/index.json',
     'presets/phase1-small.study.json.gz',
     'presets/phase2-oncology.study.json.gz',

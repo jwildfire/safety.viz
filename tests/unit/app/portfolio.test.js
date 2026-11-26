@@ -26,6 +26,7 @@ afterEach(() => {
   app = null;
   document.body.innerHTML = '';
   delete globalThis.StudyViewer;
+  delete globalThis.StudyBuilder;
 });
 
 function mounted(options = {}) {
@@ -229,6 +230,37 @@ describe('the data view’s second face', () => {
     q('[data-action="files"]').click();
     expect(q('.sva-explore-body')).toBeNull();
     expect(q('.sva-file')).not.toBeNull();
+  });
+
+  it('draws a study study.builder built with study.builder’s own study view when the page has it, told to leave out its RBQM and Safety views since the app has tabs of its own for both, and opens it again where the reader was', async () => {
+    const destroy = vi.fn();
+    const mountStudy = vi.fn((target) => {
+      target.append('the study view');
+      return { destroy };
+    });
+    const mount = vi.fn();
+    globalThis.StudyViewer = { mount };
+    globalThis.StudyBuilder = { mountStudy };
+    mounted({ demo: null, viewer });
+    const built = { id: 'BUILT' };
+    app.loadFiles([DM], { as: { id: 'x', name: 'BUILT', built } });
+    await settle();
+    expect(q('.sva-explore-body').textContent).toBe('the study view');
+    expect(q('.sva-faces')).toBeNull();
+    expect(mount).not.toHaveBeenCalled();
+    const options = mountStudy.mock.calls.at(-1)[1];
+    expect(options.study).toBe(built);
+    expect(options.operations).toBe(false);
+    expect(options.viewing).toBeNull();
+    // The view the reader moves to is where the next draw of the page opens.
+    const drawn = mountStudy.mock.calls.length;
+    options.onView({ view: 'adverse', table: 'adam:ADAE' });
+    app.select('data');
+    expect(mountStudy.mock.calls.length).toBe(drawn + 1);
+    expect(destroy).toHaveBeenCalled();
+    const again = mountStudy.mock.calls.at(-1)[1];
+    expect(again.viewing).toEqual({ view: 'adverse', table: 'adam:ADAE' });
+    expect(again.operations).toBe(false);
   });
 
   it('hands the viewer each placed file’s mapping as roles, and a role set in the viewer sets the app’s mapping', async () => {
