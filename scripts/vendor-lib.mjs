@@ -220,7 +220,7 @@ export const STUDY_BUILDER = {
   directory: 'site/vendor/study.builder',
   // The release the copy is made from. While it names a release candidate,
   // move it to the release when that is out, and copy again.
-  tag: 'v0.5.0-rc.3',
+  tag: 'v0.5.0',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },
