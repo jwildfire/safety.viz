@@ -1,18 +1,18 @@
 {
   "bundle": "study.builder bundle and the files its R reads",
   "repository": "https://github.com/jwildfire/study.builder",
-  "ref": "v0.3.1-rc.1",
-  "commit": "9a3077749200ba2db5f63aa8dad385c606ccc936",
-  "version": "0.3.1-rc.1",
+  "ref": "v0.3.1",
+  "commit": "905bd087b12bf9f51e66e1ab573931bfca14a454",
+  "version": "0.3.1",
   "license": "Apache-2.0",
-  "tag": "v0.3.1-rc.1",
+  "tag": "v0.3.1",
   "merged_to_dev": false,
   "files": [
     {
       "file": "study.builder.js",
       "source": "dist/study.builder.js",
-      "sha256": "d2b27cbfc82c47856c6a3c74f6a0cb70c26adcca6558c316bf85e6cf5d71394b",
-      "bytes": 130871
+      "sha256": "ba127b65e6e38ac054a26e821872f1caadc0be4290c31993a1b01236615bbf49",
+      "bytes": 130866
     },
     {
       "file": "study.viewer.js",

@@ -50,7 +50,11 @@ test('the keynote’s demo path: the app opens on the pilot study, a chart, the 
     await page.evaluate('window.__safetyVizApp.ready');
     // No line on first open (#321): the Overview tab names the study.
     await expect(page.locator('.sva-welcome')).toHaveCount(0);
-    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    // The study's name is on the study chip where the demo has one, and on
+    // the first tab where it does not: the walk runs against either.
+    await expect(
+      page.locator('.sva-chip-name, .sva-item[data-view="data"] .sva-tag').first()
+    ).toHaveText('Pilot study');
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     await shot('01-opens-on-the-pilot-study');
   });
