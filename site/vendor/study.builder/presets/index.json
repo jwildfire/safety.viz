@@ -17,7 +17,7 @@
       },
       "study": "phase1-small.study.json.gz",
       "key": "sha256:3a1bb2a0afc65c2fa81322a64314cacf5f22302ccb9c55cf2988682aa2eff0bb",
-      "megabytes": 1.1
+      "megabytes": 1.2
     },
     {
       "id": "phase2-oncology",
@@ -928,7 +928,7 @@
       },
       "study": "cdisc-pilot-protocol.study.json.gz",
       "key": "sha256:bc3892cd6d1fbe1aebde1a8b8a5207ee0d47feb737551d7110c5714091981dd5",
-      "megabytes": 2.2
+      "megabytes": 2.3
     }
   ]
 }
