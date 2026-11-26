@@ -12852,7 +12852,7 @@ var SafetyViz = (() => {
    [hidden] on the slot while it is idle, and .sv-rail's own display would
    otherwise win over the user-agent rule. */
 .sv-rail[hidden]{display:none}
-.sv-rail-expanded .sv-rail{position:absolute;inset:0;width:auto;align-self:stretch;justify-self:stretch;z-index:6;max-height:none;box-shadow:0 18px 46px rgba(31,41,51,.22)}
+.sv-rail-expanded .sv-rail{position:absolute;inset:0;z-index:6;max-height:none;box-shadow:0 18px 46px rgba(31,41,51,.22)}
 .sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:saturate(.25) opacity(.35)}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
 .sv-multiples:empty{display:none}
@@ -16197,11 +16197,6 @@ var SafetyViz = (() => {
    is to say the expanded profile is the standalone renderer (decision D3). */
 .sv-rail-expanded .sv-profile-rail-body{padding:1rem}
 .sv-rail-expanded .sv-profile-controls{flex-direction:column;align-items:stretch;float:left;width:210px;margin:0 1.25rem .75rem 0;padding-right:1rem;border-right:1px solid #e3e8ee}
-/* The chart sits beside the floated control column, not under it: a canvas is
-   a block-level replaced element, which a float pushes down whole when it does
-   not fit beside it, leaving its card empty. A flow root narrows to fit. */
-.sv-rail-expanded .sv-profile-spaghetti{display:flow-root}
-.sv-rail-expanded .sv-profile-measure-wrap{clear:both}
 .sv-rail-expanded .sv-profile-spaghetti-card{height:360px}
 
 /* --- the cohort list (decision D8) ---------------------------------------- */
