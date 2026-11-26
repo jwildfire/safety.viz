@@ -16,7 +16,7 @@
         "snapshots": "all"
       },
       "study": "phase1-small.study.json.gz",
-      "key": "sha256:3a1bb2a0afc65c2fa81322a64314cacf5f22302ccb9c55cf2988682aa2eff0bb",
+      "key": "sha256:45b7142bb06f5fee9d81a90e1b34668a87653a29ba13eeedc08f1d2af2838dca",
       "megabytes": 1.2
     },
     {
@@ -33,7 +33,7 @@
         "seed": 202
       },
       "study": "phase2-oncology.study.json.gz",
-      "key": "sha256:4b0aabbc4e803f0aeba21cc101fc180f606ce8008db6ed25b705da76e04a3fee",
+      "key": "sha256:001a419ded7a107c6f2ee8b932fb70578550b5830f67a134e0321f4682f488e9",
       "megabytes": 1.3
     },
     {
@@ -261,7 +261,7 @@
               "id": "Activity_4",
               "name": "Demographics",
               "domain": null,
-              "collects": ["Sex", "Race"]
+              "collects": ["Sex", "Race", "Date of Birth"]
             },
             {
               "id": "Activity_5",
@@ -923,11 +923,15 @@
               "sex": "Both",
               "analysis": ["Patients with Mild to Moderate Alzheimer’s Disease."]
             }
-          }
+          },
+          "notes": [
+            "3 other timelines in the file are not simulated (Adverse Event Timeline, Early Termination Timeline, Vital Sign Blood Pressure Timeline): the times within a visit, and what happens off the schedule.",
+            "2 activities have a timeline of their own within a visit (sampling at set hours, say); they are simulated once a visit."
+          ]
         }
       },
       "study": "cdisc-pilot-protocol.study.json.gz",
-      "key": "sha256:bc3892cd6d1fbe1aebde1a8b8a5207ee0d47feb737551d7110c5714091981dd5",
+      "key": "sha256:9e41ba70f50756281cc1d75663231303257bf61c7dcb1eed6bfc0297c5923cd1",
       "megabytes": 2.3
     }
   ]
