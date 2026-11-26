@@ -59,7 +59,7 @@ export const RBQM_DOCS = Object.freeze({
 
 /** What the tab says when nothing the metrics can run on is loaded. */
 export const NO_FILES =
-  'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.';
+  'Nothing the metrics can run on is loaded. Load a study on the Overview tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.';
 
 /** What the tab says when files are loaded and none is one the metrics can run on. */
 export const NONE_PLACED =
@@ -86,7 +86,7 @@ export const RBQM_NOTE = {
 };
 
 /**
- * What the Data tab's card says of the loaded data (#281, obot.roadmap#406):
+ * What the Overview tab's card says of the loaded data (#281, obot.roadmap#406):
  * how many metrics it supports, as the card's sentence and as the workflow's
  * third step counts them; what the card says of a metric's state, under the
  * key to its marks and in the metric's full name; the title over the reasons;
@@ -115,7 +115,7 @@ export function supportWords(can, of) {
 }
 
 /**
- * What a kept raw file's card says of it on the Data tab (#281): the raw
+ * What a kept raw file's card says of it on the Overview tab (#281): the raw
  * domain it was placed in and how that was told, or that it was placed in none.
  * @param {{table: ?string, by: ?string}} entry One file of rawStudy's (rbqm-files.js).
  * @returns {string} The few words of the card's tag.

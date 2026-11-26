@@ -1,6 +1,6 @@
 // Demo app: the page (#150, obot.roadmap#352). A full-page web app whose own
 // chrome is a header and a footer, so the chart keeps the page's full width. The
-// header carries the wordmark, a Data tab and one tab per domain, and beneath
+// header carries the wordmark, a Overview tab and one tab per domain, and beneath
 // them the charts of the open domain, each with a status saying whether the
 // loaded data supports it. The open chart's chip is emphasised and is the
 // view's visible name. The main area shows the data view or one chart at a
@@ -18,7 +18,7 @@
 // charts take something other than a study's standard domains brings one view
 // instead, a tab of its own (#235): the page gives it the main area and the
 // app handle, and the view draws itself. Such a tab may take files of its own
-// (#282): every file comes in on the Data tab, and the page asks the tab of
+// (#282): every file comes in on the Overview tab, and the page asks the tab of
 // each one before it places it in a standard domain.
 
 import { parseFile } from './parse.js';
@@ -363,7 +363,7 @@ export function mountApp(
   root.innerHTML = '';
   const app = el('div', 'sva-app');
 
-  // The header: the wordmark, the Data tab and a tab per domain; and beneath
+  // The header: the wordmark, the Overview tab and a tab per domain; and beneath
   // them the charts of the open domain, the open one emphasised. That chip is
   // the view's visible name: the heading and the overall count are kept for
   // screen readers and not shown.
@@ -507,11 +507,8 @@ export function mountApp(
     button.dataset.view = id;
     if (fullTitle !== label) button.title = fullTitle;
     if (state.selected === id) button.setAttribute('aria-current', 'page');
-    button.append(
-      el('span', hexClass),
-      el('span', 'sva-item-title', label),
-      el('span', tag.className, tag.text)
-    );
+    button.append(el('span', hexClass), el('span', 'sva-item-title', label));
+    if (tag) button.append(el('span', tag.className, tag.text));
     button.onclick = () => handle.select(id);
     return button;
   }
@@ -557,18 +554,22 @@ export function mountApp(
     const open = isChart(state.selected) ? groupOf(manifest.modules[state.selected]) : null;
     const loaded = Object.keys(state.files).length + state.raw.length;
     tabs.innerHTML = '';
+    // Where the study chip is beside it, the chip names the study and this tab
+    // says only what it is. A page with no chip keeps the name on the tab.
     tabs.append(
       navItem(
         'data',
-        'Data',
-        {
-          className: 'sva-tag',
-          // A study that says its name is called by it.
-          text:
-            state.named && state.named.name && loaded
-              ? state.named.name
-              : dataTag({ study: state.study, loaded, studies })
-        },
+        'Overview',
+        withPortfolio
+          ? null
+          : {
+              className: 'sva-tag',
+              // A study that says its name is called by it.
+              text:
+                state.named && state.named.name && loaded
+                  ? state.named.name
+                  : dataTag({ study: state.study, loaded, studies })
+            },
         'sva-hex sva-spectrum'
       )
     );
@@ -992,7 +993,7 @@ export function mountApp(
       content.append(note({ say: state.busy, busy: true, className: 'sva-message sva-busy' }));
     }
     if (state.selected === 'data') {
-      title.textContent = 'Data';
+      title.textContent = 'Overview';
       renderNotes(content);
       const container = el('div', 'sva-data');
       content.append(container);
@@ -1126,7 +1127,7 @@ export function mountApp(
   function viewName() {
     if (isChart(state.selected)) return chipLabel(manifest.modules[state.selected], state.selected);
     if (isView(state.selected)) return views.get(state.selected).title;
-    return 'Data';
+    return 'Overview';
   }
 
   function render() {

@@ -51,22 +51,22 @@ describe('the wordmark and the browser tab’s title', () => {
     plain.destroy();
   });
 
-  it('APP-PAGE-038: the browser tab’s title names the open view before the app’s name: the Data tab, a chart by the name on its chip, and a library’s tab by its own (#270)', () => {
+  it('APP-PAGE-038: the browser tab’s title names the open view before the app’s name: the Overview tab, a chart by the name on its chip, and a library’s tab by its own (#270)', () => {
     const app = mountApp(root, {
       charts,
       manifest,
       libraries: [{ name: 'gsm.viz', view }]
     });
-    expect(document.title).toBe('Data · safety.viz demo');
+    expect(document.title).toBe('Overview · safety.viz demo');
     app.select('histogram');
     expect(document.title).toBe('Histogram · safety.viz demo');
     app.select('ae-explorer');
     expect(document.title).toBe('Adverse Event Explorer · safety.viz demo');
     app.select('rbqm');
     expect(document.title).toBe('RBQM · safety.viz demo');
-    // An address that names no view opens the Data tab, and the title says so.
+    // An address that names no view opens the Overview tab, and the title says so.
     app.select('constructor');
-    expect(document.title).toBe('Data · safety.viz demo');
+    expect(document.title).toBe('Overview · safety.viz demo');
     // A page may name the app itself; a destroyed app leaves the tab its name.
     app.destroy();
     expect(document.title).toBe('safety.viz demo');

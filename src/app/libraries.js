@@ -559,7 +559,7 @@ export function noteSaid(library, module) {
 
 /**
  * Whether a tab says a file is its own, read safely: the first of the two
- * things a tab hands the Data tab (obot.roadmap#406). The page asks it of each
+ * things a tab hands the Overview tab (obot.roadmap#406). The page asks it of each
  * file a reader loads, before the file is placed in a standard domain
  * (src/app/page.js).
  *
@@ -588,7 +588,7 @@ export function claimSaid(view, file) {
 
 /**
  * What a tab says the loaded data supports, read safely: the second of the two
- * things a tab hands the Data tab (obot.roadmap#406), which draws it as one
+ * things a tab hands the Overview tab (obot.roadmap#406), which draws it as one
  * card and knows nothing else of the tab (src/app/data-panel.js).
  *
  * A view's `supports(app)` answers with nothing when nothing it can read is

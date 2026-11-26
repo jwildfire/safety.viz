@@ -363,7 +363,7 @@ describe('demo app: the page', () => {
     expect(root.querySelector('.sva-header .sva-count')).toBeNull();
     expect(root.querySelector('main .sva-count').getAttribute('aria-live')).toBe('polite');
     expect(root.querySelectorAll('h1')).toHaveLength(1);
-    expect(root.querySelector('main h1.sva-title').textContent).toBe('Data');
+    expect(root.querySelector('main h1.sva-title').textContent).toBe('Overview');
   });
 
   it('APP-PAGE-019: the footer links only where it was given an address, and the single file is a download (#150)', () => {

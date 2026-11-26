@@ -1,5 +1,5 @@
 // Demo app: what the header and the first screen say of where the reader is
-// (#269, obot.roadmap#402): a tab's count and the Data tab's name for the
+// (#269, obot.roadmap#402): a tab's count and the Overview tab's name for the
 // loaded study. Pure: no document. The page (page.js) puts the words on the
 // screen. The one-line welcome of release 1.11.0 is gone (#321).
 
@@ -18,13 +18,13 @@ export function tabCount(ready, total) {
 }
 
 /**
- * What the Data tab says is loaded: a demo study by its name, a reader's own
+ * What the Overview tab says is loaded: a demo study by its name, a reader's own
  * files by their number, or that there are none.
  * @param {Object} loaded What is loaded.
  * @param {?string} loaded.study The id of the demo study that is loaded, when what is loaded is one.
  * @param {number} loaded.loaded How many files are loaded.
  * @param {Array<{id: string, label: string}>} loaded.studies The demo studies the page offers.
- * @returns {string} The words on the Data tab.
+ * @returns {string} The words on the Overview tab.
  */
 export function dataTag({ study, loaded, studies }) {
   const demo = study ? studies.find((item) => item.id === study) : null;

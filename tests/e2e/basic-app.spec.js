@@ -685,7 +685,7 @@ test.describe('demo app: the first screen', () => {
     }
   });
 
-  test('APP-PAGE-033: the Data tab names the loaded study: each demo study by its name, a reader’s own files as "Your 4 files", and nothing as "no files" (#269)', async ({
+  test('APP-PAGE-033: the Overview tab names the loaded study: each demo study by its name, a reader’s own files as "Your 4 files", and nothing as "no files" (#269)', async ({
     page
   }) => {
     await openOnDemo(page);
@@ -715,7 +715,7 @@ test.describe('demo app: the first screen', () => {
     const chart = await page.locator('.sva-chart').boundingBox();
     expect(chart.y - (header.y + header.height)).toBeLessThan(30);
     await captureEvidence(page, 'APP-PAGE-044', 'first-screen');
-    // On every tab, and on the Data tab, which still names the loaded study.
+    // On every tab, and on the Overview tab, which still names the loaded study.
     for (const module of ['ae-explorer', 'qt-explorer', 'group-comparison']) {
       await openChart(page, module);
       await expect(page.locator('.sva-welcome')).toHaveCount(0);
@@ -764,7 +764,7 @@ test.describe('demo app: the first screen', () => {
     expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(4);
   });
 
-  test('APP-PAGE-038: the browser tab’s title names the open view: a chart by the name on its chip, the RBQM tab, and the Data tab (#270)', async ({
+  test('APP-PAGE-038: the browser tab’s title names the open view: a chart by the name on its chip, the RBQM tab, and the Overview tab (#270)', async ({
     page
   }) => {
     await openOnDemo(page);
@@ -776,7 +776,7 @@ test.describe('demo app: the first screen', () => {
     await page.locator('.sva-tab[data-tab="rbqm"]').click();
     await expect(page).toHaveTitle('RBQM · safety.viz demo');
     await item(page, 'data').click();
-    await expect(page).toHaveTitle('Data · safety.viz demo');
+    await expect(page).toHaveTitle('Overview · safety.viz demo');
     // An address followed without a reload changes it too.
     await page.evaluate(() => {
       window.location.hash = '#qt-explorer';
@@ -3368,7 +3368,7 @@ function withoutAColumn(testInfo) {
   writeFileSync(written, files['Raw_AE.csv']);
   return written;
 }
-// Every file comes in on the Data tab (#282): its one chooser takes gsm's raw
+// Every file comes in on the Overview tab (#282): its one chooser takes gsm's raw
 // files too, and one card there says what the loaded data supports (#281).
 async function chooseOnDataTab(page, files) {
   await item(page, 'data').click();
@@ -3453,7 +3453,7 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(page.locator('.sva-charts')).toBeVisible();
     await expect(rbqmStatus(page)).toHaveText(PILOT_NEED);
     await expect(page.locator('.sva-rbqm-supports')).toHaveText(
-      'The loaded study supports 3 of 8 metrics. Change the data on the Data tab.'
+      'The loaded study supports 3 of 8 metrics. Change the data on the Overview tab.'
     );
     // Under the note, and quieter than it: smaller, in the soft grey (#322's
     // review found a release candidate that drew it in full ink).
@@ -3474,7 +3474,7 @@ test.describe('demo app: the RBQM tab', () => {
     await rbqmTab(page).click();
     await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
     await expect(page.locator('.sva-rbqm-supports')).toHaveText(
-      'The loaded study supports 8 of 8 metrics. Change the data on the Data tab.'
+      'The loaded study supports 8 of 8 metrics. Change the data on the Overview tab.'
     );
     await expect(rbqmStart(page)).toHaveText('Start R');
     await expect(rbqmStart(page)).toBeEnabled();
@@ -3702,7 +3702,7 @@ test.describe('demo app: the RBQM tab', () => {
   }) => {
     const errors = watchErrors(page);
     await openRbqm(page, '?rbqm=recorded');
-    // Two files of the reader's own, chosen on the Data tab (#282): they take
+    // Two files of the reader's own, chosen on the Overview tab (#282): they take
     // the demo study's place, and the page says so.
     await chooseOnDataTab(page, [OWN_SUBJ, OWN_AE]);
     await expect(page.locator('.sva-loaded-name')).toHaveText(['Raw_SUBJ.csv', 'Raw_AE.csv']);
@@ -3711,7 +3711,7 @@ test.describe('demo app: the RBQM tab', () => {
       'The demo study (RBQM study) was cleared to load your files.'
     ]);
     await expect(page.locator('.sva-rbqm-supports')).toHaveText(
-      'The loaded files support 2 of 8 metrics. Change the data on the Data tab.'
+      'The loaded files support 2 of 8 metrics. Change the data on the Overview tab.'
     );
     // Before R the row already says which metrics the files cannot support.
     const states = () =>
@@ -3719,7 +3719,7 @@ test.describe('demo app: the RBQM tab', () => {
     expect(await states()).toEqual(['todo', 'todo', ...Array(6).fill('cannot')]);
     await rbqmStart(page).click();
     await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 2 of 8 metrics on the 2 loaded files in [\d.]+ seconds?\. The other 6 need data it does not have: change the data on the Data tab\. Run details$/
+      /^R ran 2 of 8 metrics on the 2 loaded files in [\d.]+ seconds?\. The other 6 need data it does not have: change the data on the Overview tab\. Run details$/
     );
     await expect(rbqmTab(page).locator('.sva-tab-count')).toHaveText('2 of 8');
     expect(await states()).toEqual(['ran', 'ran', ...Array(6).fill('cannot')]);
@@ -3748,7 +3748,7 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(page.locator('.sva-rbqm-why')).toHaveText(
       'Screen Failure Rate needs Raw_ENROLL.csv, which is not loaded.'
     );
-    // The way to the data is the Data tab, where every file comes in (#282):
+    // The way to the data is the Overview tab, where every file comes in (#282):
     // the RBQM tab has no place to load one.
     await expect(
       page.locator('.sva-view input[type="file"], .sva-view .sva-drop, .sva-view details')
@@ -4273,7 +4273,7 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-R-054: Run details left open is closed when the reader comes back to the tab: on the keynote’s path, with the panel open on the pilot study’s result, choosing the RBQM study on the Data tab and coming back shows the new result with nothing over it; while it is open the panel covers the tab’s status label whole (#309)', async ({
+  test('APP-R-054: Run details left open is closed when the reader comes back to the tab: on the keynote’s path, with the panel open on the pilot study’s result, choosing the RBQM study on the Overview tab and coming back shows the new result with nothing over it; while it is open the panel covers the tab’s status label whole (#309)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -4433,7 +4433,7 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-036: a reader’s own raw files, with no demo study: files chosen from disk on the Data tab are kept as raw files, each card naming the raw domain it was placed in and one that lacks a column naming the column; a file of no raw domain dropped there is no raw file; the Data tab’s card says which metrics the files support before R is started, in the words desktop R said after running; Start R on the RBQM tab then draws the two adverse event metrics and says of each other metric which file it needs (#236, #281, #282)', async ({
+  test('APP-RBQM-036: a reader’s own raw files, with no demo study: files chosen from disk on the Overview tab are kept as raw files, each card naming the raw domain it was placed in and one that lacks a column naming the column; a file of no raw domain dropped there is no raw file; the Overview tab’s card says which metrics the files support before R is started, in the words desktop R said after running; Start R on the RBQM tab then draws the two adverse event metrics and says of each other metric which file it needs (#236, #281, #282)', async ({
     page
   }, testInfo) => {
     const errors = watchErrors(page);
@@ -4442,14 +4442,14 @@ test.describe('demo app: the RBQM tab', () => {
     // With nothing loaded the RBQM tab has nothing to run, and no place to load a file.
     await rbqmTab(page).click();
     await expect(rbqmStatus(page)).toHaveText(
-      'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.'
+      'Nothing the metrics can run on is loaded. Load a study on the Overview tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.'
     );
     await expect(rbqmStart(page)).toBeDisabled();
     await expect(
       page.locator('.sva-view input[type="file"], .sva-view .sva-drop, .sva-view details')
     ).toHaveCount(0);
 
-    // Chosen from disk on the Data tab, with the browser's own file chooser.
+    // Chosen from disk on the Overview tab, with the browser's own file chooser.
     await item(page, 'data').click();
     await expect(page.locator('.sva-drop-note')).toHaveText(
       'Study files or gsm raw files. They are read in this browser and sent nowhere.'
@@ -4527,7 +4527,7 @@ test.describe('demo app: the RBQM tab', () => {
     // The card's button leads to the tab, where R is started.
     await supportCard(page).locator('[data-action="open-view"]').click();
     await expect(page.locator('.sva-rbqm-supports')).toHaveText(
-      'The loaded files support 2 of 8 metrics. Change the data on the Data tab.'
+      'The loaded files support 2 of 8 metrics. Change the data on the Overview tab.'
     );
     await rbqmStart(page).click();
     await expect(rbqmStatus(page)).toHaveText(/^R ran 2 of 8 metrics on the 2 loaded files/);
@@ -4554,7 +4554,7 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(page.locator('.sva-rbqm-figures canvas')).toHaveCount(2);
     await captureEvidence(page.locator('.sva-rbqm'), 'APP-RBQM-036', 'own-files-two');
 
-    // Back on the Data tab the card's marks are the tab's: two ran. At a
+    // Back on the Overview tab the card's marks are the tab's: two ran. At a
     // phone's width the card and its reasons fit.
     await page.setViewportSize({ width: 390, height: 844 });
     await page.evaluate(`${APP}.select('data')`);
@@ -4571,7 +4571,7 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-075: a study’s files and gsm raw files chosen together on the Data tab each go where they belong: the raw files are kept as they are, the Renamed columns study is read as a study with `ae.csv` its adverse events file, and its charts draw; a demo study gives way once; a raw file that is not a CSV is refused with its sentence (#282)', async ({
+  test('APP-RBQM-075: a study’s files and gsm raw files chosen together on the Overview tab each go where they belong: the raw files are kept as they are, the Renamed columns study is read as a study with `ae.csv` its adverse events file, and its charts draw; a demo study gives way once; a raw file that is not a CSV is refused with its sentence (#282)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -4627,7 +4627,7 @@ test.describe('demo app: the RBQM tab', () => {
     await expect(page.locator('.sva-file.sva-raw')).toHaveCount(3);
     await expect(page.locator('.sva-file[data-domain]')).toHaveCount(4);
 
-    // The study's charts draw as they did before the Data tab took raw files.
+    // The study's charts draw as they did before the Overview tab took raw files.
     await correct(page);
     await expect(stepStatus(page, 'open')).toHaveText(
       '18 of 18 charts ready · 4 of 8 RBQM metrics'
@@ -4642,7 +4642,7 @@ test.describe('demo app: the RBQM tab', () => {
     // for R answers with another study's rows here, so only what it was handed is read.
     await rbqmTab(page).click();
     await expect(page.locator('.sva-rbqm-supports')).toHaveText(
-      'The loaded files support 4 of 8 metrics. Change the data on the Data tab.'
+      'The loaded files support 4 of 8 metrics. Change the data on the Overview tab.'
     );
     await rbqmStart(page).click();
     await expect(rbqmStatus(page)).toHaveText(
@@ -4658,7 +4658,7 @@ test.describe('demo app: the RBQM tab', () => {
     expect(errors).toEqual([]);
   });
 
-  test('APP-RBQM-076: the Data tab’s one RBQM card, between the drop zone and the files, in its three states at 1,280 pixels and at 390: on three raw files, four of eight metrics with R’s reasons behind "Why 4 cannot run"; on the RBQM study, eight of eight and no reasons; on the study the app opens with, three of eight with the reasons in the open and which raw tables R makes from which file; each metric has the mark the RBQM tab’s row gives it, nothing scrolls sideways, and the card’s button opens the tab (#281)', async ({
+  test('APP-RBQM-076: the Overview tab’s one RBQM card, between the drop zone and the files, in its three states at 1,280 pixels and at 390: on three raw files, four of eight metrics with R’s reasons behind "Why 4 cannot run"; on the RBQM study, eight of eight and no reasons; on the study the app opens with, three of eight with the reasons in the open and which raw tables R makes from which file; each metric has the mark the RBQM tab’s row gives it, nothing scrolls sideways, and the card’s button opens the tab (#281)', async ({
     page
   }) => {
     const errors = watchErrors(page);
@@ -4826,7 +4826,7 @@ test.describe('demo app: the RBQM tab', () => {
     await sideAction(page, 'open-view').click();
     await expect(rbqmStatus(page)).toHaveText(RBQM_NEED);
     await expect(page.locator('.sva-rbqm-supports')).toHaveText(
-      'The loaded files support 4 of 8 metrics. Change the data on the Data tab.'
+      'The loaded files support 4 of 8 metrics. Change the data on the Overview tab.'
     );
     // The whole RBQM study leads there too, on the page as it is served with its demo studies.
     await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
@@ -4852,7 +4852,7 @@ test.describe('demo app: the RBQM tab', () => {
   // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
   // check is laid out"). Prettier would re-indent the whole test to fit the tag.
   // prettier-ignore
-  test('APP-RBQM-078: three raw files dropped on the Data tab, in real R: the subjects, adverse events and protocol deviations files are dropped on the drop zone, the RBQM tab is opened from the card and Start R pressed; R runs the four metrics the card said the files support, every Results row of each is desktop R’s to eight decimal places, and what R says of each other metric is what the card said before R was started (#282)', { tag: '@real-r' }, async ({
+  test('APP-RBQM-078: three raw files dropped on the Overview tab, in real R: the subjects, adverse events and protocol deviations files are dropped on the drop zone, the RBQM tab is opened from the card and Start R pressed; R runs the four metrics the card said the files support, every Results row of each is desktop R’s to eight decimal places, and what R says of each other metric is what the card said before R was started (#282)', { tag: '@real-r' }, async ({
     page
   }) => {
     test.setTimeout(480000);
@@ -4947,7 +4947,7 @@ test.describe('demo app: the RBQM tab', () => {
     await page.setViewportSize({ width: 1280, height: 1400 });
     await page.goto('/tests/e2e/fixtures/basic-app.html?rbqm=recorded');
     await page.evaluate(`${APP}.ready`);
-    // Nothing is chosen or loaded: the Data tab's card says what the study the
+    // Nothing is chosen or loaded: the Overview tab's card says what the study the
     // page opens with supports (#281), and which raw tables R makes from which file.
     await item(page, 'data').click();
     await expect(supportSay(page)).toHaveText('This data supports 3 of 8 metrics.');
@@ -4969,7 +4969,7 @@ test.describe('demo app: the RBQM tab', () => {
     await supportCard(page).locator('[data-action="open-view"]').click();
     await expect(rbqmStatus(page)).toHaveText(PILOT_NEED);
     await expect(page.locator('.sva-rbqm-supports')).toHaveText(
-      'The loaded study supports 3 of 8 metrics. Change the data on the Data tab.'
+      'The loaded study supports 3 of 8 metrics. Change the data on the Overview tab.'
     );
     await expect(rbqmStart(page)).toBeEnabled();
     // The row says the same before R: three metrics to run, five the study cannot support.
@@ -4983,7 +4983,7 @@ test.describe('demo app: the RBQM tab', () => {
     await rbqmStart(page).click();
     await expect(page.locator('.sva-rbqm-table table.group-overview')).toBeVisible();
     await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 3 of 8 metrics on the Pilot study in [\d.]+ seconds?\. The other 5 need data it does not have: change the data on the Data tab\. Run details$/
+      /^R ran 3 of 8 metrics on the Pilot study in [\d.]+ seconds?\. The other 5 need data it does not have: change the data on the Overview tab\. Run details$/
     );
     await expect(page.locator('.sva-rbqm-headrow .sva-rbqm-count')).toHaveText(
       '17 sites, 12 shown here'
@@ -5113,7 +5113,7 @@ test.describe('demo app: the RBQM tab', () => {
     await rbqmTab(page).click();
     await rbqmOverview(page).click();
     await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?\. To use other files, change the data on the Data tab\. Run details$/
+      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?\. To use other files, change the data on the Overview tab\. Run details$/
     );
     await expect(page.locator('.sva-rbqm-table tbody tr')).toHaveCount(150);
     await item(page, 'data').click();
@@ -5140,7 +5140,7 @@ test.describe('demo app: the RBQM tab', () => {
     await page.goto('/tests/e2e/fixtures/basic-app.html?empty');
     await page.evaluate(`${APP}.ready`);
     const own = new URL(page.url()).origin;
-    // The files are chosen on the Data tab, where every file comes in (#282).
+    // The files are chosen on the Overview tab, where every file comes in (#282).
     watch.chosen = true;
     await chooseOnDataTab(page, [OWN_SUBJ, OWN_AE, OWN_NOTES]);
     await expect(supportSay(page)).toHaveText('This data supports 2 of 8 metrics.');
@@ -5181,7 +5181,7 @@ test.describe('demo app: the RBQM tab', () => {
       }
     }
 
-    // The adverse events file with a column taken out, chosen on the Data tab:
+    // The adverse events file with a column taken out, chosen on the Overview tab:
     // its card names the column, and R is up, so on the tab it is run at once
     // and R names the column too.
     await chooseOnDataTab(page, [withoutAColumn(testInfo)]);
@@ -5251,7 +5251,7 @@ test.describe('demo app: the RBQM tab', () => {
   // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
   // check is laid out"). Prettier would re-indent the whole test to fit the tag.
   // prettier-ignore
-  test('APP-RBQM-047: the study the other charts use in real R, and what leaves the browser: on the app as it opens, Start R runs gsm’s workflows on the study’s subject-level and adverse events files and draws three metrics at 17 sites; every Results row is desktop R’s to eight decimal places, and what R says of each metric is what the tab said before R started; with the site’s mapping cleared on the Data tab R runs at once and names the column. From the tab’s opening until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and no address names a participant (#253)', { tag: '@real-r' }, async ({
+  test('APP-RBQM-047: the study the other charts use in real R, and what leaves the browser: on the app as it opens, Start R runs gsm’s workflows on the study’s subject-level and adverse events files and draws three metrics at 17 sites; every Results row is desktop R’s to eight decimal places, and what R says of each metric is what the tab said before R started; with the site’s mapping cleared on the Overview tab R runs at once and names the column. From the tab’s opening until five quiet seconds after, every request is a GET or HEAD with no body, no query and no header the browser did not set itself, to the page’s own address, webr.r-wasm.org and repo.r-wasm.org and no other; the page’s own address is asked for gsm.viz’s bundle, the files R is given and gsm’s packages, and no address names a participant (#253)', { tag: '@real-r' }, async ({
     page,
     context
   }) => {
@@ -5264,7 +5264,7 @@ test.describe('demo app: the RBQM tab', () => {
     const own = new URL(page.url()).origin;
     // The study is loaded; from here on nothing of it may leave.
     watch.chosen = true;
-    // What the study supports is said on the Data tab's card, before R (#281).
+    // What the study supports is said on the Overview tab's card, before R (#281).
     await item(page, 'data').click();
     await expect(supportSay(page)).toHaveText('This data supports 3 of 8 metrics.');
     const before = await saidOnCard(page);
@@ -5275,7 +5275,7 @@ test.describe('demo app: the RBQM tab', () => {
       timeout: 360000
     });
     await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 3 of 8 metrics on the Pilot study in [\d.]+ seconds?\. The other 5 need data it does not have: change the data on the Data tab\. Run details$/
+      /^R ran 3 of 8 metrics on the Pilot study in [\d.]+ seconds?\. The other 5 need data it does not have: change the data on the Overview tab\. Run details$/
     );
     // What R was handed, as Run details says it: the study's two files.
     const details = await runDetails(page);
@@ -5434,7 +5434,7 @@ test.describe('demo app: the RBQM tab', () => {
     const firstResult = (Date.now() - pressed) / 1000;
     // One line above the table; the rest is one click away, in Run details.
     await expect(rbqmStatus(page)).toHaveText(
-      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?\. To use other files, change the data on the Data tab\. Run details$/
+      /^R ran 8 of 8 metrics on the 9 loaded files in [\d.]+ seconds?\. To use other files, change the data on the Overview tab\. Run details$/
     );
     await expect(rbqmChip(page)).toHaveText('R ready▾');
     await expect(rbqmItems(page).locator('.sva-ico-ran')).toHaveCount(8);
@@ -5643,8 +5643,8 @@ test.describe('demo app as one file, offline', () => {
     page.on('request', (request) => requests.push(request.url()));
     await context.setOffline(true);
     await page.goto(SINGLE_FILE.href);
-    // It opens empty, on the Data tab, and the title says so (#270).
-    await expect(page).toHaveTitle('Data · safety.viz demo');
+    // It opens empty, on the Overview tab, and the title says so (#270).
+    await expect(page).toHaveTitle('Overview · safety.viz demo');
     await expect(page.locator('.sva-wordmark')).toHaveText('safety.viz');
     await expect(page.locator('.sva-kicker')).toHaveText('Demo app');
     await expect(page.locator('.sva-version')).toHaveText(/^safety\.viz \d+\.\d+\.\d+$/);

@@ -892,11 +892,11 @@ describe('demo app: the data panel', () => {
   });
 });
 
-// What a tab hands the Data tab (#281, #282, obot.roadmap#406): whether a file
+// What a tab hands the Overview tab (#281, #282, obot.roadmap#406): whether a file
 // is its own, and what the loaded data supports. The tab here is a stand-in
 // with words of its own, so nothing of the RBQM tab's is in these tests: the
-// Data tab draws what it is handed.
-describe('demo app: what a tab hands the Data tab', () => {
+// Overview tab draws what it is handed.
+describe('demo app: what a tab hands the Overview tab', () => {
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
   const notes = () => $$('.sva-note').map((node) => node.textContent);
@@ -1045,7 +1045,7 @@ describe('demo app: what a tab hands the Data tab', () => {
     expect(greedy.state.raw).toEqual([]);
   });
 
-  it('APP-LOAD-028: the Data tab draws what the tab says the loaded data supports as one card between the drop zone and the files, in the tab’s words: its sentence, each item with the mark for its state and a name that says both, the key, why some cannot run behind its title, and a button that opens the tab; a kept file’s card carries the tab’s words for it; with nothing said there is no card (#281)', () => {
+  it('APP-LOAD-028: the Overview tab draws what the tab says the loaded data supports as one card between the drop zone and the files, in the tab’s words: its sentence, each item with the mark for its state and a name that says both, the key, why some cannot run behind its title, and a button that opens the tab; a kept file’s card carries the tab’s words for it; with nothing said there is no card (#281)', () => {
     const view = tab();
     const app = mount(view);
     expect($('.sva-support')).toBeNull();
@@ -1092,7 +1092,7 @@ describe('demo app: what a tab hands the Data tab', () => {
       'gadget file',
       'gadget_one.csv is a gadget file.'
     ]);
-    // The tab's state moves while the Data tab is open: the card follows, and
+    // The tab's state moves while the Overview tab is open: the card follows, and
     // the reasons stay as the reader left them.
     why.open = true;
     view.ran = true;
@@ -1233,7 +1233,7 @@ describe('demo app: what a tab hands the Data tab', () => {
     expect(
       supportSaid({ supports: () => ({ say: 'S.', why: { title: 'Why', items: [] } }) }, {}).why
     ).toBeNull();
-    // On the page, a tab that throws leaves the Data tab as it is with no such tab's card.
+    // On the page, a tab that throws leaves the Overview tab as it is with no such tab's card.
     const app = mount(tab({ claims: throws, supports: throws }));
     app.loadFiles([GADGET]);
     expect(app.state.raw).toEqual([]);
@@ -1242,7 +1242,7 @@ describe('demo app: what a tab hands the Data tab', () => {
     warn.mockRestore();
   });
 
-  it('APP-LOAD-028: the Data tab’s own code names no site metric and no gsm raw domain: what it draws of them it is handed (#281, #282)', () => {
+  it('APP-LOAD-028: the Overview tab’s own code names no site metric and no gsm raw domain: what it draws of them it is handed (#281, #282)', () => {
     const source = readFileSync(path.join(repoDir, 'src/app/data-panel.js'), 'utf8');
     const { needs } = JSON.parse(readFileSync(path.join(repoDir, 'site/rbqm/needs.json'), 'utf8'));
     expect(needs.metrics).toHaveLength(8);

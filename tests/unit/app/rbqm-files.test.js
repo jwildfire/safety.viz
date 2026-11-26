@@ -120,7 +120,7 @@ describe('placing a raw file in a gsm raw domain', () => {
     ]);
   });
 
-  it('APP-RBQM-074: among the files that come in on the Data tab, one is a gsm raw file only when its name starts with `Raw_`, in any case, or its columns are those of exactly one raw domain; a file named for a domain without `Raw_` is a study file, as every file of the three demo studies of standard domains is (#282)', () => {
+  it('APP-RBQM-074: among the files that come in on the Overview tab, one is a gsm raw file only when its name starts with `Raw_`, in any case, or its columns are those of exactly one raw domain; a file named for a domain without `Raw_` is a study file, as every file of the three demo studies of standard domains is (#282)', () => {
     expect(isRawFile(file('Raw_AE.csv', []), needs)).toBe(true);
     expect(isRawFile(file('raw_ae.CSV', ['x']), needs)).toBe(true);
     expect(isRawFile(file('study\\Raw_PD.csv', []), needs)).toBe(true);
@@ -369,7 +369,7 @@ describe('the loaded study’s standard domains, as gsm’s raw tables', () => {
     expect(pilot.no_site.rows).toBe(0);
     expect(standardSentence(lacking.get('Standard_subject'), 'Subject-level', less)).toBe(
       'adsl.csv, the Subject-level file, gives Raw_STUDY. It has no column mapped to SITEID, ' +
-        'so Raw_SITE, Raw_STUDCOMP and Raw_SUBJ are not made. Map it on the Data tab.'
+        'so Raw_SITE, Raw_STUDCOMP and Raw_SUBJ are not made. Map it on the Overview tab.'
     );
   });
 

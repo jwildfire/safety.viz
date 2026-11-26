@@ -82,7 +82,8 @@ describe('the study chip', () => {
       as: { id: 'x', name: 'READY-P2', kind: 'Simulated', facts: [{ label: 'Phase', value: 'P2' }] }
     });
     expect(q('[data-action="study-chip"]').textContent).toBe('READY-P2▾');
-    expect(q('.sva-tabs .sva-tag').textContent).toBe('READY-P2');
+    // The tab beside the chip does not say the study's name again.
+    expect(q('.sva-item[data-view="data"]').textContent).toBe('Overview');
     // Files of the reader's own are no longer that study.
     app.loadFiles([DM]);
     expect(app.state.named).toBeNull();

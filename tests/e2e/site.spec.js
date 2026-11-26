@@ -161,7 +161,7 @@ test.describe('docs site', () => {
       );
     expect(tops).toHaveLength(6);
     expect(new Set(tops).size).toBe(1);
-    await expect(page.locator('.sva-item[data-view="data"] .sva-tag')).toHaveText('Pilot study');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
   });
   test('APP-PAGE-031: on the built demo page every chart’s footnote leads where its pages are: each safety chart’s test evidence, and the clinical guide of the six that have one, are pages the site serves; a biomarker chart’s test evidence is on bio.viz’s site (#246)', async ({
     page
