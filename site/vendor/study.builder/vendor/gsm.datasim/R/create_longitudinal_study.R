@@ -21,9 +21,10 @@
 #' @param design Optional study design: a schedule of activities that the
 #'   visits, labs and vital signs follow in place of the fixed list of visits.
 #'   See [validate_study_design()] for its format. Default `NULL`.
-#' @param results Optional study results: `TRUE`, or a list with `arms` and
-#'   `ecg`, adds a treatment arm for each enrolled participant, a result, unit
-#'   and normal range for each lab, and an ECG table. See
+#' @param results Optional study results: `TRUE`, or a list with `arms`,
+#'   `ecg` and `scores`, adds a treatment arm for each enrolled participant, a
+#'   result, unit and normal range for each lab, an ECG table, and a table of
+#'   any scores asked for (a questionnaire total that moves by arm). See
 #'   [apply_study_results()]. Default `NULL`.
 #' @param verbose Whether to print progress/output messages
 #' @inheritParams create_study_config

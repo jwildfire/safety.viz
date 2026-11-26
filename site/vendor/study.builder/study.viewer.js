@@ -9,8 +9,8 @@ var StudyViewer=(()=>{var $e=Object.defineProperty;var Je=Object.getOwnPropertyD
 .sv *,.sv *::before,.sv *::after{box-sizing:border-box}
 .sv button{font:inherit;color:inherit;cursor:pointer}
 .sv :focus-visible{outline:2px solid var(--sv-accent);outline-offset:2px}
-.sv-rail{flex:1 1 13rem;max-width:16rem;min-width:0;display:flex;flex-direction:column;gap:1px;align-self:flex-start;position:sticky;top:.5rem;max-height:calc(100vh - 1rem);overflow-y:auto;padding:.5rem;background:var(--sv-card);border:1px solid var(--sv-rule);border-radius:12px}
-.sv-main{flex:999 1 28rem;min-width:0;display:flex;flex-direction:column;gap:.7rem}
+.sv .sv-rail{flex:1 1 13rem;max-width:16rem;min-width:0;display:flex;flex-direction:column;gap:1px;align-self:flex-start;position:sticky;top:.5rem;max-height:calc(100vh - 1rem);overflow-y:auto;padding:.5rem;background:var(--sv-card);border:1px solid var(--sv-rule);border-radius:12px}
+.sv .sv-main{flex:999 1 28rem;min-width:0;display:flex;flex-direction:column;gap:.7rem}
 .sv-find,.sv-input{min-height:2.5rem;padding:0 .6rem;border:1px solid var(--sv-line);border-radius:8px;background:var(--sv-card);color:var(--sv-ink);font:inherit}
 .sv-find{width:100%;min-height:2.2rem;margin:0 0 .3rem}
 .sv-group{display:flex;justify-content:space-between;align-items:center;gap:.5rem;width:100%;margin-top:.2rem;padding:.5rem .5rem .3rem;border:0;background:none;font:600 .68rem/1.2 var(--sv-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--sv-soft)!important;text-align:left}
@@ -28,7 +28,7 @@ var StudyViewer=(()=>{var $e=Object.defineProperty;var Je=Object.getOwnPropertyD
 .sv-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:.6rem 1rem}
 .sv-title{margin:0;font-size:1.35rem;font-weight:600;line-height:1.2}
 .sv-title-about{margin-left:.6rem;font-size:.9rem;font-weight:400;color:var(--sv-soft)}
-.sv-meta,.sv-soft{color:var(--sv-soft);font-size:.82rem}
+.sv-meta,.sv .sv-soft{color:var(--sv-soft);font-size:.82rem}
 .sv-meta{margin:.2rem 0 0}
 .sv-note{margin:.3rem 0 0;display:inline-block;padding:.2rem .5rem;border-radius:6px;background:var(--sv-warn-soft);color:var(--sv-warn);font-size:.82rem}
 .sv-label{font:600 .68rem/1.2 var(--sv-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--sv-soft)}
@@ -50,7 +50,7 @@ var StudyViewer=(()=>{var $e=Object.defineProperty;var Je=Object.getOwnPropertyD
 .sv-grid td{padding:.4rem .7rem;border-bottom:1px solid var(--sv-rule);white-space:nowrap;max-width:22rem;overflow:hidden;text-overflow:ellipsis}
 .sv-grid tr:last-child td{border-bottom:0}
 .sv-sort{padding:0;border:0;background:none;font:inherit;font-weight:600}
-.sv-link{padding:0;border:0;background:none;color:var(--sv-accent)!important;text-decoration:underline;font:inherit}
+.sv .sv-link{padding:0;border:0;background:none;color:var(--sv-accent)!important;text-decoration:underline;font:inherit}
 .sv-foot{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:.5rem}
 .sv-columns{background:var(--sv-card);border:1px solid var(--sv-rule);border-radius:10px;overflow-x:auto}
 .sv-column{display:grid;grid-template-columns:var(--sv-tracks);gap:.8rem;align-items:center;min-width:52rem;padding:.5rem .8rem;border-top:1px solid var(--sv-rule)}
@@ -69,7 +69,7 @@ var StudyViewer=(()=>{var $e=Object.defineProperty;var Je=Object.getOwnPropertyD
 .sv-blocks{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,24rem),1fr));gap:.8rem}
 .sv-block{min-width:0;display:flex;flex-direction:column;gap:.4rem}
 .sv-block-head{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem}
-.sv-block-head .sv-link{font-weight:600}
+.sv .sv-block-head .sv-link{font-weight:600}
 .sv-block-more{margin:0}
 .sv-roles{display:flex;flex-direction:column;gap:.4rem;padding:.7rem .8rem;background:var(--sv-card);border:1px solid var(--sv-rule);border-radius:10px}
 .sv-roles-head{display:flex;align-items:center;gap:.6rem}

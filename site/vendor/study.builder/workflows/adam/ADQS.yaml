@@ -1,0 +1,121 @@
+# ADaM questionnaire and rating score table, from the raw scores table, the raw
+# visits table and ADSL. One row per enrolled participant, visit and score.
+# Baseline is the participant's last score on or before day one, or their first
+# score when none is.
+meta:
+  Type: ADaM
+  ID: ADQS
+  Description: Questionnaire and rating score analysis table
+  Priority: 2
+  File: adqs.csv
+  Keys: [USUBJID, VISIT, TEST]
+  Domain: qs
+spec:
+  Raw_QS:
+    subjid:
+      type: character
+    visnam:
+      type: character
+    qs_dt:
+      type: Date
+    qststnam:
+      type: character
+    qsresn:
+      type: numeric
+  Raw_VISIT:
+    visit:
+      type: character
+    visit_dt:
+      type: Date
+  ADaM_ADSL:
+    USUBJID:
+      type: character
+    ARM:
+      type: character
+    TRTSDT:
+      type: Date
+steps:
+  - output: Temp_Subject
+    name: workr::RunQuery
+    params:
+      df: ADaM_ADSL
+      strQuery: 'SELECT USUBJID AS subjid, ARM, TRTSDT FROM df'
+  - output: Temp_VisitOrder
+    name: workr::RunQuery
+    params:
+      df: Raw_VISIT
+      strQuery: 'SELECT visit AS visnam, CAST(ROW_NUMBER() OVER (ORDER BY MIN(visit_dt), visit) - 1 AS INTEGER) AS VISITNUM FROM df GROUP BY visit'
+  - output: Temp_QS
+    name: dplyr::inner_join
+    params:
+      x: Raw_QS
+      'y': Temp_Subject
+      by: subjid
+  - output: Temp_QSOrdered
+    name: dplyr::left_join
+    params:
+      x: Temp_QS
+      'y': Temp_VisitOrder
+      by: visnam
+  - output: Temp_QSDay
+    name: workr::RunQuery
+    params:
+      df: Temp_QSOrdered
+      strQuery: "SELECT subjid, ARM, visnam, VISITNUM, qststnam AS TEST, CAST(qsresn AS DOUBLE) AS STRESN, CAST(CASE WHEN CAST(qs_dt AS DATE) >= TRTSDT THEN date_diff('day', TRTSDT, CAST(qs_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(qs_dt AS DATE)) END AS INTEGER) AS DY FROM df"
+  - output: Temp_QSBase
+    name: workr::RunQuery
+    params:
+      df: Temp_QSDay
+      strQuery: 'SELECT subjid, TEST, arg_min(visnam, CASE WHEN DY <= 1 THEN -1000000 - DY ELSE DY END) AS base_visit, arg_min(STRESN, CASE WHEN DY <= 1 THEN -1000000 - DY ELSE DY END) AS BASE FROM df GROUP BY subjid, TEST'
+  - output: Temp_QSWithBase
+    name: dplyr::left_join
+    params:
+      x: Temp_QSDay
+      'y': Temp_QSBase
+      by: [subjid, TEST]
+  - output: ADaM_ADQS
+    name: workr::RunQuery
+    params:
+      df: Temp_QSWithBase
+      strQuery: "SELECT subjid AS USUBJID, ARM, visnam AS VISIT, VISITNUM, TEST, STRESN, BASE, STRESN - BASE AS CHG, CASE WHEN visnam = base_visit THEN 'Y' ELSE '' END AS ABLFL, DY FROM df ORDER BY TEST, USUBJID, VISITNUM"
+columns:
+  USUBJID:
+    label: Unique Subject Identifier
+    from: Raw_QS.subjid
+    how: Copied, for an enrolled participant
+  ARM:
+    label: Description of Planned Arm
+    from: ADSL.ARM
+    how: Joined from the participant's row
+  VISIT:
+    label: Visit Name
+    from: Raw_QS.visnam
+    how: Copied
+  VISITNUM:
+    label: Visit Number
+    from: Raw_VISIT.visit_dt
+    how: "Derived: the visit's place in the order of first visit dates across the study"
+  TEST:
+    label: Score Name
+    from: Raw_QS.qststnam
+    how: Copied
+  STRESN:
+    label: Numeric Score
+    from: Raw_QS.qsresn
+    how: Copied
+  BASE:
+    label: Baseline Value
+    from: Raw_QS.qsresn
+    how: "Derived: the participant's last score on or before day one, or their first when none is"
+  CHG:
+    label: Change from Baseline
+    from: Raw_QS.qsresn
+    how: 'Derived: the score less the baseline'
+  ABLFL:
+    label: Baseline Record Flag
+    from: Raw_QS.qs_dt
+    how: 'Derived: Y on the row the baseline was taken from'
+  DY:
+    label: Study Day
+    from: Raw_QS.qs_dt, ADSL.TRTSDT
+    how: 'Derived: the date less day one, plus one; a day before day one counts back from -1'

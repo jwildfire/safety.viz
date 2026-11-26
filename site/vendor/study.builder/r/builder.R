@@ -35,14 +35,15 @@ builder_core <- c("STUDY", "SITE", "SUBJ", "ENROLL")
 
 # The domains a study may be asked to hold besides, by gsm's name for each.
 # VS is made by gsm.datasim's own generator from a spec handed in (`vitals`).
-# EG (ECGs) is made by gsm.datasim's study results, with the arms and lab results.
+# EG (ECGs) and QS (scores) are made by gsm.datasim's study results, with the
+# arms and lab results.
 builder_optional <- c(
-  "VISIT", "AE", "LB", "VS", "EG", "PD", "STUDCOMP", "SDRGCOMP", "IE", "PK",
+  "VISIT", "AE", "LB", "VS", "EG", "QS", "PD", "STUDCOMP", "SDRGCOMP", "IE", "PK",
   "Randomization", "OverallResponse", "Death", "QUERY", "DATAENT", "DATACHG"
 )
 
 # A domain that needs another: gsm.datasim makes each from the other's rows.
-builder_needs <- list(VS = "VISIT", EG = "VISIT", OverallResponse = "VISIT", Death = "STUDCOMP")
+builder_needs <- list(VS = "VISIT", EG = "VISIT", QS = "VISIT", OverallResponse = "VISIT", Death = "STUDCOMP")
 
 # What a study may be asked to hold. The page holds the same limits.
 builder_limits <- list(
@@ -489,6 +490,10 @@ builder_layer_needs <- list(analysis = c("raw.rbqm", "adam"), reporting = "analy
 #' @param kri,reporting The folders that hold the copies of gsm.kri's metric
 #'   workflows and gsm.reporting's reporting workflows. Needed for the
 #'   analysis and the reporting layer.
+#' @param efficacy The scores the study follows, as text: a list with `scores`,
+#'   each as gsm.datasim's study results take one (`name`, `visits`,
+#'   `baseline`, `sd`, `change`, `effects` by arm, `day`, `min`, `max`). They
+#'   are gsm.datasim's to make, as the QS domain. `NULL` for none.
 #' @param history `TRUE` to keep every monthly snapshot and not only the last:
 #'   each earlier snapshot is put through the same workflows, and returned
 #'   under `history`.
@@ -519,6 +524,7 @@ builder_run <- function(
   kri = NULL,
   reporting = NULL,
   protocol = NULL,
+  efficacy = NULL,
   history = FALSE
 ) {
   participants <- .builder_whole(participants, "Participants", builder_limits$participants)
@@ -572,6 +578,11 @@ builder_run <- function(
   # arms are the protocol's when there is one, and gsm.datasim's own otherwise.
   results <- list(ecg = "EG" %in% wanted)
   if (length(arms)) results$arms <- arms
+  # Scores are gsm.datasim's too: what the page asked for is handed on as it is.
+  if ("QS" %in% wanted) {
+    if (is.null(efficacy)) stop("The scores domain needs the scores to follow (efficacy).", call. = FALSE)
+    results$scores <- yaml::yaml.load(as.character(efficacy))$scores
+  }
   started <- Sys.time()
   study <- suppressMessages(create_longitudinal_study(
     study_id = gsub("[^A-Za-z0-9]", "-", toupper(trimws(study_name))),
@@ -579,7 +590,7 @@ builder_run <- function(
     sites = sites,
     snapshots = months,
     interval = "1 month",
-    domains = setdiff(wanted, c("VS", "EG")),
+    domains = setdiff(wanted, c("VS", "EG", "QS")),
     run_analytics = FALSE,
     run_reporting = FALSE,
     outlier_intensity = intensity,

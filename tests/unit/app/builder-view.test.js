@@ -156,6 +156,34 @@ describe('Build a study, on the data view', () => {
     ).toEqual(['Raw_SITE.csv', 'Raw_SUBJ.csv', 'adsl.csv', 'advs.csv']);
   });
 
+  it('leaves a study’s efficacy scores out of the files it places, so they do not take the labs’ place', async () => {
+    const builder = fakeBuilder();
+    globalThis.StudyBuilder = builder;
+    const source = builderSource({ createConnection, ...OPTIONS });
+    const handle = mounted(source);
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    const scores = {
+      name: 'adqs.csv',
+      text:
+        'USUBJID,ARM,VISIT,VISITNUM,TEST,STRESN,BASE,CHG,ABLFL,DY\n' +
+        'S1,All participants,Baseline,1,ADAS-Cog (11),24,24,0,Y,1\n'
+    };
+    builder.mounts[0].options.onStudy({
+      ...STUDY,
+      standard: [
+        { id: 'subject', name: 'adsl.csv' },
+        { id: 'bds', name: 'advs.csv' },
+        { id: 'qs', name: 'adqs.csv' }
+      ],
+      files: () => ({ raw: STUDY.files().raw, standard: [...STUDY.files().standard, scores] })
+    });
+    expect(handle.state.files.bds.name).toBe('advs.csv');
+    expect(
+      [...document.querySelectorAll('.sva-file-details')].map((item) => item.dataset.details)
+    ).not.toContain('adqs.csv');
+  });
+
   it('is closed by a reset', async () => {
     globalThis.StudyBuilder = fakeBuilder();
     const handle = mounted(builderSource({ createConnection, ...OPTIONS }));

@@ -175,7 +175,16 @@ export function builderSource({
    * files placed, and the source closed, so the data view shows what loaded.
    */
   function use(study, app, id = null) {
-    const { raw, standard } = study.files();
+    const { raw, standard: every } = study.files();
+    // A study may hold an efficacy score (adqs.csv). No chart here reads one,
+    // and it has the shape of a labs file, so it would take the labs' place.
+    // It is left out; the study view on the Overview tab still shows it.
+    const scores = new Set(
+      (Array.isArray(study.standard) ? study.standard : [])
+        .filter((table) => table.id === 'qs')
+        .map((table) => table.name)
+    );
+    const standard = every.filter((file) => !scores.has(file.name));
     loaded = { id: study.id, said: study.said };
     const as = named(study, id || `saved:study:${study.id}`);
     app.loadRaw(raw, { as });

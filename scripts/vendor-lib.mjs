@@ -220,7 +220,7 @@ export const STUDY_BUILDER = {
   directory: 'site/vendor/study.builder',
   // The release the copy is made from: a candidate of v0.3.0, until that is
   // released. Move this to v0.3.0 then, and copy again.
-  tag: 'v0.3.0-rc.13',
+  tag: 'v0.3.1-rc.1',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },
@@ -297,9 +297,11 @@ export const STUDY_BUILDER = {
     'workflows/adam/ADAE.yaml',
     'workflows/adam/ADEG.yaml',
     'workflows/adam/ADLB.yaml',
+    'workflows/adam/ADQS.yaml',
     'workflows/adam/ADSL.yaml',
     'workflows/adam/ADVS.yaml',
     'workflows/analysis/AESummary.yaml',
+    'workflows/analysis/EfficacySummary.yaml',
     // The ready-made studies, and the list that names them.
     // The ready-made protocol the builder's form offers to try.
     'protocols/cdisc-pilot.protocol.json',

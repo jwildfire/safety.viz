@@ -14,6 +14,8 @@
 #'   `lbnrhi` (the normal range) for every row.
 #' - `Raw_EG`, a table of its own: one row per participant, visit and ECG
 #'   measure (QTcF, QTcB and heart rate), with `egresn` and `egresu`.
+#' - `Raw_QS`, when `results$scores` names any: one row per enrolled
+#'   participant, visit and score, with `qsresn`. See Scores.
 #'
 #' @section What the values are:
 #' Each lab test has a normal range and a unit of its own; a test the simulator
@@ -33,6 +35,25 @@
 #' on the random number stream, so a participant's visit is the same in every
 #' snapshot that holds it.
 #'
+#' @section Scores:
+#' A study may be given one or more scores to follow: a questionnaire or
+#' rating total such as ADAS-Cog (11), measured at some visits. Each is a list
+#' with a `name`; the `visits` it is measured at (every visit when left out);
+#' the mean `baseline`; `sd`, the standard deviation of the change from
+#' baseline; `change`, the mean change on the reference arm by `day`;
+#' `effects`, a named vector giving, for any other arm, its mean difference
+#' from the reference arm by `day`; `day`, the study day by which the full
+#' change is reached (the last day measured when left out); and `min` and
+#' `max`, the score's range. They are written to `Raw_QS`: one row per
+#' enrolled participant, visit and score, with `qsresn`.
+#'
+#' A participant has a baseline of their own. Before the first dose a score
+#' varies a little around it. After the first dose it moves in a straight
+#' line toward the arm's mean change, reached at `day`, with a spread of `sd`
+#' that is part the participant's own and part the visit's. The reference arm
+#' is the placebo arm above. A score is measured only at visits the
+#' participant has, so a participant who leaves early has no later scores.
+#'
 #' @section What is not modelled:
 #' A lab's toxicity grade (`toxgrg_nsv`) is the simulator's own and is not
 #' worked out from the result beside it. Adverse events do not follow the arm.
@@ -40,8 +61,9 @@
 #' @param lRaw A named list of one snapshot's raw data frames, as in
 #'   `study$raw_data[[1]]`. It needs `Raw_SUBJ`.
 #' @param results `TRUE` for the default (two arms, "Placebo" and "Active",
-#'   and ECGs), or a list with `arms` (character vector of arm names) and
-#'   `ecg` (logical). `NULL` or `FALSE` adds nothing.
+#'   and ECGs), or a list with `arms` (character vector of arm names), `ecg`
+#'   (logical) and `scores` (a list of scores to follow; see Scores). `NULL` or
+#'   `FALSE` adds nothing.
 #'
 #' @return `lRaw` with the columns and the table above. Applying it twice gives
 #'   what applying it once gives.
@@ -188,6 +210,54 @@ apply_study_results <- function(lRaw, results = TRUE) {
     rownames(eg) <- NULL
     lRaw$Raw_EG <- eg
   }
+
+  # Scores: one row per enrolled participant, visit and score.
+  if (length(results$scores) && length(visit_key)) {
+    all_visits <- as.data.frame(lRaw$Raw_VISIT, stringsAsFactors = FALSE)
+    who <- match(as.character(all_visits$subjid), id)
+    keep <- !is.na(who) & enrolled[who]
+    all_visits <- all_visits[keep, , drop = FALSE]
+    who <- who[keep]
+    name <- as.character(all_visits[[visit_name]])
+    date <- as_date(all_visits$visit_dt)
+    days <- as.numeric(date - day_one[who])
+    study <- if ("studyid" %in% names(all_visits)) as.character(all_visits$studyid) else rep(NA_character_, nrow(all_visits))
+    tables <- lapply(results$scores, function(score) {
+      at <- if (length(score$visits)) name %in% score$visits else rep(TRUE, length(name))
+      if (!any(at)) {
+        return(NULL)
+      }
+      s <- key[who][at]
+      v <- .results_key(name[at])
+      q <- .results_key(rep(score$name, sum(at)))
+      d <- days[at]
+      full <- if (is.null(score$day)) max(c(d, 1), na.rm = TRUE) else score$day
+      # How far along the way to the full change: 0 before the first dose, 1 at `day`.
+      along <- pmin(pmax(ifelse(is.na(d), 0, d) / full, 0), 1)
+      effect <- unname(score$effects[arm[who][at]])
+      effect[is.na(effect)] <- 0
+      own <- stats::qnorm(.results_unif(s, q, salt = 51))
+      baseline <- score$baseline + score$sd * own
+      before <- 0.25 * score$sd * stats::qnorm(.results_unif(s, q, v, salt = 52))
+      spread <- score$sd * sqrt(1 - 0.25^2) *
+        (0.7 * stats::qnorm(.results_unif(s, q, salt = 53)) + sqrt(1 - 0.7^2) * stats::qnorm(.results_unif(s, q, v, salt = 54)))
+      after <- (score$change + effect) * along + spread
+      value <- baseline + ifelse(along > 0, after, before)
+      data.frame(
+        studyid = study[at], subjid = as.character(all_visits$subjid)[at], visnam = name[at],
+        qs_dt = date[at], qststnam = score$name,
+        qsresn = round(pmin(pmax(value, score$min), score$max)),
+        stringsAsFactors = FALSE
+      )
+    })
+    tables <- tables[!vapply(tables, is.null, logical(1))]
+    if (length(tables)) {
+      qs <- do.call(rbind, tables)
+      qs <- qs[order(qs$subjid, as.character(qs$qs_dt), qs$qststnam), , drop = FALSE]
+      rownames(qs) <- NULL
+      lRaw$Raw_QS <- qs
+    }
+  }
   lRaw
 }
 
@@ -209,7 +279,44 @@ validate_study_results <- function(results) {
   if (!length(arms)) {
     stop("`results$arms` must name at least one arm.", call. = FALSE)
   }
-  list(arms = arms, ecg = is.null(results$ecg) || isTRUE(as.logical(results$ecg)[1]))
+  number <- function(value, default, what, score) {
+    if (is.null(value)) {
+      return(default)
+    }
+    out <- suppressWarnings(as.numeric(value[[1]]))
+    if (is.na(out)) stop("The score '", score, "' needs a number for `", what, "`.", call. = FALSE)
+    out
+  }
+  scores <- lapply(results$scores, function(score) {
+    name <- if (is.null(score$name)) "" else trimws(as.character(score$name[[1]]))
+    if (!nzchar(name)) stop("Each of `results$scores` needs a `name`.", call. = FALSE)
+    sd <- number(score$sd, 10, "sd", name)
+    if (sd <= 0) stop("The score '", name, "' needs an `sd` above 0.", call. = FALSE)
+    day <- if (is.null(score$day)) NULL else number(score$day, NULL, "day", name)
+    if (!is.null(day) && day < 1) stop("The score '", name, "' needs a `day` of 1 or more.", call. = FALSE)
+    effects <- unlist(score$effects)
+    effects <- if (length(effects)) stats::setNames(suppressWarnings(as.numeric(effects)), names(effects)) else numeric(0)
+    if (anyNA(effects) || (length(effects) && is.null(names(effects)))) {
+      stop("The score '", name, "' needs `effects` as numbers named by arm.", call. = FALSE)
+    }
+    low <- number(score$min, -Inf, "min", name)
+    high <- number(score$max, Inf, "max", name)
+    if (low >= high) stop("The score '", name, "' needs `min` below `max`.", call. = FALSE)
+    list(
+      name = name,
+      visits = unique(trimws(as.character(unlist(score$visits)))),
+      baseline = number(score$baseline, 50, "baseline", name),
+      sd = sd,
+      change = number(score$change, 0, "change", name),
+      effects = effects,
+      day = day,
+      min = low,
+      max = high
+    )
+  })
+  names_of <- vapply(scores, function(score) score$name, character(1))
+  if (anyDuplicated(names_of)) stop("Each of `results$scores` needs a name of its own.", call. = FALSE)
+  list(arms = arms, ecg = is.null(results$ecg) || isTRUE(as.logical(results$ecg)[1]), scores = scores)
 }
 
 # A number below 2147483647 for each text, the same wherever it is worked out.
