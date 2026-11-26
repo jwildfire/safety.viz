@@ -37,7 +37,9 @@
     "gsm-viz:check": "node scripts/vendor-gsm-viz.mjs --check",
     "gsm-viz:check-source": "node scripts/vendor-gsm-viz.mjs --check-source",
     "rbqm-study:check": "node scripts/vendor-rbqm-study.mjs --check",
-    "rbqm-study:check-source": "node scripts/vendor-rbqm-study.mjs --check-source"
+    "rbqm-study:check-source": "node scripts/vendor-rbqm-study.mjs --check-source",
+    "study-builder:check": "node scripts/vendor-study-builder.mjs --check",
+    "study-builder:check-source": "node scripts/vendor-study-builder.mjs --check-source"
   },
   "devDependencies": {
     "@fontsource-variable/instrument-sans": "^5.3.0",

@@ -607,7 +607,7 @@ describe('a library the page cannot use as handed in (#193)', () => {
     expect(document.querySelector('.sva-item[data-view="stand-in-strip"]')).not.toBeNull();
     mounted.app.select('stand-in-strip');
     mounted.app.select('data');
-    expect(document.querySelector('.sva-title').textContent).toBe('Data');
+    expect(document.querySelector('.sva-title').textContent).toBe('Overview');
     expect(document.querySelectorAll('[aria-current="page"]')).toHaveLength(1);
     mounted.app.destroy();
   });

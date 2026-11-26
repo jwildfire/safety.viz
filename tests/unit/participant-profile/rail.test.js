@@ -200,6 +200,14 @@ describe('the rail head (PPRF-RAIL-002, PPRF-EXP-001)', () => {
     expect(button.textContent).toBe('Collapse');
   });
 
+  it('expanded, the chart sits beside the floated control column and the table below both', () => {
+    // A canvas is pushed below a float it does not fit beside, which left its
+    // card empty; the chart's section is a flow root so it narrows instead.
+    const css = document.getElementById('safety-viz-participant-profile-styles').textContent;
+    expect(css).toContain('.sv-rail-expanded .sv-profile-spaghetti{display:flow-root}');
+    expect(css).toContain('.sv-rail-expanded .sv-profile-measure-wrap{clear:both}');
+  });
+
   it('Escape leaves the expanded state', () => {
     const rail = profileRail(container(), {});
     rail.show(['P1'], cleanFixture());

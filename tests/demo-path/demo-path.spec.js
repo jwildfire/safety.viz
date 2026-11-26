@@ -48,9 +48,13 @@ test('the keynote’s demo path: the app opens on the pilot study, a chart, the 
   await test.step('1. the app opens on the pilot study', async () => {
     await page.goto('./');
     await page.evaluate('window.__safetyVizApp.ready');
-    // No line on first open (#321): the Data tab names the study.
+    // No line on first open (#321): the Overview tab names the study.
     await expect(page.locator('.sva-welcome')).toHaveCount(0);
-    await expect(chart('data').locator('.sva-tag')).toHaveText('Pilot study');
+    // The study's name is on the study chip where the demo has one, and on
+    // the first tab where it does not: the walk runs against either.
+    await expect(
+      page.locator('.sva-chip-name, .sva-item[data-view="data"] .sva-tag').first()
+    ).toHaveText('Pilot study');
     await expect(page.locator('.sva-chart canvas:visible').first()).toBeVisible();
     await shot('01-opens-on-the-pilot-study');
   });
@@ -111,7 +115,7 @@ test('the keynote’s demo path: the app opens on the pilot study, a chart, the 
     await shot('06-rbqm-on-the-pilot-study');
   });
 
-  await test.step('7. the RBQM demo study is chosen on the Data tab', async () => {
+  await test.step('7. the RBQM demo study is chosen on the Overview tab', async () => {
     await chart('data').click();
     await page.locator('.sva-side select.sva-study').selectOption('rbqm');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(9);

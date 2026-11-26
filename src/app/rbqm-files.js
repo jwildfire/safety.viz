@@ -4,7 +4,7 @@
 // which metrics the placed files support. This module is that with no document
 // in it.
 //
-// The files come in on the Data tab, where a study's standard files come in
+// The files come in on the Overview tab, where a study's standard files come in
 // too (#282, obot.roadmap#406), so the first question is whether a file is a
 // raw file at all (`isRawFile`). That path is interim: every study is to be
 // read as RAW, then SDTM, then ADaM in a later release, so only what moving the
@@ -20,7 +20,7 @@
 // The study the other charts use runs here too (#253, obot.roadmap#398): R
 // makes a raw table that is not loaded from the standard domain that can give
 // it, by workflows `needs.standard` lists. So a standard domain's file, under
-// the column names the reader mapped on the Data tab, is one more table the
+// the column names the reader mapped on the Overview tab, is one more table the
 // rule reads, and R is handed it as text with those names.
 //
 // Nothing here reads a file's rows but `standardCsv`, which writes them out
@@ -360,7 +360,7 @@ export const filesForR = (tables) =>
 
 /**
  * A raw file the app does not read: gsm's raw files are CSV, and R is handed
- * their text as CSV. The Data tab takes JSON too, so the rule is said there.
+ * their text as CSV. The Overview tab takes JSON too, so the rule is said there.
  */
 export const NOT_CSV = (name) =>
   `${name} is not a CSV file: the RBQM tab reads gsm’s raw files as CSV.`;
@@ -384,6 +384,6 @@ export function standardSentence(entry, label, support) {
   if (!tables.length) return gives;
   const lacks =
     `no column mapped to ${listed(columns)}, so ${listed(tables)} ` +
-    `${tables.length === 1 ? 'is' : 'are'} not made. Map ${columns.length === 1 ? 'it' : 'them'} on the Data tab.`;
+    `${tables.length === 1 ? 'is' : 'are'} not made. Map ${columns.length === 1 ? 'it' : 'them'} on the Overview tab.`;
   return made.length ? `${gives} It has ${lacks}` : `${file} has ${lacks}`;
 }

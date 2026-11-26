@@ -74,7 +74,7 @@ describe('the RBQM tab: what it says', () => {
     );
     // With nothing loaded there is nothing to run, and it says where a study is.
     expect(NO_FILES).toBe(
-      'Nothing the metrics can run on is loaded. Load a study on the Data tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.'
+      'Nothing the metrics can run on is loaded. Load a study on the Overview tab: the metrics run on its subject-level and adverse events files. Or load gsm raw files there.'
     );
     expect(listed([])).toBe('');
     expect(listed(['a'])).toBe('a');
@@ -597,7 +597,7 @@ describe('the RBQM tab: what R warned of (#258)', () => {
   });
 });
 
-describe('the Data tab’s card, in the tab’s words (#281)', () => {
+describe('the Overview tab’s card, in the tab’s words (#281)', () => {
   it('APP-RBQM-076: the card counts the metrics the loaded data supports in a sentence, and the workflow’s third step counts them in a few words; each state a metric’s mark shows has its words; a kept raw file’s tag names its raw domain and how it was told', () => {
     const words = supportWords(4, 8);
     expect(words.say).toBe('This data supports 4 of 8 metrics.');

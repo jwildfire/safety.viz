@@ -80,6 +80,8 @@ test.describe('the demo app served by `npm run demo`', () => {
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(`${base}#data`);
     await page.evaluate('window.__safetyVizApp.ready');
+    // The demo page's data view opens on the viewer; the files one by one are its other face.
+    await page.locator('.sva-face[data-action="files"]').click();
     const menu = page.locator('.sva-side select.sva-study');
     await expect(menu).toHaveValue(DEMO_STUDIES[0].id);
     for (const study of [...DEMO_STUDIES.slice(1), DEMO_STUDIES[0]]) {

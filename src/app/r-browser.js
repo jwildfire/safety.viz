@@ -110,6 +110,83 @@ function optionProblem(options) {
 }
 
 /**
+ * One R in the browser that several connections share. A connection made
+ * with a host starts no R of its own: the first run of any of them starts the
+ * host's R, and each connection then installs its own packages, writes its
+ * own files and evaluates its own source in it, once. So two tabs that each
+ * need R cost one start and one download of R itself.
+ *
+ * Closing any of the connections closes the host's R, since an R that has
+ * stopped answering has stopped for all of them; the next run of any starts
+ * another, and each connection makes itself ready in it again.
+ * @param {Object} [options]
+ * @param {string} [options.baseUrl] Where webR is served from; webr.r-wasm.org at WEBR_VERSION by default.
+ * @param {(url: string) => Promise<Object>} [options.importWebR] Something else to import webR with; used by the tests.
+ * @returns {{start: (onRuntime?: Function) => Promise<Object>, close: () => void, generation: () => number}} The host.
+ */
+export function createHost({ baseUrl = WEBR_BASE_URL, importWebR = importFromUrl } = {}) {
+  let started = null;
+  let live = null;
+  let closes = 0;
+
+  function shut(webR) {
+    try {
+      if (webR && typeof webR.close === 'function') webR.close();
+    } catch {
+      // Nothing to do: it is being let go of either way.
+    }
+  }
+
+  async function boot() {
+    const mine = closes;
+    const { WebR, ChannelType } = await importWebR(`${baseUrl}webr.mjs`);
+    if (mine !== closes) throw new Error('R was closed while it was starting');
+    const webR = new WebR({ baseUrl, channelType: ChannelType.PostMessage });
+    live = webR;
+    try {
+      await webR.init();
+      await webR.evalRVoid(R_WIRE);
+    } catch (error) {
+      if (live === webR) {
+        live = null;
+        shut(webR);
+      }
+      throw error;
+    }
+    return webR;
+  }
+
+  return Object.freeze({
+    /**
+     * The host's R, started if it is not up. `onRuntime` is told when this
+     * call is the one that starts it, so a page can say R itself is starting.
+     */
+    start(onRuntime) {
+      if (!started) {
+        if (typeof onRuntime === 'function') onRuntime();
+        const mine = boot();
+        started = mine;
+        // A start that failed is forgotten: the next run tries again.
+        mine.catch(() => {
+          if (started === mine) started = null;
+        });
+      }
+      return started;
+    },
+    /** Let go of R: every connection's next run starts another. */
+    close() {
+      closes += 1;
+      started = null;
+      const webR = live;
+      live = null;
+      if (webR) shut(webR);
+    },
+    /** How many times R has been let go of: a connection made ready in an earlier R is not ready in this one. */
+    generation: () => closes
+  });
+}
+
+/**
  * A connection to R in the browser.
  * @param {Object} [options]
  * @param {string} [options.baseUrl] Where webR is served from; webr.r-wasm.org at WEBR_VERSION by default.
@@ -120,6 +197,7 @@ function optionProblem(options) {
  * @param {(stage: 'runtime'|'packages'|'files'|'source') => void} [options.onStage] Told each step of starting R as it begins, so a page can say what R is doing: fetching and starting R itself, installing the packages, fetching the files, evaluating the R source. A step with nothing to do is not named.
  * @param {(url: string) => Promise<Object>} [options.importWebR] Something else to import webR with; used by the tests.
  * @param {(url: string) => Promise<Response>} [options.fetch] Something else to fetch the files with; used by the tests.
+ * @param {?Object} [options.host] An R several connections share (createHost). With one, this connection starts no R of its own, and `baseUrl` and `importWebR` are the host's.
  * @returns {{run: (name: string, request?: {files?: Object<string, string>, args?: Object}) => Promise<Object>, close: () => Promise<void>}} The connection.
  */
 export function createConnection(options = {}) {
@@ -133,7 +211,8 @@ export function createConnection(options = {}) {
     source = [],
     onStage = null,
     importWebR = importFromUrl,
-    fetch: fetchFile = (url) => globalThis.fetch(url)
+    fetch: fetchFile = (url) => globalThis.fetch(url),
+    host = null
   } = options;
 
   let started = null;
@@ -161,7 +240,30 @@ export function createConnection(options = {}) {
     await webR.FS.writeFile(file, encoder.encode(text));
   }
 
+  // With a host: the R this connection was last made ready in, by the host's
+  // count of closes, and the making ready that is under way or done.
+  let readyIn = -1;
+  let readying = null;
+
+  /** The host's R, with this connection's packages, files and source in it. */
+  async function startShared() {
+    const webR = await host.start(() => stage('runtime'));
+    const generation = host.generation();
+    if (readyIn !== generation || !readying) {
+      readyIn = generation;
+      const mine = prepare(webR, { wire: false });
+      readying = mine;
+      mine.catch(() => {
+        // A making ready that failed is tried again by the next run.
+        if (readying === mine) readying = null;
+      });
+    }
+    await readying;
+    return webR;
+  }
+
   async function start() {
+    if (host) return startShared();
     const mine = closes;
     stage('runtime');
     const { WebR, ChannelType } = await importWebR(`${baseUrl}webr.mjs`);
@@ -193,7 +295,7 @@ export function createConnection(options = {}) {
     }
   }
 
-  async function prepare(webR) {
+  async function prepare(webR, { wire = true } = {}) {
     if (packages.length) {
       // As R reads a repository's address: absolute, and with no trailing slash.
       const from = repos.map((repo) =>
@@ -215,7 +317,8 @@ export function createConnection(options = {}) {
       }
       await write(webR, file.path, text);
     }
-    await webR.evalRVoid(R_WIRE);
+    // A host's R is given the wire when it starts, once for all connections.
+    if (wire) await webR.evalRVoid(R_WIRE);
     if (source.length) stage('source');
     for (const path of source) {
       await webR.evalRVoid(`source(${JSON.stringify(path)}, local = FALSE)`);
@@ -238,7 +341,9 @@ export function createConnection(options = {}) {
         return { status: 'error', message: 'r-browser: files and args must each be an object.' };
       }
       let webR;
-      if (!started) started = start();
+      // With a host each run asks it for R: it may have been closed, by this
+      // connection or another, since the last run.
+      if (!started || host) started = start();
       const mine = started;
       try {
         webR = await mine;
@@ -281,6 +386,12 @@ export function createConnection(options = {}) {
      * @returns {Promise<void>} Settled when R is closed; it never rejects.
      */
     async close() {
+      if (host) {
+        started = null;
+        readying = null;
+        host.close();
+        return;
+      }
       closes += 1;
       started = null;
       const webR = live;
