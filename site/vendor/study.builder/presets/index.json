@@ -4,7 +4,7 @@
     {
       "id": "phase1-small",
       "name": "Phase 1, small: 40 participants at 4 sites",
-      "about": "A small early study over 6 months. Quick to open and to look through.",
+      "about": "A small early study over 6 months, with every monthly snapshot kept. Quick to open and to look through.",
       "settings": {
         "name": "READY-P1",
         "phase": "P1",
@@ -12,11 +12,12 @@
         "participants": 40,
         "sites": 4,
         "months": 6,
-        "seed": 101
+        "seed": 101,
+        "snapshots": "all"
       },
       "study": "phase1-small.study.json.gz",
-      "key": "sha256:80c164d4313b4bade18367f3f36fb709cb73ab596a194fda955816712bcb7783",
-      "megabytes": 0.4
+      "key": "sha256:3a1bb2a0afc65c2fa81322a64314cacf5f22302ccb9c55cf2988682aa2eff0bb",
+      "megabytes": 1.1
     },
     {
       "id": "phase2-oncology",
@@ -76,6 +77,7 @@
         "sites": 12,
         "months": 7,
         "seed": 505,
+        "snapshots": "all",
         "domains": ["VISIT", "AE", "LB", "VS", "EG", "PD", "STUDCOMP", "SDRGCOMP"],
         "protocol": {
           "format": "study.builder/protocol/1",
@@ -598,8 +600,8 @@
         }
       },
       "study": "cdisc-pilot-protocol.study.json.gz",
-      "key": "sha256:04a6466fad10253d303e8ab8ca5cd8c5767107b94fa160355ee1b06b0a9e2d9a",
-      "megabytes": 0.6
+      "key": "sha256:e89cfb826baabff759ff8f97408e4f5529dbc25e21d47fd6a7635b597e80f74a",
+      "megabytes": 2.2
     }
   ]
 }

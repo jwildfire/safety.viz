@@ -489,6 +489,9 @@ builder_layer_needs <- list(analysis = c("raw.rbqm", "adam"), reporting = "analy
 #' @param kri,reporting The folders that hold the copies of gsm.kri's metric
 #'   workflows and gsm.reporting's reporting workflows. Needed for the
 #'   analysis and the reporting layer.
+#' @param history `TRUE` to keep every monthly snapshot and not only the last:
+#'   each earlier snapshot is put through the same workflows, and returned
+#'   under `history`.
 #' @return A list: `study_id`, `snapshot_date`, `snapshots`, `seconds`,
 #'   `simulator` (gsm.datasim's version), `packages` (the version of each
 #'   package that had a hand in it), `notes`, and `layers`: raw first, then
@@ -496,7 +499,9 @@ builder_layer_needs <- list(analysis = c("raw.rbqm", "adam"), reporting = "analy
 #'   A table has its `id`, `table`, `name`, `layer`, `rows`, `columns` and
 #'   `text`; a table built off raw also has `made` (the workflow and the
 #'   tables it read) and, where its workflow says, a `mapping` line for each
-#'   column.
+#'   column. With `history`, also `history`: the snapshots before the last,
+#'   oldest first, each with its `snapshot_date` and its `layers`, or a
+#'   `problem` in a sentence when its workflows could not be run.
 builder_run <- function(
   simulator,
   study_name = "BUILT-001",
@@ -513,7 +518,8 @@ builder_run <- function(
   workflows = NULL,
   kri = NULL,
   reporting = NULL,
-  protocol = NULL
+  protocol = NULL,
+  history = FALSE
 ) {
   participants <- .builder_whole(participants, "Participants", builder_limits$participants)
   sites <- .builder_whole(sites, "Sites", builder_limits$sites)
@@ -583,111 +589,137 @@ builder_run <- function(
     verbose = FALSE
   ))
   dates <- names(study$raw_data)
-  snapshot <- study$raw_data[[length(dates)]]
-  if (with_vitals) {
-    snapshot$Raw_VS <- .builder_vitals(snapshot, vitals_spec)
-    # The vital signs were made after the study, so they are put on its design here.
-    snapshot <- apply_study_design(snapshot, design)
-    # Putting the labs on the design again leaves their results to be worked out again.
-    snapshot <- apply_study_results(snapshot, results)
-  }
 
-  made <- paste0("Raw_", c(builder_core, intersect(builder_optional, wanted)))
-  missing <- setdiff(made, names(snapshot))
-  if (length(missing)) {
-    stop("gsm.datasim did not make ", paste(missing, collapse = ", "), ".", call. = FALSE)
-  }
-  snapshot <- .builder_gsm_names(snapshot[made], vitals_spec)
-  renames <- lapply(snapshot, function(table) attr(table, "renamed"))
-  snapshot <- .builder_site_ids(snapshot)
-  snapshot$Raw_STUDY <- .builder_study(snapshot$Raw_STUDY, phase, therapeutic_area)
-
-  schedule_note <- if (is.null(design)) {
-    NULL
-  } else {
-    paste0(
-      "Visits, vital signs and labs follow the protocol's schedule: ", length(design$visits),
-      " planned visits, ", nrow(snapshot$Raw_VISIT),
-      " made, by gsm.datasim's study design. Activities of no domain are not simulated."
-    )
-  }
-
-  raw <- lapply(made, function(table) {
-    .builder_table(snapshot[[table]], list(
-      id = sub("^Raw_", "", table), table = table, name = paste0(table, ".csv"), layer = "raw",
-      made = list(workflow = "gsm.datasim", from = list()),
-      renamed = lapply(names(renames[[table]]), function(column) {
-        list(column = column, was = unname(renames[[table]][[column]]))
-      })
-    ))
-  })
-  out <- list(list(id = "raw", label = "Raw", tables = raw))
-  notes <- c(builder_notes, schedule_note)
-
-  # "raw" may be named among them and asks for nothing more: a page always
-  # names it, so that a study of raw alone is not asked for with an empty list.
-  wanted_layers <- setdiff(as.character(unlist(layers)), "raw")
-  unknown_layers <- setdiff(wanted_layers, vapply(builder_layers, function(layer) layer$id, character(1)))
-  if (length(unknown_layers)) {
-    stop("Not a layer study.builder makes: ", paste(unknown_layers, collapse = ", "), ".", call. = FALSE)
-  }
-  # A layer made from another brings it.
-  repeat {
-    more <- unique(unlist(builder_layer_needs[intersect(names(builder_layer_needs), wanted_layers)]))
-    if (all(more %in% wanted_layers)) break
-    wanted_layers <- union(wanted_layers, more)
-  }
-  data <- snapshot
-  metrics <- NULL
-  same <- character(0)
-  for (layer in builder_layers) {
-    if (!(layer$id %in% wanted_layers)) next
-    if (layer$id == "raw.rbqm") {
-      # gsm's own mapping workflows for the domains made, the one that lists
-      # countries from them, and the vital signs one handed in.
-      found <- suppressMessages(workr::MakeWorkflowList(
-        strPath = "workflow/1_mappings", strPackage = "gsm.mapping",
-        strNames = c(sub("^Raw_", "", made), "COUNTRY")
-      ))
-      if (with_vitals) {
-        found <- c(found, suppressMessages(workr::MakeWorkflowList(
-          strPath = dirname(vitals), strPackage = NULL
-        )))
-      }
-      built <- .builder_drop_copies(.builder_layer(layer, found, data), data)
-      same <- built$same
-    } else if (layer$id == "adam") {
-      if (is.null(workflows)) stop("The ADaM layer needs study.builder's workflows (workflows).", call. = FALSE)
-      found <- suppressMessages(workr::MakeWorkflowList(
-        strPath = file.path(workflows, "adam"), strPackage = NULL
-      ))
-      built <- .builder_layer(layer, found, data)
-    } else if (layer$id == "analysis") {
-      if (is.null(kri) || is.null(workflows)) {
-        stop("The analysis layer needs gsm.kri's workflows (kri) and study.builder's (workflows).", call. = FALSE)
-      }
-      metrics <- .builder_metrics(layer, kri, data)
-      own <- .builder_layer(layer, suppressMessages(workr::MakeWorkflowList(
-        strPath = file.path(workflows, "analysis"), strPackage = NULL
-      )), data)
-      built <- list(
-        tables = c(metrics$tables, own$tables), notes = c(metrics$notes, own$notes), data = own$data
-      )
-    } else {
-      if (is.null(reporting) || is.null(kri)) {
-        stop("The reporting layer needs gsm.reporting's workflows (reporting) and gsm.kri's (kri).", call. = FALSE)
-      }
-      built <- .builder_reporting(
-        layer, reporting, file.path(kri, "R", "util-Report.R"), data, metrics, dates[length(dates)]
-      )
-      built$data <- list()
+  # One snapshot, through every layer asked for. gsm.datasim made each
+  # snapshot; the same workflows are run on whichever is asked for.
+  one <- function(index) {
+    snapshot <- study$raw_data[[index]]
+    if (with_vitals) {
+      snapshot$Raw_VS <- .builder_vitals(snapshot, vitals_spec)
+      # The vital signs were made after the study, so they are put on its design here.
+      snapshot <- apply_study_design(snapshot, design)
+      # Putting the labs on the design again leaves their results to be worked out again.
+      snapshot <- apply_study_results(snapshot, results)
     }
-    notes <- c(notes, built$notes)
-    # What a layer made is there for the layers after it.
-    for (name in names(built$data)) if (is.data.frame(built$data[[name]])) data[[name]] <- built$data[[name]]
-    out[[length(out) + 1]] <- list(
-      id = layer$id, label = layer$label, tables = .builder_from_raw(built$tables, same)
-    )
+
+    made <- paste0("Raw_", c(builder_core, intersect(builder_optional, wanted)))
+    missing <- setdiff(made, names(snapshot))
+    if (length(missing)) {
+      stop("gsm.datasim did not make ", paste(missing, collapse = ", "), ".", call. = FALSE)
+    }
+    snapshot <- .builder_gsm_names(snapshot[made], vitals_spec)
+    renames <- lapply(snapshot, function(table) attr(table, "renamed"))
+    snapshot <- .builder_site_ids(snapshot)
+    snapshot$Raw_STUDY <- .builder_study(snapshot$Raw_STUDY, phase, therapeutic_area)
+
+    schedule_note <- if (is.null(design)) {
+      NULL
+    } else {
+      paste0(
+        "Visits, vital signs and labs follow the protocol's schedule: ", length(design$visits),
+        " planned visits, ", nrow(snapshot$Raw_VISIT),
+        " made, by gsm.datasim's study design. Activities of no domain are not simulated."
+      )
+    }
+
+    raw <- lapply(made, function(table) {
+      .builder_table(snapshot[[table]], list(
+        id = sub("^Raw_", "", table), table = table, name = paste0(table, ".csv"), layer = "raw",
+        made = list(workflow = "gsm.datasim", from = list()),
+        renamed = lapply(names(renames[[table]]), function(column) {
+          list(column = column, was = unname(renames[[table]][[column]]))
+        })
+      ))
+    })
+    out <- list(list(id = "raw", label = "Raw", tables = raw))
+    notes <- c(builder_notes, schedule_note)
+
+    # "raw" may be named among them and asks for nothing more: a page always
+    # names it, so that a study of raw alone is not asked for with an empty list.
+    wanted_layers <- setdiff(as.character(unlist(layers)), "raw")
+    unknown_layers <- setdiff(wanted_layers, vapply(builder_layers, function(layer) layer$id, character(1)))
+    if (length(unknown_layers)) {
+      stop("Not a layer study.builder makes: ", paste(unknown_layers, collapse = ", "), ".", call. = FALSE)
+    }
+    # A layer made from another brings it.
+    repeat {
+      more <- unique(unlist(builder_layer_needs[intersect(names(builder_layer_needs), wanted_layers)]))
+      if (all(more %in% wanted_layers)) break
+      wanted_layers <- union(wanted_layers, more)
+    }
+    data <- snapshot
+    metrics <- NULL
+    same <- character(0)
+    for (layer in builder_layers) {
+      if (!(layer$id %in% wanted_layers)) next
+      if (layer$id == "raw.rbqm") {
+        # gsm's own mapping workflows for the domains made, the one that lists
+        # countries from them, and the vital signs one handed in.
+        found <- suppressMessages(workr::MakeWorkflowList(
+          strPath = "workflow/1_mappings", strPackage = "gsm.mapping",
+          strNames = c(sub("^Raw_", "", made), "COUNTRY")
+        ))
+        if (with_vitals) {
+          found <- c(found, suppressMessages(workr::MakeWorkflowList(
+            strPath = dirname(vitals), strPackage = NULL
+          )))
+        }
+        built <- .builder_drop_copies(.builder_layer(layer, found, data), data)
+        same <- built$same
+      } else if (layer$id == "adam") {
+        if (is.null(workflows)) stop("The ADaM layer needs study.builder's workflows (workflows).", call. = FALSE)
+        found <- suppressMessages(workr::MakeWorkflowList(
+          strPath = file.path(workflows, "adam"), strPackage = NULL
+        ))
+        built <- .builder_layer(layer, found, data)
+      } else if (layer$id == "analysis") {
+        if (is.null(kri) || is.null(workflows)) {
+          stop("The analysis layer needs gsm.kri's workflows (kri) and study.builder's (workflows).", call. = FALSE)
+        }
+        metrics <- .builder_metrics(layer, kri, data)
+        own <- .builder_layer(layer, suppressMessages(workr::MakeWorkflowList(
+          strPath = file.path(workflows, "analysis"), strPackage = NULL
+        )), data)
+        built <- list(
+          tables = c(metrics$tables, own$tables), notes = c(metrics$notes, own$notes), data = own$data
+        )
+      } else {
+        if (is.null(reporting) || is.null(kri)) {
+          stop("The reporting layer needs gsm.reporting's workflows (reporting) and gsm.kri's (kri).", call. = FALSE)
+        }
+        built <- .builder_reporting(
+          layer, reporting, file.path(kri, "R", "util-Report.R"), data, metrics, dates[index]
+        )
+        built$data <- list()
+      }
+      notes <- c(notes, built$notes)
+      # What a layer made is there for the layers after it.
+      for (name in names(built$data)) if (is.data.frame(built$data[[name]])) data[[name]] <- built$data[[name]]
+      out[[length(out) + 1]] <- list(
+        id = layer$id, label = layer$label, tables = .builder_from_raw(built$tables, same)
+      )
+    }
+    list(layers = out, notes = notes)
+  }
+
+  # The last snapshot is the study. It is built first, so that what it holds
+  # for a seed does not depend on whether the earlier ones are kept.
+  last <- one(length(dates))
+  out <- last$layers
+  notes <- last$notes
+  earlier <- list()
+  if (isTRUE(history) && length(dates) > 1) {
+    earlier <- lapply(seq_len(length(dates) - 1), function(index) {
+      tryCatch(
+        list(snapshot_date = as.character(dates[index]), layers = one(index)$layers),
+        error = function(problem) {
+          list(snapshot_date = as.character(dates[index]), problem = conditionMessage(problem), layers = list())
+        }
+      )
+    })
+    if (with_vitals) {
+      notes <- c(notes, "Vital signs are drawn afresh for each snapshot, so a participant's vital signs differ between snapshots.")
+    }
   }
 
   versions <- c(
@@ -707,6 +739,7 @@ builder_run <- function(
     simulator = version,
     packages = versions,
     notes = as.list(notes),
-    layers = out
+    layers = out,
+    history = earlier
   )
 }
