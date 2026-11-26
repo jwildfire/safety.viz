@@ -1,15 +1,15 @@
 {
   "module": "results-over-time",
-  "generatedAt": "2026-11-26T03:40:09.966Z",
+  "generatedAt": "2026-11-26T14:17:52.337Z",
   "environment": {
-    "os": "linux 7.0.0-1017-azure",
+    "os": "linux 7.0.0-1020-azure",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "45748570212",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45748570212"
+    "id": "45837456311",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45837456311"
   },
   "records": [
     {
@@ -1394,6 +1394,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [71],
+      "screenshots": []
+    },
+    {
+      "test": "on the built demo page a ready-made simulated study opens from the Studies view with no R, and the Overview tab draws it with study.builder’s study view in sections: Overview, Design, Data, One participant and Reporting, with no RBQM view and no Safety view, since the app has tabs of its own for both; a view is reached through its section; at 1,400 pixels nothing of the overview runs past the page",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
       "screenshots": []
     },
     {
@@ -3430,6 +3438,14 @@
     },
     {
       "test": "Build a study, on the data view says so when study.builder’s script does not load, and tries again when it is opened again",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view tells the widget to leave the RBQM and Safety views out of the study it shows once built, since the app has tabs of its own for both",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
@@ -8294,6 +8310,14 @@
     },
     {
       "test": "the copy of study.builder matches its record, which names where it was copied from",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": [],
+      "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face draws a study study.builder built with study.builder’s own study view when the page has it, told to leave out its RBQM and Safety views since the app has tabs of its own for both, and opens it again where the reader was",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
