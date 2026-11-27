@@ -1,6 +1,6 @@
 {
   "module": "qt-explorer",
-  "generatedAt": "2026-11-27T02:01:08.080Z",
+  "generatedAt": "2026-11-27T02:23:24.926Z",
   "environment": {
     "os": "linux 7.0.0-1014-aws",
     "node": "v22.23.5",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "45925735277",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45925735277"
+    "id": "45927933921",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45927933921"
   },
   "records": [
     {
@@ -754,6 +754,38 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-044"],
       "issueRefs": [321],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-045: on the built demo page a ready-made study whose file cannot be fetched says so under the chip, on the chart the reader is on, and the study in use stays (#407)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-045"],
+      "issueRefs": [407],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-046: on the built demo page a slow study opened first does not replace the one chosen after it (#407)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-046"],
+      "issueRefs": [407],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-047: on the built demo page the chip’s list closes on a click elsewhere, on Escape with the keyboard elsewhere, and on a change of tab, and so does the i’s card (#407)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-047"],
+      "issueRefs": [407],
+      "screenshots": []
+    },
+    {
+      "test": "APP-PAGE-048: on the built demo page at 390 pixels the chip’s list and the i’s card open inside the page, and the page does not scroll sideways (#407)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-048"],
+      "issueRefs": [407],
       "screenshots": []
     },
     {
@@ -8580,6 +8612,14 @@
       "screenshots": []
     },
     {
+      "test": "study.builder’s studies, opened from the app’s list APP-PAGE-046: the study in use is the last one chosen: a study still on its way when another is chosen is dropped when it arrives, and so is one a demo study was chosen after; a dropped study that fails says nothing (#407)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-046"],
+      "issueRefs": [407],
+      "screenshots": []
+    },
+    {
       "test": "syntheticStudyDay gives the synthetic cohorts a planned study day: Baseline day 1, Week N day 7N + 1 (#366)",
       "suite": "unit",
       "status": "pass",
@@ -10369,6 +10409,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the study chip APP-PAGE-045: a study that does not open is said under the chip, where the reader is, until they close it; while a study chosen from the list opens, the chip says so; the Studies view says both in its own list (#407)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-045"],
+      "issueRefs": [407],
+      "screenshots": []
+    },
+    {
+      "test": "the study chip APP-PAGE-047: the list and the i’s card close on a click anywhere else on the page, on Escape wherever the keyboard is, and when the reader moves to another tab; a click inside leaves them open (#407)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-047"],
+      "issueRefs": [407],
       "screenshots": []
     },
     {
