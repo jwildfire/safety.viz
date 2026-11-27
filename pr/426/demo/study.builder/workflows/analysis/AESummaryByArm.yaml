@@ -1,0 +1,78 @@
+# Adverse events summarised by arm, body system and term, from the ADaM adverse
+# events table and ADSL: how many events, how many participants had one, and
+# what share of the arm's participants that is. One row per arm, body system
+# and term. The overall summary, with no arm, is AESummary.
+meta:
+  Type: Analysis
+  ID: AESummaryByArm
+  Description: Adverse events by arm, body system and term
+  Priority: 1
+  File: Analysis_AESummaryByArm.csv
+  Keys: [ARM, AEBODSYS, AEDECOD]
+spec:
+  ADaM_ADAE:
+    USUBJID:
+      type: character
+    ARM:
+      type: character
+    AEBODSYS:
+      type: character
+    AEDECOD:
+      type: character
+    AESER:
+      type: character
+  ADaM_ADSL:
+    USUBJID:
+      type: character
+    ARM:
+      type: character
+steps:
+  - output: Temp_ArmTotal
+    name: workr::RunQuery
+    params:
+      df: ADaM_ADSL
+      strQuery: 'SELECT ARM, COUNT(DISTINCT USUBJID) AS BIGN FROM df WHERE ARM IS NOT NULL GROUP BY ARM'
+  - output: Temp_AE
+    name: dplyr::inner_join
+    params:
+      x: ADaM_ADAE
+      'y': Temp_ArmTotal
+      by: ARM
+  - output: Analysis_AESummaryByArm
+    name: workr::RunQuery
+    params:
+      df: Temp_AE
+      strQuery: "SELECT ARM, AEBODSYS, AEDECOD, CAST(COUNT(*) AS INTEGER) AS EVENTS, CAST(SUM(CASE WHEN AESER = 'Y' THEN 1 ELSE 0 END) AS INTEGER) AS SERIOUS, CAST(COUNT(DISTINCT USUBJID) AS INTEGER) AS PARTICIPANTS, CAST(MAX(BIGN) AS INTEGER) AS BIGN, ROUND(100.0 * COUNT(DISTINCT USUBJID) / MAX(BIGN), 1) AS PERCENT FROM df GROUP BY ARM, AEBODSYS, AEDECOD ORDER BY ARM, AEBODSYS, AEDECOD"
+columns:
+  ARM:
+    label: Description of Planned Arm
+    from: ADAE.ARM
+    how: Copied
+  AEBODSYS:
+    label: Body System or Organ Class
+    from: ADAE.AEBODSYS
+    how: Copied
+  AEDECOD:
+    label: Dictionary-Derived Term
+    from: ADAE.AEDECOD
+    how: Copied
+  EVENTS:
+    label: Number of events
+    from: ADAE
+    how: 'Counted: the events of the term on the arm'
+  SERIOUS:
+    label: Number of serious events
+    from: ADAE.AESER
+    how: 'Counted: the events of the term on the arm marked serious'
+  PARTICIPANTS:
+    label: Participants with an event
+    from: ADAE.USUBJID
+    how: 'Counted: the participants on the arm with at least one event of the term'
+  BIGN:
+    label: Participants on the arm
+    from: ADSL.USUBJID, ADSL.ARM
+    how: 'Counted: every participant in ADSL on the arm'
+  PERCENT:
+    label: Percent of the arm's participants
+    from: ADAE.USUBJID, ADSL.USUBJID
+    how: "Derived: participants with an event as a percentage of the arm's participants, to one decimal place"

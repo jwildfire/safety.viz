@@ -1,0 +1,25 @@
+# gsm's raw study completion table, made from the demo app's standard
+# Subject-level domain (#253, obot.roadmap#398).
+#
+# The end-of-study status says who completed and who discontinued: COMPLETED
+# is a completion, DISCONTINUED a discontinuation, and a participant with any
+# other status, or none, has no row.
+meta:
+  Type: Raw
+  ID: STUDCOMP
+  Description: Raw study completion table from the standard Subject-level domain
+  Priority: 1
+spec:
+  Standard_subject:
+    USUBJID:
+      type: character
+    SITEID:
+      type: character
+    EOSSTT:
+      type: character
+steps:
+  - output: Raw_STUDCOMP
+    name: workr::RunQuery
+    params:
+      df: Standard_subject
+      strQuery: "SELECT 'STUDY' AS studyid, NULLIF(TRIM(SITEID), '') AS invid, USUBJID AS subjid, CASE UPPER(TRIM(EOSSTT)) WHEN 'COMPLETED' THEN 'Y' ELSE 'N' END AS compyn, CAST(NULL AS VARCHAR) AS compreas, CAST(NULL AS TIMESTAMP) AS mincreated_dts FROM df WHERE UPPER(TRIM(EOSSTT)) IN ('COMPLETED', 'DISCONTINUED')"

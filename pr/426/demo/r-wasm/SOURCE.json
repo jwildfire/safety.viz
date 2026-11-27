@@ -1,0 +1,71 @@
+{
+  "packages": "gsm packages built for R in the browser",
+  "builder": {
+    "image": "ghcr.io/r-wasm/webr:v0.6.0",
+    "webr": "0.6.0",
+    "r": "4.6.0",
+    "rwasm": "0.3.0.9000",
+    "run": "https://github.com/jwildfire/safety.viz/actions/runs/37620852563"
+  },
+  "pins_sha256": "7467852172e59d62e619bb70533ffb311c7813bf148dea5c66e1632076a89de6",
+  "contrib": "bin/emscripten/contrib/4.6",
+  "built": [
+    {
+      "package": "workr",
+      "repository": "https://github.com/Gilead-Public/workr",
+      "tag": "v1.1.0",
+      "commit": "d19925e103e7a7c0c22e6d4daef9c8903552b8ac",
+      "version": "1.1.0",
+      "file": "workr_1.1.0.tgz",
+      "sha256": "4863d8472a5928f7df087d154a79e3adfde8ad2ff82c65ab98539d3b49e0c29a",
+      "bytes": 501213
+    },
+    {
+      "package": "gsm.core",
+      "repository": "https://github.com/Gilead-Public/gsm.core",
+      "tag": "v1.3.1",
+      "commit": "1b851ab45c15acbcccd38e087676c252a3465852",
+      "version": "1.3.1",
+      "file": "gsm.core_1.3.1.tgz",
+      "sha256": "ebce68684c143ce182675759ccec2eb743262b9a78112fcd4249e643fda6ba55",
+      "bytes": 1560065
+    },
+    {
+      "package": "gsm.mapping",
+      "repository": "https://github.com/Gilead-Public/gsm.mapping",
+      "tag": "v1.1.6",
+      "commit": "25d6a082da95f2675fb8980b5ab6cfd51d634fd1",
+      "version": "1.1.6",
+      "file": "gsm.mapping_1.1.6.tgz",
+      "sha256": "f5376d42b18f043366ff193ba7b36920e2870cf7cb9a97d17d08a532bbea0df3",
+      "bytes": 51723
+    },
+    {
+      "package": "gsm.reporting",
+      "repository": "https://github.com/Gilead-Public/gsm.reporting",
+      "tag": "v1.1.7",
+      "commit": "b3fa1339f900c5093a1e6553bdf4892d608fe389",
+      "version": "1.1.7",
+      "file": "gsm.reporting_1.1.7.tgz",
+      "sha256": "345902dcabad28e5f7b498f4f55914b0bffabc8766bae5a11d6f34009dece120",
+      "bytes": 229572
+    }
+  ],
+  "index": [
+    {
+      "file": "PACKAGES",
+      "sha256": "9df7f14ffe2611872ad95835063ed9f6de9425cdbdf17a916edb1098493d302c",
+      "bytes": 1662
+    },
+    {
+      "file": "PACKAGES.gz",
+      "sha256": "459c159fb19d4b0004a8da9e8f96c5e0ce23efd2b50370978f3f4b1a09071d67",
+      "bytes": 658
+    },
+    {
+      "file": "PACKAGES.rds",
+      "sha256": "1557fa576c877db48c46ad1421be57390b75b0a76bce900038273fcefe3a75ae",
+      "bytes": 880
+    }
+  ]
+}
