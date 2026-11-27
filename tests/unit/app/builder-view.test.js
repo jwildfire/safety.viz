@@ -1,11 +1,17 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { existsSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
-import { BUILDER_SOURCE_ID, builderSource } from '../../../src/app/builder-view.js';
+import {
+  BUILDER_SOURCE_ID,
+  builderSource,
+  protocolCredit,
+  protocolCredits
+} from '../../../src/app/builder-view.js';
 import {
   BUILDER_SOURCE_ID as PAGE_SOURCE_ID,
   builderFiles,
@@ -360,6 +366,178 @@ describe('Build a study, on the data view', () => {
     expect(handle.state.named.name).toBe('READY');
   });
 
+  // The simulator, named for what it is (#423). study.builder v0.5.1 says its
+  // simulator is a modified copy of gsm.datasim; the app's own words say the same.
+  const ATTRIBUTION =
+    'Content based on DDF-RA (GitHub), https://github.com/cdisc-org/DDF-RA, used under the CC-BY-4.0 licence.';
+  const CHANGES = 'Changed from CDISC’s file: cut down to what a simulated study follows.';
+  const FED = [
+    { id: 'preset:one', kind: 'settings', name: 'A study', license: null, attribution: null },
+    ...['LZZT', 'SIMPLE'].map((name) => ({
+      id: `protocol:${name}`,
+      kind: 'protocol',
+      name,
+      license: 'CC-BY-4.0',
+      attribution: `${ATTRIBUTION} ${CHANGES}`
+    }))
+  ];
+  const copied = (file) => readFileSync(path.join(root, STUDY_BUILDER.directory, file));
+
+  it('APP-LIB-041: the app’s own words name the simulator as a modified copy of gsm.datasim, with the version the copy’s DESCRIPTION states: the source’s description, and Made by on a study’s card (#423)', async () => {
+    const description = copied('vendor/gsm.datasim/DESCRIPTION').toString('utf8');
+    const version = /^Version: (.+)$/m.exec(description)[1];
+    expect(description).toMatch(/^Title: .*\(a Modified Copy of 'gsm\.datasim' 2\.1\.0\)$/m);
+    const builder = fakeBuilder();
+    globalThis.StudyBuilder = builder;
+    const source = builderSource({ createConnection, ...OPTIONS });
+    expect(source.about).toBe(
+      `Simulate a study with a modified copy of gsm.datasim ${version}, in this browser.`
+    );
+    const handle = mounted(source);
+    expect(button().title).toBe(source.about);
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    // What a built or opened study carries as `simulator` is that version.
+    builder.mounts[0].options.onStudy({ ...STUDY, simulator: version });
+    expect(handle.state.named.facts).toContainEqual({
+      label: 'Made by',
+      value: 'a modified copy of gsm.datasim 2.1.0'
+    });
+    // Nowhere in the app's source is gsm.datasim named without those words.
+    const directory = path.join(root, 'src/app');
+    for (const file of readdirSync(directory).filter((name) => name.endsWith('.js'))) {
+      const text = readFileSync(path.join(directory, file), 'utf8').replace(
+        /\s*\n\s*(\/\/)?\s*/g,
+        ' '
+      );
+      const named = text.match(/gsm\.datasim/g) || [];
+      const said = text.match(/modified copy of gsm\.datasim/g) || [];
+      expect(said.length, file).toBe(named.length);
+    }
+  });
+
+  it('APP-LIB-042: under the builder the page credits the example protocols in the studies feed’s own words, its licence and attribution; the feed is asked for once, when the builder is first shown, and not before (#423)', async () => {
+    const listStudies = vi.fn(async () => FED.filter((entry) => entry.kind === 'protocol'));
+    const builder = { ...fakeBuilder(), listStudies };
+    globalThis.StudyBuilder = builder;
+    const handle = mounted(builderSource({ createConnection, ...OPTIONS }));
+    expect(listStudies).not.toHaveBeenCalled();
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    expect(listStudies.mock.calls).toEqual([
+      ['./study.builder/studies/index.json', { kinds: ['protocol'] }]
+    ]);
+    const credit = () => document.querySelector('.sva-build .sva-build-credit');
+    expect(credit().textContent).toBe(
+      `The example protocols, CC-BY-4.0: ${ATTRIBUTION} ${CHANGES}`
+    );
+    // It is under the widget, and is still there, asked for once, after a close and a redraw.
+    expect(credit().previousElementSibling).toBe(document.querySelector('.sva-build-widget'));
+    document.querySelector('[data-action="close-source"]').click();
+    handle.openSource(BUILDER_SOURCE_ID);
+    handle.redrawView('data');
+    await settle();
+    expect(credit().textContent).toContain(ATTRIBUTION);
+    expect(listStudies).toHaveBeenCalledTimes(1);
+  });
+
+  it('APP-LIB-042: a feed that cannot be read is said under the builder, and a study.builder with no feed draws no line; protocols of differing attribution are credited apart, by name (#423)', async () => {
+    globalThis.StudyBuilder = {
+      ...fakeBuilder(),
+      listStudies: async () => {
+        throw new Error('The list of studies could not be fetched: the page answered 404.');
+      }
+    };
+    mounted(builderSource({ createConnection, ...OPTIONS })).openSource(BUILDER_SOURCE_ID);
+    await settle();
+    expect(document.querySelector('.sva-build-credit').textContent).toBe(
+      'The example protocols’ attribution could not be read: The list of studies could not be fetched: the page answered 404.'
+    );
+    app.destroy();
+    globalThis.StudyBuilder = fakeBuilder();
+    mounted(builderSource({ createConnection, ...OPTIONS })).openSource(BUILDER_SOURCE_ID);
+    await settle();
+    expect(document.querySelector('.sva-build-widget')).not.toBeNull();
+    expect(document.querySelector('.sva-build-credit')).toBeNull();
+    // Entries that are not protocols, and protocols that name no attribution, are credited nothing.
+    expect(protocolCredits(FED)).toEqual([
+      `The example protocols, CC-BY-4.0: ${ATTRIBUTION} ${CHANGES}`
+    ]);
+    expect(protocolCredits([FED[0]])).toEqual([]);
+    expect(protocolCredits(null)).toEqual([]);
+    expect(
+      protocolCredits([FED[1], { ...FED[2], license: 'CC0-1.0', attribution: 'Another’s.' }])
+    ).toEqual([
+      `Example protocols (LZZT), CC-BY-4.0: ${ATTRIBUTION} ${CHANGES}`,
+      'Example protocols (SIMPLE), CC0-1.0: Another’s.'
+    ]);
+  });
+
+  it('APP-LIB-042: the copied studies feed names CDISC’s attribution and CC-BY-4.0 for each of the five example protocols, and its checksums are those of the copied protocol and ready-made study files (#423)', () => {
+    const feed = JSON.parse(copied('studies/index.json').toString('utf8'));
+    const sha256 = (file) => createHash('sha256').update(copied(file)).digest('hex');
+    const protocols = feed.studies.filter((entry) => entry.kind === 'protocol');
+    expect(protocols).toHaveLength(5);
+    for (const entry of protocols) {
+      expect(entry.license, entry.id).toBe('CC-BY-4.0');
+      expect(entry.attribution, entry.id).toContain(ATTRIBUTION);
+      expect(entry.attribution, entry.id).toContain('Changed from CDISC’s file');
+      expect(sha256(entry.protocol.url.replace('../', '')), entry.id).toBe(entry.protocol.sha256);
+    }
+    const lines = protocolCredits(feed.studies);
+    expect(lines).toHaveLength(1);
+    expect(lines[0].startsWith(`The example protocols, CC-BY-4.0: ${ATTRIBUTION}`)).toBe(true);
+    const built = feed.studies.filter((entry) => entry.build);
+    expect(built.map((entry) => entry.id)).toEqual([
+      'preset:phase1-small',
+      'preset:phase2-oncology',
+      'preset:cdisc-pilot-protocol'
+    ]);
+    for (const entry of built) {
+      expect(sha256(entry.build.url.replace('../', '')), entry.id).toBe(entry.build.sha256);
+    }
+    // A ready-made study has the key it had in study.builder v0.5.0.
+    expect(built.map((entry) => entry.build.key)).toEqual([
+      'sha256:45b7142bb06f5fee9d81a90e1b34668a87653a29ba13eeedc08f1d2af2838dca',
+      'sha256:001a419ded7a107c6f2ee8b932fb70578550b5830f67a134e0321f4682f488e9',
+      'sha256:9e41ba70f50756281cc1d75663231303257bf61c7dcb1eed6bfc0297c5923cd1'
+    ]);
+  });
+
+  it('APP-LIB-043: a study that followed a protocol names it on its card, with the attribution and the statement of change the protocol’s source carries; a study with no protocol, or a protocol that names none, has no such line (#423)', async () => {
+    const protocol = {
+      name: 'CDISC PILOT - LZZT',
+      source: { license: 'CC-BY-4.0', attribution: ATTRIBUTION, changes: CHANGES }
+    };
+    expect(protocolCredit(protocol)).toBe(`${ATTRIBUTION} ${CHANGES}`);
+    expect(protocolCredit({ name: 'Mine', source: { kind: 'usdm' } })).toBe('');
+    expect(protocolCredit(null)).toBe('');
+    const builder = fakeBuilder();
+    globalThis.StudyBuilder = builder;
+    const handle = withChip(builderSource({ createConnection, ...OPTIONS }));
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    const info = () => document.querySelector('[data-action="study-info"]');
+    const card = () => document.querySelector('.sva-chip-card');
+    builder.mounts[0].options.onStudy({ ...STUDY, id: 'FOLLOWS', protocol });
+    expect(handle.state.named.facts).toContainEqual({
+      label: 'Protocol',
+      value: 'CDISC PILOT - LZZT',
+      note: `${ATTRIBUTION} ${CHANGES}`
+    });
+    info().click();
+    expect(card().querySelector('.sva-chip-credit').textContent).toBe(`${ATTRIBUTION} ${CHANGES}`);
+    expect(card().querySelector('.sva-chip-facts').textContent).toContain(
+      'ProtocolCDISC PILOT - LZZT'
+    );
+    // The next study follows none: the card has neither.
+    handle.openSource(BUILDER_SOURCE_ID);
+    builder.mounts[0].options.onStudy({ ...STUDY, id: 'PLAIN' });
+    expect(handle.state.named.facts.map((fact) => fact.label)).not.toContain('Protocol');
+    if (!card()) info().click();
+    expect(card().querySelector('.sva-chip-credit')).toBeNull();
+  });
+
   it('offers no builder on a page that cannot start R, and says why', () => {
     mounted(
       builderSource({ unavailable: 'Building a study needs R, and this file cannot start R.' })
@@ -528,6 +706,13 @@ describe('the page and the source agree', () => {
     // The workflows study.builder v0.5.0 added, and the R file one of them calls by name.
     expect(served).toContain('study.builder/workflows/analysis/AESummaryByArm.yaml');
     expect(served).toContain('study.builder/workflows/analysis/EfficacyModel.R');
+    // What study.builder v0.5.1 added for a page that copies it (#423): the
+    // licence's text beside each of gsm's copies, and the studies feed.
+    for (const copy of ['gsm.datasim', 'gsm.kri', 'gsm.mapping-vitals', 'gsm.reporting']) {
+      expect(served).toContain(`study.builder/vendor/${copy}/LICENSE.md`);
+      expect(served).toContain(`study.builder/vendor/${copy}/SOURCE.json`);
+    }
+    expect(served).toContain('study.builder/studies/index.json');
     // The five ready-made protocols the builder's form offers to try.
     expect(
       served.filter((file) => /^study\.builder\/protocols\/.+\.protocol\.json$/.test(file))

@@ -251,6 +251,10 @@ export function drawChip(container, app) {
     fact('Supports', supportSaid(current));
     pop.append(facts);
     if (current.about) pop.append(el('p', 'sva-chip-about', current.about));
+    // A fact's note, as the attribution a study's protocol asks for (#423): small, under the rest.
+    for (const one of current.facts || []) {
+      if (one.note) pop.append(el('p', 'sva-chip-about sva-chip-credit', String(one.note)));
+    }
     const look = button('sva-button', 'Look through the data', () => {
       state.chip = null;
       app.explore();

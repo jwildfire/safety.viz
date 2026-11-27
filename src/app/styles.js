@@ -177,6 +177,8 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-note{margin:0 0 .45rem}
 
 .sva-build{min-width:0;max-width:72rem}
+.sva-build-credit{margin-top:.75rem}
+.sva-build-credit p{margin:0;font-size:.75rem;color:var(--soft);overflow-wrap:anywhere}
 .sva-build-widget .sb{--sb-accent:var(--accent);--sb-card:var(--card);--sb-ink:var(--ink);--sb-soft:var(--soft);--sb-line:var(--line);--sb-rule:var(--rule);--sb-mono:var(--mono)}
 .sva-source{min-width:0}
 .sva-chip-slot{position:relative;display:flex;align-items:center;gap:.1rem}
@@ -206,6 +208,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-chip-facts dt{color:var(--soft)}
 .sva-chip-facts dd{margin:0;text-align:right;font-weight:600}
 .sva-chip-about{margin:0;font-size:.82rem;color:var(--soft)}
+.sva-chip-credit{font-size:.75rem;overflow-wrap:anywhere}
 .sva-chip-busy{margin:0;padding:.4rem .9rem;font-size:.8rem;color:var(--soft)}
 .sva-chip-said{margin:0;padding:.7rem .9rem;font-size:.84rem;line-height:1.4;color:var(--ink)}
 .sva-chip-said.sva-problem{border-left:3px solid var(--s0)}

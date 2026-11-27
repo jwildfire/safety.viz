@@ -7,7 +7,13 @@
     "version": "4.0.0",
     "timeline": "Main Timeline",
     "file": "https://github.com/cdisc-org/DDF-RA · Alexion_NCT04573309_Wilsons.json",
-    "license": "CC-BY-4.0 (the repository's content licence)"
+    "repository": "https://github.com/cdisc-org/DDF-RA",
+    "commit": "aa303cb32f5d3ceecc68a16803e26720d2c1fc26",
+    "path": "Documents/Examples/Alexion_NCT04573309_Wilsons/Alexion_NCT04573309_Wilsons.json",
+    "license": "CC-BY-4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Content based on DDF-RA (GitHub), https://github.com/cdisc-org/DDF-RA, used under the CC-BY-4.0 licence.",
+    "changes": "Changed from CDISC’s file: read by study.builder’s reader and cut down to what a simulated study follows (visits, arms, epochs, objectives, endpoints and activities). Not CDISC’s own form of the protocol, and not endorsed by CDISC or by any sponsor it names."
   },
   "phase": "P2",
   "indication": "Wilson's Disease",
