@@ -258,6 +258,92 @@ describe('Build a study, on the data view', () => {
   });
 });
 
+describe('study.builder’s studies, opened from the app’s list', () => {
+  const PRESETS = ['SLOW', 'FAST'].map((name) => ({
+    id: name.toLowerCase(),
+    name: `Ready-made ${name}`,
+    study: `${name.toLowerCase()}.study.json.gz`,
+    settings: { name, participants: 10, sites: 2 }
+  }));
+  const DEMO = [{ id: 'one', label: 'Study one', description: '', files: ['dm.csv'], dir: '' }];
+
+  /** The app with a study chip, one demo study, and a study.builder whose ready-made studies arrive when the test says. */
+  async function listed() {
+    const arrivals = {};
+    globalThis.StudyBuilder = {
+      fetchPresets: async () => PRESETS,
+      openPreset: (preset) =>
+        new Promise((resolve, reject) => {
+          arrivals[preset.id] = {
+            arrive: () => resolve({ study: { ...STUDY, id: preset.settings.name } }),
+            fail: () => reject(new Error(`${preset.settings.name} could not be fetched`))
+          };
+        })
+    };
+    document.body.innerHTML = '<div id="app"></div>';
+    app = mountApp('#app', {
+      charts: {},
+      manifest,
+      portfolio: true,
+      demo: { base: './', studies: DEMO },
+      fetchText: async () => 'USUBJID,ARM,SEX\nS1,A,F\n',
+      libraries: [
+        { name: 'study.builder', source: builderSource({ createConnection, ...OPTIONS }) }
+      ]
+    });
+    await app.ready;
+    await settle();
+    const open = (id) =>
+      app
+        .portfolio()
+        .studies.find((entry) => entry.id === `preset:${id}`)
+        .open();
+    return { arrivals, open };
+  }
+  const chip = () => document.querySelector('.sva-chip-name').textContent;
+
+  it('APP-PAGE-046: the study in use is the last one chosen: a study still on its way when another is chosen is dropped when it arrives, and so is one a demo study was chosen after; a dropped study that fails says nothing (#407)', async () => {
+    const { arrivals, open } = await listed();
+    expect(chip()).toBe('Study one');
+    // Two of study.builder's studies: the first is slow, the second arrives first.
+    open('slow');
+    open('fast');
+    arrivals.fast.arrive();
+    await settle();
+    expect(chip()).toBe('FAST');
+    arrivals.slow.arrive();
+    await settle();
+    expect(chip()).toBe('FAST');
+    expect(app.state.named.id).toBe('preset:fast');
+    expect(app.portfolio().busy).toBe('');
+    // A demo study chosen after a slow one outranks it too.
+    open('slow');
+    await app.loadDemo('one');
+    expect(chip()).toBe('Study one');
+    arrivals.slow.arrive();
+    await settle();
+    expect(chip()).toBe('Study one');
+    expect(app.state.named).toBeNull();
+    expect(app.portfolio().busy).toBe('');
+    // A study that was dropped and then fails is not reported.
+    open('slow');
+    open('fast');
+    arrivals.slow.fail();
+    await settle();
+    expect(app.portfolio()).toMatchObject({ busy: 'Opening FAST…', problem: '' });
+    arrivals.fast.arrive();
+    await settle();
+    expect(chip()).toBe('FAST');
+    expect(app.portfolio()).toMatchObject({ busy: '', problem: '' });
+    // The one in use, when it fails, is.
+    open('slow');
+    arrivals.slow.fail();
+    await settle();
+    expect(app.portfolio().problem).toBe('SLOW could not be fetched');
+    expect(chip()).toBe('FAST');
+  });
+});
+
 describe('a source a library brings', () => {
   it('is left out when it has no id or an id already used, and brings no tab', () => {
     const render = vi.fn();

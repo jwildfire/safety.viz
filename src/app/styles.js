@@ -191,6 +191,9 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-chip-facts dt{color:var(--soft)}
 .sva-chip-facts dd{margin:0;text-align:right;font-weight:600}
 .sva-chip-about{margin:0;font-size:.82rem;color:var(--soft)}
+.sva-chip-busy{margin:0;padding:.4rem .9rem;font-size:.8rem;color:var(--soft)}
+.sva-chip-said{margin:0;padding:.7rem .9rem;font-size:.84rem;line-height:1.4;color:var(--ink)}
+.sva-chip-said.sva-problem{border-left:3px solid var(--s0)}
 .sva-kind{flex:none;font-family:var(--mono);font-size:.6rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .45rem;border-radius:999px;white-space:nowrap;background:var(--rail);color:var(--ink)}
 .sva-kind-sim{background:var(--accent-soft);color:var(--accent-deep,var(--accent))}
 .sva-kind-own{background:var(--warn-soft);color:var(--warn-deep)}

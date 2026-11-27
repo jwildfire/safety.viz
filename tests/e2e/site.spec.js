@@ -906,6 +906,116 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  // The study chip on the built demo page (#407). The page of the app's own
+  // browser tests asks for no chip; the built demo does.
+  const chipItem = (page, id) => page.locator(`.sva-chip-item[data-study="${id}"]`);
+  const openDemo = async (page) => {
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+  };
+
+  test('APP-PAGE-045: on the built demo page a ready-made study whose file cannot be fetched says so under the chip, on the chart the reader is on, and the study in use stays (#407)', async ({
+    page
+  }) => {
+    await page.route('**/phase2-oncology.study.json.gz', (route) => route.abort());
+    await openDemo(page);
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'preset:phase2-oncology').click();
+    const said = page.locator('.sva-chip-slot .sva-chip-said[role="alert"]');
+    await expect(said).toContainText('could not be fetched');
+    await expect(said).toBeInViewport({ ratio: 1 });
+    // The reader is where they were, on the study they had.
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    // A click elsewhere closes the sentence.
+    await page.locator('.sva-main').click({ position: { x: 5, y: 5 } });
+    await expect(said).toHaveCount(0);
+  });
+
+  test('APP-PAGE-046: on the built demo page a slow study opened first does not replace the one chosen after it (#407)', async ({
+    page
+  }) => {
+    let release = () => {};
+    const held = new Promise((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/phase2-oncology.study.json.gz', async (route) => {
+      await held;
+      await route.continue();
+    });
+    await openDemo(page);
+    await page.locator('[data-action="study-chip"]').click();
+    const asked = page.waitForRequest('**/phase2-oncology.study.json.gz');
+    await chipItem(page, 'preset:phase2-oncology').click();
+    await asked;
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'preset:phase1-small').click();
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P1');
+    // The first study arrives now, and is dropped.
+    const arrived = page.waitForResponse('**/phase2-oncology.study.json.gz');
+    release();
+    await (await arrived).finished();
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P1');
+    expect(await page.evaluate('window.__safetyVizApp.state.named.id')).toBe('preset:phase1-small');
+  });
+
+  test('APP-PAGE-047: on the built demo page the chip’s list closes on a click elsewhere, on Escape with the keyboard elsewhere, and on a change of tab, and so does the i’s card (#407)', async ({
+    page
+  }) => {
+    await openDemo(page);
+    const pop = page.locator('.sva-chip-pop');
+    for (const action of ['study-chip', 'study-info']) {
+      const opener = page.locator(`[data-action="${action}"]`);
+      await opener.click();
+      await expect(pop).toBeVisible();
+      await page.locator('.sva-chart').click({ position: { x: 5, y: 5 } });
+      await expect(pop).toHaveCount(0);
+      await opener.click();
+      await expect(pop).toBeVisible();
+      await page.evaluate(() => document.activeElement.blur());
+      await page.keyboard.press('Escape');
+      await expect(pop).toHaveCount(0);
+      await opener.click();
+      await expect(pop).toBeVisible();
+      await page.locator('.sva-tab[data-domain="ae"]').click();
+      await expect(pop).toHaveCount(0);
+      await expect(page.locator('[data-action="study-chip"]')).toHaveAttribute(
+        'aria-expanded',
+        'false'
+      );
+      await page.locator('.sva-tab[data-domain="bds"]').click();
+    }
+  });
+
+  test('APP-PAGE-048: on the built demo page at 390 pixels the chip’s list and the i’s card open inside the page, and the page does not scroll sideways (#407)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openDemo(page);
+    const placed = () =>
+      page.evaluate(() => {
+        const box = document.querySelector('.sva-chip-pop').getBoundingClientRect();
+        const page = document.documentElement;
+        return {
+          inside: box.left >= 0 && box.right <= page.clientWidth,
+          sideways: page.scrollWidth - page.clientWidth
+        };
+      });
+    await page.locator('[data-action="study-chip"]').click();
+    await expect(chipItem(page, 'preset:phase2-oncology')).toBeVisible();
+    expect(await placed()).toEqual({ inside: true, sideways: 0 });
+    // Every study's name and kind is on the screen, not past its right edge.
+    await expect(chipItem(page, 'preset:phase2-oncology').locator('.sva-kind')).toBeInViewport({
+      ratio: 1
+    });
+    await page.keyboard.press('Escape');
+    await page.locator('[data-action="study-info"]').click();
+    await expect(page.locator('.sva-chip-card')).toBeVisible();
+    expect(await placed()).toEqual({ inside: true, sideways: 0 });
+  });
+
   // The status label on the docs site (#275, obot.roadmap#403): one chart of each
   // rung in use.
   const RUNGS = [

@@ -124,6 +124,103 @@ describe('the study chip', () => {
     q('[data-action="add-study"]').click();
     expect(app.state.selected).toBe(STUDIES_VIEW_ID);
   });
+
+  /** A source whose one study says what the test tells it to while it opens. */
+  function saying() {
+    const said = { busy: '', problem: '' };
+    const library = {
+      name: 'sim',
+      source: {
+        id: 'sim',
+        label: 'Simulate',
+        render() {},
+        studies: {
+          list: () => ({
+            studies: [{ id: 'preset:a', name: 'READY-A', kind: 'Simulated', open: () => {} }],
+            ...said
+          })
+        }
+      }
+    };
+    return { said, library };
+  }
+  const under = () => q('.sva-chip-slot .sva-chip-said');
+
+  it('APP-PAGE-045: a study that does not open is said under the chip, where the reader is, until they close it; while a study chosen from the list opens, the chip says so; the Studies view says both in its own list (#407)', async () => {
+    const { said, library } = saying();
+    mounted({ libraries: [library] });
+    await app.loadDemo('one');
+    expect(under()).toBeNull();
+    // A sentence said while nothing was asked of the list stays in the list.
+    said.busy = 'Looking for studies…';
+    app.retag();
+    expect(under()).toBeNull();
+    q('[data-action="study-chip"]').click();
+    expect(q('.sva-chip-menu [role="status"]').textContent).toBe('Looking for studies…');
+    said.busy = '';
+    app.retag();
+    // The reader chooses the study: while it opens the chip says so.
+    said.busy = 'Opening READY-A…';
+    q('.sva-chip-item[data-study="preset:a"]').click();
+    app.retag();
+    expect(q('.sva-chip-menu')).toBeNull();
+    expect(under().textContent).toBe('Opening READY-A…');
+    expect(under().getAttribute('role')).toBe('status');
+    // It does not open: the sentence is under the chip, on the tab the reader is on.
+    said.busy = '';
+    said.problem = 'READY-A could not be fetched.';
+    app.retag();
+    expect(app.state.selected).not.toBe(STUDIES_VIEW_ID);
+    expect(under().textContent).toBe('READY-A could not be fetched.');
+    expect(under().getAttribute('role')).toBe('alert');
+    // Closed, it is not said again; the next one is.
+    document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(under()).toBeNull();
+    app.retag();
+    expect(under()).toBeNull();
+    said.problem = '';
+    app.retag();
+    said.problem = 'READY-A could not be fetched.';
+    app.retag();
+    expect(under().textContent).toBe('READY-A could not be fetched.');
+    // On the Studies view the list says it, and the chip does not say it twice.
+    app.select(STUDIES_VIEW_ID);
+    expect(under()).toBeNull();
+    expect(q('.sva-studies [role="alert"]').textContent).toBe('READY-A could not be fetched.');
+  });
+
+  it('APP-PAGE-047: the list and the i’s card close on a click anywhere else on the page, on Escape wherever the keyboard is, and when the reader moves to another tab; a click inside leaves them open (#407)', async () => {
+    mounted();
+    await app.loadDemo('one');
+    const open = (action) => {
+      q(`[data-action="${action}"]`).click();
+      expect(q('.sva-chip-pop')).not.toBeNull();
+    };
+    for (const action of ['study-chip', 'study-info']) {
+      // A click inside what is open leaves it open.
+      open(action);
+      q('.sva-chip-pop').click();
+      expect(q('.sva-chip-pop')).not.toBeNull();
+      // A click anywhere else closes it.
+      q('.sva-main').click();
+      expect(q('.sva-chip-pop')).toBeNull();
+      expect(app.state.chip).toBeNull();
+      // Escape closes it with the keyboard outside the chip.
+      open(action);
+      document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      expect(q('.sva-chip-pop')).toBeNull();
+      // So does moving to another tab.
+      open(action);
+      app.select(STUDIES_VIEW_ID);
+      expect(q('.sva-chip-pop')).toBeNull();
+      expect(q('[data-action="study-chip"]').getAttribute('aria-expanded')).toBe('false');
+      app.select('data');
+    }
+    // The chip itself still opens and closes its list.
+    open('study-chip');
+    q('[data-action="study-chip"]').click();
+    expect(q('.sva-chip-pop')).toBeNull();
+  });
 });
 
 describe('the Studies view', () => {
