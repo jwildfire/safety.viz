@@ -288,8 +288,10 @@ test.describe('docs site', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/_site/demo/index.html');
     await page.evaluate('window.__safetyVizApp.ready');
+    // The click scrolls the tab into view itself, and waits out a header that is
+    // drawn again as the study chip's list arrives: scrolling first could be
+    // handed a tab that had just been replaced (#402).
     const biomarkers = page.locator('.sva-tab[data-domain="biomarkers"]');
-    await biomarkers.scrollIntoViewIfNeeded();
     await biomarkers.click();
     await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-item-title')).toHaveText(
       Object.values(bioManifest.modules).map((entry) => entry.title)
@@ -306,7 +308,6 @@ test.describe('docs site', () => {
     await expect(page.locator('.sva-chart .bv-time-table')).toBeVisible();
     expect(await overflow()).toBeLessThanOrEqual(0);
     const crossTab = page.locator('.sva-item[data-view="cross-tab"]');
-    await crossTab.scrollIntoViewIfNeeded();
     await crossTab.click();
     await expect(page.locator('.sva-chart table.bv-crosstab')).toBeVisible();
     expect(await overflow()).toBeLessThanOrEqual(0);
