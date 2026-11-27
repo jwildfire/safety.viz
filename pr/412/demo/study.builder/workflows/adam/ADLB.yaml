@@ -1,0 +1,139 @@
+# ADaM lab results table, from the raw labs table, the raw visits table and
+# ADSL. One row per enrolled participant, visit and lab test. It has the same
+# columns, in the same order, as ADVS, so the two stack.
+meta:
+  Type: ADaM
+  ID: ADLB
+  Description: Lab results analysis table
+  Priority: 2
+  File: adlb.csv
+  Keys: [USUBJID, VISIT, TEST]
+  Domain: bds
+spec:
+  Raw_LB:
+    subjid:
+      type: character
+    visnam:
+      type: character
+    lbtstnam:
+      type: character
+    lbresn:
+      type: numeric
+    lbresu:
+      type: character
+    lbnrlo:
+      type: numeric
+    lbnrhi:
+      type: numeric
+  Raw_VISIT:
+    subjid:
+      type: character
+    visit:
+      type: character
+    visit_dt:
+      type: Date
+  ADaM_ADSL:
+    USUBJID:
+      type: character
+    ARM:
+      type: character
+    SITEID:
+      type: character
+    SEX:
+      type: character
+    RACE:
+      type: character
+    TRTSDT:
+      type: Date
+steps:
+  - output: Temp_Subject
+    name: workr::RunQuery
+    params:
+      df: ADaM_ADSL
+      strQuery: 'SELECT USUBJID AS subjid, ARM, SITEID, SEX, RACE, TRTSDT FROM df'
+  - output: Temp_VisitOrder
+    name: workr::RunQuery
+    params:
+      df: Raw_VISIT
+      strQuery: 'SELECT visit AS visnam, CAST(ROW_NUMBER() OVER (ORDER BY MIN(visit_dt), visit) - 1 AS INTEGER) AS VISITNUM FROM df GROUP BY visit'
+  - output: Temp_VisitDate
+    name: workr::RunQuery
+    params:
+      df: Raw_VISIT
+      strQuery: 'SELECT subjid, visit AS visnam, MIN(CAST(visit_dt AS DATE)) AS visit_dt FROM df GROUP BY subjid, visit'
+  - output: Temp_LB
+    name: dplyr::inner_join
+    params:
+      x: Raw_LB
+      'y': Temp_Subject
+      by: subjid
+  - output: Temp_LBOrdered
+    name: dplyr::left_join
+    params:
+      x: Temp_LB
+      'y': Temp_VisitOrder
+      by: visnam
+  - output: Temp_LBDated
+    name: dplyr::left_join
+    params:
+      x: Temp_LBOrdered
+      'y': Temp_VisitDate
+      by: [subjid, visnam]
+  - output: ADaM_ADLB
+    name: workr::RunQuery
+    params:
+      df: Temp_LBDated
+      strQuery: "SELECT DISTINCT subjid AS USUBJID, ARM, SITEID, SEX, RACE, visnam AS VISIT, VISITNUM, CASE WHEN lower(lbtstnam) LIKE 'creatinine%' THEN 'Creatinine' ELSE regexp_replace(lbtstnam, ' (Concentration )?in Serum/Plasma$', '') END AS TEST, lbresu AS STRESU, CAST(lbresn AS DOUBLE) AS STRESN, CAST(lbnrlo AS DOUBLE) AS STNRLO, CAST(lbnrhi AS DOUBLE) AS STNRHI, CAST(CASE WHEN visit_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(visit_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(visit_dt AS DATE)) END AS INTEGER) AS DY FROM df WHERE lbresn IS NOT NULL ORDER BY TEST, USUBJID, VISITNUM"
+columns:
+  USUBJID:
+    label: Unique Subject Identifier
+    from: Raw_LB.subjid
+    how: Copied, for an enrolled participant
+  ARM:
+    label: Description of Planned Arm
+    from: ADSL.ARM
+    how: Joined from the participant's row
+  SITEID:
+    label: Study Site Identifier
+    from: ADSL.SITEID
+    how: Joined from the participant's row
+  SEX:
+    label: Sex
+    from: ADSL.SEX
+    how: Joined from the participant's row
+  RACE:
+    label: Race
+    from: ADSL.RACE
+    how: Joined from the participant's row
+  VISIT:
+    label: Visit Name
+    from: Raw_LB.visnam
+    how: Copied
+  VISITNUM:
+    label: Visit Number
+    from: Raw_VISIT.visit_dt
+    how: "Derived: the visit's place in the order of first visit dates across the study"
+  TEST:
+    label: Test Name
+    from: Raw_LB.lbtstnam
+    how: "Copied, but for creatinine, which the lab names with its method and is written 'Creatinine', and for a name that ends 'in Serum/Plasma' or 'Concentration in Serum/Plasma', as a protocol's lab list writes it, which loses that ending"
+  STRESU:
+    label: Standard Units
+    from: Raw_LB.lbresu
+    how: Copied
+  STRESN:
+    label: Numeric Result in Standard Units
+    from: Raw_LB.lbresn
+    how: Copied
+  STNRLO:
+    label: Reference Range Lower Limit
+    from: Raw_LB.lbnrlo
+    how: Copied
+  STNRHI:
+    label: Reference Range Upper Limit
+    from: Raw_LB.lbnrhi
+    how: Copied
+  DY:
+    label: Study Day
+    from: Raw_VISIT.visit_dt, ADSL.TRTSDT
+    how: "Derived: the date of the participant's visit less day one, plus one; a day before day one counts back from -1"
