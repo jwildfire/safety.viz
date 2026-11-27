@@ -851,6 +851,125 @@ test.describe('docs site', () => {
     expect(asked).toBe(3);
   });
 
+  // study.builder v0.5.1 on the built demo page (#423): the simulator named
+  // for what it is, CDISC's attribution with the example protocols, and the
+  // ready-made studies as they were.
+  const CDISC_SAID =
+    'Content based on DDF-RA (GitHub), https://github.com/cdisc-org/DDF-RA, used under the CC-BY-4.0 licence.';
+  const openFromStudies = async (page, id, name) => {
+    await page.locator(`.sva-studies-row[data-study="preset:${id}"] [data-action="open"]`).click();
+    await expect(page.locator('.sva-chip-name')).toHaveText(name);
+  };
+  const studyCard = async (page) => {
+    await page.locator('[data-action="study-info"]').click();
+    return page.locator('.sva-chip-card');
+  };
+
+  test('APP-LIB-041: on the built demo page the app says a study is made by a modified copy of gsm.datasim 2.1.0, on the Build a study button and as Made by on the card of each ready-made study; each of the three opens with no R and with the key it had in study.builder v0.5.0 (#423)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const keys = {};
+    for (const [id, name] of [
+      ['phase1-small', 'READY-P1'],
+      ['phase2-oncology', 'READY-P2'],
+      ['cdisc-pilot-protocol', 'PILOT-PROTOCOL']
+    ]) {
+      await openFromStudies(page, id, name);
+      keys[name] = await page.evaluate('window.__safetyVizApp.state.named.built.manifest.key');
+      const card = await studyCard(page);
+      await expect(card.locator('.sva-chip-facts dd').nth(4)).toHaveText(
+        'a modified copy of gsm.datasim 2.1.0'
+      );
+      await expect(card.locator('.sva-chip-facts dt').nth(4)).toHaveText('Made by');
+      await page.keyboard.press('Escape');
+    }
+    expect(keys).toEqual({
+      'READY-P1': 'sha256:45b7142bb06f5fee9d81a90e1b34668a87653a29ba13eeedc08f1d2af2838dca',
+      'READY-P2': 'sha256:001a419ded7a107c6f2ee8b932fb70578550b5830f67a134e0321f4682f488e9',
+      'PILOT-PROTOCOL': 'sha256:9e41ba70f50756281cc1d75663231303257bf61c7dcb1eed6bfc0297c5923cd1'
+    });
+    // No R was started: each came whole from its file.
+    await expect(page.locator('.sva-chip.sva-r-ready')).toHaveCount(0);
+    // The way in to the builder says what makes a study.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await page.locator('[data-action="files"]').click();
+    await expect(page.locator('[data-action="source-build"]')).toHaveAttribute(
+      'title',
+      'Simulate a study with a modified copy of gsm.datasim 2.1.0, in this browser.'
+    );
+  });
+
+  test('APP-LIB-042: on the built demo page the builder offers CDISC’s five example protocols and shows the schedule of the one tried, and under it the page says CDISC’s attribution and the licence, from the studies feed, which is fetched once, when the builder is opened (#423)', async ({
+    page
+  }) => {
+    const feeds = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).pathname.endsWith('/study.builder/studies/index.json'))
+        feeds.push(request.url());
+    });
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('.sva-studies-row[data-study="preset:phase1-small"]')).toBeVisible();
+    expect(feeds).toEqual([]);
+    await page.locator('[data-add="protocol"]').click();
+    const widget = page.locator('.sva-build-widget');
+    await expect(widget.getByRole('button', { name: /^Try the / })).toHaveCount(5);
+    const credit = page.locator('.sva-build .sva-build-credit');
+    await expect(credit).toBeVisible();
+    const said = await credit.innerText();
+    expect(
+      said.startsWith(`The example protocols, CC-BY-4.0: ${CDISC_SAID} Changed from CDISC’s file`)
+    ).toBe(true);
+    expect(said.endsWith('not endorsed by CDISC or by any sponsor it names.')).toBe(true);
+    // study.builder's own footer, which carries the attribution on its site, is not in the widget.
+    await expect(page.locator('.sva-build footer')).toHaveCount(0);
+    await expect(widget).not.toContainText('DDF-RA');
+    // A protocol tried: its schedule is on the page, and the attribution is under it.
+    await widget.getByRole('button', { name: 'Try the CDISC pilot protocol', exact: true }).click();
+    await expect(widget.locator('.sb-protocol')).toContainText('Xanomeline Low Dose');
+    await expect(credit).toBeVisible();
+    await expect(credit).toContainText(CDISC_SAID);
+    // Closed and opened again, the feed is not asked for again.
+    await page.locator('[data-action="close-source"]').click();
+    await page.locator('[data-action="files"]').click();
+    await page.locator('[data-action="source-build"]').click();
+    await expect(credit).toContainText(CDISC_SAID);
+    expect(feeds).toHaveLength(1);
+  });
+
+  test('APP-LIB-043: on the built demo page the card of the ready-made study that follows the CDISC pilot protocol names the protocol and carries CDISC’s attribution, as study.builder’s Protocol view does, and the card of a study with no protocol carries none (#423)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openFromStudies(page, 'cdisc-pilot-protocol', 'PILOT-PROTOCOL');
+    let card = await studyCard(page);
+    await expect(card.locator('.sva-chip-facts')).toContainText('CDISC PILOT - LZZT');
+    const credit = await card.locator('.sva-chip-credit').innerText();
+    expect(credit.startsWith(`${CDISC_SAID} Changed from CDISC’s file`)).toBe(true);
+    expect(credit.endsWith('not endorsed by CDISC or by any sponsor it names.')).toBe(true);
+    // The card stays inside the page.
+    const box = await card.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(1280);
+    await page.keyboard.press('Escape');
+    // study.builder's own Protocol view, on the Overview tab, says the same.
+    await page.locator('.sva-item[data-view="data"]').click();
+    const view = page.locator('.sva-explore-body');
+    await view.locator('[data-section="design"]').click();
+    await view.locator('[data-view="protocol"]').click();
+    await expect(view).toContainText(CDISC_SAID);
+    await expect(view).toContainText('CC-BY-4.0 · https://creativecommons.org/licenses/by/4.0/');
+    // A study that followed no protocol.
+    await openFromChip(page, 'preset:phase1-small', 'READY-P1');
+    card = await studyCard(page);
+    await expect(card.locator('.sva-chip-facts')).toContainText('Made by');
+    await expect(card.locator('.sva-chip-facts')).not.toContainText('Protocol');
+    await expect(card.locator('.sva-chip-credit')).toHaveCount(0);
+  });
+
   test('on the built demo page a ready-made simulated study opens from the Studies view with no R, and the Overview tab draws it with study.builder’s study view in sections: Overview, Design, Data, One participant and Reporting, with no RBQM view and no Safety view, since the app has tabs of its own for both; a view is reached through its section; at 1,400 pixels nothing of the overview runs past the page', async ({
     page
   }) => {
@@ -1097,7 +1216,7 @@ test.describe('docs site', () => {
   test('APP-LOAD-029: on the built demo page a study built in real R with Labs, Vital signs and ECGs turned off, and loaded into the demo over a ready-made study, leaves none of that study’s files: no labs, vital signs or ECG file is placed, set aside or kept raw, and every loaded file is one the built study has (#405)', { tag: '@real-r' }, async ({
     page
   }) => {
-    // It downloads R and gsm.datasim's packages, then simulates the study.
+    // It downloads R, its packages and the modified copy of gsm.datasim, then simulates the study.
     test.setTimeout(420000);
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -1127,6 +1246,11 @@ test.describe('docs site', () => {
     await expect(use).toBeVisible({ timeout: 360000 });
     await use.click();
     await expect(chipName(page)).toHaveText('NO-LABS');
+    // A study just built says what made it, in the app's own words (#423).
+    expect(await page.evaluate('window.__safetyVizApp.state.named.facts')).toContainEqual({
+      label: 'Made by',
+      value: 'a modified copy of gsm.datasim 2.1.0'
+    });
     const after = await loadedNow(page);
     // The ECG charts and the labs and vitals charts have no file, and nothing is set aside.
     expect(Object.keys(after.placed).sort()).toEqual(['ae', 'subject']);

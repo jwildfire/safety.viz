@@ -3,8 +3,11 @@
 // beside the demo studies and the file picker, and draws it in place of the
 // loaded files while it is open. It is study.builder's widget
 // (github.com/jwildfire/study.builder): the reader
-// describes a trial and chooses its domains, R in the browser has gsm.datasim
-// simulate it, and every domain can be looked at. When the reader hands the
+// describes a trial and chooses its domains, R in the browser has
+// study.builder's simulator make it, and every domain can be looked at. The
+// simulator is a modified copy of gsm.datasim: Gilead's 2.1.0 with additions
+// that are not theirs, and the app's own words say so wherever they name what
+// makes a study (#423). When the reader hands the
 // study over, the app loads it as it loads a reader's own files: gsm's raw
 // files for the RBQM tab, and the standard files for the other charts.
 //
@@ -16,7 +19,10 @@
 // study.builder's own code, so the script and then the list of ready-made
 // studies are fetched as the page opens. No study is fetched until the reader
 // opens one. A page with no chip fetches nothing until the source is first
-// opened. Either way R is not asked for until the reader presses Build. The
+// opened. When the source is first opened, the studies feed is fetched too,
+// once: it names the example protocols' licence and attribution, which are
+// shown under the builder (#423). Either way R is not asked for until the
+// reader presses Build. The
 // widget is handed the app's own way of making a connection to R, so it and
 // the RBQM tab share one R.
 //
@@ -33,6 +39,51 @@ export const BUILDER_SOURCE_ID = 'build';
 
 const messageOf = (error) =>
   (error && typeof error.message === 'string' && error.message) || String(error);
+
+/**
+ * Whose a study's protocol is, for the study's card (#423): the attribution
+ * and the statement of change the protocol's source carries, as CDISC's
+ * example protocols do.
+ * @param {?Object} protocol The protocol a study followed, as study.builder keeps it.
+ * @returns {string} The words, empty for a study with no protocol or a protocol that names none.
+ */
+export function protocolCredit(protocol) {
+  const source = protocol && typeof protocol === 'object' ? protocol.source : null;
+  if (!source || typeof source !== 'object') return '';
+  return [source.attribution, source.changes]
+    .filter((part) => typeof part === 'string' && part.trim())
+    .map((part) => part.trim())
+    .join(' ');
+}
+
+/**
+ * The lines that credit the example protocols the builder's form offers (#423),
+ * from the studies feed: one for each licence and attribution the feed's
+ * protocols name, which for CDISC's five is one.
+ * @param {Object[]} entries The feed's entries, as study.builder's `listStudies` gives them.
+ * @returns {string[]} The lines; none when no protocol names an attribution.
+ */
+export function protocolCredits(entries) {
+  const protocols = (Array.isArray(entries) ? entries : []).filter(
+    (entry) => entry && entry.kind === 'protocol'
+  );
+  const groups = new Map();
+  for (const entry of protocols) {
+    if (typeof entry.attribution !== 'string' || !entry.attribution.trim()) continue;
+    const license = typeof entry.license === 'string' ? entry.license.trim() : '';
+    const key = `${license}\n${entry.attribution.trim()}`;
+    if (!groups.has(key))
+      groups.set(key, { license, attribution: entry.attribution.trim(), of: [] });
+    groups.get(key).of.push(entry.name);
+  }
+  return [...groups.values()].map(({ license, attribution, of }) => {
+    const which =
+      of.length === protocols.length
+        ? 'The example protocols'
+        : `Example protocols (${of.join('; ')})`;
+    return `${which}${license ? `, ${license}` : ''}: ${attribution}`;
+  });
+}
 
 /**
  * Build a study, as a source the data view offers.
@@ -55,6 +106,8 @@ export function builderSource({
   let problem = '';
   let holder = null; // the element the widget is mounted in, kept across redraws
   let widget = null;
+  let credit = null; // the element under the widget that credits the example protocols (#423)
+  let crediting = null; // the promise of the studies feed's protocols, asked for once
   let loaded = null; // { id, said } of the study last handed to the app
   let shown = null; // { container, app } of the view as it is on the page now
 
@@ -96,7 +149,19 @@ export function builderSource({
             layers.length &&
             `${layers.reduce((sum, layer) => sum + layer.tables.length, 0)} in ${layers.length} layers`
         },
-        { label: 'Made by', value: study.simulator && `gsm.datasim ${study.simulator}` }
+        // `study.simulator` is the version the copy's DESCRIPTION states, as "2.1.0".
+        {
+          label: 'Made by',
+          value: study.simulator && `a modified copy of gsm.datasim ${study.simulator}`
+        },
+        // A study that followed a protocol says which, and whose it is: the
+        // attribution its source asks for is the fact's note, which the
+        // study's card draws under the facts, small (#423).
+        {
+          label: 'Protocol',
+          value: study.protocol && study.protocol.name,
+          ...(protocolCredit(study.protocol) ? { note: protocolCredit(study.protocol) } : {})
+        }
       ].filter((fact) => fact.value),
       // Every layer, for the data view's viewer, when the study has them.
       ...(layers.length ? { built: study } : {})
@@ -245,6 +310,27 @@ export function builderSource({
     });
   }
 
+  /**
+   * Credit the example protocols under the builder (#423). The builder's form
+   * offers CDISC's five by name and shows the schedule of the one tried, and
+   * study.builder's own footer, which carries the attribution on its site, is
+   * not drawn in a page that mounts the widget. The words are the studies
+   * feed's own (`license`, `attribution`), fetched once, when the builder is
+   * first shown.
+   */
+  function creditProtocols(builder) {
+    if (crediting || typeof builder.listStudies !== 'function') return;
+    credit = el('div', 'sva-build-credit');
+    crediting = builder
+      .listStudies(`${base}studies/index.json`, { kinds: ['protocol'] })
+      .then(protocolCredits, (error) => [
+        `The example protocols’ attribution could not be read: ${messageOf(error)}`
+      ])
+      .then((lines) => {
+        credit.replaceChildren(...lines.map((line) => el('p', null, line)));
+      });
+  }
+
   function draw(container, app) {
     container.textContent = '';
     container.classList.add('sva-build');
@@ -260,6 +346,7 @@ export function builderSource({
     }
     if (holder) {
       container.append(holder);
+      if (credit) container.append(credit);
       return;
     }
     if (problem) {
@@ -273,6 +360,7 @@ export function builderSource({
       if (builder && !holder) {
         try {
           mountWidget(builder, app);
+          creditProtocols(builder);
         } catch (error) {
           problem = `The builder cannot be shown: ${messageOf(error)}.`;
         }
@@ -284,7 +372,7 @@ export function builderSource({
   return {
     id: BUILDER_SOURCE_ID,
     label: 'Build a study',
-    about: 'Simulate a study with gsm.datasim, in this browser.',
+    about: 'Simulate a study with a modified copy of gsm.datasim 2.1.0, in this browser.',
     /** study.builder's studies, for the app's list of studies (page.js's `portfolio`). */
     studies: {
       list(app) {
@@ -338,7 +426,7 @@ export function builderSource({
               id: 'describe',
               label: 'Describe a simulated study',
               about:
-                'Phase, size, domains and layers. study.builder makes it in this browser: a few seconds, and about half a minute the first time.',
+                'Phase, size, domains and layers. study.builder makes it in this browser: a few seconds, and about a minute the first time.',
               action: 'Describe a study',
               primary: true,
               run: (app) => {

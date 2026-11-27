@@ -205,13 +205,14 @@ export const GSM_VIZ = {
 
 /**
  * study.builder, for the demo app's Build a study source: the tool that simulates
- * a study with gsm.datasim in browser R and hands its data to a page. Its
- * built bundle defines the global `StudyBuilder`; with it are copied the files
- * its R reads, which the demo app serves beside it: study.builder's own R and
- * workflows, and its copies of gsm.datasim's source, of gsm.mapping's vital
- * signs spec and of gsm.kri's and gsm.reporting's workflows, each with the
- * record study.builder keeps of where it came from, and the licence. None
- * is edited. study.builder is public, under jwildfire, and is only ever read.
+ * a study with a modified copy of gsm.datasim in browser R and hands its data
+ * to a page. Its built bundle defines the global `StudyBuilder`; with it are
+ * copied the files its R reads, which the demo app serves beside it:
+ * study.builder's own R and workflows, and its copies of that modified
+ * gsm.datasim's source (Gilead's 2.1.0 with additions that are not theirs,
+ * kept at jwildfire/gsm.datasim), of gsm.mapping's vital signs spec and of
+ * gsm.kri's and gsm.reporting's workflows, each with the record study.builder
+ * keeps of where it came from, and the licence's text (#423). None is edited. study.builder is public, under jwildfire, and is only ever read.
  */
 export const STUDY_BUILDER = {
   name: 'study.builder bundle and the files its R reads',
@@ -220,7 +221,7 @@ export const STUDY_BUILDER = {
   directory: 'site/vendor/study.builder',
   // The release the copy is made from. While it names a release candidate,
   // move it to the release when that is out, and copy again.
-  tag: 'v0.5.0',
+  tag: 'v0.5.1',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },
@@ -282,6 +283,7 @@ export const STUDY_BUILDER = {
     'vendor/gsm.datasim/SOURCE.json',
     'vendor/gsm.mapping-vitals/workflow/1_mappings/VS.yaml',
     'vendor/gsm.mapping-vitals/SOURCE.json',
+    'vendor/gsm.mapping-vitals/LICENSE.md',
     'vendor/gsm.kri/workflow/2_metrics/kri0001.yaml',
     'vendor/gsm.kri/workflow/2_metrics/kri0002.yaml',
     'vendor/gsm.kri/workflow/2_metrics/kri0003.yaml',
@@ -292,11 +294,13 @@ export const STUDY_BUILDER = {
     'vendor/gsm.kri/workflow/2_metrics/kri0012.yaml',
     'vendor/gsm.kri/R/util-Report.R',
     'vendor/gsm.kri/SOURCE.json',
+    'vendor/gsm.kri/LICENSE.md',
     'vendor/gsm.reporting/workflow/3_reporting/Results.yaml',
     'vendor/gsm.reporting/workflow/3_reporting/Bounds.yaml',
     'vendor/gsm.reporting/workflow/3_reporting/Groups.yaml',
     'vendor/gsm.reporting/workflow/3_reporting/Metrics.yaml',
     'vendor/gsm.reporting/SOURCE.json',
+    'vendor/gsm.reporting/LICENSE.md',
     'workflows/adam/ADAE.yaml',
     'workflows/adam/ADEG.yaml',
     'workflows/adam/ADLB.yaml',
@@ -314,6 +318,9 @@ export const STUDY_BUILDER = {
     'protocols/alexion-wilsons.protocol.json',
     'protocols/lilly-nasal-glucagon.protocol.json',
     'protocols/observational.protocol.json',
+    // The studies feed: it names each example protocol's licence and the
+    // attribution CDISC asks for, which the app shows under the builder (#423).
+    'studies/index.json',
     // The ready-made studies, and the list that names them.
     'presets/index.json',
     'presets/phase1-small.study.json.gz',

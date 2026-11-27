@@ -1,17 +1,19 @@
 {
-  "source": "gsm.datasim R source",
+  "source": "A modified copy of gsm.datasim 2.1.0: its R source",
   "repository": "https://github.com/jwildfire/gsm.datasim",
   "ref": "safety-results-2.1",
-  "commit": "51412df637293ac87019853bbfde2bed63ebfcb4",
+  "commit": "afb474536680204565272f3f01ccea57630bbbbe",
   "version": "2.1.0",
   "license": "Apache License (>= 2)",
+  "modified": true,
+  "modified_by": "Jeremy Wildfire, November 2026",
   "merged_to_dev": false,
   "files": [
     {
       "file": "DESCRIPTION",
       "source": "DESCRIPTION",
-      "sha256": "c1a07fd7dc0797d0ae39cfa042ccabad98f3c34a6cc00826c5386b07c665624f",
-      "bytes": 1540
+      "sha256": "0a4127774a7fd949d97e61db2782e446e930d38b660e37480a8dc6c7c9d9fdcf",
+      "bytes": 2238
     },
     {
       "file": "LICENSE.md",
@@ -124,8 +126,8 @@
     {
       "file": "R/Raw_SITE.R",
       "source": "R/Raw_SITE.R",
-      "sha256": "a67407036897cf7d78e710a6bc05012782bad97106518a140de02fcf84ad21ed",
-      "bytes": 4211
+      "sha256": "e474346732178ea6792da751a639fc47ba98c931a59e6bf9d5cee9cfba28eddd",
+      "bytes": 4665
     },
     {
       "file": "R/Raw_STUDCOMP.R",
@@ -172,8 +174,8 @@
     {
       "file": "R/create_longitudinal_study.R",
       "source": "R/create_longitudinal_study.R",
-      "sha256": "0348cc50d2006e827c91412f50463958ffd6851204ea61fc2d62d9e049c26c69",
-      "bytes": 34804
+      "sha256": "f8172aedbe8197ad02627b7c4ec51f35c4cc6199654e61619c88194922c0e656",
+      "bytes": 35330
     },
     {
       "file": "R/create_snapshot_reports.R",
@@ -226,8 +228,8 @@
     {
       "file": "R/gsm_utils.R",
       "source": "R/gsm_utils.R",
-      "sha256": "cce646b90eecb1709801abc09dbe92e9a2db3d76f3e39dbbd6ef08f1520fa183",
-      "bytes": 36317
+      "sha256": "e1e25e192ba421bfbb5ade8d0a55821ec76173cd038b4867abcddba02329e6c6",
+      "bytes": 36889
     },
     {
       "file": "R/import-gsm.mapping-CombineSpecs.R",
@@ -250,26 +252,26 @@
     {
       "file": "R/study_design.R",
       "source": "R/study_design.R",
-      "sha256": "4f996cb0683e6fcb411903f469196bd7921cbbbb5403d6d7c75384f3d2a65451",
-      "bytes": 12604
+      "sha256": "09c7417fe72f868df1785d4cb135d73f2e316a0829a1156cbd5b2116103e94cc",
+      "bytes": 12992
     },
     {
       "file": "R/study_options.R",
       "source": "R/study_options.R",
-      "sha256": "74c7765880cbc6d171956d8b7a0b560090eb35fb5c8d0504debbeff9ac86cb94",
-      "bytes": 4785
+      "sha256": "d404ae17f27b24ce506929479ddcd39ca81fb6a3e7d20320e1f5113dafaa5af2",
+      "bytes": 5173
     },
     {
       "file": "R/study_profile.R",
       "source": "R/study_profile.R",
-      "sha256": "d26e0cbaaf9e5a04eebadea9b62f8ce439ee19d394d6bcae8484dfd6dd89618c",
-      "bytes": 9291
+      "sha256": "35e8e94b2ef51a2374c5b7100fde5587d7c28f51cd0c6cc78a54715dc7a180f5",
+      "bytes": 9679
     },
     {
       "file": "R/study_results.R",
       "source": "R/study_results.R",
-      "sha256": "a74d5e379b4f8a19c93d36aaa3e3bf28ec081c41282a5db17f7841862171e291",
-      "bytes": 37713
+      "sha256": "0216ce66108e230e48b0e3557a164306686a428b192d6b4d15a48f8c20f0ee81",
+      "bytes": 38101
     },
     {
       "file": "R/util-pipe.R",
@@ -307,5 +309,5 @@
     "tag": "v2.1.0",
     "commit": "29fc61c1ca83ceaf38c4c2ba54613872aa5a1d66"
   },
-  "note": "A staging copy of gsm.datasim under jwildfire: v2.1.0 with two features added, a study design (R/study_design.R) and study results (R/study_results.R: treatment arms, lab results and ECGs), each an argument of create_longitudinal_study. It is here so study.builder makes no data itself. Not yet raised with gsm.datasim's maintainers."
+  "note": "A modified copy of gsm.datasim, kept under jwildfire: Gilead's v2.1.0 with about 2,050 lines added in 13 files. Added: a study design (R/study_design.R), study options (R/study_options.R), a study profile (R/study_profile.R) and study results (R/study_results.R: treatment arms, lab results, ECGs, scores, adverse event terms and dropout). Changed: R/Raw_SITE.R, R/gsm_utils.R and R/create_longitudinal_study.R, each with a notice of change at its top. Its DESCRIPTION says it is modified and by whom. It is here so study.builder makes no data itself. Not yet raised with gsm.datasim's maintainers, and not reviewed or endorsed by them."
 }
