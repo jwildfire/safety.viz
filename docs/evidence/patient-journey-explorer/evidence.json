@@ -1,15 +1,15 @@
 {
   "module": "patient-journey-explorer",
-  "generatedAt": "2026-11-27T01:09:27.202Z",
+  "generatedAt": "2026-11-27T02:01:08.080Z",
   "environment": {
-    "os": "linux 7.0.0-1018-aws",
+    "os": "linux 7.0.0-1014-aws",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "45920836403",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45920836403"
+    "id": "45925735277",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45925735277"
   },
   "records": [
     {
@@ -1659,6 +1659,14 @@
       "requirementIds": ["PJE-PANEL-001"],
       "issueRefs": [142],
       "screenshots": ["PJE-PANEL-001-context-panel.png"]
+    },
+    {
+      "test": "PJE-PANEL-002: expanded, the side panel lies over the card from its top edge at its full width and is as tall as what it holds, not as the card: the journey shows beneath it, dimmed (#409)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["PJE-PANEL-002"],
+      "issueRefs": [409],
+      "screenshots": []
     },
     {
       "test": "PJE-SRC-001: both a mark and a panel item jump to their source row (#142)",
