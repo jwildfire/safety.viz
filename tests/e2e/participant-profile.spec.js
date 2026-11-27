@@ -1,6 +1,7 @@
 import { execSync } from 'node:child_process';
 import { test, expect } from '@playwright/test';
 import { captureEvidence } from './evidence.js';
+import { expandedPanel, growCard } from './expanded-panel.js';
 
 // Browser evidence for the participant-profile module (#98, obot.roadmap#45).
 // This spec file is the module's ONE home for e2e captures — the evidence
@@ -317,6 +318,92 @@ test.describe('participant-profile rail: hep-explorer composite and migration vi
     await expect(page.locator('.sv-rail .sv-profile-stepper')).toHaveCount(0);
     await captureEvidence(page, 'PPRF-HEP-004', 'migration-handoff-dock');
   });
+});
+
+// ── the expanded rail, in every chart that hosts it (#409) ──────────────────
+// Expand lays the rail over its host's card. The rule that does so is the
+// shell's, so it is every host's, and what the profile adds for its own
+// expanded layout is scoped to its own classes: the labs chart beside the
+// floated control column, the measure table below both. Each host is opened on
+// its own fixture page, a participant is selected through the house selection
+// event its rail listens to, and Expand is pressed; the layout is measured
+// (expanded-panel.js). The two adverse-event charts have no labs, so their
+// profile is the adverse-event story alone: no control column, chart or table.
+const HOSTS = [
+  // The chart, its fixture page, the global its instance is kept in, a participant in its data.
+  ['Hepatic Explorer', 'hep-explorer', '__safetyHepExplorerInstance', 'SUBJ-001'],
+  ['Safety Histogram', 'histogram', '__safetyHistogramInstance', 'SUBJ-001'],
+  ['Safety Outlier Explorer', 'outlier-explorer', '__safetyOutlierExplorerInstance', 'SUBJ-001'],
+  ['QT Explorer', 'qt-explorer', '__safetyQtExplorerInstance', 'PBO-1'],
+  ['Safety Shift Plot', 'shift-plot', '__safetyShiftPlotInstance', 'S01'],
+  ['Safety Delta-Delta', 'delta-delta', '__safetyDeltaDeltaInstance', 'SUBJ-01'],
+  ['AE Explorer', 'ae-explorer', '__aeExplorerInstance', 'A1'],
+  ['AE Timelines', 'ae-timelines', '__aeTimelinesInstance', 'SUBJ-01']
+];
+const AE_ONLY = ['ae-explorer', 'ae-timelines'];
+
+test.describe('participant-profile rail: expanded, in every chart that hosts it', () => {
+  for (const [title, fixture, global, participant] of HOSTS) {
+    test(`PPRF-EXP-003: expanded in the ${title}, the rail lies over the card from its top edge at its full width and is as tall as what it holds, not as the card; the labs chart, where there is one, shows beside the control column with the measure table below both (#409)`, async ({
+      page
+    }) => {
+      const errors = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      await page.goto(`/tests/e2e/fixtures/${fixture}.html`);
+      await page.waitForFunction((name) => window[name] && window[name].profile, global);
+      await page.evaluate(
+        ({ name, id }) => {
+          const host = window[name];
+          (host.profileTarget || host.root).dispatchEvent(
+            new CustomEvent('participantsSelected', { detail: { data: [id] } })
+          );
+        },
+        { name: global, id: participant }
+      );
+      const rail = page.locator('.sv-root > .sv-rail');
+      await expect(rail.locator('.sv-profile-rail-title')).toHaveText(participant);
+      const expand = rail.locator('[data-sv-focus="rail-expand"]');
+      await expand.click();
+      await expect(expand).toHaveText('Collapse');
+      const labs = !AE_ONLY.includes(fixture);
+      if (labs) await expect(rail.locator('.sv-profile-spaghetti canvas')).toBeVisible();
+
+      const { expanded, card, panel, slack, beneath, controls, chart, chartShows, table } =
+        await expandedPanel(page);
+      expect(expanded).toBe(true);
+      // Over the card: from its top edge, at its full width.
+      expect(Math.abs(panel.top - card.top)).toBeLessThanOrEqual(1);
+      expect(Math.abs(panel.left - card.left)).toBeLessThanOrEqual(1);
+      expect(Math.abs(panel.width - card.width)).toBeLessThanOrEqual(1);
+      // Nothing it holds is cut off by a shorter card, and where the card is
+      // taller than the panel the host's own chart shows beneath it.
+      expect(slack).toBeGreaterThanOrEqual(0);
+      expect(beneath).toBe(card.bottom - panel.bottom > 30 ? 'card' : 'nothing');
+      if (labs) {
+        // The chart is beside the control column, not pushed below it, and it
+        // is the chart a reader sees there; the table is below both.
+        expect(chart.left).toBeGreaterThanOrEqual(controls.right);
+        expect(chart.top).toBeLessThan(controls.bottom);
+        expect(chart.width).toBeGreaterThan(card.width / 2);
+        expect(chartShows).toBe(true);
+        expect(table.top).toBeGreaterThanOrEqual(Math.max(controls.bottom, chart.bottom));
+      } else {
+        expect([controls, chart, table]).toEqual([null, null, null]);
+      }
+      // As tall as what it holds, not as the card: a card 300 pixels taller
+      // leaves the panel's height as it was, and more of the card beneath it.
+      await growCard(page, 300);
+      const grown = await expandedPanel(page);
+      expect(Math.abs(grown.card.height - card.height - 300)).toBeLessThanOrEqual(1);
+      expect(Math.abs(grown.panel.height - panel.height)).toBeLessThanOrEqual(1);
+      expect(grown.beneath).toBe('card');
+      // Collapse puts the rail back beside the chart.
+      await expand.click();
+      await expect(expand).toHaveText('Expand');
+      expect((await expandedPanel(page)).panel.width).toBeLessThan(card.width / 2);
+      expect(errors).toEqual([]);
+    });
+  }
 });
 
 // ── standalone linked-charts demo (PPRF-6) ──────────────────────────────────

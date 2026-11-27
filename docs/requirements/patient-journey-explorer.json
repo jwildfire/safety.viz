@@ -40,6 +40,7 @@
     "PJE-CTX-003": "Dose changes falling inside the window are listed with their direction and the day the new dose began.",
     "PJE-CTX-004": "Earlier or same-day adverse events with the anchor's preferred term (falling back to the verbatim term) are listed most recent first, over the whole record rather than only the window — unchanged by any display filter or lane toggle — with each row stating its offset from the anchor and a same-day record saying so.",
     "PJE-PANEL-001": "The side panel lists the four context kinds with counts, an explicit empty state per kind, the not-evaluated counters, and a standing sentence that co-occurrence is not causation.",
+    "PJE-PANEL-002": "Expanded, the side panel lies over the card from the card's top edge at the card's full width, and is as tall as what it holds, not as the card: the journey shows beneath it, dimmed.",
     "PJE-SRC-001": "Every mark and every panel item links back to its source row by a real control, not only by a named id: the drawer shows the raw object as supplied under a stable anchor id, and both the mark's own open-source control and a panel item scroll that row into view and focus it.",
     "PJE-SRC-002": "When `source_url_template` is configured each source row carries an external link built from the row's own values; with no template configured no link is rendered.",
     "PJE-FILT-001": "The serious-only filter restricts the adverse-event lane to serious events and leaves the other lanes untouched.",

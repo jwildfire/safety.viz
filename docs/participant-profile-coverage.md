@@ -42,6 +42,7 @@ adoption is this module's behaviour even though the fixtures drive hep-explorer.
 | PPRF-HEP-004                | PPRF-HEP-004                | #98   | the migration ribbon hand-off arrives in the composite view with the rail opened on the carried cohort                        |
 | PPRF-EVT-001, PPRF-CORE-002 | PPRF-EVT-001, PPRF-CORE-002 | #98   | the standalone demo wires the profile to a chart via participantsSelected                                                     |
 | PPRF-RAIL-001               | PPRF-RAIL-001               | #75   | the rail is a sibling of the main column, opposite the control sidebar; no dock slot remains inside the main column           |
+| PPRF-EXP-003                | PPRF-EXP-003                | #409  | expanded in each chart that hosts it, the rail lies over the card and is as tall as what it holds                             |
 
 ## Unit evidence (Vitest — `tests/unit/participant-profile/`)
 
@@ -113,6 +114,7 @@ matrix rows use the same `PPRF-<AREA>-<NUM>` IDs as the tables above.
 | PPRF-RAIL-001 (shell rail slot, opposite the control sidebar)          | PPRF-RAIL-001      | #75   | `renderShell.test.js`            |
 | PPRF-RAIL-002 (rail head: participant, cohort count, Close)            | PPRF-RAIL-002      | #75   | `rail.test.js`                   |
 | PPRF-EXP-001 (Expand fills the host container; Escape collapses)       | PPRF-EXP-001       | #75   | `rail.test.js`                   |
+| PPRF-EXP-003 (the expanded layout is the profile's own, scoped)        | PPRF-EXP-003       | #409  | `rail.test.js`                   |
 | PPRF-STEP-003 (stepper pinned in the head; expandable ranked list)     | PPRF-STEP-003      | #75   | `rail.test.js`                   |
 | PPRF-AE-001 (AE contract: ae-timelines / ae-explorer setting names)    | PPRF-AE-001        | #75   | `ae.test.js`                     |
 | PPRF-AE-002 (AE cleaning: ids, open ends, unplaceable, severity)       | PPRF-AE-002        | #75   | `ae.test.js`                     |

@@ -57,6 +57,7 @@ rather than reading pixels or private state. The pilot-data numbers live only in
 | PJE-ANCH-001   | PJE-ANCH-001       | #142  | clicking an adverse event anchors time on it and leaves the day domain unchanged      |
 | PJE-ANCH-003   | PJE-ANCH-003       | #142  | in-window marks stay full strength and out-of-window marks de-emphasize               |
 | PJE-PANEL-001  | PJE-PANEL-001      | #142  | the side panel lists the four context kinds with counts                               |
+| PJE-PANEL-002  | PJE-PANEL-002      | #409  | expanded, the side panel lies over the card and is as tall as what it holds           |
 | PJE-SRC-001    | PJE-SRC-001        | #142  | both a mark and a panel item jump to their source row                                 |
 | PJE-DATA-003   | PJE-DATA-003       | #142  | unusable rows are counted in the notes and exportable                                 |
 | PJE-DATA-005   | PJE-DATA-005       | #142  | an absent domain renders an explanatory empty lane and a disabled toggle              |

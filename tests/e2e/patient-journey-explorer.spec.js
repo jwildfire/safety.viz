@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { captureEvidence } from './evidence.js';
+import { expandedPanel, growCard } from './expanded-panel.js';
 
 // Browser evidence for the patient-journey-explorer module (#142). Test names
 // are keyed to the PJE-* requirement IDs per the traceability convention in
@@ -526,6 +527,41 @@ test.describe('safety.viz patient-journey-explorer module', () => {
     await expect(section.locator('.sv-pje-empty')).toHaveCount(1);
     await expect(section.locator('.sv-pje-item')).toHaveCount(0);
     await captureEvidence(page, 'PJE-PANEL-001', 'context-panel');
+  });
+
+  test('PJE-PANEL-002: expanded, the side panel lies over the card from its top edge at its full width and is as tall as what it holds, not as the card: the journey shows beneath it, dimmed (#409)', async ({
+    page
+  }) => {
+    const exp = await expectations(page);
+    await page.evaluate((id) => window.__safetyPatientJourneyInstance.anchor(id), exp.anchorId);
+    const rail = page.locator('.sv-root > .sv-rail');
+    const expand = rail.locator('[data-sv-focus="rail-expand"]');
+    await expect(expand).toHaveText('Expand');
+    const beside = await expandedPanel(page);
+    expect(beside.expanded).toBe(false);
+    expect(beside.panel.width).toBeLessThan(beside.card.width / 2);
+    await expand.click();
+    await expect(expand).toHaveText('Collapse');
+    const { expanded, card, panel, slack, beneath } = await expandedPanel(page);
+    expect(expanded).toBe(true);
+    // Over the card: from its top edge, at its full width.
+    expect(Math.abs(panel.top - card.top)).toBeLessThanOrEqual(1);
+    expect(Math.abs(panel.left - card.left)).toBeLessThanOrEqual(1);
+    expect(Math.abs(panel.width - card.width)).toBeLessThanOrEqual(1);
+    // Nothing it holds is cut off, and the fixture's card is taller than the
+    // panel, so the journey shows beneath it: dimmed, not hidden.
+    expect(slack).toBeGreaterThanOrEqual(0);
+    expect(card.height - panel.height).toBeGreaterThan(100);
+    expect(beneath).toBe('card');
+    expect(
+      await page.evaluate(() => getComputedStyle(document.querySelector('.sv-main')).filter)
+    ).toContain('opacity');
+    // As tall as what it holds, not as the card: a card 300 pixels taller
+    // leaves the panel's height as it was.
+    await growCard(page, 300);
+    const grown = await expandedPanel(page);
+    expect(Math.abs(grown.card.height - card.height - 300)).toBeLessThanOrEqual(1);
+    expect(Math.abs(grown.panel.height - panel.height)).toBeLessThanOrEqual(1);
   });
 
   test('PJE-SRC-001: both a mark and a panel item jump to their source row (#142)', async ({
