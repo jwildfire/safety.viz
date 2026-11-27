@@ -1,6 +1,6 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-11-27T15:31:54.984Z",
+  "generatedAt": "2026-11-27T16:08:33.446Z",
   "environment": {
     "os": "linux 7.0.0-1020-azure",
     "node": "v22.23.5",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "46025618043",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/46025618043"
+    "id": "46028673979",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/46028673979"
   },
   "records": [
     {
@@ -442,6 +442,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-030"],
       "issueRefs": [405],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-031: on the built demo page the footer and the page’s description name Build a study beside the RBQM tab as what downloads R’s packages from repo.r-wasm.org (#424)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-031"],
+      "issueRefs": [424],
       "screenshots": []
     },
     {
@@ -1322,6 +1330,14 @@
       "status": "pass",
       "requirementIds": ["APP-TIER-028"],
       "issueRefs": [309],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-029: on the built demo page the app’s status panel says, after its disclaimer, where study.builder’s parts stand: Build a study and the view of a simulated study are study.builder’s, experimental by its own account, and every row it makes is synthetic (#424)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-029"],
+      "issueRefs": [424],
       "screenshots": []
     },
     {
@@ -8609,6 +8625,30 @@
       "screenshots": []
     },
     {
+      "test": "the data sources page, on what comes with study.builder APP-STUDY-004: the data sources page names every ready-made simulated study in the copy of study.builder by its name and its file, says each is synthetic and made with a modified copy of gsm.datasim, and names the protocol one of them followed (#424)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-004"],
+      "issueRefs": [424],
+      "screenshots": []
+    },
+    {
+      "test": "the data sources page, on what comes with study.builder APP-STUDY-005: the data sources page names every example protocol in the copy of study.builder, CDISC’s DDF-RA as where each was read from, the CC-BY-4.0 licence, CDISC’s attribution sentence and that the protocols are changed from CDISC’s files; where a protocol file carries its own attribution and notice of change, the page’s words are those, character for character (#424)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-005", "CC-BY-4"],
+      "issueRefs": [424],
+      "screenshots": []
+    },
+    {
+      "test": "the data sources page, on what comes with study.builder APP-STUDY-006: the data sources page states safety.viz’s own licence as the repository does, and lists study.builder and the modified copy of gsm.datasim among the copied code (#424)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-006"],
+      "issueRefs": [424],
+      "screenshots": []
+    },
+    {
       "test": "the data view’s second face APP-LIB-039: the viewer of one visit to the Overview is released when the next is drawn, so twenty visits hold one viewer and not twenty; a study view study.builder draws releases it too, and is released in its turn (#408)",
       "suite": "unit",
       "status": "pass",
@@ -8718,6 +8758,14 @@
       "status": "pass",
       "requirementIds": ["APP-TIER-020"],
       "issueRefs": [274],
+      "screenshots": []
+    },
+    {
+      "test": "the demo app’s own label APP-TIER-029: on a page whose libraries bring study.builder’s way to load data, the app’s status panel says in a second paragraph where study.builder’s parts stand; a page without it says nothing of them (#424)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-029"],
+      "issueRefs": [424],
       "screenshots": []
     },
     {
@@ -9342,6 +9390,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-027"],
       "issueRefs": [196],
+      "screenshots": []
+    },
+    {
+      "test": "the pages APP-LOAD-031: the hosted footer and the hosted page’s description name Build a study beside the RBQM tab as what downloads R’s packages from the second address, since a build starts R too (#424)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-031"],
+      "issueRefs": [424],
       "screenshots": []
     },
     {

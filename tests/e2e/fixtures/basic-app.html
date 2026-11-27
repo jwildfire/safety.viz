@@ -25,7 +25,7 @@
     <script>
       const empty = new URLSearchParams(window.location.search).has('empty');
       const pitch =
-        'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.';
+        'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.';
       const studies = SafetyVizApp.DEMO_STUDIES.map((study) => ({
         ...study,
         base: `/${study.source}/`

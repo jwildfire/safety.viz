@@ -82,13 +82,16 @@ export const RBQM_CHARTS = {
  * What the hosted app's footer says happens to the data a reader loads (#196;
  * @jwildfire, 2026-10-03): the files are read here and never uploaded, and
  * starting R downloads R, not the data. APP-LOAD-014 and APP-LOAD-026 hold it.
+ * A build of a simulated study starts the same R and downloads its packages
+ * from the second address, as the RBQM tab does, so the sentence names both
+ * (#424; APP-LOAD-031).
  */
 export const HOSTED_PITCH =
-  'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.';
+  'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.';
 
 /** The same, as the hosted page's description says it to a search engine. */
 export const HOSTED_DESCRIPTION =
-  'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org, and your data stays in your browser.';
+  'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org, and your data stays in your browser.';
 
 /** What the single file's footer says (#196). */
 export const FILE_PITCH =

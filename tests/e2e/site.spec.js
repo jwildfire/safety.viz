@@ -713,6 +713,49 @@ test.describe('docs site', () => {
     if (now.spareWhole > 2) expect(now.cut).toBe(0);
   });
 
+  test('APP-TIER-029: on the built demo page the app’s status panel says, after its disclaimer, where study.builder’s parts stand: Build a study and the view of a simulated study are study.builder’s, experimental by its own account, and every row it makes is synthetic (#424)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const label = page.locator('.sva-appstatus .sv-status-label');
+    const panel = page.locator('.sva-appstatus .sv-status-panel');
+    await expect(label).toHaveText(/Exploratory/);
+    await label.click();
+    await expect(panel).toBeVisible();
+    // The disclaimer first, then study.builder's parts, then the count of charts.
+    await expect(panel.locator('.sv-status-text:not(.sv-status-foot)')).toHaveText([
+      /^Nothing here is qualified\./,
+      'Build a study and the view of a simulated study are study.builder’s. It calls itself experimental, and every row it makes is synthetic.',
+      /^13 charts are Exploratory\./
+    ]);
+    // The panel is inside the window with the paragraph in it.
+    const box = await panel.boundingBox();
+    const view = page.viewportSize();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(view.width);
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+  });
+
+  test('APP-LOAD-031: on the built demo page the footer and the page’s description name Build a study beside the RBQM tab as what downloads R’s packages from repo.r-wasm.org (#424)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
+      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.'
+    );
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      /starting R downloads R from webr\.r-wasm\.org and, for the RBQM tab and Build a study, its packages from repo\.r-wasm\.org, and your data stays in your browser\./
+    );
+    // The page does offer what the sentence names: Build a study, on the Files face.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await page.locator('.sva-face', { hasText: 'Files' }).click();
+    await expect(page.locator('.sva-main button', { hasText: 'Build a study' })).toHaveCount(1);
+  });
+
   test('APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)', async ({
     page
   }) => {

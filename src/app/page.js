@@ -53,7 +53,14 @@ import {
 } from './libraries.js';
 import { renderDataPanel } from './data-panel.js';
 import { DEMO_STUDIES, studyUrls } from './studies.js';
-import { APP_STATUS_LINE, APP_STATUS_TEXT, dataTag, statusCount, tabCount } from './header.js';
+import {
+  APP_STATUS_LINE,
+  APP_STATUS_SIMULATED,
+  APP_STATUS_TEXT,
+  dataTag,
+  statusCount,
+  tabCount
+} from './header.js';
 import { icon } from './icons.js';
 import { note } from './note.js';
 import { el, plural } from './dom.js';
@@ -389,13 +396,18 @@ export function mountApp(
   // The app's own rung, at the right end of the header (#273): everything here
   // is exploratory, and the label says so on hover and in full on a click.
   const onRung = (tier, ids) => ids.filter((id) => rungOf(id).tier === tier);
+  // study.builder's parts are not safety.viz's own: on a page whose libraries
+  // bring its way to load data, the panel says where they stand (#424).
+  const simulates = handed.some(
+    (library) => bringsSource(library) && library.name === 'study.builder'
+  );
   const appStatus = el('div', 'sva-appstatus');
   appStatus.append(
     statusLabel({
       tier: 'exploratory',
       heading: 'This app is exploratory',
       line: APP_STATUS_LINE,
-      text: [APP_STATUS_TEXT],
+      text: [APP_STATUS_TEXT, ...(simulates ? [APP_STATUS_SIMULATED] : [])],
       count: statusCount({
         exploratory: onRung('exploratory', Object.keys(manifest.modules)).length,
         experimental: onRung('experimental', Object.keys(manifest.modules)).length,

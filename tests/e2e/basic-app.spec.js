@@ -1142,7 +1142,7 @@ test.describe('demo app data panel on a renamed-column study', () => {
     expect(requests.filter((entry) => !/^GET (blob|data):/.test(entry))).toEqual([]);
     // And the footer says so, in these words (#196).
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
-      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.'
+      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.'
     );
     await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(HOSTED_PITCH);
   });
