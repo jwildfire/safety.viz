@@ -33,6 +33,7 @@ const REQUIRED = {
     'npm run gsm-workflows:check-source',
     'npm run gsm-viz:check-source',
     'npm run rbqm-study:check-source',
+    'npm run study-builder:check-source',
     'npm test -- --reporter=default --reporter=json --outputFile="$RUNNER_TEMP/vitest.json"',
     'npm run site',
     'npm run requirements:check'
