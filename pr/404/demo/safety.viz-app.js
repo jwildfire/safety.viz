@@ -68,7 +68,7 @@ var SafetyVizApp=(()=>{var gc=Object.defineProperty;var nT=Object.getOwnProperty
    [hidden] on the slot while it is idle, and .sv-rail's own display would
    otherwise win over the user-agent rule. */
 .sv-rail[hidden]{display:none}
-.sv-rail-expanded .sv-rail{position:absolute;inset:0;width:auto;align-self:stretch;justify-self:stretch;z-index:6;max-height:none;box-shadow:0 18px 46px rgba(31,41,51,.22)}
+.sv-rail-expanded .sv-rail{position:absolute;inset:0;z-index:6;max-height:none;box-shadow:0 18px 46px rgba(31,41,51,.22)}
 .sv-rail-expanded .sv-main,.sv-rail-expanded .sv-sidebar{filter:saturate(.25) opacity(.35)}
 .sv-multiples{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1rem;margin-top:1.25rem}
 .sv-multiples:empty{display:none}
