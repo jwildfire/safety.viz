@@ -157,11 +157,11 @@ export function drawStudy(container, app, built) {
       // The app has its own RBQM tab and its own safety charts: the study
       // view leaves its RBQM and Safety views out, so neither is there twice.
       operations: false,
-      viewing: app.state.viewing || null,
+      viewing: openingAt(app),
       save: typeof app.saveFile === 'function' ? app.saveFile.bind(app) : undefined,
       // Where the reader was is kept, so a redraw of the page finds it.
       onView: (at) => {
-        app.state.viewing = at;
+        viewed(app, built, at);
       }
     });
     return true;
@@ -223,4 +223,69 @@ export function drawViewer(container, app, study, { onRole = null } = {}) {
       container.append(box);
     }
   );
+}
+
+/**
+ * Which snapshot of the loaded study the page draws (#406), for a study
+ * study.builder built that kept its snapshots: the one the reader chose on the
+ * study view, or the study's own last. The Overview tab, the charts and the
+ * RBQM tab all draw this one, and the study chip says which it is.
+ * @param {?Object} named What the page keeps of the loaded study (`state.named`).
+ * @returns {?{date: string, number: number, of: number}} The snapshot, or null for a study with none to choose from.
+ */
+export function snapshotDrawn(named) {
+  const built = named && named.built;
+  const kept = built && Array.isArray(built.history) ? built.history : [];
+  if (kept.length < 2) return null;
+  const entry = kept.find((one) => one.date === named.snapshot) || kept[kept.length - 1];
+  return { date: entry.date, number: entry.number, of: kept.length };
+}
+
+/**
+ * Where study.builder's study view opens: the view and table the reader was
+ * at, and the snapshot the page draws. A snapshot chosen in another study is
+ * not carried over, so a study opens on its own last snapshot (#406).
+ */
+function openingAt(app) {
+  const { snapshot: _carried, ...where } = app.state.viewing || {};
+  const drawn = snapshotDrawn(app.state.named);
+  if (drawn) return { ...where, snapshot: drawn.date };
+  return app.state.viewing ? where : null;
+}
+
+/**
+ * The reader moved on the study view. Where they are is kept; and when they
+ * chose another snapshot, the app is handed that snapshot's files in place of
+ * the ones it had, so the charts and the RBQM tab draw the snapshot the
+ * Overview tab shows (#406). study.builder reads the snapshot from the study
+ * itself (`study.at`), with no R. The files are handed over as builder-view.js
+ * hands a study over: gsm's raw files kept as they are, the standard files
+ * placed, and an efficacy score left out.
+ */
+function viewed(app, built, at) {
+  app.state.viewing = at;
+  const drawn = snapshotDrawn(app.state.named);
+  const chosen = at && at.snapshot;
+  if (!drawn || !chosen || chosen === drawn.date) return;
+  // After study.builder has finished with the reader's choice: the page is drawn again here.
+  Promise.resolve().then(() => {
+    const named = app.state.named;
+    if (!named || named.built !== built || typeof built.at !== 'function') return;
+    const shown = built.at(chosen);
+    if (!shown) return;
+    const { raw, standard: every } = shown.files();
+    const scores = new Set(
+      (Array.isArray(shown.standard) ? shown.standard : [])
+        .filter((table) => table.id === 'qs')
+        .map((table) => table.name)
+    );
+    const standard = every.filter((file) => !scores.has(file.name));
+    const as = { ...named, snapshot: shown.snapshotDate ? String(shown.snapshotDate) : chosen };
+    // The files of the snapshot before are cleared whole first, so none of
+    // them stays behind where this snapshot has no such file, or an empty one.
+    app.reset();
+    app.state.viewing = at;
+    app.loadRaw(raw, { as });
+    app.loadFiles(standard, { notes: [], as });
+  });
 }
