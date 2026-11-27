@@ -1,15 +1,15 @@
 {
   "module": "nep-explorer",
-  "generatedAt": "2026-11-27T05:13:52.048Z",
+  "generatedAt": "2026-11-27T15:31:54.984Z",
   "environment": {
-    "os": "linux 7.0.0-1018-aws",
+    "os": "linux 7.0.0-1020-azure",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "45942548703",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45942548703"
+    "id": "46025618043",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/46025618043"
   },
   "records": [
     {
@@ -250,6 +250,30 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-040"],
       "issueRefs": [408],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-041: on the built demo page the app says a study is made by a modified copy of gsm.datasim 2.1.0, on the Build a study button and as Made by on the card of each ready-made study; each of the three opens with no R and with the key it had in study.builder v0.5.0 (#423)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-041"],
+      "issueRefs": [423],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-042: on the built demo page the builder offers CDISC’s five example protocols and shows the schedule of the one tried, and under it the page says CDISC’s attribution and the licence, from the studies feed, which is fetched once, when the builder is opened (#423)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-042"],
+      "issueRefs": [423],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-043: on the built demo page the card of the ready-made study that follows the CDISC pilot protocol names the protocol and carries CDISC’s attribution, as study.builder’s Protocol view does, and the card of a study with no protocol carries none (#423)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-043"],
+      "issueRefs": [423],
       "screenshots": []
     },
     {
@@ -3482,6 +3506,46 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-040"],
       "issueRefs": [408],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-LIB-041: the app’s own words name the simulator as a modified copy of gsm.datasim, with the version the copy’s DESCRIPTION states: the source’s description, and Made by on a study’s card (#423)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-041"],
+      "issueRefs": [423],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-LIB-042: a feed that cannot be read is said under the builder, and a study.builder with no feed draws no line; protocols of differing attribution are credited apart, by name (#423)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-042"],
+      "issueRefs": [423],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-LIB-042: the copied studies feed names CDISC’s attribution and CC-BY-4.0 for each of the five example protocols, and its checksums are those of the copied protocol and ready-made study files (#423)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-042", "CC-BY-4"],
+      "issueRefs": [423],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-LIB-042: under the builder the page credits the example protocols in the studies feed’s own words, its licence and attribution; the feed is asked for once, when the builder is first shown, and not before (#423)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-042"],
+      "issueRefs": [423],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-LIB-043: a study that followed a protocol names it on its card, with the attribution and the statement of change the protocol’s source carries; a study with no protocol, or a protocol that names none, has no such line (#423)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-043"],
+      "issueRefs": [423],
       "screenshots": []
     },
     {
