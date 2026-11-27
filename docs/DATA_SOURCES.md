@@ -522,6 +522,69 @@ workflows on five of them in R in the browser, and
 (`node scripts/rbqm-reference.mjs`). They are not among the eleven datasets
 above.
 
+## Ready-made simulated studies and example protocols (#424)
+
+The demo app's study chip offers three ready-made simulated studies, and Build
+a study offers five example protocols. Both come with
+[study.builder](https://github.com/jwildfire/study.builder) and are copied with
+it into `site/vendor/study.builder/` from its v0.5.1 release (commit 11d1103).
+None is made or changed here, and `SOURCE.json` beside the copy records the
+commit and each file's checksum:
+
+```bash
+node scripts/vendor-study-builder.mjs       # copy again, from the tag scripts/vendor-lib.mjs names
+npm run study-builder:check                 # files against the record
+npm run study-builder:check-source          # files against the commit
+```
+
+They are not among the eleven datasets above.
+
+### The three ready-made studies
+
+| Study, as the chip names it | File                                         | What study.builder was asked for                                                                   | Protocol followed                                               |
+| --------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| READY-P1                    | `presets/phase1-small.study.json.gz`         | Phase 1, oncology: 40 participants at 4 sites over 6 months, every monthly snapshot kept; seed 101 | none                                                            |
+| READY-P2                    | `presets/phase2-oncology.study.json.gz`      | Phase 2, oncology: 150 participants at 20 sites over 9 months; seed 202                            | none                                                            |
+| PILOT-PROTOCOL              | `presets/cdisc-pilot-protocol.study.json.gz` | Phase 2: 120 participants at 12 sites over 7 months, every monthly snapshot kept; seed 505         | `protocols/cdisc-pilot.protocol.json`, the CDISC pilot protocol |
+
+- Every row is synthetic: no real participant or site is in any of them.
+- study.builder made each from the settings in `presets/index.json`, which also
+  holds each study's key, with a modified copy of gsm.datasim 2.1.0. That copy
+  is Gilead's simulator ([gsm.datasim](https://github.com/Gilead-Public/gsm.datasim),
+  Apache License (>= 2) by the copy's record) with study designs, study options, a study profile and
+  study results added for study.builder. It is kept at
+  [jwildfire/gsm.datasim](https://github.com/jwildfire/gsm.datasim), branch
+  `safety-results-2.1`, and its R source is copied inside the copy of
+  study.builder, under `vendor/gsm.datasim/`. study.builder's notes say the
+  additions have not been raised with, reviewed by or endorsed by gsm.datasim's
+  maintainers.
+- PILOT-PROTOCOL's visits, vital signs and labs follow the protocol's schedule
+  of activities. Its settings name the therapeutic area Inflammation, where the
+  protocol's indication is Alzheimer's disease: the simulator has three areas.
+  Its file carries the protocol it followed, so the attribution below goes with
+  it too.
+
+### The five example protocols
+
+| File                                           | The study, as the file names it                                                                 | CDISC's file it was read from, in DDF-RA                                              |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `protocols/cdisc-pilot.protocol.json`          | CDISC PILOT - LZZT (LZZT); its indication reads Alzheimer's disease                             | `Documents/Examples/CDISC_Pilot/CDISC_Pilot_Study.json`                               |
+| `protocols/cdisc-pilot-devices.protocol.json`  | CDISC PILOT - LZZT (H2Q-MC-LZZT), the pilot with devices                                        | `Documents/Examples/Devices/devices.json`                                             |
+| `protocols/alexion-wilsons.protocol.json`      | ALXN1840-WD-204; its indication reads Wilson's Disease                                          | `Documents/Examples/Alexion_NCT04573309_Wilsons/Alexion_NCT04573309_Wilsons.json`     |
+| `protocols/lilly-nasal-glucagon.protocol.json` | LY900018 (A Study of Nasal Glucagon (LY900018) in Japanese Participants With Diabetes Mellitus) | `Documents/Examples/EliLilly_NCT03421379_Diabetes/EliLilly_NCT03421379_Diabetes.json` |
+| `protocols/observational.protocol.json`        | SCOPE1 (SIMPLE), the observational study example                                                | `Documents/Examples/Observational/observational.json`                                 |
+
+- They are made from CDISC's five example study definitions in USDM 4.0.0, in
+  the DDF reference architecture
+  ([cdisc-org/DDF-RA](https://github.com/cdisc-org/DDF-RA)), read at commit
+  `aa303cb32f5d3ceecc68a16803e26720d2c1fc26`.
+- Licence: **CC-BY-4.0** (<https://creativecommons.org/licenses/by/4.0/>).
+  DDF-RA's README gives two licences, MIT for code and scripts and CC-BY-4.0 for
+  content files. study.builder's record treats the example study definitions as
+  content, and copies no code or script of DDF-RA's.
+- Attribution, exactly as each protocol file carries it in `source`: "Content based on DDF-RA (GitHub), https://github.com/cdisc-org/DDF-RA, used under the CC-BY-4.0 licence."
+- They are changed from CDISC's files, as each protocol file says in `source`: "Changed from CDISC’s file: read by study.builder’s reader and cut down to what a simulated study follows (visits, arms, epochs, objectives, endpoints and activities). Not CDISC’s own form of the protocol, and not endorsed by CDISC or by any sponsor it names."
+
 ## License and attribution
 
 - **pharmaverseadam** is licensed **Apache-2.0**
@@ -541,36 +604,54 @@ above.
   builds it from the sample study that ships with
   [gsm.core](https://github.com/Gilead-Public/gsm.core), which is licensed
   **Apache-2.0**. demo-301 itself states no licence.
+- The **three ready-made simulated studies** under
+  `site/vendor/study.builder/presets/` are synthetic, made by
+  [study.builder](https://github.com/jwildfire/study.builder) (**Apache-2.0**)
+  with a modified copy of gsm.datasim 2.1.0 (**Apache License (>= 2)**).
+- The **five example protocols** under `site/vendor/study.builder/protocols/`
+  are changed from CDISC's example study definitions in
+  [DDF-RA](https://github.com/cdisc-org/DDF-RA), used under **CC-BY-4.0**:
+  "Content based on DDF-RA (GitHub), https://github.com/cdisc-org/DDF-RA, used under the CC-BY-4.0 licence."
+  See [Ready-made simulated studies and example protocols](#ready-made-simulated-studies-and-example-protocols-424).
 
 ## Copied code and its licences
 
-The demo app's RBQM tab runs and draws with other projects' code, each copied
-or built from a release tag. safety.viz changes one line of it: gsm.reporting's
+The demo app's RBQM tab and Build a study run and draw with other projects'
+code, each copied or built from a release tag, but for the modified copy of
+gsm.datasim, which study.builder copies from a branch. safety.viz changes one
+line of what it copies itself: gsm.reporting's
 `Results.yaml` names `FilterByLatestSnapshotDate` without `gsm.kri::`, because
 gsm.kri is not installed in browser R. The `SOURCE.json` beside the copy records
 the line as it was and as it is, and the checks hold the file to its tag with
 that one line changed.
 
-| What                                                            | Version | Licence, as the project states it                               | How it is here                                                              |
-| --------------------------------------------------------------- | ------- | --------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| [gsm.core](https://github.com/Gilead-Public/gsm.core)           | 1.3.1   | Apache License (>= 2)                                           | Built for R in the browser, served under `r-wasm/`                          |
-| [gsm.mapping](https://github.com/Gilead-Public/gsm.mapping)     | 1.1.6   | Apache License (>= 2)                                           | Built for R in the browser; its mapping workflows are also copied           |
-| [gsm.reporting](https://github.com/Gilead-Public/gsm.reporting) | 1.1.7   | Apache License (>= 2)                                           | Built for R in the browser; its reporting workflows are also copied         |
-| [workr](https://github.com/Gilead-Public/workr)                 | 1.1.0   | MIT + file LICENSE                                              | Built for R in the browser                                                  |
-| [gsm.kri](https://github.com/Gilead-Public/gsm.kri)             | 1.7.0   | Apache License (>= 2)                                           | Eight metric workflows and one R file, copied; the package is not installed |
-| [gsm.viz](https://github.com/Gilead-Public/gsm.viz)             | 2.4.1   | Apache-2.0, by its `LICENSE` file; its `package.json` names ISC | Its built bundle, copied                                                    |
+| What                                                                       | Version | Licence, as the project states it                               | How it is here                                                              |
+| -------------------------------------------------------------------------- | ------- | --------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| [gsm.core](https://github.com/Gilead-Public/gsm.core)                      | 1.3.1   | Apache License (>= 2)                                           | Built for R in the browser, served under `r-wasm/`                          |
+| [gsm.mapping](https://github.com/Gilead-Public/gsm.mapping)                | 1.1.6   | Apache License (>= 2)                                           | Built for R in the browser; its mapping workflows are also copied           |
+| [gsm.reporting](https://github.com/Gilead-Public/gsm.reporting)            | 1.1.7   | Apache License (>= 2)                                           | Built for R in the browser; its reporting workflows are also copied         |
+| [workr](https://github.com/Gilead-Public/workr)                            | 1.1.0   | MIT + file LICENSE                                              | Built for R in the browser                                                  |
+| [gsm.kri](https://github.com/Gilead-Public/gsm.kri)                        | 1.7.0   | Apache License (>= 2)                                           | Eight metric workflows and one R file, copied; the package is not installed |
+| [gsm.viz](https://github.com/Gilead-Public/gsm.viz)                        | 2.4.1   | Apache-2.0, by its `LICENSE` file; its `package.json` names ISC | Its built bundle, copied                                                    |
+| [study.builder](https://github.com/jwildfire/study.builder)                | 0.5.1   | Apache-2.0                                                      | Its two built bundles and the files its R reads, copied, for Build a study  |
+| A modified copy of [gsm.datasim](https://github.com/jwildfire/gsm.datasim) | 2.1.0   | Apache License (>= 2)                                           | Its R source, copied inside the copy of study.builder                       |
 
 - The versions and tags are in `site/vendor/r-wasm/pins.json` and in the
   `SOURCE.json` beside each copy. Each licence above was read from the
-  project's `DESCRIPTION` or `LICENSE` at that tag.
+  project's `DESCRIPTION` or `LICENSE` at that tag; study.builder's is from
+  its `package.json`, and the modified gsm.datasim's from study.builder's
+  record of that copy.
 - The Apache-2.0 text is served beside the app as `gsm.viz.LICENSE.txt`. Each
   built package carries its own `DESCRIPTION`, and workr its `LICENSE` file.
+  study.builder's `LICENSE` is served in its own folder beside the app.
 - R itself ([webR](https://github.com/r-wasm/webr)) and R's other packages are
   not copied here: the reader's browser fetches them from webr.r-wasm.org and
   repo.r-wasm.org when R is started.
+- safety.viz's own licence is Apache-2.0: `LICENSE` at the root of the
+  repository, and `license` in `package.json`
+  ([#346](https://github.com/jwildfire/safety.viz/pull/346)).
 - Not yet done, and tracked: the record of the four built packages does not
-  name their licences, no notice file is served beside the copied workflows,
-  and safety.viz states no licence of its own
+  name their licences, and no notice file is served beside the copied workflows
   ([#263](https://github.com/jwildfire/safety.viz/issues/263)).
 
 ## History

@@ -12,6 +12,7 @@ import {
   APP_LIBRARIES,
   FILE_NO_R,
   FILE_PITCH,
+  HOSTED_DESCRIPTION,
   HOSTED_PITCH,
   librariesExpression,
   libraryScript,
@@ -142,11 +143,31 @@ describe('the pages', () => {
     expect(html).not.toContain('nothing is fetched');
   });
 
+  it('APP-LOAD-031: the hosted footer and the hosted page’s description name Build a study beside the RBQM tab as what downloads R’s packages from the second address, since a build starts R too (#424)', () => {
+    for (const sentence of [HOSTED_PITCH, HOSTED_DESCRIPTION]) {
+      expect(sentence).toMatch(
+        /[Ss]tarting R downloads R from webr\.r-wasm\.org and, for the RBQM tab and Build a study, its packages from repo\.r-wasm\.org/
+      );
+      // The sentence of v1.12.0 named the RBQM tab alone.
+      expect(sentence).not.toContain('for the RBQM tab, its packages');
+    }
+    // The page as built carries both.
+    const html = renderDemoAppPage({
+      bundle: 'safety.viz-app.js',
+      download: 'safety.viz-app.html',
+      repoUrl: 'https://github.com/jwildfire/safety.viz',
+      libraries: APP_LIBRARIES,
+      charts: 'thirteen clinical safety charts and five biomarker charts'
+    });
+    expect(html).toContain(`pitch: '${HOSTED_PITCH.replace(/'/g, "\\'")}'`);
+    expect(html).toContain(HOSTED_DESCRIPTION);
+  });
+
   it('APP-LOAD-027: the hosted footer, the single file’s footer and the hosted page’s description say what happens to the data a reader loads, in plain words (#196)', () => {
     // Every address R is downloaded from is named: the RBQM tab's packages
     // come from a second one (#235).
     expect(HOSTED_PITCH).toBe(
-      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.'
+      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.'
     );
     expect(FILE_PITCH).toBe(
       'This file loads nothing; files you add are read here and never leave this computer.'
@@ -160,7 +181,7 @@ describe('the pages', () => {
     });
     const [, description] = html.match(/<meta name="description" content="([^"]*)">/);
     expect(description).toContain(
-      'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org, and your data stays in your browser.'
+      'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org, and your data stays in your browser.'
     );
     expect(description).not.toMatch(/fetches nothing|No request leaves/);
     const file = renderAppHtml({
