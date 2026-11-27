@@ -1190,6 +1190,54 @@ export function mountApp(
     state.raw = [];
   }
 
+  /**
+   * Make way for the files about to load, and keep what study they are (#405).
+   * A study replaces whatever was loaded before it, whatever kind either is:
+   * a demo study arrives on a page `runDemo` has cleared; a study that says
+   * what it is (`as`) clears the files and the held mapping file of what was
+   * there; and files of the reader's own clear a demo study or a named one
+   * whole, and say so, since placed one by one they would displace its files
+   * and leave each of them set aside. A named study is handed over in parts,
+   * its raw files and its standard files, each with the same `as`: the first
+   * part clears and the rest join it. The reader's own files join the
+   * reader's own files, and a load that brings no data file, a mapping file
+   * alone, leaves what is loaded what it was.
+   * @param {?string} study The demo study the files are, when they are one.
+   * @param {?Object} as What the study is called, when what loads it says.
+   * @param {number} count How many data files are about to load.
+   * @returns {void}
+   */
+  function makeWay(study, as, count) {
+    const named = isRecord(as) ? as : null;
+    if (study) {
+      state.named = named;
+      state.study = study;
+      return;
+    }
+    if (named) {
+      if (state.named !== named) {
+        clearFiles();
+        state.saved = null;
+      }
+      state.named = named;
+      state.study = null;
+      return;
+    }
+    if (!count) return;
+    const demoLoaded = studies.find((item) => item.id === state.study);
+    const before = demoLoaded
+      ? `The demo study (${demoLoaded.label})`
+      : state.named
+        ? state.named.name || 'The study'
+        : null;
+    if (before) {
+      clearFiles();
+      state.notes.push(`${before} was cleared to load your files.`);
+    }
+    state.named = null;
+    state.study = null;
+  }
+
   /** Forget everything that was loaded: files, mappings, a held mapping file, notes. */
   function clear() {
     clearFiles();
@@ -1475,12 +1523,10 @@ export function mountApp(
      * refused in the tab's sentence. A demo study's files are not asked: the
      * study says which loader is its own.
      * @param {{name: string, text: string}[]} list The files' names and text.
-     * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
+     * @param {{notes?: string[], study?: ?string, as?: ?Object}} [options] Sentences to show with the load; the demo study these files are, when they are one; and what the study is called, when what loads it says. A study replaces the one before it (`makeWay`).
      * @returns {void}
      */
     loadFiles(list, { notes = [], study = null, as = null } = {}) {
-      // What loads the files may say what study they are; files with no such word are the reader's own.
-      state.named = isRecord(as) ? as : null;
       // Files of the user's own outrank a demo study still on its way: it is
       // dropped when it arrives, instead of replacing them.
       if (!study) {
@@ -1495,14 +1541,9 @@ export function mountApp(
         if (saved) mappingFiles.push({ saved, name: entry.name });
         else data.push(entry);
       }
-      // Files of the user's own replace a demo study whole: placed one by one
-      // they would displace its files and leave each of them set aside.
-      const demoLoaded = studies.find((item) => item.id === state.study);
-      if (!study && demoLoaded && data.length) {
-        clearFiles();
-        state.notes.push(`The demo study (${demoLoaded.label}) was cleared to load your files.`);
-      }
-      if (study || data.length) state.study = study;
+      // What loads the files may say what study they are; files with no such
+      // word are the reader's own. Either replaces the study before it (#405).
+      makeWay(study, as, data.length);
       // A mapping file among them is read first, so the data files dropped
       // with it land where it says and take its rows.
       for (const { saved, name } of mappingFiles) handle.restoreMapping(saved, name);
@@ -1551,23 +1592,17 @@ export function mountApp(
      * it; a file that cannot be read is reported in a sentence and changes
      * nothing.
      * @param {{name: string, text: string}[]} list The files' names and text.
-     * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
+     * @param {{notes?: string[], study?: ?string, as?: ?Object}} [options] Sentences to show with the load; the demo study these files are, when they are one; and what the study is called, when what loads it says. A study replaces the one before it (`makeWay`).
      * @returns {void}
      */
     loadRaw(list, { notes = [], study = null, as = null } = {}) {
-      state.named = isRecord(as) ? as : null;
       if (!study) {
         demoRun += 1;
         state.busy = '';
       }
       state.notes = [...notes];
-      // Files of the user's own replace a demo study whole, as loadFiles does.
-      const demoLoaded = studies.find((item) => item.id === state.study);
-      if (!study && demoLoaded && list.length) {
-        clearFiles();
-        state.notes.push(`The demo study (${demoLoaded.label}) was cleared to load your files.`);
-      }
-      if (study || list.length) state.study = study;
+      // A study replaces the one before it, as loadFiles has it (#405).
+      makeWay(study, as, list.length);
       for (const { name, text } of list) {
         let file;
         try {

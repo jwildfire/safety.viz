@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { test, expect, devices } from '@playwright/test';
 import { CANONICAL } from './evidence.js';
 import {
@@ -688,6 +689,219 @@ test.describe('docs site', () => {
     await page.locator('.sva-tab[data-domain="ae"]').click();
     await page.locator('.sva-item[data-view="data"]').click();
     await expect(view.locator('[data-view="tables"]')).toHaveAttribute('aria-selected', 'true');
+    expect(errors).toEqual([]);
+  });
+
+  // A study in place of the one before it (#405). What is loaded is read from
+  // the app itself: the study the chip names, and every file with its count of
+  // rows, whether it is placed in a domain, set aside or kept as a gsm raw file.
+  const loadedNow = (page) =>
+    page.evaluate(() => {
+      const { state } = window.__safetyVizApp;
+      return {
+        chip: document.querySelector('.sva-chip-name').textContent,
+        placed: Object.fromEntries(
+          Object.entries(state.files).map(([domain, file]) => [
+            domain,
+            `${file.name}: ${file.rows.length}`
+          ])
+        ),
+        setAside: state.unplaced.map((item) => `${item.file.name}: ${item.file.rows.length}`),
+        raw: state.raw.map((file) => `${file.name}: ${file.rows}`)
+      };
+    });
+  const chipName = (page) => page.locator('.sva-chip-name');
+  const openDemoApp = async (page) => {
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+  };
+  /** Open a study from the list under the chip, and wait for the chip to name it. */
+  const openFromChip = async (page, id, name) => {
+    await page.locator('[data-action="study-chip"]').click();
+    await page.locator(`.sva-chip-item[data-study="${id}"]`).click();
+    await expect(chipName(page)).toHaveText(name);
+  };
+  const allStudies = async (page) => {
+    await page.locator('[data-action="study-chip"]').click();
+    await page.locator('[data-action="all-studies"]').click();
+  };
+  const READY_P1 = ['preset:phase1-small', 'READY-P1'];
+  const READY_P2 = ['preset:phase2-oncology', 'READY-P2'];
+  // Two files of a reader's own: one is placed, and one matches no domain.
+  const OWN_FILES = ['dm.csv', 'site_notes.csv'].map((name) =>
+    fileURLToPath(new URL(`./fixtures/app/${name}`, import.meta.url))
+  );
+  const OWN_LOADED = {
+    chip: 'Your files',
+    placed: { subject: 'dm.csv: 24' },
+    setAside: ['site_notes.csv: 3'],
+    raw: []
+  };
+
+  test('APP-LOAD-029: on the built demo page a study replaces the one before it, whatever kind either is: after each switch between the demo studies, a reader’s own files and two ready-made simulated studies, the files and rows loaded are those the study has when it is opened on an empty page (#405)', async ({
+    page
+  }) => {
+    test.setTimeout(120000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openDemoApp(page);
+    const pilot = await loadedNow(page);
+    expect(pilot).toMatchObject({ chip: 'Pilot study', setAside: [], raw: [] });
+    expect(Object.keys(pilot.placed)).toHaveLength(4);
+    // Each simulated study as it is on an empty page: the page is opened anew
+    // and Reset, which the demo study it opens on has in reach, before it.
+    const alone = {};
+    for (const [id, name] of [READY_P1, READY_P2]) {
+      await page.reload();
+      await page.evaluate('window.__safetyVizApp.ready');
+      await page.locator('.sva-face[data-action="files"]').click();
+      await page.locator('.sva-side [data-action="reset"]').click();
+      await expect(chipName(page)).toHaveText('No study');
+      await openFromChip(page, id, name);
+      alone[name] = await loadedNow(page);
+      expect(alone[name].setAside, name).toEqual([]);
+      expect(Object.keys(alone[name].placed).length, name).toBeGreaterThan(0);
+      expect(alone[name].raw.length, name).toBeGreaterThan(0);
+    }
+    expect(alone['READY-P2']).not.toEqual({ ...alone['READY-P1'], chip: 'READY-P2' });
+
+    await page.reload();
+    await page.evaluate('window.__safetyVizApp.ready');
+    expect(await loadedNow(page)).toEqual(pilot);
+    // A reader's own files, in place of the demo study.
+    await page.locator('.sva-face[data-action="files"]').click();
+    await page.locator('.sva-file-input').setInputFiles(OWN_FILES);
+    await expect(chipName(page)).toHaveText('Your files');
+    expect(await loadedNow(page)).toEqual(OWN_LOADED);
+    // A ready-made study, in place of the reader's files.
+    await openFromChip(page, ...READY_P1);
+    expect(await loadedNow(page)).toEqual(alone['READY-P1']);
+    // Another ready-made study, in place of the first.
+    await openFromChip(page, ...READY_P2);
+    expect(await loadedNow(page)).toEqual(alone['READY-P2']);
+    // The reader's own files, chosen from the Studies view, in place of a
+    // simulated study: the page says the study was cleared.
+    await allStudies(page);
+    const chosen = page.waitForEvent('filechooser');
+    await page.locator('[data-add="files"]').click();
+    await (await chosen).setFiles(OWN_FILES);
+    await expect(chipName(page)).toHaveText('Your files');
+    expect(await loadedNow(page)).toEqual(OWN_LOADED);
+    await expect(page.locator('.sva-content > .sva-notes .sva-note').first()).toHaveText(
+      'READY-P2 was cleared to load your files.'
+    );
+    // A demo study of gsm's raw files, in place of the reader's files.
+    await openFromChip(page, 'demo:rbqm', 'RBQM study');
+    const rbqm = await loadedNow(page);
+    expect(rbqm).toMatchObject({ placed: {}, setAside: [] });
+    expect(rbqm.raw).toHaveLength(9);
+    // A ready-made study in place of a demo study, and a demo study in place of it.
+    await openFromChip(page, ...READY_P1);
+    expect(await loadedNow(page)).toEqual(alone['READY-P1']);
+    await openFromChip(page, 'demo:pilot', 'Pilot study');
+    expect(await loadedNow(page)).toEqual(pilot);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LOAD-030: on the built demo page, with a ready-made simulated study in use, the Overview tab has both faces, the study view first; the Files face lists the study’s files and has the file picker and Reset; Choose files on the Studies view opens the file chooser; and Reset clears the study to the empty drop zone and leaves it in the list, to open again as it was (#405)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openDemoApp(page);
+    await openFromChip(page, ...READY_P1);
+    const study = await loadedNow(page);
+    await expect(page.locator('.sva-face')).toHaveText(['Explore the data', 'Files']);
+    await expect(page.locator('.sva-face[data-action="explore"]')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    await expect(page.locator('.sva-explore-body .sv-views')).toBeVisible();
+    // The files one by one: every file the study loaded, placed or kept raw.
+    await page.locator('.sva-face[data-action="files"]').click();
+    await expect(page.locator('.sva-explore-body')).toHaveCount(0);
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(
+      Object.keys(study.placed).length + study.raw.length
+    );
+    await expect(page.locator('.sva-side [data-action="reset"]')).toBeVisible();
+    // The file picker opens from the sidebar.
+    let chooser = page.waitForEvent('filechooser');
+    await page.locator('.sva-side [data-action="choose-files"]').click();
+    expect((await chooser).isMultiple()).toBe(true);
+    // From the study view's face, Choose files on the Studies view opens it too.
+    await page.locator('.sva-face[data-action="explore"]').click();
+    await allStudies(page);
+    chooser = page.waitForEvent('filechooser');
+    await page.locator('[data-add="files"]').click();
+    expect((await chooser).isMultiple()).toBe(true);
+    await expect(page).toHaveURL(/#data$/);
+    await expect(page.locator('.sva-face[data-action="files"]')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    // Nothing was chosen: the study is as it was.
+    expect(await loadedNow(page)).toEqual(study);
+    // Reset, as with a demo study in use: nothing is loaded and no study is named.
+    await page.locator('.sva-side [data-action="reset"]').click();
+    await expect(chipName(page)).toHaveText('No study');
+    await expect(page.locator('.sva-drop')).toBeVisible();
+    await expect(page.locator('.sva-faces')).toHaveCount(0);
+    expect(await loadedNow(page)).toEqual({ chip: 'No study', placed: {}, setAside: [], raw: [] });
+    // The study is still in the list, and opens again as it was.
+    await openFromChip(page, ...READY_P1);
+    expect(await loadedNow(page)).toEqual(study);
+    expect(errors).toEqual([]);
+  });
+
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-LOAD-029: on the built demo page a study built in real R with Labs, Vital signs and ECGs turned off, and loaded into the demo over a ready-made study, leaves none of that study’s files: no labs, vital signs or ECG file is placed, set aside or kept raw, and every loaded file is one the built study has (#405)', { tag: '@real-r' }, async ({
+    page
+  }) => {
+    // It downloads R and gsm.datasim's packages, then simulates the study.
+    test.setTimeout(420000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openDemoApp(page);
+    await openFromChip(page, ...READY_P1);
+    // The ready-made study has all three: a labs and vitals file, an ECG file and their raw files.
+    const before = await loadedNow(page);
+    expect(Object.keys(before.placed).sort()).toEqual(['ae', 'bds', 'eg', 'subject']);
+    const measured = /^Raw_(LB|VS|EG)\.csv: /;
+    expect(before.raw.filter((file) => measured.test(file))).toHaveLength(3);
+    // The builder, from the Studies view: a small study with the three domains turned off.
+    await allStudies(page);
+    await page.locator('[data-add="describe"]').click();
+    const widget = page.locator('.sva-build-widget');
+    for (const [name, value] of [['name', 'NO-LABS'], ['participants', '20'], ['sites', '2'], ['months', '3']]) {
+      await widget.locator(`input[name="${name}"]`).fill(value);
+      await widget.locator(`input[name="${name}"]`).blur();
+    }
+    for (const domain of ['LB', 'VS', 'EG']) {
+      const chip = widget.locator(`.sb-chip[data-domain="${domain}"]`);
+      await expect(chip).toHaveAttribute('aria-pressed', 'true');
+      await chip.click();
+      await expect(chip).toHaveAttribute('aria-pressed', 'false');
+    }
+    await widget.locator('[data-action="build"]').click();
+    const use = widget.getByRole('button', { name: 'Load into the demo' });
+    await expect(use).toBeVisible({ timeout: 360000 });
+    await use.click();
+    await expect(chipName(page)).toHaveText('NO-LABS');
+    const after = await loadedNow(page);
+    // The ECG charts and the labs and vitals charts have no file, and nothing is set aside.
+    expect(Object.keys(after.placed).sort()).toEqual(['ae', 'subject']);
+    expect(after.setAside).toEqual([]);
+    expect(after.raw.filter((file) => measured.test(file))).toEqual([]);
+    expect(after.raw.length).toBeGreaterThan(0);
+    // Every loaded file is one the built study handed over.
+    const own = await page.evaluate(() => {
+      const { raw, standard } = window.__safetyVizApp.state.named.built.files();
+      return [...raw, ...standard].map((file) => file.name);
+    });
+    const names = (list) => list.map((file) => file.replace(/: \d+$/, ''));
+    expect(own).toEqual(expect.arrayContaining([...names(Object.values(after.placed)), ...names(after.raw)]));
     expect(errors).toEqual([]);
   });
 
