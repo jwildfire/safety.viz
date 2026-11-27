@@ -22,6 +22,18 @@
 // Colour is always on a hex beside words; the words stay graphite, so nothing
 // is said by colour alone.
 //
+// The header keeps to one row from 1,200 pixels (#416), about the narrowest
+// page its parts fit across in the app's own typefaces. From there the study
+// chip is the part that gives: its place in the row is counted at 7rem when
+// the row is laid out, and it then takes the room that is left, up to its own
+// width, so a study's name is cut with an ellipsis before the status label or
+// a tab drops to a second row. No other part shrinks, and the row still wraps
+// where the parts do not fit with the chip at 7rem. Between 1,200 and 1,439
+// pixels a header with the chip does not draw the words "Demo app" beside the
+// wordmark, which is the room the three ready-made studies' names need at
+// 1,280. Below 1,200 pixels none of this applies, and the header wraps as it
+// did; a page with no chip draws the words at every width.
+//
 // One stylesheet, injected once by the page. Every class is prefixed `sva-`;
 // the charts keep their own `sv-` shell styles.
 
@@ -171,6 +183,9 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-studychip{display:inline-flex;align-items:center;gap:.4rem;min-height:2.2rem;padding:0 .7rem;border:1px solid var(--accent);border-radius:999px;background:var(--accent-soft);color:var(--ink);font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;max-width:16rem}
 .sva-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sva-chip-caret{font-size:.7rem;color:var(--accent)}
+.sva-chip-id{display:flex;flex-direction:column;align-items:flex-start;min-width:0;line-height:1.15}
+.sva-chip-id .sva-chip-name{max-width:100%}
+.sva-chip-snap{font-size:.62rem;font-weight:500;color:var(--soft);white-space:nowrap}
 .sva-chip-info{width:2.2rem;height:2.2rem;border:0;border-radius:50%;background:none;color:var(--accent);font:italic 600 .95rem/1 Georgia,serif;cursor:pointer}
 .sva-chip-info:hover,.sva-chip-info[aria-expanded=true]{background:var(--accent-soft)}
 .sva-chip-pop{position:absolute;top:calc(100% + .4rem);left:0;z-index:30;width:min(22rem,calc(100vw - 2rem));background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(31,35,40,.2)}
@@ -361,6 +376,15 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-map .sva-tag.sva-chosen::before{background:var(--accent)}
 .sva-map .sva-tag.sva-missing::before{background:var(--s0)}
 
+@media (min-width:1200px){
+.sva-chip-slot{flex:1 1 7rem;min-width:0;max-width:max-content}
+.sva-studychip{flex:0 1 auto;min-width:0}
+.sva-chip-caret,.sva-chip-info{flex:none}
+.sva-chip-snap{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+}
+@media (min-width:1200px) and (max-width:1439px){
+.sva-bar:has(>.sva-chip-slot) .sva-kicker{display:none}
+}
 @media (max-width:900px){
 .sva-rbqm-figures{grid-template-columns:minmax(0,1fr)}
 .sva-rbqm-chart{height:20rem}

@@ -581,6 +581,138 @@ test.describe('docs site', () => {
     ).toBeLessThanOrEqual(0);
   });
 
+  // The snapshot of a simulated study the page draws (#406). READY-P1 and
+  // PILOT-PROTOCOL are two of study.builder's ready-made studies that kept
+  // their monthly snapshots: six and seven, the first six on the same dates.
+  const snapshotPicker = (page) => page.locator('.sva-explore-body .sb-snapshot select');
+  const openReadyMade = async (page, id, name) => {
+    await page.locator('[data-action="study-chip"]').click();
+    await page.locator(`.sva-chip-item[data-study="preset:${id}"]`).click();
+    await expect(page.locator('.sva-chip-name')).toHaveText(name);
+  };
+  // What the app holds: the participants file the charts read, and gsm's raw
+  // participants file, which is what the RBQM tab hands R.
+  const held = (page) =>
+    page.evaluate(() => {
+      const { state } = window.__safetyVizApp;
+      return {
+        participants: state.files.subject.rows.length,
+        adverseEvents: state.files.ae.rows.length,
+        rawParticipants: state.raw.find((file) => file.name === 'Raw_SUBJ.csv').rows
+      };
+    });
+
+  test('APP-STUDY-001: on the built demo page an earlier snapshot of a ready-made study chosen on the Overview tab is the one the charts draw and the RBQM tab holds, and the study chip says which on every tab: READY-P1 at snapshot 1 of 6 has 2 participants in the charts where the last has 29; choosing the last brings its 29 back (#406)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    const said = page.locator('.sva-chip-snap');
+    const shownIn = page.locator('.sva-chart').getByText(/participants shown/);
+    // It opens on its last snapshot: the chart the reader is on draws all of it.
+    await expect(shownIn).toHaveText('29 of 29 participants shown (100.0%).');
+    expect(await held(page)).toEqual({ participants: 29, adverseEvents: 83, rawParticipants: 40 });
+    // The first snapshot, chosen where study.builder's study view offers them.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-06-30 · 6 of 6');
+    await snapshotPicker(page).selectOption('2012-01-31');
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-01-31 · 1 of 6');
+    // The charts draw that snapshot: the histogram counts its participants, and
+    // the adverse event explorer's one arm has them.
+    await page.locator('.sva-tab[data-domain="bds"]').click();
+    await expect(shownIn).toHaveText('2 of 2 participants shown (100.0%).');
+    expect(await held(page)).toEqual({ participants: 2, adverseEvents: 3, rawParticipants: 3 });
+    await expect(said).toHaveText('Snapshot 1 of 6');
+    await page.locator('.sva-tab[data-domain="ae"]').click();
+    await expect(page.locator('.sva-chart')).toContainText('Placebo (n=2)');
+    // The RBQM tab holds the same snapshot's raw files, and the chip says it there too.
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await expect(said).toHaveText('Snapshot 1 of 6');
+    await expect(page.locator('[data-action="study-chip"]')).toHaveAttribute(
+      'aria-label',
+      'READY-P1, snapshot 1 of 6, 2012-01-31'
+    );
+    expect((await held(page)).rawParticipants).toBe(3);
+    // Back on the Overview the choice stands; the last snapshot brings the whole study back.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-01-31 · 1 of 6');
+    await snapshotPicker(page).selectOption('2012-06-30');
+    await expect(said).toHaveText('Snapshot 6 of 6');
+    expect(await held(page)).toEqual({ participants: 29, adverseEvents: 83, rawParticipants: 40 });
+    await page.locator('.sva-tab[data-domain="bds"]').click();
+    await expect(shownIn).toHaveText('29 of 29 participants shown (100.0%).');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-STUDY-002: on the built demo page a second study opens on its own last snapshot: PILOT-PROTOCOL opened after READY-P1 at snapshot 3 of 6 reads 7 of 7, with its own 81 participants in the charts (#406)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    await snapshotPicker(page).selectOption('2012-03-31');
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-03-31 · 3 of 6');
+    // The second study has a snapshot of the same date, its third of seven.
+    await openReadyMade(page, 'cdisc-pilot-protocol', 'PILOT-PROTOCOL');
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-07-31 · 7 of 7');
+    await expect(page.locator('.sva-chip-snap')).toHaveText('Snapshot 7 of 7');
+    expect(await held(page)).toEqual({
+      participants: 81,
+      adverseEvents: 253,
+      rawParticipants: 120
+    });
+    // A study that kept only its last snapshot says nothing of one.
+    await openReadyMade(page, 'phase2-oncology', 'READY-P2');
+    await expect(page.locator('.sva-chip-snap')).toHaveCount(0);
+    await expect(snapshotPicker(page)).toHaveCount(0);
+  });
+
+  test('APP-STUDY-003: on the built demo page at 1,280 pixels the snapshot’s words sit under the study’s name in the chip, and the header keeps the row it had for READY-P1 (#406)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('.sva-chip-snap')).toHaveText('Snapshot 6 of 6');
+    const boxes = await page.evaluate(() => {
+      const box = (selector) => {
+        const { top, bottom, left, right } = document
+          .querySelector(selector)
+          .getBoundingClientRect();
+        return { top, bottom, left, right };
+      };
+      return {
+        chip: box('.sva-studychip'),
+        name: box('.sva-chip-name'),
+        snapshot: box('.sva-chip-snap')
+      };
+    });
+    // Under the name, inside the chip.
+    expect(boxes.snapshot.top).toBeGreaterThanOrEqual(boxes.name.bottom - 1);
+    expect(boxes.snapshot.bottom).toBeLessThanOrEqual(boxes.chip.bottom);
+    expect(boxes.snapshot.right).toBeLessThanOrEqual(boxes.chip.right);
+    // The words do not cost the header a row (#416): the status label and every
+    // tab are on the wordmark's row, and the header is as tall as it is with
+    // room to spare. The words are wider than the name READY-P1, and before
+    // #416 that width put the label on a row of its own on the Linux runner.
+    // Now the chip gives the room (APP-PAGE-049; `headerAt` is defined with it).
+    const roomy = await headerAt(page, 1900);
+    const now = await headerAt(page, 1280);
+    expect(now.oneRow).toBe(true);
+    expect(now.height).toBe(roomy.height);
+    expect(now.labelInside).toBe(true);
+    // Where the chip has room for them the words are whole.
+    if (now.spareWhole > 2) expect(now.cut).toBe(0);
+  });
+
   test('APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)', async ({
     page
   }) => {
@@ -1119,6 +1251,184 @@ test.describe('docs site', () => {
     await page.locator('[data-action="study-info"]').click();
     await expect(page.locator('.sva-chip-card')).toBeVisible();
     expect(await placed()).toEqual({ inside: true, sideways: 0 });
+  });
+
+  // The header's one row (#416). From 1,200 pixels the study chip gives room
+  // before the status label or a tab drops to a second row. The page loads its
+  // own typefaces, which the Linux runner draws a few pixels wider across the
+  // row than a Mac does; a reader whose browser does not get the files sees
+  // system typefaces, which can be wider still. So each study is checked in both.
+  // In the wide ones only what the layout promises in any typeface is
+  // asserted: one row wherever the parts fit across the page with the chip at
+  // its narrowest, which is read from the page itself.
+  const WIDE_TYPEFACES =
+    '.sva-app.sva-app{--sans:Verdana,"DejaVu Sans",sans-serif;' +
+    '--mono:Menlo,"DejaVu Sans Mono",monospace;--serif:Georgia,"DejaVu Serif",serif}';
+  const headerNow = (page) =>
+    page.evaluate(() => {
+      const one = (selector) => document.querySelector(selector);
+      const box = (element) => element.getBoundingClientRect();
+      const px = (value) => parseFloat(value) || 0;
+      const bar = one('.sva-bar');
+      const brand = one('.sva-brand');
+      const slot = one('.sva-chip-slot');
+      const chip = one('.sva-studychip');
+      const name = one('.sva-chip-name');
+      const status = one('.sva-appstatus');
+      const tabs = [...document.querySelectorAll('.sva-tabs > *')];
+      const spacing = getComputedStyle(bar);
+      // One row: the wordmark's middle line runs through every part.
+      const middle = (box(brand).top + box(brand).bottom) / 2;
+      const parts = [brand, chip, one('.sva-chip-info'), ...tabs, status];
+      // How much of its widest line the chip does not show.
+      const cut = Math.max(
+        0,
+        ...[name, one('.sva-chip-snap')]
+          .filter(Boolean)
+          .map((line) => line.scrollWidth - line.clientWidth)
+      );
+      // The room the bar has, and what the parts that never shrink take of it.
+      const room = bar.clientWidth - px(spacing.paddingLeft) - px(spacing.paddingRight);
+      const fixed =
+        box(brand).width +
+        px(getComputedStyle(brand).marginRight) +
+        tabs.reduce((sum, tab) => sum + box(tab).width, 0) +
+        (tabs.length - 1) * px(getComputedStyle(one('.sva-tabs')).columnGap) +
+        box(status).width +
+        3 * px(spacing.columnGap);
+      const whole = box(slot).width + cut;
+      const narrowest = Math.min(whole, px(getComputedStyle(slot).flexBasis));
+      return {
+        oneRow: parts.every((part) => box(part).top < middle && box(part).bottom > middle),
+        height: Math.round(box(one('.sva-header')).height),
+        cut,
+        name: name.textContent,
+        hover: chip.title,
+        tabs: tabs.length,
+        labelInside: box(status).right <= box(bar).right - px(spacing.paddingRight) + 1,
+        spareWhole: room - fixed - whole,
+        spareNarrowest: room - fixed - narrowest
+      };
+    });
+  /** The header at one width, once what a study brings has been drawn. */
+  const headerAt = async (page, width) => {
+    await page.setViewportSize({ width, height: 720 });
+    let before = '';
+    await expect
+      .poll(async () => {
+        const now = JSON.stringify(await headerNow(page));
+        const same = now === before;
+        before = now;
+        return same;
+      })
+      .toBe(true);
+    return headerNow(page);
+  };
+  const oneRowHeader = async (page, study, own, roomyTabs = true) => {
+    const typefaces = own ? 'the page’s own typefaces' : 'wide typefaces';
+    // With room to spare: one row, the name whole. Its height is the measure.
+    const roomy = await headerAt(page, 1900);
+    expect(roomy, `${study}, ${typefaces}, 1,900 pixels`).toMatchObject({ oneRow: true, cut: 0 });
+    for (const width of [1280, 1440]) {
+      const where = `${study}, ${typefaces}, ${width} pixels`;
+      const now = await headerAt(page, width);
+      // Nothing a reader uses is lost, whatever fits: every tab and the label
+      // are there, the name is whole in the page and on hover.
+      expect(now.tabs, where).toBe(roomy.tabs);
+      expect(now.labelInside, where).toBe(true);
+      expect(now.name, where).toBe(study);
+      expect(now.hover.startsWith(study), where).toBe(true);
+      // In the page's own typefaces the parts fit with the chip at its narrowest,
+      // by 60 pixels or more on a Mac. Two demo studies' tabs are wider ("6 of 9"),
+      // and at 1,280 pixels they fit by half that: held where they fit, as below.
+      if (own && (roomyTabs || width > 1280)) expect(now.spareNarrowest, where).toBeGreaterThan(2);
+      // Wherever they do, the header is one row and no taller than with room to spare.
+      if (now.spareNarrowest > 2) {
+        expect(now.oneRow, where).toBe(true);
+        expect(now.height, where).toBe(roomy.height);
+      }
+      // The chip is whole where there is room for it, and cut only where there is not.
+      if (now.spareWhole > 2) expect(now.cut, where).toBe(0);
+      if (now.spareWhole < -2 && now.spareNarrowest > 2) expect(now.cut, where).toBeGreaterThan(0);
+    }
+  };
+
+  test('APP-PAGE-049: on the built demo page the header is one row at 1,280 and at 1,440 pixels, no taller than with room to spare, for each demo study, a reader’s own files and each ready-made study, in the page’s own typefaces, and in wide ones wherever its parts fit with the chip at its narrowest; the chip’s name is cut before the label or a tab drops, with the whole name on hover; the words Demo app are drawn below 1,200 pixels, from 1,440, and in a header with no chip (#416)', async ({
+    page
+  }) => {
+    test.setTimeout(180000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    for (const own of [true, false]) {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.goto('/_site/demo/index.html#data');
+      await page.evaluate('window.__safetyVizApp.ready');
+      if (!own) await page.addStyleTag({ content: WIDE_TYPEFACES });
+      await page.evaluate(() => document.fonts.ready);
+      // Each demo study the Files face offers, by the name its chip gives it.
+      await page.locator('.sva-face[data-action="files"]').click();
+      const menu = page.locator('.sva-side select.sva-study');
+      for (const [study, name] of [
+        ['pilot', 'Pilot study'],
+        ['renamed', 'Renamed columns'],
+        ['liver', 'Liver cohort, labs only'],
+        ['rbqm', 'RBQM study']
+      ]) {
+        await menu.selectOption(study);
+        await expect(page.locator('.sva-chip-name')).toHaveText(name);
+        await oneRowHeader(page, name, own, study === 'pilot' || study === 'rbqm');
+      }
+      // A reader's own files.
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.locator('.sva-file-input').setInputFiles(OWN_FILES);
+      await expect(page.locator('.sva-chip-name')).toHaveText('Your files');
+      await oneRowHeader(page, 'Your files', own);
+      // The three ready-made studies: two say a snapshot under their name.
+      for (const [id, name, words] of [
+        ['phase1-small', 'READY-P1', 'Snapshot 6 of 6'],
+        ['phase2-oncology', 'READY-P2', null],
+        ['cdisc-pilot-protocol', 'PILOT-PROTOCOL', 'Snapshot 7 of 7']
+      ]) {
+        await page.setViewportSize({ width: 1280, height: 720 });
+        await openReadyMade(page, id, name);
+        if (words) await expect(page.locator('.sva-chip-snap')).toHaveText(words);
+        else await expect(page.locator('.sva-chip-snap')).toHaveCount(0);
+        await oneRowHeader(page, name, own);
+      }
+      if (!own) continue;
+      // PILOT-PROTOCOL, the longest of the three names, at 1,224 pixels: too
+      // narrow for the whole name and wide enough for the row. The name is cut,
+      // the row holds, and the i beside the chip still opens the card that says it.
+      const tight = await headerAt(page, 1224);
+      expect(tight.spareWhole).toBeLessThan(-2);
+      expect(tight).toMatchObject({ oneRow: true, name: 'PILOT-PROTOCOL', labelInside: true });
+      expect(tight.cut).toBeGreaterThan(0);
+      expect(tight.hover.startsWith('PILOT-PROTOCOL as it stood on ')).toBe(true);
+      await page.locator('[data-action="study-info"]').click();
+      await expect(page.locator('.sva-chip-cardhead strong')).toHaveText('PILOT-PROTOCOL');
+      await page.keyboard.press('Escape');
+      // The words beside the wordmark, and where the chip's place flexes.
+      const flexes = () =>
+        page.evaluate(() => getComputedStyle(document.querySelector('.sva-chip-slot')).flexGrow);
+      for (const [width, kicker, grow] of [
+        [1199, true, '0'],
+        [1200, false, '1'],
+        [1439, false, '1'],
+        [1440, true, '1']
+      ]) {
+        await page.setViewportSize({ width, height: 720 });
+        await expect(page.locator('.sva-kicker')).toBeVisible({ visible: kicker });
+        expect(await flexes(), `${width} pixels`).toBe(grow);
+      }
+    }
+    // A header with no chip draws the words at 1,280 pixels, as it did: the
+    // chip's place is taken out of this one, as a page that asks for no chip
+    // has none (the test page is one, in basic-app.spec.js).
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await expect(page.locator('.sva-kicker')).toBeHidden();
+    await page.evaluate(() => document.querySelector('.sva-chip-slot').remove());
+    await expect(page.locator('.sva-kicker')).toBeVisible();
+    expect(errors).toEqual([]);
   });
 
   // The status label on the docs site (#275, obot.roadmap#403): one chart of each
