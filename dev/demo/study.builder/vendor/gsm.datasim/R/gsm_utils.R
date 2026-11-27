@@ -1,3 +1,9 @@
+# NOTICE OF CHANGE. This file is modified from gsm.datasim v2.1.0 (https://github.com/Gilead-Public/gsm.datasim, commit 29fc61c), Copyright Gilead Sciences, Apache License 2.0.
+# Changed in November 2026 by Jeremy Wildfire, in the modified copy at
+# https://github.com/jwildfire/gsm.datasim (branch safety-results-2.1):
+# the study table says the phase, therapeutic area and indication asked for; a domain whose spec is handed in is made last, on a random stream of its own; the site id prefix is set for the run.
+# Not reviewed or endorsed by gsm.datasim's maintainers.
+
 #' Generate raw data for endpoints study (multi-package)
 #'
 #' @param config Study configuration object with enabled datasets

@@ -1,3 +1,9 @@
+# NOTICE OF CHANGE. This file is modified from gsm.datasim v2.1.0 (https://github.com/Gilead-Public/gsm.datasim, commit 29fc61c), Copyright Gilead Sciences, Apache License 2.0.
+# Changed in November 2026 by Jeremy Wildfire, in the modified copy at
+# https://github.com/jwildfire/gsm.datasim (branch safety-results-2.1):
+# create_longitudinal_study() takes design, results, phase, therapeutic_area, indication, specs, column_names and site_id_prefix, and applies each.
+# Not reviewed or endorsed by gsm.datasim's maintainers.
+
 #' High-Level Study Creation API
 #'
 #' This file contains convenience functions for creating studies with minimal configuration.
