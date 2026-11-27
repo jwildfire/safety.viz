@@ -58,6 +58,7 @@ export function builderSource({
   let offered = null; // { presets, shelf, saved } once found
   let finding = null;
   let opening = '';
+  let openRun = 0; // the latest of these studies asked for; an earlier one still on its way is dropped
   let listProblem = '';
 
   /** What the page keeps of a study: its name, its facts, and its tables for the viewer. */
@@ -126,16 +127,27 @@ export function builderSource({
     }
   }
 
-  /** Open one of study.builder's studies and hand it to the app, with no R. */
+  /**
+   * Open one of study.builder's studies and hand it to the app, with no R.
+   * The study in use is the last one the reader chose (#407): a study still on
+   * its way when another of these is asked for is dropped when it arrives, as
+   * the page drops a demo study (page.js's `demoRun`), and so is one a demo
+   * study was asked for after, which the page says by a new `ready`.
+   */
   async function openOffered(app, id, name, get) {
+    const run = ++openRun;
+    const asked = app.ready;
     opening = `Opening ${name}…`;
     listProblem = '';
     app.retag();
     app.redrawView('studies');
     try {
-      use(await get(), app, id);
+      const study = await get();
+      if (run !== openRun) return;
+      if (app.ready === asked) use(study, app, id);
     } catch (error) {
-      listProblem = messageOf(error);
+      if (run !== openRun) return;
+      if (app.ready === asked) listProblem = messageOf(error);
     }
     opening = '';
     app.retag();

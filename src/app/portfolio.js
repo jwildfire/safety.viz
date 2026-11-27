@@ -37,6 +37,30 @@ function supportSaid(entry) {
   return `${ready} of ${plural(total, 'chart')} ready`;
 }
 
+// What the chip keeps between draws, by its place in the header: where the
+// reader was when something opened under it, the sentence they closed, whether
+// they asked for a study from its list, and what listens while something is open.
+const kept = new WeakMap();
+
+// The space left between what opens under the chip and the page's edge.
+const EDGE = 16;
+
+/**
+ * Keep what opens under the chip inside the page (#407). It opens at the
+ * chip's left edge; where that would run it past the page's right edge, as on
+ * a phone, it is moved left by what would run past.
+ * @param {HTMLElement} pop The list, the card or the sentence.
+ * @returns {void}
+ */
+function keepInside(pop) {
+  pop.style.left = '';
+  const page = document.documentElement.clientWidth;
+  if (!page) return;
+  const box = pop.getBoundingClientRect();
+  const past = box.right - (page - EDGE);
+  if (past > 0) pop.style.left = `${-Math.min(past, Math.max(0, box.left - EDGE))}px`;
+}
+
 /**
  * Draw the study chip and the i beside it into the header.
  * @param {HTMLElement} container The chip's place in the header's bar.
@@ -47,13 +71,38 @@ export function drawChip(container, app) {
   const { state } = app;
   const said = app.portfolio();
   const current = said.studies.find((entry) => entry.current) || null;
+  if (!kept.has(container)) kept.set(container, { at: null, closed: '', asked: false, off: null });
+  const memory = kept.get(container);
+  if (memory.off) memory.off();
+  memory.off = null;
+  // A sentence the reader closed is not said again; the next one is.
+  if (!said.problem) memory.closed = '';
+  if (!said.busy) memory.asked = false;
+  // The reader moved to another tab or chart: what was open under the chip is closed (#407).
+  const at = `${state.selected}/${state.item || ''}`;
+  if (memory.at !== at) {
+    if (memory.at !== null) {
+      state.chip = null;
+      memory.closed = said.problem || '';
+    }
+    memory.at = at;
+  }
+  // A study that did not open is said under the chip, where the reader is
+  // (#407); the Studies view says it in its own list.
+  const problem =
+    said.problem && said.problem !== memory.closed && state.selected !== STUDIES_VIEW_ID
+      ? said.problem
+      : '';
   container.replaceChildren();
   const close = () => {
     state.chip = null;
+    memory.closed = said.problem || '';
     app.retag();
   };
   const toggle = (which) => {
     state.chip = state.chip === which ? null : which;
+    // The list or the card takes the sentence's place.
+    memory.closed = said.problem || '';
     app.retag();
     if (state.chip) {
       const first = container.querySelector('.sva-chip-pop button, .sva-chip-pop a');
@@ -80,13 +129,34 @@ export function drawChip(container, app) {
     container.append(info);
   }
 
-  container.onkeydown = (event) => {
-    if (event.key === 'Escape' && state.chip) {
-      close();
-      const again = container.querySelector('[data-action="study-chip"]');
-      if (again) again.focus();
-    }
-  };
+  // While something is open under the chip, a click anywhere else on the page
+  // and Escape, wherever the keyboard is, close it (#407). Nothing listens
+  // while nothing is open, or once the page is gone.
+  if (state.chip || problem) {
+    const outside = (event) => {
+      if (!container.isConnected) memory.off();
+      else if (!event.composedPath().includes(container)) close();
+    };
+    const escape = (event) => {
+      if (!container.isConnected) memory.off();
+      else if (event.key === 'Escape') {
+        const within = container.contains(document.activeElement);
+        close();
+        const again = container.querySelector('[data-action="study-chip"]');
+        if (within && again) again.focus();
+      }
+    };
+    const fit = () => container.querySelectorAll('.sva-chip-pop').forEach(keepInside);
+    document.addEventListener('click', outside);
+    document.addEventListener('keydown', escape);
+    window.addEventListener('resize', fit);
+    memory.off = () => {
+      document.removeEventListener('click', outside);
+      document.removeEventListener('keydown', escape);
+      window.removeEventListener('resize', fit);
+      memory.off = null;
+    };
+  }
 
   if (state.chip === 'menu') {
     const pop = el('div', 'sva-chip-pop sva-chip-menu');
@@ -97,7 +167,11 @@ export function drawChip(container, app) {
       const item = button('sva-chip-item', undefined, () => {
         state.chip = null;
         if (entry.current) app.retag();
-        else entry.open();
+        else {
+          // What the study says while it opens is said under the chip.
+          memory.asked = true;
+          entry.open();
+        }
       });
       item.dataset.study = entry.id;
       item.setAttribute('role', 'menuitem');
@@ -126,8 +200,15 @@ export function drawChip(container, app) {
       all('Add a study', 'sva-primary', 'add-study'),
       all('All studies', '', 'all-studies')
     );
+    // The list is not whole while studies are still being looked for.
+    if (said.busy) {
+      const busy = el('p', 'sva-chip-busy', said.busy);
+      busy.setAttribute('role', 'status');
+      pop.append(busy);
+    }
     pop.append(foot);
     container.append(pop);
+    keepInside(pop);
   }
 
   if (state.chip === 'info' && current) {
@@ -154,6 +235,18 @@ export function drawChip(container, app) {
     look.dataset.action = 'study-look';
     pop.append(look);
     container.append(pop);
+    keepInside(pop);
+  }
+
+  // Under the chip while its list and its card are closed: a study that did
+  // not open, in a sentence that stays until the reader closes it; or the
+  // study the reader chose from the list, while it opens.
+  const sentence = problem || (memory.asked && !state.chip ? said.busy : '');
+  if (sentence && !state.chip) {
+    const line = el('p', `sva-chip-pop sva-chip-said${problem ? ' sva-problem' : ''}`, sentence);
+    line.setAttribute('role', problem ? 'alert' : 'status');
+    container.append(line);
+    keepInside(line);
   }
 }
 
