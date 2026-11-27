@@ -1,15 +1,15 @@
 {
   "module": "hep-waterfall",
-  "generatedAt": "2026-11-27T02:43:51.531Z",
+  "generatedAt": "2026-11-27T04:35:19.768Z",
   "environment": {
-    "os": "linux 7.0.0-1020-azure",
+    "os": "linux 7.0.0-1014-aws",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "45929982244",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45929982244"
+    "id": "45940723422",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45940723422"
   },
   "records": [
     {
@@ -813,6 +813,14 @@
       "screenshots": []
     },
     {
+      "test": "APP-PAGE-049: on the built demo page the header is one row at 1,280 and at 1,440 pixels, no taller than with room to spare, for each demo study, a reader’s own files and each ready-made study, in the page’s own typefaces, and in wide ones wherever its parts fit with the chip at its narrowest; the chip’s name is cut before the label or a tab drops, with the whole name on hover; the words Demo app are drawn below 1,200 pixels, from 1,440, and in a header with no chip (#416)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-049"],
+      "issueRefs": [416],
+      "screenshots": []
+    },
+    {
       "test": "APP-R-006: before the control is pressed, no chart of either library asks R’s hosts for anything, and each biomarker chart’s statistics line says statistics need R and what that downloads (#183)",
       "suite": "browser",
       "status": "pass",
@@ -1186,6 +1194,30 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-082"],
       "issueRefs": [322],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-001: on the built demo page an earlier snapshot of a ready-made study chosen on the Overview tab is the one the charts draw and the RBQM tab holds, and the study chip says which on every tab: READY-P1 at snapshot 1 of 6 has 2 participants in the charts where the last has 29; choosing the last brings its 29 back (#406)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-001"],
+      "issueRefs": [406],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-002: on the built demo page a second study opens on its own last snapshot: PILOT-PROTOCOL opened after READY-P1 at snapshot 3 of 6 reads 7 of 7, with its own 81 participants in the charts (#406)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-002"],
+      "issueRefs": [406],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-003: on the built demo page at 1,280 pixels the snapshot’s words sit under the study’s name in the chip, and the header keeps the row it had for READY-P1 (#406)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-003"],
+      "issueRefs": [406],
       "screenshots": []
     },
     {
@@ -8789,6 +8821,30 @@
       "screenshots": []
     },
     {
+      "test": "the data view’s second face APP-STUDY-001: a snapshot chosen on the study view is the one the app holds: the charts’ files and gsm’s raw files become that snapshot’s, read from the study with no R; a file the snapshot does not have does not stay behind, and an efficacy score is still left out; a move within the snapshot loads nothing (#406)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-001"],
+      "issueRefs": [406],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face APP-STUDY-002: a study opens on its own last snapshot: the study view is opened there, and a snapshot chosen in one study is not carried to the next, even where the next has one of the same date (#406)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-002"],
+      "issueRefs": [406],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face APP-STUDY-003: the study chip says which snapshot the page draws, under the study’s name on every tab, and the i’s card says its date; a study with no snapshots to choose from says nothing of one (#406)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-003"],
+      "issueRefs": [406],
+      "screenshots": []
+    },
+    {
       "test": "the data view’s second face draws a study study.builder built with study.builder’s own study view when the page has it, told to leave out its RBQM and Safety views since the app has tabs of its own for both, and opens it again where the reader was",
       "suite": "unit",
       "status": "pass",
@@ -10386,6 +10442,14 @@
       "status": "pass",
       "requirementIds": ["APP-PAGE-047"],
       "issueRefs": [407],
+      "screenshots": []
+    },
+    {
+      "test": "the study chip APP-PAGE-049: the chip carries the study’s whole name on hover, where the header may cut it short, and the rules that keep the header to one row start at 1,200 pixels, so none of them reaches a narrower page (#416)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-049"],
+      "issueRefs": [416],
       "screenshots": []
     },
     {
