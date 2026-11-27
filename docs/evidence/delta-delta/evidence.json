@@ -1,15 +1,15 @@
 {
   "module": "delta-delta",
-  "generatedAt": "2026-11-26T14:17:52.337Z",
+  "generatedAt": "2026-11-27T01:09:27.202Z",
   "environment": {
-    "os": "linux 7.0.0-1020-azure",
+    "os": "linux 7.0.0-1018-aws",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "45837456311",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45837456311"
+    "id": "45920836403",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45920836403"
   },
   "records": [
     {
@@ -370,6 +370,30 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-026"],
       "issueRefs": [196],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-029: on the built demo page a study built in real R with Labs, Vital signs and ECGs turned off, and loaded into the demo over a ready-made study, leaves none of that study’s files: no labs, vital signs or ECG file is placed, set aside or kept raw, and every loaded file is one the built study has (#405)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-029"],
+      "issueRefs": [405],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-029: on the built demo page a study replaces the one before it, whatever kind either is: after each switch between the demo studies, a reader’s own files and two ready-made simulated studies, the files and rows loaded are those the study has when it is opened on an empty page (#405)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-029"],
+      "issueRefs": [405],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-030: on the built demo page, with a ready-made simulated study in use, the Overview tab has both faces, the study view first; the Files face lists the study’s files and has the file picker and Reset; Choose files on the Studies view opens the file chooser; and Reset clears the study to the empty drop zone and leaves it in the list, to open again as it was (#405)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-030"],
+      "issueRefs": [405],
       "screenshots": []
     },
     {
@@ -3297,6 +3321,30 @@
       "screenshots": []
     },
     {
+      "test": "a study in place of the one before it APP-LOAD-029: a simulated study replaces the study before it, a demo study or a simulated one, with its raw files and the files the next one does not have; so does the same study handed over again; and a demo study replaces a simulated one (#405)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-029"],
+      "issueRefs": [405],
+      "screenshots": []
+    },
+    {
+      "test": "a study in place of the one before it APP-LOAD-029: a study that says what it is replaces a reader’s own files, placed and set aside, and the mapping file held for them; both parts of it stay, its raw files and its standard files (#405)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-029"],
+      "issueRefs": [405],
+      "screenshots": []
+    },
+    {
+      "test": "a study in place of the one before it APP-LOAD-029: files of a reader’s own replace a simulated study whole and say so, and join files of the reader’s own; a mapping file alone leaves the study what it was (#405)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-029"],
+      "issueRefs": [405],
+      "screenshots": []
+    },
+    {
       "test": "a study the reader’s mapping gives R little of (#258) APP-RBQM-042: a column the mapping names that the file does not have is not handed to R, which then says the column is not mapped (#258)",
       "suite": "unit",
       "status": "pass",
@@ -3390,6 +3438,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [366],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-LOAD-029: a study handed over replaces the one handed over before it: the raw files and the placed files the next study does not have are gone, and a file of the same name has the next study’s rows (#405)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-029"],
+      "issueRefs": [405],
       "screenshots": []
     },
     {
@@ -8374,6 +8430,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face APP-LOAD-030: with a study study.builder built in use, the Files face is in reach beside the study view and has the file picker and Reset; Choose files on the Studies view opens the picker; and Reset clears the study as it clears a demo study (#405)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-030"],
+      "issueRefs": [405],
       "screenshots": []
     },
     {
