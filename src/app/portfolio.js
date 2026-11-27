@@ -12,6 +12,7 @@
 // draws them and decides nothing about loading.
 
 import { el, plural } from './dom.js';
+import { snapshotDrawn } from './viewer-view.js';
 
 /** The Studies view's id, and its tab's. */
 export const STUDIES_VIEW_ID = 'studies';
@@ -114,10 +115,24 @@ export function drawChip(container, app) {
   chip.dataset.action = 'study-chip';
   chip.setAttribute('aria-haspopup', 'true');
   chip.setAttribute('aria-expanded', String(state.chip === 'menu'));
-  chip.append(
-    el('span', 'sva-chip-name', current ? current.name : 'No study'),
-    el('span', 'sva-chip-caret', state.chip === 'menu' ? '▴' : '▾')
-  );
+  // A study that kept its snapshots says which one the page draws, under its
+  // name (#406): the charts and the RBQM tab draw that one, as the Overview does.
+  const snapshot = current ? snapshotDrawn(state.named) : null;
+  const name = el('span', 'sva-chip-name', current ? current.name : 'No study');
+  const caret = el('span', 'sva-chip-caret', state.chip === 'menu' ? '▴' : '▾');
+  if (snapshot) {
+    const words = el('span', 'sva-chip-id');
+    words.append(
+      name,
+      el('span', 'sva-chip-snap', `Snapshot ${snapshot.number} of ${snapshot.of}`)
+    );
+    chip.append(words, caret);
+    chip.title = `${current.name} as it stood on ${snapshot.date}`;
+    chip.setAttribute(
+      'aria-label',
+      `${current.name}, snapshot ${snapshot.number} of ${snapshot.of}, ${snapshot.date}`
+    );
+  } else chip.append(name, caret);
   chip.lastChild.setAttribute('aria-hidden', 'true');
   container.append(chip);
 
@@ -224,6 +239,9 @@ export function drawChip(container, app) {
       facts.append(el('dt', null, label), el('dd', null, String(value)));
     };
     for (const one of current.facts || []) fact(one.label, one.value);
+    if (snapshot) {
+      fact('Snapshot drawn', `${snapshot.date} · ${snapshot.number} of ${snapshot.of}`);
+    }
     fact('Files', current.files);
     fact('Supports', supportSaid(current));
     pop.append(facts);

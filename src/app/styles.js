@@ -171,6 +171,9 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-studychip{display:inline-flex;align-items:center;gap:.4rem;min-height:2.2rem;padding:0 .7rem;border:1px solid var(--accent);border-radius:999px;background:var(--accent-soft);color:var(--ink);font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;max-width:16rem}
 .sva-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sva-chip-caret{font-size:.7rem;color:var(--accent)}
+.sva-chip-id{display:flex;flex-direction:column;align-items:flex-start;min-width:0;line-height:1.15}
+.sva-chip-id .sva-chip-name{max-width:100%}
+.sva-chip-snap{font-size:.62rem;font-weight:500;color:var(--soft);white-space:nowrap}
 .sva-chip-info{width:2.2rem;height:2.2rem;border:0;border-radius:50%;background:none;color:var(--accent);font:italic 600 .95rem/1 Georgia,serif;cursor:pointer}
 .sva-chip-info:hover,.sva-chip-info[aria-expanded=true]{background:var(--accent-soft)}
 .sva-chip-pop{position:absolute;top:calc(100% + .4rem);left:0;z-index:30;width:min(22rem,calc(100vw - 2rem));background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(31,35,40,.2)}

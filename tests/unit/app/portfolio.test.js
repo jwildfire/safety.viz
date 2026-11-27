@@ -526,6 +526,187 @@ describe('the data view’s second face', () => {
     expect(q('.sva-drop')).not.toBeNull();
   });
 
+  // A study study.builder built that kept its snapshots, as its `studyOf`
+  // gives one: `history` oldest first, the last being the study itself, and
+  // `at(date)`, the study as it stood then, with the files a page loads.
+  const people = (count) =>
+    Array.from({ length: count }, (_, index) => `S${index + 1},A,F`).join('\n');
+  function keptStudy(id, dates, { scores = false } = {}) {
+    const snapshot = (date, number) => ({
+      id,
+      snapshotDate: date,
+      snapshotNumber: number,
+      standard: [
+        { id: 'subject', name: 'adsl.csv' },
+        ...(scores ? [{ id: 'qs', name: 'adqs.csv' }] : [])
+      ],
+      files: () => ({
+        raw: [
+          { name: 'Raw_SUBJ.csv', text: `subjid,invid\n${people(number)}\n` },
+          // No adverse event had been reported by the first snapshot.
+          ...(number > 1 ? [{ name: 'Raw_AE.csv', text: `subjid,aeser\n${people(number)}\n` }] : [])
+        ],
+        standard: [
+          { name: 'adsl.csv', text: `USUBJID,ARM,SEX\n${people(number)}\n` },
+          ...(number > 1
+            ? [{ name: 'adae.csv', text: `USUBJID,AESEQ,AEBODSYS,AEDECOD\nS1,1,Body,Term\n` }]
+            : []),
+          ...(scores
+            ? [
+                {
+                  name: 'adqs.csv',
+                  text:
+                    'USUBJID,ARM,VISIT,VISITNUM,TEST,STRESN,BASE,CHG,ABLFL,DY\n' +
+                    'S1,A,Baseline,1,ADAS-Cog (11),24,24,0,Y,1\n'
+                }
+              ]
+            : [])
+        ]
+      })
+    });
+    const all = dates.map((date, index) => snapshot(date, index + 1));
+    const built = all[all.length - 1];
+    built.history = all.map((one) => ({
+      date: one.snapshotDate,
+      number: one.snapshotNumber,
+      problem: null,
+      study: () => one
+    }));
+    built.at = (date) => all.find((one) => one.snapshotDate === date) || null;
+    return built;
+  }
+  /** Hand a built study to the app as builder-view.js does. */
+  function handOver(built, id) {
+    const as = { id, name: built.id, kind: 'Simulated', built };
+    app.loadRaw(built.files().raw, { as });
+    app.loadFiles(built.files().standard, { notes: [], as });
+  }
+  const studyChip = () => q('[data-action="study-chip"]');
+
+  it('APP-STUDY-001: a snapshot chosen on the study view is the one the app holds: the charts’ files and gsm’s raw files become that snapshot’s, read from the study with no R; a file the snapshot does not have does not stay behind, and an efficacy score is still left out; a move within the snapshot loads nothing (#406)', async () => {
+    const mountStudy = vi.fn(() => ({ destroy() {} }));
+    globalThis.StudyViewer = { mount: vi.fn() };
+    globalThis.StudyBuilder = { mountStudy };
+    mounted({ demo: null, viewer });
+    const built = keptStudy('KEPT', ['2012-01-31', '2012-02-29', '2012-03-31'], { scores: true });
+    handOver(built, 'preset:kept');
+    await settle();
+    const rowsHeld = () => ({
+      participants: app.state.files.subject.rows.length,
+      placed: Object.values(app.state.files)
+        .map((file) => file.name)
+        .sort(),
+      raw: app.state.raw.map((file) => [file.name, file.rows])
+    });
+    expect(rowsHeld()).toEqual({
+      participants: 3,
+      placed: ['adae.csv', 'adqs.csv', 'adsl.csv'],
+      raw: [
+        ['Raw_SUBJ.csv', 3],
+        ['Raw_AE.csv', 3]
+      ]
+    });
+    // The reader chooses the first snapshot on the study view.
+    const drawn = mountStudy.mock.calls.length;
+    mountStudy.mock.calls.at(-1)[1].onView({ view: 'overview', snapshot: '2012-01-31' });
+    await settle();
+    expect(rowsHeld()).toEqual({
+      participants: 1,
+      placed: ['adsl.csv'],
+      raw: [['Raw_SUBJ.csv', 1]]
+    });
+    expect(app.state.unplaced).toEqual([]);
+    expect(app.state.notes).toEqual([]);
+    // It is still the same study, whole, and the study view opens where the reader was.
+    expect(app.state.named).toMatchObject({ id: 'preset:kept', name: 'KEPT', built });
+    expect(app.state.selected).toBe('data');
+    expect(mountStudy.mock.calls.length).toBeGreaterThan(drawn);
+    const again = mountStudy.mock.calls.at(-1)[1];
+    expect(again.study).toBe(built);
+    expect(again.viewing).toEqual({ view: 'overview', snapshot: '2012-01-31' });
+    // A move to another view of the same snapshot keeps the place and loads nothing.
+    const settledAt = mountStudy.mock.calls.length;
+    again.onView({ view: 'tables', table: 'adam:ADSL', snapshot: '2012-01-31' });
+    await settle();
+    expect(mountStudy.mock.calls.length).toBe(settledAt);
+    expect(app.state.viewing).toEqual({
+      view: 'tables',
+      table: 'adam:ADSL',
+      snapshot: '2012-01-31'
+    });
+    // The second snapshot has adverse events again; its score is left out as a study’s is.
+    again.onView({ view: 'tables', table: 'adam:ADSL', snapshot: '2012-02-29' });
+    await settle();
+    expect(rowsHeld()).toEqual({
+      participants: 2,
+      placed: ['adae.csv', 'adsl.csv'],
+      raw: [
+        ['Raw_SUBJ.csv', 2],
+        ['Raw_AE.csv', 2]
+      ]
+    });
+    expect(app.state.unplaced.map((item) => item.file.name)).toEqual([]);
+  });
+
+  it('APP-STUDY-002: a study opens on its own last snapshot: the study view is opened there, and a snapshot chosen in one study is not carried to the next, even where the next has one of the same date (#406)', async () => {
+    const mountStudy = vi.fn(() => ({ destroy() {} }));
+    globalThis.StudyViewer = { mount: vi.fn() };
+    globalThis.StudyBuilder = { mountStudy };
+    mounted({ demo: null, viewer });
+    const opened = () => mountStudy.mock.calls.at(-1)[1];
+    const first = keptStudy('FIRST', ['2012-01-31', '2012-02-29']);
+    handOver(first, 'preset:first');
+    await settle();
+    expect(opened().viewing).toEqual({ snapshot: '2012-02-29' });
+    opened().onView({ view: 'overview', snapshot: '2012-01-31' });
+    await settle();
+    expect(opened().viewing).toEqual({ view: 'overview', snapshot: '2012-01-31' });
+    // Another study, which has a snapshot of that date and two after it.
+    const second = keptStudy('SECOND', ['2012-01-31', '2012-02-29', '2012-03-31']);
+    handOver(second, 'preset:second');
+    await settle();
+    expect(opened().study).toBe(second);
+    expect(opened().viewing).toEqual({ view: 'overview', snapshot: '2012-03-31' });
+    expect(app.state.files.subject.rows).toHaveLength(3);
+    // A study that kept no snapshots is handed none to open at.
+    handOver({ id: 'PLAIN', files: () => first.files() }, 'preset:plain');
+    await settle();
+    expect(opened().viewing).toEqual({ view: 'overview' });
+  });
+
+  it('APP-STUDY-003: the study chip says which snapshot the page draws, under the study’s name on every tab, and the i’s card says its date; a study with no snapshots to choose from says nothing of one (#406)', async () => {
+    const mountStudy = vi.fn(() => ({ destroy() {} }));
+    globalThis.StudyViewer = { mount: vi.fn() };
+    globalThis.StudyBuilder = { mountStudy };
+    mounted({ demo: null, viewer });
+    const built = keptStudy('KEPT', ['2012-01-31', '2012-02-29', '2012-03-31']);
+    handOver(built, 'preset:kept');
+    await settle();
+    expect(q('.sva-chip-name').textContent).toBe('KEPT');
+    expect(q('.sva-chip-snap').textContent).toBe('Snapshot 3 of 3');
+    expect(studyChip().getAttribute('aria-label')).toBe('KEPT, snapshot 3 of 3, 2012-03-31');
+    mountStudy.mock.calls.at(-1)[1].onView({ view: 'overview', snapshot: '2012-01-31' });
+    await settle();
+    expect(q('.sva-chip-snap').textContent).toBe('Snapshot 1 of 3');
+    // On another tab the chip still says it.
+    app.select(STUDIES_VIEW_ID);
+    expect(q('.sva-chip-snap').textContent).toBe('Snapshot 1 of 3');
+    expect(studyChip().getAttribute('aria-label')).toBe('KEPT, snapshot 1 of 3, 2012-01-31');
+    q('[data-action="study-info"]').click();
+    const facts = [...q('.sva-chip-card').querySelectorAll('dt')].map((term) => [
+      term.textContent,
+      term.nextElementSibling.textContent
+    ]);
+    expect(facts).toContainEqual(['Snapshot drawn', '2012-01-31 · 1 of 3']);
+    // A study with one snapshot, and a reader's own files, say nothing of one.
+    handOver({ id: 'PLAIN', files: () => built.files() }, 'preset:plain');
+    expect(q('.sva-chip-snap')).toBeNull();
+    expect(studyChip().textContent).toBe('PLAIN▾');
+    expect(studyChip().hasAttribute('aria-label')).toBe(false);
+    app.loadFiles([DM]);
+    expect(q('.sva-chip-snap')).toBeNull();
+  });
+
   it('hands the viewer each placed file’s mapping as roles, and a role set in the viewer sets the app’s mapping', async () => {
     const mount = vi.fn();
     globalThis.StudyViewer = { mount };

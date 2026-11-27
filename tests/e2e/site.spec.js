@@ -581,6 +581,134 @@ test.describe('docs site', () => {
     ).toBeLessThanOrEqual(0);
   });
 
+  // The snapshot of a simulated study the page draws (#406). READY-P1 and
+  // PILOT-PROTOCOL are two of study.builder's ready-made studies that kept
+  // their monthly snapshots: six and seven, the first six on the same dates.
+  const snapshotPicker = (page) => page.locator('.sva-explore-body .sb-snapshot select');
+  const openReadyMade = async (page, id, name) => {
+    await page.locator('[data-action="study-chip"]').click();
+    await page.locator(`.sva-chip-item[data-study="preset:${id}"]`).click();
+    await expect(page.locator('.sva-chip-name')).toHaveText(name);
+  };
+  // What the app holds: the participants file the charts read, and gsm's raw
+  // participants file, which is what the RBQM tab hands R.
+  const held = (page) =>
+    page.evaluate(() => {
+      const { state } = window.__safetyVizApp;
+      return {
+        participants: state.files.subject.rows.length,
+        adverseEvents: state.files.ae.rows.length,
+        rawParticipants: state.raw.find((file) => file.name === 'Raw_SUBJ.csv').rows
+      };
+    });
+
+  test('APP-STUDY-001: on the built demo page an earlier snapshot of a ready-made study chosen on the Overview tab is the one the charts draw and the RBQM tab holds, and the study chip says which on every tab: READY-P1 at snapshot 1 of 6 has 2 participants in the charts where the last has 29; choosing the last brings its 29 back (#406)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    const said = page.locator('.sva-chip-snap');
+    const shownIn = page.locator('.sva-chart').getByText(/participants shown/);
+    // It opens on its last snapshot: the chart the reader is on draws all of it.
+    await expect(shownIn).toHaveText('29 of 29 participants shown (100.0%).');
+    expect(await held(page)).toEqual({ participants: 29, adverseEvents: 83, rawParticipants: 40 });
+    // The first snapshot, chosen where study.builder's study view offers them.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-06-30 · 6 of 6');
+    await snapshotPicker(page).selectOption('2012-01-31');
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-01-31 · 1 of 6');
+    // The charts draw that snapshot: the histogram counts its participants, and
+    // the adverse event explorer's one arm has them.
+    await page.locator('.sva-tab[data-domain="bds"]').click();
+    await expect(shownIn).toHaveText('2 of 2 participants shown (100.0%).');
+    expect(await held(page)).toEqual({ participants: 2, adverseEvents: 3, rawParticipants: 3 });
+    await expect(said).toHaveText('Snapshot 1 of 6');
+    await page.locator('.sva-tab[data-domain="ae"]').click();
+    await expect(page.locator('.sva-chart')).toContainText('Placebo (n=2)');
+    // The RBQM tab holds the same snapshot's raw files, and the chip says it there too.
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await expect(said).toHaveText('Snapshot 1 of 6');
+    await expect(page.locator('[data-action="study-chip"]')).toHaveAttribute(
+      'aria-label',
+      'READY-P1, snapshot 1 of 6, 2012-01-31'
+    );
+    expect((await held(page)).rawParticipants).toBe(3);
+    // Back on the Overview the choice stands; the last snapshot brings the whole study back.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-01-31 · 1 of 6');
+    await snapshotPicker(page).selectOption('2012-06-30');
+    await expect(said).toHaveText('Snapshot 6 of 6');
+    expect(await held(page)).toEqual({ participants: 29, adverseEvents: 83, rawParticipants: 40 });
+    await page.locator('.sva-tab[data-domain="bds"]').click();
+    await expect(shownIn).toHaveText('29 of 29 participants shown (100.0%).');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-STUDY-002: on the built demo page a second study opens on its own last snapshot: PILOT-PROTOCOL opened after READY-P1 at snapshot 3 of 6 reads 7 of 7, with its own 81 participants in the charts (#406)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    await snapshotPicker(page).selectOption('2012-03-31');
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-03-31 · 3 of 6');
+    // The second study has a snapshot of the same date, its third of seven.
+    await openReadyMade(page, 'cdisc-pilot-protocol', 'PILOT-PROTOCOL');
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-07-31 · 7 of 7');
+    await expect(page.locator('.sva-chip-snap')).toHaveText('Snapshot 7 of 7');
+    expect(await held(page)).toEqual({
+      participants: 81,
+      adverseEvents: 253,
+      rawParticipants: 120
+    });
+    // A study that kept only its last snapshot says nothing of one.
+    await openReadyMade(page, 'phase2-oncology', 'READY-P2');
+    await expect(page.locator('.sva-chip-snap')).toHaveCount(0);
+    await expect(snapshotPicker(page)).toHaveCount(0);
+  });
+
+  test('APP-STUDY-003: on the built demo page at 1,280 pixels the snapshot’s words sit under the study’s name in the chip, and the header is still one row for READY-P1 (#406)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('.sva-chip-snap')).toHaveText('Snapshot 6 of 6');
+    const boxes = await page.evaluate(() => {
+      const box = (selector) => {
+        const { top, bottom, left, right } = document
+          .querySelector(selector)
+          .getBoundingClientRect();
+        return { top, bottom, left, right };
+      };
+      return {
+        chip: box('.sva-studychip'),
+        name: box('.sva-chip-name'),
+        snapshot: box('.sva-chip-snap'),
+        brand: box('.sva-brand'),
+        status: box('.sva-appstatus'),
+        tabs: [...document.querySelectorAll('.sva-tabs > *')].map((tab) =>
+          Math.round(tab.getBoundingClientRect().top)
+        )
+      };
+    });
+    // Under the name, inside the chip.
+    expect(boxes.snapshot.top).toBeGreaterThanOrEqual(boxes.name.bottom - 1);
+    expect(boxes.snapshot.bottom).toBeLessThanOrEqual(boxes.chip.bottom);
+    expect(boxes.snapshot.right).toBeLessThanOrEqual(boxes.chip.right);
+    // One row: every tab, and the app's status label, beside the wordmark.
+    expect(new Set(boxes.tabs).size).toBe(1);
+    expect(boxes.status.top).toBeLessThan(boxes.brand.bottom);
+  });
+
   test('APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)', async ({
     page
   }) => {
