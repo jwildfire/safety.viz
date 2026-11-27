@@ -1,0 +1,71 @@
+# Adverse events summarised by body system and term, from the ADaM adverse
+# events table and ADSL: how many events, how many participants had one, and
+# what share of all participants that is. One row per body system and term.
+#
+# This is an analysis off the ADaM layer, beside gsm's site metrics, which are
+# analyses off Raw.RBQM: the analysis layer reads any data layer.
+meta:
+  Type: Analysis
+  ID: AESummary
+  Description: Adverse events by body system and term
+  Priority: 1
+  File: Analysis_AESummary.csv
+  Keys: [AEBODSYS, AEDECOD]
+spec:
+  ADaM_ADAE:
+    USUBJID:
+      type: character
+    AEBODSYS:
+      type: character
+    AEDECOD:
+      type: character
+    AESER:
+      type: character
+  ADaM_ADSL:
+    USUBJID:
+      type: character
+steps:
+  - output: Temp_Total
+    name: workr::RunQuery
+    params:
+      df: ADaM_ADSL
+      strQuery: 'SELECT COUNT(DISTINCT USUBJID) AS BIGN FROM df'
+  - output: Temp_AE
+    name: dplyr::cross_join
+    params:
+      x: ADaM_ADAE
+      'y': Temp_Total
+  - output: Analysis_AESummary
+    name: workr::RunQuery
+    params:
+      df: Temp_AE
+      strQuery: "SELECT AEBODSYS, AEDECOD, CAST(COUNT(*) AS INTEGER) AS EVENTS, CAST(SUM(CASE WHEN AESER = 'Y' THEN 1 ELSE 0 END) AS INTEGER) AS SERIOUS, CAST(COUNT(DISTINCT USUBJID) AS INTEGER) AS PARTICIPANTS, CAST(MAX(BIGN) AS INTEGER) AS BIGN, ROUND(100.0 * COUNT(DISTINCT USUBJID) / MAX(BIGN), 1) AS PERCENT FROM df GROUP BY AEBODSYS, AEDECOD ORDER BY AEBODSYS, AEDECOD"
+columns:
+  AEBODSYS:
+    label: Body System or Organ Class
+    from: ADAE.AEBODSYS
+    how: Copied
+  AEDECOD:
+    label: Dictionary-Derived Term
+    from: ADAE.AEDECOD
+    how: Copied
+  EVENTS:
+    label: Number of events
+    from: ADAE
+    how: 'Counted: the events of the term'
+  SERIOUS:
+    label: Number of serious events
+    from: ADAE.AESER
+    how: 'Counted: the events of the term marked serious'
+  PARTICIPANTS:
+    label: Participants with an event
+    from: ADAE.USUBJID
+    how: 'Counted: the participants with at least one event of the term'
+  BIGN:
+    label: Participants in the study
+    from: ADSL.USUBJID
+    how: 'Counted: every participant in ADSL'
+  PERCENT:
+    label: Percent of participants
+    from: ADAE.USUBJID, ADSL.USUBJID
+    how: 'Derived: participants with an event as a percentage of every participant, to one decimal place'

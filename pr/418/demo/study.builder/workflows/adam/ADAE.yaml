@@ -1,0 +1,91 @@
+# ADaM adverse events table, from the raw adverse events table and ADSL. One
+# row per event.
+meta:
+  Type: ADaM
+  ID: ADAE
+  Description: Adverse events analysis table
+  Priority: 2
+  File: adae.csv
+  Keys: [USUBJID, AESEQ]
+  Domain: ae
+spec:
+  Raw_AE:
+    subjid:
+      type: character
+    mdrsoc_nsv:
+      type: character
+    mdrpt_nsv:
+      type: character
+    aetoxgr:
+      type: integer
+    aeser:
+      type: character
+    aest_dt:
+      type: Date
+    aeen_dt:
+      type: Date
+  ADaM_ADSL:
+    USUBJID:
+      type: character
+    ARM:
+      type: character
+    TRTSDT:
+      type: Date
+steps:
+  - output: Temp_DayOne
+    name: workr::RunQuery
+    params:
+      df: ADaM_ADSL
+      strQuery: 'SELECT USUBJID AS subjid, ARM, TRTSDT FROM df'
+  - output: Temp_AE
+    name: dplyr::inner_join
+    params:
+      x: Raw_AE
+      'y': Temp_DayOne
+      by: subjid
+  - output: ADaM_ADAE
+    name: workr::RunQuery
+    params:
+      df: Temp_AE
+      strQuery: "SELECT subjid AS USUBJID, ARM, CAST(ROW_NUMBER() OVER (PARTITION BY subjid ORDER BY aest_dt) AS INTEGER) AS AESEQ, mdrsoc_nsv AS AEBODSYS, mdrpt_nsv AS AEDECOD, mdrpt_nsv AS AETERM, CASE WHEN aetoxgr IS NULL THEN NULL WHEN aetoxgr <= 1 THEN 'MILD' WHEN aetoxgr = 2 THEN 'MODERATE' ELSE 'SEVERE' END AS AESEV, aeser AS AESER, CAST(CASE WHEN aest_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(aest_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(aest_dt AS DATE)) END AS INTEGER) AS ASTDY, CAST(CASE WHEN aeen_dt >= TRTSDT THEN date_diff('day', TRTSDT, CAST(aeen_dt AS DATE)) + 1 ELSE date_diff('day', TRTSDT, CAST(aeen_dt AS DATE)) END AS INTEGER) AS AENDY FROM df ORDER BY subjid, aest_dt"
+columns:
+  USUBJID:
+    label: Unique Subject Identifier
+    from: Raw_AE.subjid
+    how: Copied
+  ARM:
+    label: Description of Planned Arm
+    from: ADSL.ARM
+    how: Joined from the participant's row
+  AESEQ:
+    label: Sequence Number
+    from: Raw_AE.aest_dt
+    how: "Derived: the event's number within the participant, in order of start date"
+  AEBODSYS:
+    label: Body System or Organ Class
+    from: Raw_AE.mdrsoc_nsv
+    how: Copied
+  AEDECOD:
+    label: Dictionary-Derived Term
+    from: Raw_AE.mdrpt_nsv
+    how: Copied
+  AETERM:
+    label: Reported Term for the Adverse Event
+    from: Raw_AE.mdrpt_nsv
+    how: Copied
+  AESEV:
+    label: Severity/Intensity
+    from: Raw_AE.aetoxgr
+    how: 'Derived: the toxicity grade in words, 1 mild, 2 moderate, 3 or more severe'
+  AESER:
+    label: Serious Event
+    from: Raw_AE.aeser
+    how: Copied
+  ASTDY:
+    label: Analysis Start Relative Day
+    from: Raw_AE.aest_dt, ADSL.TRTSDT
+    how: 'Derived: the date less day one, plus one; a day before day one counts back from -1'
+  AENDY:
+    label: Analysis End Relative Day
+    from: Raw_AE.aeen_dt, ADSL.TRTSDT
+    how: 'Derived: the date less day one, plus one; a day before day one counts back from -1'
