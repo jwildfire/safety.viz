@@ -673,7 +673,7 @@ test.describe('docs site', () => {
     await expect(snapshotPicker(page)).toHaveCount(0);
   });
 
-  test('APP-STUDY-003: on the built demo page at 1,280 pixels the snapshot’s words sit under the study’s name in the chip, and the header is still one row for READY-P1 (#406)', async ({
+  test('APP-STUDY-003: on the built demo page at 1,280 pixels the snapshot’s words sit under the study’s name in the chip, and the header keeps the row it had for READY-P1 (#406)', async ({
     page
   }) => {
     await page.setViewportSize({ width: 1280, height: 720 });
@@ -682,31 +682,42 @@ test.describe('docs site', () => {
     await openReadyMade(page, 'phase1-small', 'READY-P1');
     await page.evaluate(() => document.fonts.ready);
     await expect(page.locator('.sva-chip-snap')).toHaveText('Snapshot 6 of 6');
-    const boxes = await page.evaluate(() => {
-      const box = (selector) => {
-        const { top, bottom, left, right } = document
-          .querySelector(selector)
-          .getBoundingClientRect();
-        return { top, bottom, left, right };
-      };
-      return {
-        chip: box('.sva-studychip'),
-        name: box('.sva-chip-name'),
-        snapshot: box('.sva-chip-snap'),
-        brand: box('.sva-brand'),
-        status: box('.sva-appstatus'),
-        tabs: [...document.querySelectorAll('.sva-tabs > *')].map((tab) =>
-          Math.round(tab.getBoundingClientRect().top)
-        )
-      };
-    });
+    const measure = () =>
+      page.evaluate(() => {
+        const box = (selector) => {
+          const { top, bottom, left, right } = document
+            .querySelector(selector)
+            .getBoundingClientRect();
+          return { top, bottom, left, right };
+        };
+        return {
+          chip: box('.sva-studychip'),
+          name: box('.sva-chip-name'),
+          snapshot: box('.sva-chip-snap'),
+          header: Math.round(document.querySelector('.sva-header').getBoundingClientRect().height),
+          status: Math.round(document.querySelector('.sva-appstatus').getBoundingClientRect().top),
+          tabs: [...document.querySelectorAll('.sva-tabs > *')].map((tab) =>
+            Math.round(tab.getBoundingClientRect().top)
+          )
+        };
+      });
+    const boxes = await measure();
     // Under the name, inside the chip.
     expect(boxes.snapshot.top).toBeGreaterThanOrEqual(boxes.name.bottom - 1);
     expect(boxes.snapshot.bottom).toBeLessThanOrEqual(boxes.chip.bottom);
     expect(boxes.snapshot.right).toBeLessThanOrEqual(boxes.chip.right);
-    // One row: every tab, and the app's status label, beside the wordmark.
+    // Every tab is on one row.
     expect(new Set(boxes.tabs).size).toBe(1);
-    expect(boxes.status.top).toBeLessThan(boxes.brand.bottom);
+    // The words cost the header nothing: with them taken away it is as tall, and
+    // the app's status label sits where it did. Whether that label fits beside the
+    // tabs at this width depends on the typeface, and this page loads none: it
+    // does in macOS's and does not in the Linux runner's, with the words or
+    // without, so that is not asserted here.
+    await page.addStyleTag({ content: '.sva-chip-snap{display:none}' });
+    const without = await measure();
+    expect(boxes.header).toBe(without.header);
+    expect(boxes.status).toBe(without.status);
+    expect(boxes.tabs).toEqual(without.tabs);
   });
 
   test('APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)', async ({
