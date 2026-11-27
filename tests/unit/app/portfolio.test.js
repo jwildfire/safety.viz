@@ -561,6 +561,62 @@ describe('the data view’s second face', () => {
     document.head.querySelectorAll('script').forEach((script) => script.remove());
   });
 
+  it('APP-LIB-039: the viewer of one visit to the Overview is released when the next is drawn, so twenty visits hold one viewer and not twenty; a study view study.builder draws releases it too, and is released in its turn (#408)', async () => {
+    const live = new Set();
+    const mount = vi.fn(() => {
+      const handle = { destroy: vi.fn(() => live.delete(handle)) };
+      live.add(handle);
+      return handle;
+    });
+    globalThis.StudyViewer = { mount };
+    mounted({ demo: null, viewer });
+    app.loadFiles([DM]);
+    await settle();
+    expect(mount).toHaveBeenCalledTimes(1);
+    for (let visit = 0; visit < 20; visit += 1) {
+      app.select(STUDIES_VIEW_ID);
+      app.select('data');
+      await settle();
+    }
+    expect(mount).toHaveBeenCalledTimes(21);
+    expect(live.size).toBe(1);
+    // The one held is the one on the page.
+    expect(mount.mock.results.at(-1).value.destroy).not.toHaveBeenCalled();
+    // A study study.builder built is drawn by its study view, which takes the viewer's place.
+    const studyView = { destroy: vi.fn() };
+    globalThis.StudyBuilder = { mountStudy: vi.fn(() => studyView) };
+    app.loadFiles([DM], { as: { id: 'x', name: 'BUILT', built: { id: 'BUILT' } } });
+    await settle();
+    expect(live.size).toBe(0);
+    expect(studyView.destroy).not.toHaveBeenCalled();
+    // And the reader's own files after it release the study view.
+    delete globalThis.StudyBuilder;
+    app.loadFiles([DM]);
+    await settle();
+    expect(studyView.destroy).toHaveBeenCalledTimes(1);
+    expect(live.size).toBe(1);
+  });
+
+  it('APP-LIB-040: study.viewer’s script is fetched the first time the data view draws a loaded study, which on a page that loads a demo study as it opens is as the page opens, with nothing pressed; it is fetched once, however many times the Overview is opened (#408)', async () => {
+    const asked = () => document.head.querySelectorAll('script[src="./study.viewer.js"]').length;
+    // A page with no study yet has asked for nothing.
+    mounted({ demo: null, viewer });
+    expect(asked()).toBe(0);
+    app.destroy();
+    // A page that loads a demo study as it opens: the data view is drawn with
+    // the study on the way to the first view, and the script is asked for then.
+    mounted({ viewer });
+    await app.ready;
+    expect(asked()).toBe(1);
+    for (let visit = 0; visit < 3; visit += 1) {
+      app.select(STUDIES_VIEW_ID);
+      app.select('data');
+    }
+    app.loadFiles([DM]);
+    expect(asked()).toBe(1);
+    document.head.querySelectorAll('script').forEach((script) => script.remove());
+  });
+
   it('reads the loaded files as tables: placed, set aside, and gsm’s raw files', () => {
     mounted({ demo: null });
     app.loadFiles([DM, { name: 'notes.csv', text: 'A,B\n1,2\n' }]);

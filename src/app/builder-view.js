@@ -9,9 +9,16 @@
 // files for the RBQM tab, and the standard files for the other charts.
 //
 // Nothing of study.builder is in the app's bundle. Its script is fetched from
-// the page's own address when the source is first opened, and R is not asked for
-// until the reader presses Build. The widget is handed the app's own way of
-// making a connection to R, so it and the RBQM tab share one R.
+// the page's own address when it is first needed, and that depends on the page
+// (#408). A page with the study chip (`portfolio: true`, as the hosted demo)
+// needs it as it opens: the chip's list names study.builder's ready-made
+// studies and the ones saved in this browser, and both are read by
+// study.builder's own code, so the script and then the list of ready-made
+// studies are fetched as the page opens. No study is fetched until the reader
+// opens one. A page with no chip fetches nothing until the source is first
+// opened. Either way R is not asked for until the reader presses Build. The
+// widget is handed the app's own way of making a connection to R, so it and
+// the RBQM tab share one R.
 //
 // This module loads the script, keeps the one widget across the page's
 // redraws, and hands the study to the app, which closes the source and shows
@@ -54,7 +61,8 @@ export function builderSource({
   const canBuild = typeof createConnection === 'function' && !unavailable;
 
   // The studies study.builder has for this page: the ready-made ones it hosts,
-  // and what the reader saved in this browser. Found once, when first asked.
+  // and what the reader saved in this browser. Found once, when first asked,
+  // which a page with the study chip does as it opens: the chip's list is theirs.
   let offered = null; // { presets, shelf, saved } once found
   let finding = null;
   let opening = '';
@@ -154,7 +162,11 @@ export function builderSource({
     app.redrawView('studies');
   }
 
-  /** study.builder, loaded once from the page's own address when the tab is first opened. */
+  /**
+   * study.builder, loaded once from the page's own address: when the page's
+   * list of studies first asks what it has, or when the source is first opened.
+   * A script that did not load is taken off the page, and the next call asks again.
+   */
   function loadLibrary() {
     if (loading) return loading;
     const found = () => (library && globalThis[library.global]) || null;
@@ -167,7 +179,10 @@ export function builderSource({
         found()
           ? resolve(found())
           : reject(new Error(`${library.url} did not define ${library.global}`));
-      script.onerror = () => reject(new Error(`${library.url} did not load on this page`));
+      script.onerror = () => {
+        script.remove();
+        reject(new Error(`${library.url} did not load on this page`));
+      };
       document.head.append(script);
       return undefined;
     }).catch((error) => {
@@ -347,6 +362,10 @@ export function builderSource({
     state: () => ({ loaded, problem, mounted: Boolean(widget), widget }),
     render(container, app) {
       shown = { container, app };
+      // Opened again after the builder could not be shown, it is tried again
+      // (#408): the script is asked for once more. The source's own redraws
+      // (`redraw`) do not come this way, so one failure is one request.
+      if (problem && !holder && !loading) problem = '';
       draw(container, app);
       return {
         destroy() {

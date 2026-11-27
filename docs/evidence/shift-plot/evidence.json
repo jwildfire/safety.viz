@@ -1,15 +1,15 @@
 {
   "module": "shift-plot",
-  "generatedAt": "2026-11-27T02:23:24.926Z",
+  "generatedAt": "2026-11-27T02:43:51.531Z",
   "environment": {
-    "os": "linux 7.0.0-1014-aws",
+    "os": "linux 7.0.0-1020-azure",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "45927933921",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45927933921"
+    "id": "45929982244",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/45929982244"
   },
   "records": [
     {
@@ -226,6 +226,30 @@
       "status": "pass",
       "requirementIds": ["APP-LIB-037"],
       "issueRefs": [268],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-038: on the built demo page, after study.builder’s script did not load, Build a study says so, and opened again it asks for the script again and shows the builder (#408)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-038"],
+      "issueRefs": [408],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-039: on the built demo page each visit to the Overview tab releases the viewer of the visit before: six visits leave no more of the viewer’s watchers on the page than one (#408)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-039"],
+      "issueRefs": [408],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-040: as the built demo page opens it fetches study.builder’s script and its list of ready-made studies, for the study chip’s list, and study.viewer’s script, and no study; opening the chip’s list and the Overview tab fetches nothing more, and a ready-made study is fetched when the reader opens it (#408)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-040"],
+      "issueRefs": [408],
       "screenshots": []
     },
     {
@@ -3480,6 +3504,22 @@
       "screenshots": []
     },
     {
+      "test": "Build a study, on the data view APP-LIB-038: on a page with the study chip, where study.builder’s script is asked for as the page opens, a script that did not load then is asked for again when Build a study is first opened (#408)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-038"],
+      "issueRefs": [408],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-LIB-040: on a page with the study chip, study.builder’s script is fetched as the page opens, for the chip’s list, then its list of ready-made studies and the studies saved in this browser, and no study until the reader opens one (#408)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-040"],
+      "issueRefs": [408],
+      "screenshots": []
+    },
+    {
       "test": "Build a study, on the data view APP-LOAD-029: a study handed over replaces the one handed over before it: the raw files and the placed files the next study does not have are gone, and a file of the same name has the next study’s rows (#405)",
       "suite": "unit",
       "status": "pass",
@@ -3496,7 +3536,7 @@
       "screenshots": []
     },
     {
-      "test": "Build a study, on the data view is a way to load data in step one, not a tab; it fetches study.builder’s script when first opened, and nothing before",
+      "test": "Build a study, on the data view is a way to load data in step one, not a tab; on a page with no study chip it fetches study.builder’s script when first opened, and nothing before",
       "suite": "unit",
       "status": "pass",
       "requirementIds": [],
@@ -8562,6 +8602,22 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face APP-LIB-039: the viewer of one visit to the Overview is released when the next is drawn, so twenty visits hold one viewer and not twenty; a study view study.builder draws releases it too, and is released in its turn (#408)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-039"],
+      "issueRefs": [408],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face APP-LIB-040: study.viewer’s script is fetched the first time the data view draws a loaded study, which on a page that loads a demo study as it opens is as the page opens, with nothing pressed; it is fetched once, however many times the Overview is opened (#408)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-040"],
+      "issueRefs": [408],
       "screenshots": []
     },
     {

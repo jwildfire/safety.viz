@@ -83,7 +83,7 @@ const createConnection = () => ({ run: async () => ({ status: 'ok', value: {} })
 const button = () => document.querySelector('[data-action="source-build"]');
 
 describe('Build a study, on the data view', () => {
-  it('is a way to load data in step one, not a tab; it fetches study.builder’s script when first opened, and nothing before', async () => {
+  it('is a way to load data in step one, not a tab; on a page with no study chip it fetches study.builder’s script when first opened, and nothing before', async () => {
     mounted(builderSource({ createConnection, ...OPTIONS }));
     expect(document.querySelector('[data-tab="build"]')).toBeNull();
     expect(button().textContent).toBe('Build a study');
@@ -232,18 +232,132 @@ describe('Build a study, on the data view', () => {
     expect(document.querySelector('.sva-source')).toBeNull();
   });
 
+  const scripts = () => [...document.head.querySelectorAll('script')];
+  const alertSaid = () => {
+    const box = document.querySelector('.sva-source [role="alert"]');
+    return box ? box.textContent : null;
+  };
+  const NOT_LOADED =
+    'The builder cannot be shown: ./study.builder/study.builder.js did not load on this page.';
+
   it('says so when study.builder’s script does not load, and tries again when it is opened again', async () => {
     const source = builderSource({ createConnection, ...OPTIONS });
     const handle = mounted(source);
     handle.openSource(BUILDER_SOURCE_ID);
-    document.head.querySelector('script').onerror();
+    const [first] = scripts();
+    first.onerror();
     await settle();
-    expect(document.querySelector('.sva-source [role="alert"]').textContent).toBe(
-      'The builder cannot be shown: ./study.builder/study.builder.js did not load on this page.'
-    );
+    expect(alertSaid()).toBe(NOT_LOADED);
     expect(source.state().mounted).toBe(false);
+    // The script that did not load is taken off the page, and nothing asks
+    // for another while the source stays as it is, or once it is closed.
+    expect(scripts()).toHaveLength(0);
+    handle.redrawView('data');
     handle.openSource(null);
-    expect(document.head.querySelectorAll('script')).toHaveLength(1);
+    expect(scripts()).toHaveLength(0);
+    // Opened again, it asks for the script again (#408).
+    handle.openSource(BUILDER_SOURCE_ID);
+    const [again] = scripts();
+    expect(scripts()).toHaveLength(1);
+    expect(again).not.toBe(first);
+    expect(again.getAttribute('src')).toBe('./study.builder/study.builder.js');
+    expect(alertSaid()).toBeNull();
+    expect(document.querySelector('.sva-source').textContent).toContain('Loading the builder');
+    // It fails again: the page says so again, after one request.
+    again.onerror();
+    await settle();
+    expect(alertSaid()).toBe(NOT_LOADED);
+    expect(scripts()).toHaveLength(0);
+    // The third time the script loads, and the builder is shown.
+    handle.openSource(null);
+    handle.openSource(BUILDER_SOURCE_ID);
+    const builder = fakeBuilder();
+    globalThis.StudyBuilder = builder;
+    scripts()[0].onload();
+    await settle();
+    expect(alertSaid()).toBeNull();
+    expect(builder.mount).toHaveBeenCalledTimes(1);
+    expect(source.state().mounted).toBe(true);
+    expect(document.querySelector('.sva-source .sva-build-widget').textContent).toBe('the widget');
+  });
+
+  /** The app with the study chip, whose list asks the source what studies it has as the page opens. */
+  function withChip(source) {
+    document.body.innerHTML = '<div id="app"></div>';
+    app = mountApp('#app', {
+      charts: {},
+      manifest,
+      portfolio: true,
+      libraries: [{ name: 'study.builder', source }]
+    });
+    return app;
+  }
+
+  it('APP-LIB-038: on a page with the study chip, where study.builder’s script is asked for as the page opens, a script that did not load then is asked for again when Build a study is first opened (#408)', async () => {
+    const source = builderSource({ createConnection, ...OPTIONS });
+    const handle = withChip(source);
+    const [first] = scripts();
+    expect(first.getAttribute('src')).toBe('./study.builder/study.builder.js');
+    first.onerror();
+    await settle();
+    expect(scripts()).toHaveLength(0);
+    expect(handle.portfolio().problem).toContain('studies could not be listed');
+    handle.openSource(BUILDER_SOURCE_ID);
+    expect(scripts()).toHaveLength(1);
+    expect(alertSaid()).toBeNull();
+    const builder = fakeBuilder();
+    globalThis.StudyBuilder = builder;
+    scripts()[0].onload();
+    await settle();
+    expect(builder.mount).toHaveBeenCalledTimes(1);
+    expect(document.querySelector('.sva-source .sva-build-widget').textContent).toBe('the widget');
+  });
+
+  it('APP-LIB-040: on a page with the study chip, study.builder’s script is fetched as the page opens, for the chip’s list, then its list of ready-made studies and the studies saved in this browser, and no study until the reader opens one (#408)', async () => {
+    const source = builderSource({ createConnection, ...OPTIONS });
+    const fetchPresets = vi.fn(async () => [
+      {
+        id: 'ready',
+        name: 'Ready-made',
+        study: './study.builder/presets/ready.study.json.gz',
+        settings: { name: 'READY', participants: 40, sites: 4 }
+      }
+    ]);
+    const openPreset = vi.fn(async () => ({ study: { ...STUDY, id: 'READY' } }));
+    const list = vi.fn(async () => []);
+    const handle = withChip(source);
+    // As the page opens, with nothing pressed: the script, and nothing else yet.
+    expect(scripts().map((script) => script.getAttribute('src'))).toEqual([
+      './study.builder/study.builder.js'
+    ]);
+    expect(handle.portfolio().busy).toBe('Looking for study.builder’s studies…');
+    globalThis.StudyBuilder = {
+      ...fakeBuilder(),
+      fetchPresets,
+      openPreset,
+      createShelf: () => ({ available: true, list })
+    };
+    scripts()[0].onload();
+    await settle();
+    // Once it has loaded: the list of ready-made studies, from beside the script, and the shelf.
+    expect(fetchPresets.mock.calls).toEqual([['./study.builder/presets/index.json']]);
+    expect(list).toHaveBeenCalledTimes(1);
+    const { studies, busy } = handle.portfolio();
+    expect(busy).toBe('');
+    expect(studies.map((entry) => entry.id)).toEqual(['preset:ready']);
+    // The widget is not mounted, and no study is fetched, until the reader asks.
+    expect(source.state().mounted).toBe(false);
+    expect(openPreset).not.toHaveBeenCalled();
+    // However many times the page is drawn, each is asked for once.
+    handle.select('data');
+    handle.retag();
+    await settle();
+    expect(scripts()).toHaveLength(1);
+    expect(fetchPresets).toHaveBeenCalledTimes(1);
+    studies[0].open();
+    await settle();
+    expect(openPreset).toHaveBeenCalledTimes(1);
+    expect(handle.state.named.name).toBe('READY');
   });
 
   it('offers no builder on a page that cannot start R, and says why', () => {

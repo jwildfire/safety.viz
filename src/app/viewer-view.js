@@ -5,7 +5,11 @@
 // files and a simulated study; a simulated study brings its layers with it.
 //
 // Nothing of study.viewer is in the app's bundle: its script is fetched from
-// the page's own address the first time a reader explores a study.
+// the page's own address the first time the data view draws a loaded study
+// with it. On a page that loads a demo study as it opens, that is as the page
+// opens, whichever tab it opens on: the data view is drawn once with the study
+// before the first chart takes its place (#408). Nothing more is fetched when
+// the reader opens the Overview tab or loads files of their own.
 
 import { el } from './dom.js';
 import { note } from './note.js';
@@ -118,8 +122,21 @@ export function studyModule() {
   return builder && typeof builder.mountStudy === 'function' ? builder.mountStudy : null;
 }
 
-// The study view on the page now, let go of when the next is drawn.
-let studyShown = null;
+// What is on the page now, study.builder's study view or the viewer, let go of
+// when the next of either is drawn (#408): one is held at a time, however many
+// times the Overview tab is opened.
+let shownNow = null;
+
+function release() {
+  const last = shownNow;
+  shownNow = null;
+  if (!last || typeof last.destroy !== 'function') return;
+  try {
+    last.destroy();
+  } catch {
+    // It was already gone with its element.
+  }
+}
 
 /**
  * Draw study.builder's view of a built study into an element of the data view.
@@ -131,18 +148,11 @@ let studyShown = null;
 export function drawStudy(container, app, built) {
   const mountStudy = studyModule();
   if (!mountStudy) return false;
-  if (studyShown) {
-    try {
-      studyShown.destroy();
-    } catch {
-      // It was already gone with its element.
-    }
-    studyShown = null;
-  }
+  release();
   container.textContent = '';
   container.classList.add('sva-explore', 'sva-study');
   try {
-    studyShown = mountStudy(container, {
+    shownNow = mountStudy(container, {
       study: built,
       // The app has its own RBQM tab and its own safety charts: the study
       // view leaves its RBQM and Safety views out, so neither is there twice.
@@ -172,13 +182,14 @@ export function drawViewer(container, app, study, { onRole = null } = {}) {
   container.textContent = '';
   container.classList.add('sva-explore');
   container.append(note({ say: 'Loading the viewer…', busy: true, role: 'status' }));
+  release();
   loadViewer(app.viewer).then(
     (viewer) => {
       if (!container.isConnected) return;
       container.textContent = '';
       const remembered = app.state.viewing || {};
       try {
-        viewer.mount(container, {
+        shownNow = viewer.mount(container, {
           // A study study.builder built is handed over whole, with its layers.
           study: study && study.fromBuilt ? viewer.fromBuilt(study.fromBuilt) : study,
           view: remembered.view,
