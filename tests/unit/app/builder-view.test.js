@@ -164,6 +164,36 @@ describe('Build a study, on the data view', () => {
     ).toEqual(['Raw_SITE.csv', 'Raw_SUBJ.csv', 'adsl.csv', 'advs.csv']);
   });
 
+  it('APP-LOAD-029: a study handed over replaces the one handed over before it: the raw files and the placed files the next study does not have are gone, and a file of the same name has the next study’s rows (#405)', async () => {
+    const builder = fakeBuilder();
+    globalThis.StudyBuilder = builder;
+    const handle = mounted(builderSource({ createConnection, ...OPTIONS }));
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    builder.mounts[0].options.onStudy(STUDY);
+    // The next study was built with vital signs turned off, and has two participants.
+    builder.mounts[0].options.onStudy({
+      id: 'BUILT-002',
+      said: 'BUILT-002 is a simulated Phase 1 Oncology study.',
+      files: () => ({
+        raw: [{ name: 'Raw_SUBJ.csv', text: 'studyid,subjid,invid\nBUILT-002,S1,SITE1\n' }],
+        standard: [
+          {
+            name: 'adsl.csv',
+            text:
+              'USUBJID,ARM,SITEID,SEX,RACE,EOSDY\n' +
+              'S1,All participants,SITE1,F,Other,90\nS2,All participants,SITE1,M,Other,90\n'
+          }
+        ]
+      })
+    });
+    expect(handle.state.raw.map((file) => file.name)).toEqual(['Raw_SUBJ.csv']);
+    expect(Object.keys(handle.state.files)).toEqual(['subject']);
+    expect(handle.state.files.subject.rows).toHaveLength(2);
+    expect(handle.state.unplaced).toEqual([]);
+    expect(handle.state.named.name).toBe('BUILT-002');
+  });
+
   it('leaves a study’s efficacy scores out of the files it places, so they do not take the labs’ place', async () => {
     const builder = fakeBuilder();
     globalThis.StudyBuilder = builder;

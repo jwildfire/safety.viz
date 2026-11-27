@@ -646,34 +646,7 @@ export function renderDataPanel(container, app) {
   // study looked through, which is the face it opens on, and the files one by
   // one, where a file is placed by hand.
   const loadedFiles = Object.keys(state.files).length + state.unplaced.length + state.raw.length;
-  // A study study.builder built is shown whole by study.builder's own study
-  // view: its facts, its overview, its schedule and its tables. It is the data
-  // view; only what the data supports is said above it.
-  const builtStudy = state.named && state.named.built;
-  if (app.viewer && loadedFiles && builtStudy && studyModule()) {
-    container.classList.add('sva-data-wide');
-    const cards = el('div', 'sva-support-cards');
-    const drawCards = (said) => cards.replaceChildren(...said.map((one) => supportCard(one, app)));
-    drawCards(app.support());
-    const current = app.portfolio().studies.find((entry) => entry.current);
-    const supports = el('details', 'sva-explore-support');
-    supports.open = Boolean(state.supportOpen);
-    supports.addEventListener('toggle', () => {
-      state.supportOpen = supports.open;
-    });
-    const said =
-      current && current.support
-        ? `${current.support.ready} of ${plural(current.support.total, 'chart')} ready`
-        : 'What this data supports';
-    supports.append(el('summary', null, `${said}. What each tab says`), cards);
-    const body = el('div', 'sva-explore-body');
-    main.append(supports, body);
-    container.append(main);
-    if (drawStudy(body, app, builtStudy)) return { refresh: () => drawCards(app.support()) };
-    main.textContent = '';
-    container.classList.remove('sva-data-wide');
-  }
-  if (app.viewer && loadedFiles) {
+  const faceTabs = () => {
     const faces = el('div', 'sva-faces');
     faces.setAttribute('role', 'tablist');
     faces.setAttribute('aria-label', 'The data view');
@@ -690,7 +663,39 @@ export function renderDataPanel(container, app) {
       face.setAttribute('aria-selected', String(Boolean(state.exploring) === exploring));
       faces.append(face);
     }
-    main.append(faces);
+    return faces;
+  };
+  // A study study.builder built is shown whole by study.builder's own study
+  // view: its facts, its overview, its schedule and its tables. It is the
+  // first face; only what the data supports is said above it. The files one
+  // by one are its other face, as they are any study's, so the file picker
+  // and Reset are in reach whichever study is in use (#405).
+  const builtStudy = state.named && state.named.built;
+  if (app.viewer && loadedFiles && builtStudy && state.exploring && studyModule()) {
+    container.classList.add('sva-data-wide');
+    const cards = el('div', 'sva-support-cards');
+    const drawCards = (said) => cards.replaceChildren(...said.map((one) => supportCard(one, app)));
+    drawCards(app.support());
+    const current = app.portfolio().studies.find((entry) => entry.current);
+    const supports = el('details', 'sva-explore-support');
+    supports.open = Boolean(state.supportOpen);
+    supports.addEventListener('toggle', () => {
+      state.supportOpen = supports.open;
+    });
+    const said =
+      current && current.support
+        ? `${current.support.ready} of ${plural(current.support.total, 'chart')} ready`
+        : 'What this data supports';
+    supports.append(el('summary', null, `${said}. What each tab says`), cards);
+    const body = el('div', 'sva-explore-body');
+    main.append(faceTabs(), supports, body);
+    container.append(main);
+    if (drawStudy(body, app, builtStudy)) return { refresh: () => drawCards(app.support()) };
+    main.textContent = '';
+    container.classList.remove('sva-data-wide');
+  }
+  if (app.viewer && loadedFiles) {
+    main.append(faceTabs());
     if (state.exploring) {
       // The viewer has the whole width. Above it: what the data supports, and
       // the few things done to a study as a whole.
