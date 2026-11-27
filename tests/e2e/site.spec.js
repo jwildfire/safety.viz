@@ -614,6 +614,111 @@ test.describe('docs site', () => {
     expect(errors).toEqual([]);
   });
 
+  // What the built demo page fetches of study.builder, and when (#408). The
+  // page of the app's own browser tests asks for no study chip; this one does.
+  test('APP-LIB-040: as the built demo page opens it fetches study.builder’s script and its list of ready-made studies, for the study chip’s list, and study.viewer’s script, and no study; opening the chip’s list and the Overview tab fetches nothing more, and a ready-made study is fetched when the reader opens it (#408)', async ({
+    page
+  }) => {
+    const fetched = [];
+    page.on('request', (request) => {
+      const { pathname } = new URL(request.url());
+      if (pathname.startsWith('/_site/demo/study.builder/')) {
+        fetched.push(pathname.replace('/_site/demo/study.builder/', ''));
+      }
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
+    // The chip's list is whole: the ready-made studies are in it.
+    await page.locator('[data-action="study-chip"]').click();
+    const ready = page.locator('.sva-chip-item[data-study="preset:phase1-small"]');
+    await expect(ready).toBeVisible();
+    const asOpened = ['presets/index.json', 'study.builder.js', 'study.viewer.js'];
+    expect([...fetched].sort()).toEqual(asOpened);
+    await page.keyboard.press('Escape');
+    await expect(ready).toHaveCount(0);
+    // The Overview tab, opened twice, asks for nothing.
+    for (let visit = 0; visit < 2; visit += 1) {
+      await page.locator('.sva-item[data-view="data"]').click();
+      await expect(page.locator('.sva-explore-body .sv')).toBeVisible();
+      await page.locator('.sva-tab[data-domain="ae"]').click();
+    }
+    expect([...fetched].sort()).toEqual(asOpened);
+    // A ready-made study is fetched when the reader opens it, and not before.
+    await page.locator('[data-action="study-chip"]').click();
+    await ready.click();
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P1');
+    expect(fetched.slice(asOpened.length)).toEqual(['presets/phase1-small.study.json.gz']);
+  });
+
+  test('APP-LIB-039: on the built demo page each visit to the Overview tab releases the viewer of the visit before: six visits leave no more of the viewer’s watchers on the page than one (#408)', async ({
+    page
+  }) => {
+    // Count the watchers the page holds: study.viewer keeps one on the page's
+    // theme for as long as it is mounted, and lets it go when it is released.
+    await page.addInitScript(() => {
+      const Real = window.MutationObserver;
+      window.__watchers = new Set();
+      window.MutationObserver = class extends Real {
+        observe(...args) {
+          window.__watchers.add(this);
+          return super.observe(...args);
+        }
+        disconnect() {
+          window.__watchers.delete(this);
+          return super.disconnect();
+        }
+      };
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const visit = async () => {
+      await page.locator('.sva-item[data-view="data"]').click();
+      await expect(page.locator('.sva-explore-body .sv')).toBeVisible();
+      await page.locator('.sva-tab[data-domain="ae"]').click();
+      await expect(page.locator('.sva-explore-body')).toHaveCount(0);
+      await expect(page.locator('.sva-chart')).toBeVisible();
+      return page.evaluate(() => window.__watchers.size);
+    };
+    const afterOne = await visit();
+    let afterSix = afterOne;
+    for (let more = 0; more < 5; more += 1) afterSix = await visit();
+    expect(afterSix).toBe(afterOne);
+  });
+
+  test('APP-LIB-038: on the built demo page, after study.builder’s script did not load, Build a study says so, and opened again it asks for the script again and shows the builder (#408)', async ({
+    page
+  }) => {
+    let failing = true;
+    let asked = 0;
+    await page.route('**/study.builder/study.builder.js', (route) => {
+      asked += 1;
+      return failing ? route.abort() : route.continue();
+    });
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    // The page asked for the script as it opened, for the list of studies, and it did not load.
+    await expect(page.locator('.sva-studies [role="alert"]')).toContainText(
+      'studies could not be listed'
+    );
+    expect(asked).toBe(1);
+    // Build a study asks again, and says so when it fails again.
+    await page.locator('[data-add="describe"]').click();
+    await expect(page.locator('.sva-source [role="alert"]')).toHaveText(
+      'The builder cannot be shown: ./study.builder/study.builder.js did not load on this page.'
+    );
+    expect(asked).toBe(2);
+    // The script can be fetched now. Closed and opened again, the builder is shown.
+    failing = false;
+    await page.locator('[data-action="close-source"]').click();
+    await expect(page.locator('.sva-source')).toHaveCount(0);
+    await page.locator('[data-action="files"]').click();
+    await page.locator('[data-action="source-build"]').click();
+    await expect(page.locator('.sva-source .sva-build-widget')).toBeVisible();
+    await expect(page.locator('.sva-source [role="alert"]')).toHaveCount(0);
+    expect(asked).toBe(3);
+  });
+
   test('on the built demo page a ready-made simulated study opens from the Studies view with no R, and the Overview tab draws it with study.builder’s study view in sections: Overview, Design, Data, One participant and Reporting, with no RBQM view and no Safety view, since the app has tabs of its own for both; a view is reached through its section; at 1,400 pixels nothing of the overview runs past the page', async ({
     page
   }) => {
