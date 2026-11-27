@@ -132,7 +132,12 @@ export function drawChip(container, app) {
       'aria-label',
       `${current.name}, snapshot ${snapshot.number} of ${snapshot.of}, ${snapshot.date}`
     );
-  } else chip.append(name, caret);
+  } else {
+    chip.append(name, caret);
+    // The header cuts a name short before it grows a second row (#416): the
+    // whole name is on hover, as it is with a snapshot's words.
+    if (current) chip.title = current.name;
+  }
   chip.lastChild.setAttribute('aria-hidden', 'true');
   container.append(chip);
 

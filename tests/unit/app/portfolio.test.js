@@ -7,6 +7,7 @@ import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
 import { STUDIES_VIEW_ID } from '../../../src/app/portfolio.js';
 import { loadedStudy } from '../../../src/app/viewer-view.js';
+import { STYLES } from '../../../src/app/styles.js';
 
 // The studies a reader has: a chip in the header naming the one in use, the
 // list under it, the i beside it, the Studies view, and the data view's second
@@ -220,6 +221,50 @@ describe('the study chip', () => {
     open('study-chip');
     q('[data-action="study-chip"]').click();
     expect(q('.sva-chip-pop')).toBeNull();
+  });
+
+  it('APP-PAGE-049: the chip carries the study’s whole name on hover, where the header may cut it short, and the rules that keep the header to one row start at 1,200 pixels, so none of them reaches a narrower page (#416)', async () => {
+    mounted({ demo: null });
+    const chip = () => q('[data-action="study-chip"]');
+    // With no study there is no name to cut.
+    expect(chip().hasAttribute('title')).toBe(false);
+    app.loadFiles([DM]);
+    expect(chip().title).toBe('Your files');
+    const long = 'A study whose name is longer than its chip';
+    app.loadFiles([DM], { as: { id: 'x', name: long, kind: 'Simulated' } });
+    expect(q('.sva-chip-name').textContent).toBe(long);
+    expect(chip().title).toBe(long);
+    // The name is also in the list and in the i's card, as before.
+    chip().click();
+    expect(q('.sva-chip-item[aria-current="true"] .sva-chip-study').textContent).toBe(long);
+    q('[data-action="study-info"]').click();
+    expect(q('.sva-chip-cardhead strong').textContent).toBe(long);
+
+    // The stylesheet: what is new is inside the two blocks for wide pages.
+    const blocks = STYLES.split('@media ').slice(1);
+    const from1200 = blocks.find((block) => block.startsWith('(min-width:1200px){'));
+    expect(from1200).toContain('.sva-chip-slot{flex:1 1 7rem;min-width:0;max-width:max-content}');
+    expect(from1200).toContain('.sva-studychip{flex:0 1 auto;min-width:0}');
+    const to1439 = blocks.find((block) =>
+      block.startsWith('(min-width:1200px) and (max-width:1439px){')
+    );
+    // Only a header with the chip gives up the words beside the wordmark.
+    expect(to1439).toContain('.sva-bar:has(>.sva-chip-slot) .sva-kicker{display:none}');
+    expect(STYLES.match(/\.sva-kicker\{display:none\}/g)).toHaveLength(1);
+    // Outside them the chip's place does not flex and the kicker is drawn.
+    const everywhere = STYLES.replace(/@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, '');
+    expect(everywhere).not.toContain('@media');
+    expect(everywhere).toContain(
+      '.sva-chip-slot{position:relative;display:flex;align-items:center;gap:.1rem}'
+    );
+    expect(everywhere).not.toMatch(/\.sva-chip-slot\{[^}]*flex:1/);
+    expect(everywhere).not.toMatch(/\.sva-kicker\{[^}]*display:none/);
+    // The phone's rules are the ones they were.
+    const phone = blocks.find((block) => block.startsWith('(max-width:760px){'));
+    expect(phone).toContain('.sva-tabs{order:3;flex-basis:100%;min-width:0}');
+    expect(phone).not.toContain('sva-chip-slot');
+    expect(phone).not.toContain('sva-studychip');
+    expect(phone).not.toContain('sva-kicker');
   });
 });
 

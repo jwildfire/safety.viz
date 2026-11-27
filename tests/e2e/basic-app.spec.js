@@ -745,6 +745,9 @@ test.describe('demo app: the first screen', () => {
     await expect(brand).toHaveAttribute('title', 'safety.viz: docs and chart gallery');
     await expect(brand.locator('.sva-wordmark')).toHaveText('safety.viz');
     await expect(brand.locator('.sva-kicker')).toHaveText('Demo app');
+    // This page has no study chip, so the words are drawn at 1,280 pixels (#416).
+    await expect(page.locator('.sva-chip-slot')).toHaveCount(0);
+    await expect(brand.locator('.sva-kicker')).toBeVisible();
     // It reads as the wordmark it was: the header's ink, not a link's underline.
     const look = await brand.evaluate((element) => {
       const style = getComputedStyle(element);
