@@ -1,21 +1,29 @@
 Package: gsm.datasim
-Title: Synthetic Test Data Generator
+Title: Synthetic Test Data Generator (a Modified Copy of 'gsm.datasim' 2.1.0)
 Version: 2.1.0
 Authors@R: c(
     person("Laura", "Maxwell", , "laura.maxwell@atorusresearch.com", role = c("aut", "cre")),
     person("Zelos", "Zhu", , "zelos.zhu@atorusresearch.com", role = "aut"),
     person("Roman", "Rogoza", , "roman.rogoza@atorusresearch.com", role = "aut"),
-    person("Gilead Sciences", role = "cph")
+    person("Gilead Sciences", role = "cph"),
+    person("Jeremy", "Wildfire", role = "ctb",
+      comment = "Changes in this modified copy, November 2026: study design, study options, study profile and study results. Not part of gsm.datasim 2.1.0 as its authors released it.")
   )
-Description: Generates synthetic clinical trial data for testing and
+Description: A MODIFIED COPY of 'gsm.datasim' 2.1.0, kept at
+    <https://github.com/jwildfire/gsm.datasim> (branch safety-results-2.1)
+    for 'study.builder'. It is not Gilead's release: a study design, study
+    options, a study profile and study results were added by Jeremy
+    Wildfire in November 2026 and have not been raised with, reviewed by
+    or endorsed by the package's authors. Changed files carry a notice.
+    The original: generates synthetic clinical trial data for testing and
     development of clinical monitoring applications. Produces configurable
     multi-snapshot longitudinal datasets across SDTM-style and custom
     domains, with optional analytics and reporting pipelines powered by
     the 'workr' workflow engine.
 License: Apache License (>= 2)
-URL: https://github.com/Gilead-Public/gsm.datasim,
-    https://gilead-public.github.io/gsm.datasim
-BugReports: https://github.com/Gilead-Public/gsm.datasim/issues
+URL: https://github.com/jwildfire/gsm.datasim,
+    https://github.com/Gilead-Public/gsm.datasim
+BugReports: https://github.com/jwildfire/study.builder/issues
 Depends: 
     R (>= 4.1.0)
 Imports:
