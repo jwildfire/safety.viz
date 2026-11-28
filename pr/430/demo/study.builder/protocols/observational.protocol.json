@@ -1,0 +1,350 @@
+{
+  "format": "study.builder/protocol/1",
+  "name": "SCOPE1",
+  "title": "SIMPLE",
+  "source": {
+    "kind": "usdm",
+    "version": "4.0.0",
+    "timeline": "Main Timeline",
+    "file": "https://github.com/cdisc-org/DDF-RA · observational.json",
+    "repository": "https://github.com/cdisc-org/DDF-RA",
+    "commit": "aa303cb32f5d3ceecc68a16803e26720d2c1fc26",
+    "path": "Documents/Examples/Observational/observational.json",
+    "license": "CC-BY-4.0",
+    "license_url": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "Content based on DDF-RA (GitHub), https://github.com/cdisc-org/DDF-RA, used under the CC-BY-4.0 licence.",
+    "changes": "Changed from CDISC’s file: read by study.builder’s reader and cut down to what a simulated study follows (visits, arms, epochs, objectives, endpoints and activities). Not CDISC’s own form of the protocol, and not endorsed by CDISC or by any sponsor it names."
+  },
+  "phase": "P3",
+  "indication": "Indication 1",
+  "participants": 120,
+  "arms": [
+    "Active Substance",
+    "Placebo"
+  ],
+  "epochs": [
+    "Screening",
+    "Baseline",
+    "Treatment",
+    "Follow-Up"
+  ],
+  "visits": [
+    {
+      "id": "ScheduledActivityInstance_1",
+      "name": "Screening",
+      "epoch": "Screening",
+      "day": -2,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_2",
+      "name": "Baseline",
+      "epoch": "Baseline",
+      "day": 1,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_3",
+      "name": "15 min",
+      "epoch": "Treatment",
+      "day": 1,
+      "before": 0,
+      "after": 0
+    },
+    {
+      "id": "ScheduledActivityInstance_4",
+      "name": "Day 14",
+      "epoch": "Treatment",
+      "day": 15,
+      "before": 1,
+      "after": 1
+    },
+    {
+      "id": "ScheduledActivityInstance_5",
+      "name": "Day 28",
+      "epoch": "Treatment",
+      "day": 29,
+      "before": 1,
+      "after": 1
+    },
+    {
+      "id": "ScheduledActivityInstance_6",
+      "name": "Day 42",
+      "epoch": "Follow-Up",
+      "day": 43,
+      "before": 3,
+      "after": 3
+    }
+  ],
+  "activities": [
+    {
+      "id": "Activity_1",
+      "name": "Demographics",
+      "domain": "VS",
+      "collects": [
+        "Subject Age",
+        "Sex",
+        "Race",
+        "Weight"
+      ]
+    },
+    {
+      "id": "Activity_2",
+      "name": "Procedures",
+      "domain": null,
+      "collects": []
+    },
+    {
+      "id": "Activity_3",
+      "name": "Weight optional",
+      "domain": "VS",
+      "collects": [
+        "Weight"
+      ]
+    },
+    {
+      "id": "Activity_4",
+      "name": "Optional activity",
+      "domain": "VS",
+      "collects": [
+        "Systolic Blood Pressure",
+        "Diastolic Blood Pressure"
+      ]
+    }
+  ],
+  "schedule": {
+    "ScheduledActivityInstance_1": [
+      "Activity_1",
+      "Activity_2",
+      "Activity_3"
+    ],
+    "ScheduledActivityInstance_2": [
+      "Activity_2"
+    ],
+    "ScheduledActivityInstance_3": [
+      "Activity_2"
+    ],
+    "ScheduledActivityInstance_4": [
+      "Activity_2",
+      "Activity_3"
+    ],
+    "ScheduledActivityInstance_5": [
+      "Activity_4"
+    ],
+    "ScheduledActivityInstance_6": [
+      "Activity_2"
+    ]
+  },
+  "design": {
+    "model": "Parallel Study",
+    "blinding": "",
+    "arms": [
+      {
+        "name": "Active Substance",
+        "type": "Active Comparator Arm",
+        "about": "Active Substance"
+      },
+      {
+        "name": "Placebo",
+        "type": "Placebo Control Arm",
+        "about": "Placebo"
+      }
+    ],
+    "epochs": [
+      {
+        "name": "Screening",
+        "type": "Screening Epoch",
+        "about": "Screening Epoch"
+      },
+      {
+        "name": "Baseline",
+        "type": "Baseline Epoch",
+        "about": "Baseline Epoch"
+      },
+      {
+        "name": "Treatment",
+        "type": "Treatment Epoch",
+        "about": "Treatment Epoch"
+      },
+      {
+        "name": "Follow-Up",
+        "type": "Follow-Up Epoch",
+        "about": "Follow-up Epoch"
+      }
+    ],
+    "cells": [
+      {
+        "arm": "Active Substance",
+        "epoch": "Screening",
+        "elements": [
+          {
+            "name": "EL1",
+            "about": "Screening Element"
+          }
+        ]
+      },
+      {
+        "arm": "Active Substance",
+        "epoch": "Baseline",
+        "elements": [
+          {
+            "name": "EL2",
+            "about": "Baseline Element"
+          }
+        ]
+      },
+      {
+        "arm": "Active Substance",
+        "epoch": "Treatment",
+        "elements": [
+          {
+            "name": "EL3",
+            "about": "Treatment Element 1"
+          },
+          {
+            "name": "EL5",
+            "about": "Treatment Element 2"
+          }
+        ]
+      },
+      {
+        "arm": "Active Substance",
+        "epoch": "Follow-Up",
+        "elements": [
+          {
+            "name": "EL4",
+            "about": "Follow Up Element"
+          }
+        ]
+      },
+      {
+        "arm": "Placebo",
+        "epoch": "Screening",
+        "elements": [
+          {
+            "name": "EL1",
+            "about": "Screening Element"
+          }
+        ]
+      },
+      {
+        "arm": "Placebo",
+        "epoch": "Baseline",
+        "elements": [
+          {
+            "name": "EL2",
+            "about": "Baseline Element"
+          }
+        ]
+      },
+      {
+        "arm": "Placebo",
+        "epoch": "Treatment",
+        "elements": [
+          {
+            "name": "EL5",
+            "about": "Treatment Element 2"
+          },
+          {
+            "name": "EL3",
+            "about": "Treatment Element 1"
+          }
+        ]
+      },
+      {
+        "arm": "Placebo",
+        "epoch": "Follow-Up",
+        "elements": [
+          {
+            "name": "EL4",
+            "about": "Follow Up Element"
+          }
+        ]
+      }
+    ],
+    "objectives": [
+      {
+        "level": "Primary Objective",
+        "text": "The primary efficacy objective for this study is to evaluate the efficacy of TCZ compared with placebo in combination with SOC for the treatment of severe COVID-19 pneumonia",
+        "endpoints": [
+          {
+            "id": "Endpoint_1",
+            "level": "Primary Endpoint",
+            "text": "Clinical status assessed using a 7-category ordinal scale at Day 28"
+          }
+        ]
+      },
+      {
+        "level": "Secondary Objective",
+        "text": "The secondary efficacy objective for this study is to evaluate the efficacy of TCZ compared with placebo in combination with SOC for the treatment of severe COVID-19 pneumonia over the age of",
+        "endpoints": [
+          {
+            "id": "Endpoint_2",
+            "level": "Secondary Endpoint",
+            "text": "Time to clinical improvement (TTCI) defined as a National Early Warning Score 2 (NEWS2) of <=2 maintained for 24 hours"
+          },
+          {
+            "id": "Endpoint_3",
+            "level": "Secondary Endpoint",
+            "text": "Time to improvement of at least 2 categories relative to baseline on a 7-category ordinal scale of clinical status"
+          }
+        ]
+      }
+    ],
+    "estimands": [
+      {
+        "name": "EST1",
+        "summary": "Survival of all patients",
+        "population": "ITT",
+        "endpoint": "Endpoint_1",
+        "interventions": [
+          "Int Label 1"
+        ],
+        "events": [
+          {
+            "text": "ICE Text",
+            "strategy": "Patients with out of range lab values before dosing will be excluded"
+          },
+          {
+            "text": "ICE Text",
+            "strategy": "A second bad event"
+          },
+          {
+            "text": "ICE Text",
+            "strategy": "A third bad thing"
+          }
+        ]
+      },
+      {
+        "name": "EST2",
+        "summary": "Something else",
+        "population": "ITT",
+        "endpoint": "Endpoint_2",
+        "interventions": [
+          "Int Label 2"
+        ],
+        "events": [
+          {
+            "text": "ICE Text",
+            "strategy": "Something else bad"
+          }
+        ]
+      }
+    ],
+    "population": {
+      "about": "",
+      "completes": 100,
+      "sex": "Both",
+      "analysis": [
+        "ITT",
+        "ITT"
+      ]
+    }
+  },
+  "notes": [
+    "The schedule has 1 decision point; every visit is read as if each participant has it, whichever way a decision goes.",
+    "1 study day has more than one visit; they are kept apart by name, and simulated on the same day."
+  ]
+}
