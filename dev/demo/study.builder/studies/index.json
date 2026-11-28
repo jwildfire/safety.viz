@@ -28,8 +28,8 @@
       },
       "build": {
         "url": "../presets/phase1-small.study.json.gz",
-        "sha256": "fd76d5a62bbced04d87a2c06bb6410d9f2b1f4fd4be21247689bc466d9e51c6e",
-        "bytes": 1162835,
+        "sha256": "3b0a21e9dd26214720024d4db2e3ddb61cc9338c756273b25f3f8ae6d1d01fa5",
+        "bytes": 1163287,
         "key": "sha256:45b7142bb06f5fee9d81a90e1b34668a87653a29ba13eeedc08f1d2af2838dca"
       }
     },
@@ -59,8 +59,8 @@
       },
       "build": {
         "url": "../presets/phase2-oncology.study.json.gz",
-        "sha256": "98112911acf17d7024359b8f010a545ebdca3b27cde017fe5e60eb8f03a1da5c",
-        "bytes": 1346639,
+        "sha256": "0894eed2b2e57c2039ee3ac6264412217e99c2c6701a0c52b898245720f04512",
+        "bytes": 1346819,
         "key": "sha256:001a419ded7a107c6f2ee8b932fb70578550b5830f67a134e0321f4682f488e9"
       }
     },
@@ -1059,8 +1059,8 @@
       },
       "build": {
         "url": "../presets/cdisc-pilot-protocol.study.json.gz",
-        "sha256": "726d0a3ecfe48629175925961742045fedf0505ff8653c5f0913e01154cf1bfd",
-        "bytes": 2313135,
+        "sha256": "d86727f4767a7e0f3795810b847f1f862053c602bd9acd95e3dc8a5d18d9afb5",
+        "bytes": 2313688,
         "key": "sha256:9e41ba70f50756281cc1d75663231303257bf61c7dcb1eed6bfc0297c5923cd1"
       }
     },
