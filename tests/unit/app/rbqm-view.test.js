@@ -567,7 +567,10 @@ describe('the RBQM tab on the page', () => {
     });
     await again();
     expect(handedR()).toBe('2012-06-30');
-    expect(said()).toEqual(['Snapshot', '2012-06-30 · the study’s one snapshot']);
+    expect(said()).toEqual([
+      'Snapshot',
+      '2012-06-30 · the study’s last snapshot, the only one it kept'
+    ]);
     // One that names no date is handed the day of the run, and the details say whose date that is.
     app.loadRaw(STUDY, { as: { id: 'preset:none', name: 'NONE', kind: 'Simulated', built: {} } });
     await again();

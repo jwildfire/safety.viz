@@ -1383,6 +1383,24 @@ export function mountApp(
       URL.revokeObjectURL(link.href);
     },
 
+    /**
+     * The name the app's own buttons offer a file for download under (#431).
+     * With a simulated study in use, ready-made, saved or built, the name
+     * says so: `simulated-adsl.csv`, `simulated-safety-viz-mapping.json`. A
+     * file read back out of the page could otherwise be taken for a real
+     * study's, since a simulated study's files carry the standard names. A
+     * demo study's files and a reader's own keep their names.
+     * @param {string} name The file's name on the page.
+     * @returns {string} The name to save it under.
+     */
+    downloadName(name) {
+      const simulated =
+        loadedCount() > 0 &&
+        isRecord(state.named) &&
+        (state.named.kind || 'Simulated') === 'Simulated';
+      return simulated && !/^simulated-/i.test(name) ? `simulated-${name}` : name;
+    },
+
     /** The first chart the loaded data supports, or null. */
     firstReady: () => firstReady(),
 
@@ -1735,7 +1753,9 @@ export function mountApp(
         delete state.placements[source.domain];
       }
       if (domain) handle.setFile(domain, item.file, item.placement);
-      else state.unplaced.push(item);
+      // A file taken out of a domain by hand is marked (#431), so another
+      // snapshot of the same study keeps it aside (viewer-view.js).
+      else state.unplaced.push('unplaced' in source ? item : { ...item, byHand: true });
       state.failed = {};
       render();
     },
@@ -1827,14 +1847,14 @@ export function mountApp(
       return serializeMappings(state.files, state.mappings);
     },
 
-    /** Offer the mapping file as a download; nothing leaves the browser. */
+    /** Offer the mapping file as a download, under a name that says a simulated study is one (#431); nothing leaves the browser. */
     downloadMapping() {
       const blob = new Blob([`${JSON.stringify(handle.mappingFile(), null, 2)}\n`], {
         type: 'application/json'
       });
       const link = el('a');
       link.href = URL.createObjectURL(blob);
-      link.download = MAPPING_FILE_NAME;
+      link.download = handle.downloadName(MAPPING_FILE_NAME);
       document.body.append(link);
       link.click();
       link.remove();

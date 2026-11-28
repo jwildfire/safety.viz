@@ -146,13 +146,21 @@ describe('demo app: the pre-filled mapping', () => {
     expect(chosen.columns.USUBJID).toEqual({ value: 'PT_NO', source: 'chosen' });
     // The original is not mutated: the page keeps the previous state to compare.
     expect(mapping.columns.USUBJID.value).toBeNull();
+    // Cleared by hand, the row is empty and says it was cleared by hand (#431),
+    // which a row nothing matched does not.
     expect(setColumn(chosen, 'USUBJID', null, file).columns.USUBJID).toEqual({
       value: null,
-      source: null
+      source: null,
+      cleared: true
     });
     expect(setMeasure(mapping, 'ALT', 'SGPT (local lab)').measures.ALT).toEqual({
       value: 'SGPT (local lab)',
       source: 'chosen'
+    });
+    expect(setMeasure(mapping, 'ALT', null).measures.ALT).toEqual({
+      value: null,
+      source: null,
+      cleared: true
     });
   });
 
@@ -220,7 +228,15 @@ describe('demo app: the mapping file', () => {
       saved.domains.bds,
       file
     );
-    expect(mapping).toEqual(before);
+    // Every row has the value and the source it had. The mapping file writes
+    // an empty row as null whether the reader cleared it or nothing matched, so
+    // the mark of a row cleared by hand (#431) does not come back for VISIT,
+    // which this file's own build leaves empty.
+    expect(before.columns.VISIT).toEqual({ value: null, source: null, cleared: true });
+    expect(mapping).toEqual({
+      ...before,
+      columns: { ...before.columns, VISIT: { value: null, source: null } }
+    });
     expect(skipped).toEqual([]);
     expect(mapping.columns.USUBJID.source).toBe('guessed');
     expect(mapping.columns.STNRHI.source).toBe('chosen');

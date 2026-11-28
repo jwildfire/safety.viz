@@ -536,11 +536,11 @@ export function isoDay(date) {
 /**
  * The snapshot date a run hands R, and what Run details says of it (#427).
  * A simulated study's data stands at a date of its own: the snapshot the page
- * draws, or the one snapshot the study kept. R is handed that date, and the
- * details say which snapshot it is. A demo study and a reader's own files
- * name no date, so R is handed the day of the run, as before; a simulated
- * study that names none is handed it too, and the details say that it is
- * today's date and not the study's.
+ * draws, or the last snapshot, where that is the only one the study kept. R
+ * is handed that date, and the details say which snapshot it is. A demo study
+ * and a reader's own files name no date, so R is handed the day of the run,
+ * as before; a simulated study that names none is handed it too, and the
+ * details say that it is today's date and not the study's.
  * @param {?{date: string, number: number, of: number}} stands The date the loaded study's data stands at (viewer-view.js::studyDate), or null.
  * @param {string} today The day of the run, as `isoDay` gives it.
  * @param {boolean} [simulated] Whether what is loaded is a simulated study.
@@ -553,7 +553,14 @@ export function snapshotFor(stands, today, simulated = false) {
       said: `${stands.date} · snapshot ${stands.number} of ${stands.of} of the study`
     };
   }
-  if (stands) return { date: stands.date, said: `${stands.date} · the study’s one snapshot` };
+  // A study that kept only its last snapshot still ran for as many months as
+  // its card says ("9 monthly snapshots"): the words say which one this is (#431).
+  if (stands) {
+    return {
+      date: stands.date,
+      said: `${stands.date} · the study’s last snapshot, the only one it kept`
+    };
+  }
   return {
     date: today,
     said: simulated ? `${today} · the day of this run: the study names no date` : today

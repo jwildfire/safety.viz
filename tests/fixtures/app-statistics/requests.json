@@ -40,7 +40,7 @@
   },
   {
    "file": "src/app/mapping.js",
-   "sha256": "6ace4cad4707a31da71826ffd8186bea5a1d444077b703a71e7d9e6c82a96049"
+   "sha256": "4e56c80fa5bbf66372f7e2752d4790424c8c1b997dfb8769abf1c549b500fa14"
   },
   {
    "file": "src/app/charts.js",
@@ -52,7 +52,7 @@
   },
   {
    "file": "src/app/page.js",
-   "sha256": "4fb6bcda1026f18410f3204576049a684ea9bafd12da485f5f0601486a921196"
+   "sha256": "d64133b5b51378ee4e982059182da2e94a1c320bb664b8903d788773ad7efee0"
   },
   {
    "file": "site/vendor/bio.viz/bio.viz.js",

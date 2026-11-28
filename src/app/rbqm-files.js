@@ -35,10 +35,19 @@ function listed(items) {
   return `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 }
 
-/** A file's name with no folder, extension or `Raw_` in front, in capitals: what a raw domain is called. */
-const domainNamed = (name) =>
+/**
+ * A file's name with no folder in front, and without the word the app puts in
+ * front of a file it saves from a simulated study (#431, page.js's
+ * `downloadName`): `simulated-Raw_AE.csv` chosen again is still `Raw_AE.csv`.
+ */
+const fileNamed = (name) =>
   String(name)
     .replace(/^.*[\\/]/, '')
+    .replace(/^simulated-/i, '');
+
+/** A file's name with no folder, extension or `Raw_` in front, in capitals: what a raw domain is called. */
+const domainNamed = (name) =>
+  fileNamed(name)
     .replace(/\.csv$/i, '')
     .replace(/^raw_/i, '')
     .toUpperCase();
@@ -62,7 +71,7 @@ function matching(columns, raw) {
  * @returns {boolean} Whether it is kept as a raw file.
  */
 export function isRawFile(file, needs) {
-  if (/^raw_/i.test(String(file.name).replace(/^.*[\\/]/, ''))) return true;
+  if (/^raw_/i.test(fileNamed(file.name))) return true;
   return matching(file.columns, list(needs && needs.raw)).length === 1;
 }
 

@@ -1,6 +1,6 @@
 {
   "module": "hep-waterfall",
-  "generatedAt": "2026-11-28T03:29:38.444Z",
+  "generatedAt": "2026-11-28T04:36:27.908Z",
   "environment": {
     "os": "linux 7.0.0-1020-azure",
     "node": "v22.23.5",
@@ -8,8 +8,8 @@
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "46103058693",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/46103058693"
+    "id": "46108288040",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/46108288040"
   },
   "records": [
     {
@@ -821,6 +821,14 @@
       "screenshots": []
     },
     {
+      "test": "APP-PAGE-044: on the built demo page, on first open, no cookie is set and nothing is in local or session storage; the one database in the browser is the one study.builder’s script makes as the page opens, named \"study.builder\", and it holds no record (#431)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-PAGE-044"],
+      "issueRefs": [431],
+      "screenshots": []
+    },
+    {
       "test": "APP-PAGE-044: the app opens straight on its first chart: no line stands between the header and the view on first open, on any tab, and nothing is written to the browser’s storage (#321)",
       "suite": "browser",
       "status": "pass",
@@ -1285,6 +1293,14 @@
       "screenshots": []
     },
     {
+      "test": "APP-STUDY-007: on the built demo page a ready-made study chosen from the chip’s list while a demo study’s file is still held says \"Opening READY-P2…\" under the chip, from the press until the study lands; the demo study, arriving after it, is dropped (#431)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-007"],
+      "issueRefs": [431],
+      "screenshots": []
+    },
+    {
       "test": "APP-STUDY-008: on the built demo page a ready-made study whose file cannot be fetched is said under the chip in the app’s own sentence: which study, what could not be fetched, and that the study in use is unchanged; nothing on the page speaks of a form (#427)",
       "suite": "browser",
       "status": "pass",
@@ -1309,11 +1325,35 @@
       "screenshots": []
     },
     {
+      "test": "APP-STUDY-010: on the built demo page, when the list of ready-made studies is answered 404, the Studies view says their list came back empty where the page’s list of studies names them, and lists none; once the list can be fetched, opening Build a study brings them back and the sentence goes (#431)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-010"],
+      "issueRefs": [431],
+      "screenshots": []
+    },
+    {
       "test": "APP-STUDY-011: on the built demo page the chip marks a simulated study as simulated on every tab: \"Simulated · Snapshot 6 of 6\" under READY-P1 on a chart, on the RBQM tab and on the Overview, \"Simulated\" alone under READY-P2, and nothing under a demo study or a reader’s own files; at 1,280 pixels the header is still one row, no taller than with room to spare (#427)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-STUDY-011"],
       "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-012: on the built demo page, with READY-P1 in use, three mapping rows set to \"not mapped\" on the Files face (Severity in adae.csv, and Unit and ALT in adlb-advs.csv) and a file set aside by hand (adeg.csv) are as the reader left them when another snapshot is chosen: the rows are still not mapped, the file is still set aside, the study’s card counts as many charts ready as before the change and not all of them again, and no note is on the page (#431)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-012"],
+      "issueRefs": [431],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-014: on the built demo page, with READY-P2 in use, the app’s own buttons save files named as simulated: Download CSV in the Details of adsl.csv saves simulated-adsl.csv, a raw file’s saves simulated-Raw_AE.csv, and Download mapping saves simulated-safety-viz-mapping.json, which chosen again is read as the mapping it is and leaves the study in use; the raw file chosen again is still read as the adverse events raw file; with the pilot study in use the same buttons save adsl.csv and safety-viz-mapping.json (#431)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-014"],
+      "issueRefs": [431],
       "screenshots": []
     },
     {
@@ -3789,6 +3829,14 @@
       "screenshots": []
     },
     {
+      "test": "Build a study and a simulated study on the Overview tab APP-TIER-030: the sentence on a simulated study’s label is true on both faces of the Overview tab: it says study.builder simulated the study, that every row is synthetic, and that Explore the data, the face the page names so, shows it in study.builder’s own view; it does not say \"The view is study.builder’s\", which on the Files face, the app’s own, was untrue (#431)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-030"],
+      "issueRefs": [431],
+      "screenshots": []
+    },
+    {
       "test": "Build a study, on the data view APP-LIB-038: on a page with the study chip, where study.builder’s script is asked for as the page opens, a script that did not load then is asked for again when Build a study is first opened (#408)",
       "suite": "unit",
       "status": "pass",
@@ -3869,7 +3917,7 @@
       "screenshots": []
     },
     {
-      "test": "Build a study, on the data view APP-STUDY-010: a list of ready-made studies that cannot be fetched leaves the saved studies listed and the shelf in use, says which list could not be read, and is asked for again when Build a study is opened (#427)",
+      "test": "Build a study, on the data view APP-STUDY-010: after study.builder’s script did not load as the page opened, the list of its studies is looked for again when Build a study is opened: once the script has loaded the chip’s list names the ready-made and saved studies, the sentence that they could not be listed is gone, and a study built then is kept in this browser; the sentence ends in one full stop (#427)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-STUDY-010"],
@@ -3877,11 +3925,11 @@
       "screenshots": []
     },
     {
-      "test": "Build a study, on the data view APP-STUDY-010: after study.builder’s script did not load as the page opened, the list of its studies is looked for again when Build a study is opened: once the script has loaded the chip’s list names the ready-made and saved studies, the sentence that they could not be listed is gone, and a study built then is kept in this browser; the sentence ends in one full stop (#427)",
+      "test": "Build a study, on the data view APP-STUDY-010: study.builder answers a list of ready-made studies it could not fetch with an empty list and says nothing, so the app checks an empty list against the page’s studies feed: where the feed names ready-made studies the page says their list came back empty and how many the feed names, the saved studies stay listed and the shelf in use, and the list is asked for again when Build a study is opened; where the feed names none, or cannot be read, an empty list is taken as it is and nothing is said (#431)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-STUDY-010"],
-      "issueRefs": [427],
+      "issueRefs": [431],
       "screenshots": []
     },
     {
@@ -6981,6 +7029,14 @@
       "screenshots": []
     },
     {
+      "test": "placing a raw file in a gsm raw domain APP-STUDY-014: a raw file the app saved from a simulated study, as simulated-Raw_AE.csv, is still a gsm raw file when it is chosen again, and still the adverse events file by its name; so is one no metric reads, simulated-Raw_VISIT.csv, which only its name says is a raw file; a file that only has the word in front is not one (#431)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-014"],
+      "issueRefs": [431],
+      "screenshots": []
+    },
+    {
       "test": "portfolio manifest PF-MAN-001: validates against its JSON Schema (#138)",
       "suite": "unit",
       "status": "pass",
@@ -8813,6 +8869,14 @@
       "screenshots": []
     },
     {
+      "test": "study.builder’s studies, opened from the app’s list APP-STUDY-007: a ready-made study chosen from the chip’s list while a demo study is still loading says \"Opening FAST…\" under the chip from the press until it lands, as it does with nothing else on its way (#431)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-007"],
+      "issueRefs": [431],
+      "screenshots": []
+    },
+    {
       "test": "study.builder’s studies, opened from the app’s list APP-STUDY-007: every way of choosing what the page shows is in one ordering, so the last thing chosen is what lands: a ready-made study still on its way when the reader loads files of their own, loads gsm’s raw files, presses Reset or loads a study they built is dropped when it arrives, and says nothing if it fails; and a demo study still on its way when a ready-made study is chosen is dropped too (#427)",
       "suite": "unit",
       "status": "pass",
@@ -9125,11 +9189,27 @@
       "screenshots": []
     },
     {
+      "test": "the data view’s second face APP-STUDY-012: a mapping row the reader cleared by hand, and a file the reader set aside by hand, are kept when another snapshot of the same study is chosen: the row stays empty where the app would fill it again, at that snapshot and at the ones after it, and the file stays set aside; a row nothing matched is not one of these; and where the snapshot does not have the file, a note on the page names what was not kept (#431)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-012"],
+      "issueRefs": [431],
+      "screenshots": []
+    },
+    {
       "test": "the data view’s second face APP-STUDY-012: a mapping row the reader set by hand is kept when another snapshot of the same study is chosen, wherever that snapshot has the same file with the column the row names; a row whose file the snapshot does not have is cleared, and a note on the page names it; rows the reader did not set are filled again from the snapshot’s own file (#427)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-STUDY-012"],
       "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face APP-STUDY-014: with a simulated study in use a file the app’s own buttons offer for download says it is simulated in its name: Download CSV in a file’s Details gives simulated-adsl.csv, a raw file’s gives simulated-Raw_SUBJ.csv, and Download mapping gives simulated-safety-viz-mapping.json, which loads back as the mapping it is; a demo study’s files and a reader’s own keep their names (#431)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-014"],
+      "issueRefs": [431],
       "screenshots": []
     },
     {
@@ -10626,6 +10706,14 @@
       "status": "pass",
       "requirementIds": [],
       "issueRefs": [258],
+      "screenshots": []
+    },
+    {
+      "test": "the snapshot Run details names, for a study that kept only its last APP-RBQM-084: for a study that ran nine months and kept only its last snapshot, Run details says \"2012-09-30 · the study’s last snapshot, the only one it kept\": the study’s card counts every month it ran, \"9 monthly snapshots\", and the two no longer disagree on how many there were (#431)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-084"],
+      "issueRefs": [431],
       "screenshots": []
     },
     {

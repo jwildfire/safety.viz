@@ -156,6 +156,27 @@ describe('placing a raw file in a gsm raw domain', () => {
     }
   });
 
+  it('APP-STUDY-014: a raw file the app saved from a simulated study, as simulated-Raw_AE.csv, is still a gsm raw file when it is chosen again, and still the adverse events file by its name; so is one no metric reads, simulated-Raw_VISIT.csv, which only its name says is a raw file; a file that only has the word in front is not one (#431)', () => {
+    for (const name of [
+      'simulated-Raw_AE.csv',
+      'Simulated-raw_ae.CSV',
+      'study/simulated-Raw_AE.csv'
+    ]) {
+      expect(isRawFile(file(name, []), needs), name).toBe(true);
+      expect(placeRaw(file(name, []), needs), name).toMatchObject({ table: 'Raw_AE', by: 'name' });
+    }
+    // A raw file no metric reads is a raw file by its name alone (APP-RBQM-085).
+    expect(isRawFile(file('Raw_VISIT.csv', ['subjid']), needs)).toBe(true);
+    expect(isRawFile(file('simulated-Raw_VISIT.csv', ['subjid']), needs)).toBe(true);
+    // The word alone makes nothing a raw file, and a standard file saved the same way is a study file still.
+    expect(isRawFile(file('simulated-adsl.csv', ['USUBJID', 'ARM']), needs)).toBe(false);
+    expect(isRawFile(file('simulated-notes.csv', ['SITE', 'NOTE']), needs)).toBe(false);
+    // R is still handed the file under gsm's name for it.
+    const study = rawStudy([file('simulated-Raw_AE.csv', columnsOf('Raw_AE'))], needs);
+    expect(study.files[0].sentence).toBe('simulated-Raw_AE.csv is Raw_AE, by its name.');
+    expect(filesForR(study.tables).map((entry) => entry.name)).toEqual(['Raw_AE.csv']);
+  });
+
   it('APP-RBQM-034: a file placed by its name that lacks a column its domain’s workflow names is listed with the column (#236)', () => {
     const [ae] = rawStudy(loaded(scenario('no-column')), needs).files.filter(
       (entry) => entry.table === 'Raw_AE'
