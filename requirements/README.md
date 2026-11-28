@@ -22,7 +22,7 @@ These matrices are the input to the evidence pages published with every release:
 | [web-codebook.md](web-codebook.md)                         | web-codebook (planned)             |  223 |
 | [paneled-outlier-explorer.md](paneled-outlier-explorer.md) | paneled-outlier-explorer (planned) |  114 |
 
-Two matrices are not a renderer's: [demo-app.md](demo-app.md) holds the `APP-` rows for the demo app, the page that hosts the renderers, and [kit.md](kit.md) holds the `KIT-` rows for the kit, the shared parts the bundle exports for a second chart library. Neither has a `site/config.json` entry, so the extractor does not read them; their tests carry their IDs.
+Three matrices are not a renderer's: [demo-app.md](demo-app.md) holds the `APP-` rows for the demo app, the page that hosts the renderers; [kit.md](kit.md) holds the `KIT-` rows for the kit, the shared parts the bundle exports for a second chart library; and [status-label.md](status-label.md) holds the rows of the status ladder and the status label that every chart and the docs site's pages carry (`APP-TIER-001` to `003`, `007` to `011` and `023` to `028`), moved from the demo app's matrix with their IDs unchanged (#436). None has a `site/config.json` entry, so the extractor does not read them; their tests carry their IDs.
 
 Row counts are the rows the extractor recognizes; they move as requirements are added, split, or superseded.
 

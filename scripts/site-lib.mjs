@@ -2,7 +2,7 @@
 // _site/. Plain Node, no framework, per design #21 — and every internal URL
 // relative, so one build serves the site root, /dev/, and /pr/{N}/ unchanged.
 
-import { LOGO_HREF } from '../src/app/styles.js';
+import { LOGO_HREF } from './site-mark.mjs';
 import { tierNoteOf, tierOf } from '../src/tiers.js';
 import { TIER_MEANINGS, statusHeading, statusLabelHtml } from '../src/status-label.js';
 import {
