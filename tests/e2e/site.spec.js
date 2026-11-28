@@ -1844,7 +1844,7 @@ test.describe('docs site', () => {
     await expect(page.locator('.sva-chip-name')).toHaveText('READY-P2');
   });
 
-  test('APP-STUDY-014: on the built demo page, with READY-P2 in use, the app’s own buttons save files named as simulated: Download CSV in the Details of adsl.csv saves simulated-adsl.csv, a raw file’s saves simulated-Raw_AE.csv, and Download mapping saves simulated-safety-viz-mapping.json, which chosen again is read as the mapping it is and leaves the study in use; with the pilot study in use the same buttons save adsl.csv and safety-viz-mapping.json (#431)', async ({
+  test('APP-STUDY-014: on the built demo page, with READY-P2 in use, the app’s own buttons save files named as simulated: Download CSV in the Details of adsl.csv saves simulated-adsl.csv, a raw file’s saves simulated-Raw_AE.csv, and Download mapping saves simulated-safety-viz-mapping.json, which chosen again is read as the mapping it is and leaves the study in use; the raw file chosen again is still read as the adverse events raw file; with the pilot study in use the same buttons save adsl.csv and safety-viz-mapping.json (#431)', async ({
     page
   }, testInfo) => {
     await openDemoApp(page);
@@ -1859,21 +1859,20 @@ test.describe('docs site', () => {
       if (!(await details.evaluate((element) => element.open))) {
         await details.locator('summary').click();
       }
-      return (
-        await saved(() => details.locator('.sva-detail-download').click())
-      ).suggestedFilename();
+      return saved(() => details.locator('.sva-detail-download').click());
     };
     const mapping = () => saved(() => page.locator('[data-action="download-mapping"]').click());
     // A demo study: the files keep their names.
     await expect(chipName(page)).toHaveText('Pilot study');
     await page.locator('.sva-face[data-action="files"]').click();
-    expect(await csvOf('adsl.csv')).toBe('adsl.csv');
+    expect((await csvOf('adsl.csv')).suggestedFilename()).toBe('adsl.csv');
     expect((await mapping()).suggestedFilename()).toBe('safety-viz-mapping.json');
     // A simulated study: each name says so.
     await openFromChip(page, ...READY_P2);
     await page.locator('.sva-face[data-action="files"]').click();
-    expect(await csvOf('adsl.csv')).toBe('simulated-adsl.csv');
-    expect(await csvOf('Raw_AE.csv')).toBe('simulated-Raw_AE.csv');
+    expect((await csvOf('adsl.csv')).suggestedFilename()).toBe('simulated-adsl.csv');
+    const rawSaved = await csvOf('Raw_AE.csv');
+    expect(rawSaved.suggestedFilename()).toBe('simulated-Raw_AE.csv');
     const download = await mapping();
     expect(download.suggestedFilename()).toBe('simulated-safety-viz-mapping.json');
     // The mapping file, chosen again under the name it was saved by, is read as a mapping.
@@ -1888,6 +1887,15 @@ test.describe('docs site', () => {
     );
     await expect(chipName(page)).toHaveText('READY-P2');
     expect((await mapping()).suggestedFilename()).toBe('simulated-safety-viz-mapping.json');
+    // The raw file, chosen again under the name it was saved by, is a reader's own file,
+    // still read as the adverse events raw file by its name, and it keeps the name.
+    const raw = testInfo.outputPath('simulated-Raw_AE.csv');
+    await rawSaved.saveAs(raw);
+    await page.locator('.sva-file-input').setInputFiles(raw);
+    await expect(chipName(page)).toHaveText('Your files');
+    const card = page.locator('.sva-file.sva-raw[data-raw="simulated-Raw_AE.csv"]');
+    await expect(card.locator('.sva-tag')).toHaveText('gsm raw file: Raw_AE, by its name');
+    expect((await csvOf('simulated-Raw_AE.csv')).suggestedFilename()).toBe('simulated-Raw_AE.csv');
   });
 
   test('APP-STUDY-010: on the built demo page, when the list of ready-made studies is answered 404, the Studies view says their list came back empty where the page’s list of studies names them, and lists none; once the list can be fetched, opening Build a study brings them back and the sentence goes (#431)', async ({
