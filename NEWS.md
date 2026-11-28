@@ -31,7 +31,7 @@ The demo app names the study in use, lists the studies you have, and builds simu
 
 ## Tests and provenance
 
-2,739 unit tests and 497 browser tests pass; `npm run demo-path` chooses its study through the study chip ([#396](https://github.com/jwildfire/safety.viz/issues/396)). The release bundle is `dist/safety.viz-1.13.0/`; `dist/safety.viz-1.12.0/` is unchanged from its tag. `site/vendor/study.builder/` is study.builder v0.5.2 (commit b6ac945), held to its record by `npm run study-builder:check`. Its five example protocols are changed from CDISC's DDF-RA files (CC-BY-4.0; attribution in `docs/DATA_SOURCES.md`). Release preparation: [#401](https://github.com/jwildfire/safety.viz/issues/401).
+2,745 unit tests and 502 browser tests pass; `npm run demo-path` chooses its study through the study chip ([#396](https://github.com/jwildfire/safety.viz/issues/396)). The release bundle is `dist/safety.viz-1.13.0/`; `dist/safety.viz-1.12.0/` is unchanged from its tag. `site/vendor/study.builder/` is study.builder v0.5.2 (commit b6ac945), held to its record by `npm run study-builder:check`. Its five example protocols are changed from CDISC's DDF-RA files (CC-BY-4.0; attribution in `docs/DATA_SOURCES.md`). Release preparation: [#401](https://github.com/jwildfire/safety.viz/issues/401).
 
 # safety.viz v1.12.0
 
