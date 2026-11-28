@@ -164,6 +164,68 @@ test.describe('docs site', () => {
     expect(new Set(tops).size).toBe(1);
     await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
   });
+  test('APP-PAGE-044: on the built demo page, on first open, no cookie is set and nothing is in local or session storage; the one database in the browser is the one study.builder’s script makes as the page opens, named "study.builder", and it holds no record (#431)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    // study.builder's studies are listed once its script has read what this browser has kept.
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          window.__safetyVizApp.portfolio().studies.some((study) => study.id.startsWith('preset:'))
+        )
+      )
+      .toBe(true);
+    const stored = await page.evaluate(async () => {
+      // How many records a database holds, over every store it has.
+      const records = (name) =>
+        new Promise((resolve, reject) => {
+          const opening = window.indexedDB.open(name);
+          opening.onerror = () => reject(opening.error);
+          opening.onsuccess = () => {
+            const database = opening.result;
+            const stores = [...database.objectStoreNames];
+            if (!stores.length) {
+              database.close();
+              resolve(0);
+              return;
+            }
+            const reading = database.transaction(stores, 'readonly');
+            let count = 0;
+            for (const store of stores) {
+              const counting = reading.objectStore(store).count();
+              counting.onsuccess = () => {
+                count += counting.result;
+              };
+            }
+            reading.oncomplete = () => {
+              database.close();
+              resolve(count);
+            };
+            reading.onerror = () => reject(reading.error);
+          };
+        });
+      const databases = {};
+      for (const { name } of await window.indexedDB.databases()) {
+        databases[name] = await records(name);
+      }
+      return {
+        local: window.localStorage.length,
+        session: window.sessionStorage.length,
+        cookie: document.cookie,
+        databases
+      };
+    });
+    expect(stored).toEqual({
+      local: 0,
+      session: 0,
+      cookie: '',
+      databases: { 'study.builder': 0 }
+    });
+  });
+
   test('APP-PAGE-031: on the built demo page every chart’s footnote leads where its pages are: each safety chart’s test evidence, and the clinical guide of the six that have one, are pages the site serves; a biomarker chart’s test evidence is on bio.viz’s site (#246)', async ({
     page
   }) => {
@@ -1064,6 +1126,7 @@ test.describe('docs site', () => {
   test('APP-LIB-044: on the built demo page each of the three ready-made studies, opened with no R, lists on its Overview under “What a study built here is, and is not” no sentence that names gsm.datasim without saying it is the modified copy, and its own notes are among them (#428)', async ({
     page
   }) => {
+    const ofR = askedOfR(page);
     await page.goto('/_site/demo/index.html#studies');
     await page.evaluate('window.__safetyVizApp.ready');
     for (const [id, name] of [
@@ -1091,8 +1154,10 @@ test.describe('docs site', () => {
       for (const note of notes) expect(sentences, name).toContain(note);
       expect(notes.filter(namedPlainly), name).toEqual([]);
     }
-    // No R was started: each came whole from its file.
-    await expect(page.locator('.sva-chip.sva-r-ready')).toHaveCount(0);
+    // No R was started: each came whole from its file, and nothing was asked
+    // of the addresses R is downloaded from (#427, #431). A count of "R ready"
+    // chips on the Overview tab is 0 with R running too, and proved nothing.
+    expect(ofR).toEqual([]);
   });
 
   test('on the built demo page a ready-made simulated study opens from the Studies view with no R, and the Overview tab draws it with study.builder’s study view in sections: Overview, Design, Data, One participant and Reporting, with no RBQM view and no Safety view, since the app has tabs of its own for both; a view is reached through its section; at 1,400 pixels nothing of the overview runs past the page', async ({
@@ -1648,6 +1713,217 @@ test.describe('docs site', () => {
     await expect(under).toHaveCount(0);
   });
 
+  test('APP-STUDY-012: on the built demo page, with READY-P1 in use, three mapping rows set to "not mapped" on the Files face (Severity in adae.csv, and Unit and ALT in adlb-advs.csv) and a file set aside by hand (adeg.csv) are as the reader left them when another snapshot is chosen: the rows are still not mapped, the file is still set aside, the study’s card counts as many charts ready as before the change and not all of them again, and no note is on the page (#431)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    await page.locator('.sva-face[data-action="files"]').click();
+    const ready = () =>
+      page.evaluate(
+        () =>
+          Object.values(window.__safetyVizApp.status()).filter((one) => one.state === 'ready')
+            .length
+      );
+    const byHand = () =>
+      page.evaluate(() => {
+        const { mappings, files, unplaced } = window.__safetyVizApp.state;
+        return {
+          severity: mappings.ae.columns.AESEV.value,
+          unit: mappings.bds.columns.STRESU.value,
+          alt: mappings.bds.measures.ALT.value,
+          ecg: files.eg ? files.eg.name : null,
+          setAside: unplaced.map((item) => item.file.name)
+        };
+      });
+    // As the app fills them: every chart is ready.
+    const whole = await ready();
+    const manifestCharts = await page.evaluate(
+      () => Object.keys(window.__safetyVizApp.status()).length
+    );
+    expect(whole).toBe(manifestCharts);
+    expect(await byHand()).toEqual({
+      severity: 'AESEV',
+      unit: 'STRESU',
+      alt: 'ALT (SGPT)',
+      ecg: 'adeg.csv',
+      setAside: []
+    });
+    // The reader clears three rows, and sets the ECG file aside.
+    await page.getByLabel('Severity in adae.csv', { exact: true }).selectOption('');
+    await page.getByLabel('Unit in adlb-advs.csv', { exact: true }).selectOption('');
+    await page.getByLabel('ALT in adlb-advs.csv', { exact: true }).selectOption('');
+    const cleared = await ready();
+    expect(cleared).toBeLessThan(whole);
+    await page.getByLabel('Domain of adeg.csv', { exact: true }).selectOption('');
+    const left = { severity: null, unit: null, alt: null, ecg: null, setAside: ['adeg.csv'] };
+    expect(await byHand()).toEqual(left);
+    const before = await ready();
+    expect(before).toBeLessThan(cleared);
+    const card = page.locator('.sva-chip-card .sva-chip-facts');
+    const cardSays = async () => {
+      await page.locator('[data-action="study-info"]').click();
+      const said = await card.textContent();
+      await page.keyboard.press('Escape');
+      return said;
+    };
+    expect(await cardSays()).toContain(`${before} of ${manifestCharts} charts ready`);
+    // Another snapshot, chosen where study.builder's study view offers them, and then the last again.
+    for (const [date, said] of [
+      ['2012-03-31', 'Snapshot 3 of 6'],
+      ['2012-06-30', 'Snapshot 6 of 6']
+    ]) {
+      await page.locator('.sva-face[data-action="explore"]').click();
+      await snapshotPicker(page).selectOption(date);
+      await expect(page.locator('.sva-chip-snap')).toHaveText(said);
+      expect(await byHand(), date).toEqual(left);
+      expect(await ready(), date).toBe(before);
+      expect(await cardSays(), date).toContain(`${before} of ${manifestCharts} charts ready`);
+      // The Files face shows the rows as the reader left them, and says nothing of them.
+      await page.locator('.sva-face[data-action="files"]').click();
+      await expect(page.getByLabel('Severity in adae.csv', { exact: true })).toHaveValue('');
+      await expect(page.getByLabel('Unit in adlb-advs.csv', { exact: true })).toHaveValue('');
+      await expect(page.locator('.sva-file.sva-unplaced')).toHaveAttribute(
+        'data-unplaced',
+        'adeg.csv'
+      );
+      await expect(page.locator('.sva-notes')).toHaveCount(0);
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-STUDY-007: on the built demo page a ready-made study chosen from the chip’s list while a demo study’s file is still held says "Opening READY-P2…" under the chip, from the press until the study lands; the demo study, arriving after it, is dropped (#431)', async ({
+    page
+  }) => {
+    // Both files are held until the test lets them go.
+    const gates = {};
+    const hold = (name) =>
+      new Promise((resolve) => {
+        gates[name] = resolve;
+      });
+    const heldDemo = hold('demo');
+    const heldStudy = hold('study');
+    await page.route('**/demo/adbds-abnbl.csv', async (route) => {
+      await heldDemo;
+      await route.continue();
+    });
+    await page.route('**/phase2-oncology.study.json.gz', async (route) => {
+      await heldStudy;
+      await route.continue();
+    });
+    await openDemo(page);
+    // A demo study, still loading.
+    const askedDemo = page.waitForRequest('**/demo/adbds-abnbl.csv');
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'demo:liver').click();
+    await askedDemo;
+    await expect(page.locator('.sva-busy')).toContainText('Loading the demo study');
+    // A ready-made study, chosen from the chip's list while it is.
+    const askedStudy = page.waitForRequest('**/phase2-oncology.study.json.gz');
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'preset:phase2-oncology').click();
+    await askedStudy;
+    const said = page.locator('.sva-chip-slot .sva-chip-said');
+    await expect(said).toHaveText('Opening READY-P2…');
+    await expect(said).toHaveAttribute('role', 'status');
+    await expect(said).toBeInViewport({ ratio: 1 });
+    await expect(page.locator('.sva-busy')).toHaveCount(0);
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    // It lands, and the line goes.
+    gates.study();
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P2');
+    await expect(said).toHaveCount(0);
+    // The demo study arrives now, and is dropped.
+    const arrived = page.waitForResponse('**/demo/adbds-abnbl.csv');
+    gates.demo();
+    await (await arrived).finished();
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P2');
+  });
+
+  test('APP-STUDY-014: on the built demo page, with READY-P2 in use, the app’s own buttons save files named as simulated: Download CSV in the Details of adsl.csv saves simulated-adsl.csv, a raw file’s saves simulated-Raw_AE.csv, and Download mapping saves simulated-safety-viz-mapping.json, which chosen again is read as the mapping it is and leaves the study in use; with the pilot study in use the same buttons save adsl.csv and safety-viz-mapping.json (#431)', async ({
+    page
+  }, testInfo) => {
+    await openDemoApp(page);
+    const saved = async (press) => {
+      const downloading = page.waitForEvent('download');
+      await press();
+      return downloading;
+    };
+    const csvOf = async (name) => {
+      const details = page.locator(`.sva-file-details[data-details="${name}"]`);
+      // The page remembers which files' details are open, across studies: open it if it is shut.
+      if (!(await details.evaluate((element) => element.open))) {
+        await details.locator('summary').click();
+      }
+      return (
+        await saved(() => details.locator('.sva-detail-download').click())
+      ).suggestedFilename();
+    };
+    const mapping = () => saved(() => page.locator('[data-action="download-mapping"]').click());
+    // A demo study: the files keep their names.
+    await expect(chipName(page)).toHaveText('Pilot study');
+    await page.locator('.sva-face[data-action="files"]').click();
+    expect(await csvOf('adsl.csv')).toBe('adsl.csv');
+    expect((await mapping()).suggestedFilename()).toBe('safety-viz-mapping.json');
+    // A simulated study: each name says so.
+    await openFromChip(page, ...READY_P2);
+    await page.locator('.sva-face[data-action="files"]').click();
+    expect(await csvOf('adsl.csv')).toBe('simulated-adsl.csv');
+    expect(await csvOf('Raw_AE.csv')).toBe('simulated-Raw_AE.csv');
+    const download = await mapping();
+    expect(download.suggestedFilename()).toBe('simulated-safety-viz-mapping.json');
+    // The mapping file, chosen again under the name it was saved by, is read as a mapping.
+    const file = testInfo.outputPath('simulated-safety-viz-mapping.json');
+    await download.saveAs(file);
+    const content = JSON.parse(readFileSync(file, 'utf8'));
+    expect(content.safetyVizMapping).toBe(1);
+    expect(content.domains.subject.file).toBe('adsl.csv');
+    await page.locator('.sva-file-input').setInputFiles(file);
+    await expect(page.locator('.sva-notes')).toContainText(
+      'simulated-safety-viz-mapping.json is a saved mapping for:'
+    );
+    await expect(chipName(page)).toHaveText('READY-P2');
+    expect((await mapping()).suggestedFilename()).toBe('simulated-safety-viz-mapping.json');
+  });
+
+  test('APP-STUDY-010: on the built demo page, when the list of ready-made studies is answered 404, the Studies view says their list came back empty where the page’s list of studies names them, and lists none; once the list can be fetched, opening Build a study brings them back and the sentence goes (#431)', async ({
+    page
+  }) => {
+    // How many ready-made studies the copy's studies feed names: the entries with a built study.
+    const feed = JSON.parse(
+      readFileSync(
+        new URL('../../site/vendor/study.builder/studies/index.json', import.meta.url),
+        'utf8'
+      )
+    );
+    const named = feed.studies.filter((entry) => entry.build).length;
+    expect(named).toBeGreaterThan(0);
+    let failing = true;
+    await page.route('**/study.builder/presets/index.json', (route) =>
+      failing ? route.fulfill({ status: 404, body: 'Not found' }) : route.continue()
+    );
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const alert = page.locator('.sva-studies [role="alert"]');
+    await expect(alert).toHaveText(
+      `study.builder’s ready-made studies could not be listed: their list came back empty, where the page’s list of studies names ${named}.`
+    );
+    await expect(page.locator('.sva-studies-row[data-study^="preset:"]')).toHaveCount(0);
+    // The list can be fetched now, and the reader opens the builder.
+    failing = false;
+    await page.locator('[data-add="describe"]').click();
+    await expect(page.locator('.sva-source .sva-build-widget')).toBeVisible();
+    await page.locator('[data-action="study-chip"]').click();
+    await expect(page.locator('.sva-chip-item[data-study^="preset:"]')).toHaveCount(named);
+    await page.locator('[data-action="all-studies"]').click();
+    await expect(page.locator('.sva-studies-row[data-study^="preset:"]')).toHaveCount(named);
+    await expect(alert).toHaveCount(0);
+  });
+
   test('APP-TIER-030: on the built demo page Build a study and a simulated study’s Overview carry the app’s Experimental label on the corner, each with its one sentence saying why, and its panel opens inside the window; a demo study’s Overview carries none (#427)', async ({
     page
   }) => {
@@ -1686,7 +1962,7 @@ test.describe('docs site', () => {
     await openReadyMade(page, 'phase1-small', 'READY-P1');
     const view = [
       'The view of this simulated study is experimental',
-      'Experimental: new in 1.13. The view is study.builder’s and every row is synthetic; what it shows may still change.'
+      'Experimental: new in 1.13. study.builder simulated this study and every row is synthetic; Explore the data shows it in study.builder’s own view, which may still change.'
     ];
     await says(...view);
     await page.locator('.sva-face[data-action="files"]').click();

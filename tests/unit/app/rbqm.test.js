@@ -9,6 +9,7 @@ import {
   hostsSaid,
   rbqmWords,
   isoDay,
+  snapshotFor,
   listed,
   metricInputs,
   metricList,
@@ -25,6 +26,7 @@ import {
   totalMegabytes,
   warningsSaid
 } from '../../../src/app/rbqm.js';
+import { studyDate } from '../../../src/app/viewer-view.js';
 import { RBQM_DOWNLOADS } from '../../../scripts/app-libraries.mjs';
 import { RBQM_TAB } from '../../../scripts/rbqm-lib.mjs';
 
@@ -626,6 +628,38 @@ describe('the Overview tab’s card, in the tab’s words (#281)', () => {
     // One that could be either of two raw domains is not recognised, as before.
     expect(rawTag({ table: null, by: null, candidates: ['Raw_LB', 'Raw_PD'] })).toBe(
       'gsm raw file: not recognised'
+    );
+  });
+});
+
+describe('the snapshot Run details names, for a study that kept only its last', () => {
+  it('APP-RBQM-084: for a study that ran nine months and kept only its last snapshot, Run details says "2012-09-30 · the study’s last snapshot, the only one it kept": the study’s card counts every month it ran, "9 monthly snapshots", and the two no longer disagree on how many there were (#431)', () => {
+    // READY-P2, as the copy of study.builder serves it: nine months, the last snapshot kept.
+    const presets = JSON.parse(
+      readFileSync(
+        new URL('../../../site/vendor/study.builder/presets/index.json', import.meta.url),
+        'utf8'
+      )
+    ).presets;
+    const { settings } = presets.find((preset) => preset.settings.name === 'READY-P2');
+    expect(settings).toMatchObject({ months: 9 });
+    expect(settings.snapshots).not.toBe('all');
+    // What the page keeps of such a study: the count its card says, and the one date it carries.
+    const named = {
+      kind: 'Simulated',
+      facts: [{ label: 'Duration', value: `${settings.months} monthly snapshots` }],
+      built: { snapshots: settings.months, snapshotDate: '2012-09-30' }
+    };
+    const stands = studyDate(named);
+    expect(stands).toEqual({ date: '2012-09-30', number: 1, of: 1 });
+    expect(snapshotFor(stands, '2026-11-27', true)).toEqual({
+      date: '2012-09-30',
+      said: '2012-09-30 · the study’s last snapshot, the only one it kept'
+    });
+    expect(snapshotFor(stands, '2026-11-27', true).said).not.toMatch(/one snapshot/);
+    // A study that kept its snapshots says which of them, as before.
+    expect(snapshotFor({ date: '2012-01-31', number: 1, of: 6 }, '2026-11-27', true).said).toBe(
+      '2012-01-31 · snapshot 1 of 6 of the study'
     );
   });
 });

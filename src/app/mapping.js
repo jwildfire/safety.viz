@@ -141,6 +141,10 @@ export const MEASURES = [
 ];
 
 const EMPTY = Object.freeze({ value: null, source: null });
+// A row the reader emptied by hand (#431): empty, as a row nothing matched is,
+// and marked, so the page can tell the two apart and keep the reader's choice
+// when another snapshot of the same study is loaded (viewer-view.js).
+const CLEARED = Object.freeze({ value: null, source: null, cleared: true });
 
 // What a bracketed unit is made of, in lower case with the micro sign written
 // "u". A unit is recognised from these lists and nothing else: bracketed text
@@ -305,8 +309,8 @@ export function buildMapping(domainId, file, manifest) {
 
 /**
  * Set one column row by hand. Returns a new mapping; the row is marked chosen,
- * or emptied when the value is null. Changing the measure column looks the key
- * measures up again in the new column.
+ * or emptied and marked as cleared by hand when the value is null. Changing
+ * the measure column looks the key measures up again in the new column.
  * @param {Object} mapping The mapping to change.
  * @param {string} column The manifest column.
  * @param {?string} value The user's column, or null to clear the row.
@@ -316,7 +320,7 @@ export function buildMapping(domainId, file, manifest) {
 export function setColumn(mapping, column, value, file) {
   const next = {
     ...mapping,
-    columns: { ...mapping.columns, [column]: value ? { value, source: 'chosen' } : { ...EMPTY } }
+    columns: { ...mapping.columns, [column]: value ? { value, source: 'chosen' } : { ...CLEARED } }
   };
   if (column === 'TEST') {
     next.measures = resolveMeasures(
@@ -329,7 +333,8 @@ export function setColumn(mapping, column, value, file) {
 }
 
 /**
- * Set one key-measure row by hand. Returns a new mapping.
+ * Set one key-measure row by hand. Returns a new mapping; a row emptied is
+ * marked as cleared by hand.
  * @param {Object} mapping The mapping to change.
  * @param {string} key The measure key (ALT, CREAT, QTcF, ...).
  * @param {?string} value What the data calls the measure, or null to clear the row.
@@ -338,7 +343,7 @@ export function setColumn(mapping, column, value, file) {
 export function setMeasure(mapping, key, value) {
   return {
     ...mapping,
-    measures: { ...mapping.measures, [key]: value ? { value, source: 'chosen' } : { ...EMPTY } }
+    measures: { ...mapping.measures, [key]: value ? { value, source: 'chosen' } : { ...CLEARED } }
   };
 }
 

@@ -265,11 +265,17 @@ function unplacedCard(item, index, app) {
   return card;
 }
 
-/** A loaded file's details, folded shut, as the page remembers them open or shut. */
+/**
+ * A loaded file's details, folded shut, as the page remembers them open or
+ * shut. Its Download CSV saves the file under the name the page gives the
+ * app's own downloads (#431): a simulated study's file says it is simulated.
+ */
 function detailsOf(file, app) {
+  const named = (name) => (typeof app.downloadName === 'function' ? app.downloadName(name) : name);
   return fileDetails(file, {
     open: app.state.details,
-    save: typeof app.saveFile === 'function' ? (name, text) => app.saveFile(name, text) : null
+    save:
+      typeof app.saveFile === 'function' ? (name, text) => app.saveFile(named(name), text) : null
   });
 }
 

@@ -726,12 +726,15 @@ test.describe('demo app: the first screen', () => {
     await expect(page.locator('.sva-welcome')).toHaveCount(0);
     await item(page, 'data').click();
     await expect(dataTag(page)).toHaveText('Pilot study');
-    const stored = await page.evaluate(() => ({
+    // This page has no study.builder, whose script makes a database of its own
+    // on the hosted demo (#431): here there is none.
+    const stored = await page.evaluate(async () => ({
       local: window.localStorage.length,
       session: window.sessionStorage.length,
-      cookie: document.cookie
+      cookie: document.cookie,
+      databases: (await window.indexedDB.databases()).map((database) => database.name)
     }));
-    expect(stored).toEqual({ local: 0, session: 0, cookie: '' });
+    expect(stored).toEqual({ local: 0, session: 0, cookie: '', databases: [] });
     expect(errors).toEqual([]);
   });
 

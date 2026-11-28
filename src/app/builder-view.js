@@ -190,10 +190,34 @@ export function builderSource({
   }
 
   /**
+   * How many ready-made studies the page's studies feed names (#431): the
+   * entries that come with a built study. Asked only when the list of
+   * ready-made studies came back empty, so a page whose list arrives asks for
+   * nothing more as it opens. A feed that cannot be read counts as none.
+   */
+  async function namedInFeed(builder) {
+    if (typeof builder.listStudies !== 'function') return 0;
+    try {
+      const entries = await builder.listStudies(`${base}studies/index.json`, { built: true });
+      return (Array.isArray(entries) ? entries : []).filter((entry) => entry && entry.build).length;
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
    * Look for the studies study.builder has for this page. Each part is kept
-   * as far as it was read: a list of ready-made studies that could not be
-   * fetched leaves the saved studies listed, and the shelf to save a built
-   * study on. What could not be read is said in one sentence (#427).
+   * as far as it was read: a list of ready-made studies that did not arrive
+   * leaves the saved studies listed, and the shelf to save a built study on.
+   * What could not be read is said in one sentence (#427).
+   *
+   * study.builder's own `fetchPresets` answers a list it could not fetch with
+   * an empty one, and says nothing. So an empty list is checked against the
+   * studies feed, which the page serves beside it (#431): where the feed
+   * names ready-made studies, the list did not arrive, and the page says so
+   * and asks again when Build a study is opened. Where the feed names none,
+   * or cannot be read either, an empty list is taken as it is: a list that
+   * failed cannot then be told from one that is empty.
    */
   function find(app) {
     if (finding || (offered && !listFailed) || !canBuild) return;
@@ -210,6 +234,14 @@ export function builderSource({
         reading = 'ready-made studies';
         if (typeof builder.fetchPresets === 'function') {
           found.presets = await builder.fetchPresets(`${base}presets/index.json`);
+          if (!found.presets.length) {
+            const expected = await namedInFeed(builder);
+            if (expected) {
+              throw new Error(
+                `their list came back empty, where the page’s list of studies names ${expected}`
+              );
+            }
+          }
         }
         listProblem = '';
       } catch (error) {
@@ -260,9 +292,14 @@ export function builderSource({
    * and says nothing if it fails.
    */
   async function openOffered(app, id, name, get) {
-    const last = app.choose();
-    opening = { say: `Opening ${name}…`, last };
+    // What is said while it opens is in place before the turn is taken (#431):
+    // taking it draws the page again when a demo study was still loading, and
+    // the chip keeps the line for a study chosen from its list only while
+    // every draw since the choice had something on its way to say.
+    let last = () => true;
+    opening = { say: `Opening ${name}…`, last: () => last() };
     unopened = null;
+    last = app.choose();
     app.retag();
     app.redrawView('studies');
     let study = null;
