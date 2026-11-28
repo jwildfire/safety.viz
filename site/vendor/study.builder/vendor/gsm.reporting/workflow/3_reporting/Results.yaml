@@ -1,3 +1,8 @@
+# NOTICE OF CHANGE. This file is changed from gsm.reporting v1.1.7
+# (Gilead Sciences, Apache-2.0), inst/workflow/3_reporting/Results.yaml.
+# Changed for study.builder by Jeremy Wildfire, 2026: the last step names
+# FilterByLatestSnapshotDate without `gsm.kri::`, since gsm.kri is not
+# installed in browser R. These five lines are the only other change.
 meta:
   Type: Reporting
   ID: Results
