@@ -1,15 +1,15 @@
 {
   "module": "patient-journey-explorer",
-  "generatedAt": "2026-11-28T03:09:36.524Z",
+  "generatedAt": "2026-11-28T03:29:38.444Z",
   "environment": {
-    "os": "linux 7.0.0-1018-aws",
+    "os": "linux 7.0.0-1020-azure",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "46101411924",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/46101411924"
+    "id": "46103058693",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/46103058693"
   },
   "records": [
     {
@@ -458,6 +458,14 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-031"],
       "issueRefs": [424],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LOAD-032: on the built demo page the side panel beside the open builder says what is loaded: 4 files for the pilot study, and for PILOT-PROTOCOL its 17, the standard files with the raw ones, as the Files face lists them; and no raw file of a simulated study is called \"not recognised\" (#427)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-032"],
+      "issueRefs": [427],
       "screenshots": []
     },
     {
@@ -1237,6 +1245,14 @@
       "screenshots": []
     },
     {
+      "test": "APP-RBQM-084: on the built demo page, in real R, the RBQM tab runs its metrics on READY-P1 at the snapshot the chip names and Run details says that snapshot’s date: 2012-06-30, snapshot 6 of 6, as it opens, and 2012-01-31, snapshot 1 of 6, once the reader chooses the first; eight metrics run at each (#427)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-084"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
       "test": "APP-STUDY-001: on the built demo page an earlier snapshot of a ready-made study chosen on the Overview tab is the one the charts draw and the RBQM tab holds, and the study chip says which on every tab: READY-P1 at snapshot 1 of 6 has 2 participants in the charts where the last has 29; choosing the last brings its 29 back (#406)",
       "suite": "browser",
       "status": "pass",
@@ -1258,6 +1274,46 @@
       "status": "pass",
       "requirementIds": ["APP-STUDY-003"],
       "issueRefs": [406],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-007: on the built demo page a reader’s own files, and then Reset, chosen while a slow ready-made study is on its way are what the page shows when the study arrives: the study is dropped, and the page stops saying it is opening (#427)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-007"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-008: on the built demo page a ready-made study whose file cannot be fetched is said under the chip in the app’s own sentence: which study, what could not be fetched, and that the study in use is unchanged; nothing on the page speaks of a form (#427)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-008"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-009: on the built demo page a demo study whose file cannot be fetched says so under the chip, on the chart the reader is on, and the study in use stays (#427)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-009"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-010: on the built demo page, after study.builder’s script did not load as the page opened, opening Build a study once it can be fetched brings the list back: the Studies view names the three ready-made studies and no longer says they could not be listed, and the chip’s list offers them; the sentence ends in one full stop (#427)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-010"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "APP-STUDY-011: on the built demo page the chip marks a simulated study as simulated on every tab: \"Simulated · Snapshot 6 of 6\" under READY-P1 on a chart, on the RBQM tab and on the Overview, \"Simulated\" alone under READY-P2, and nothing under a demo study or a reader’s own files; at 1,280 pixels the header is still one row, no taller than with room to spare (#427)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-011"],
+      "issueRefs": [427],
       "screenshots": []
     },
     {
@@ -1346,6 +1402,14 @@
       "status": "pass",
       "requirementIds": ["APP-TIER-029"],
       "issueRefs": [424],
+      "screenshots": []
+    },
+    {
+      "test": "APP-TIER-030: on the built demo page Build a study and a simulated study’s Overview carry the app’s Experimental label on the corner, each with its one sentence saying why, and its panel opens inside the window; a demo study’s Overview carries none (#427)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-030"],
+      "issueRefs": [427],
       "screenshots": []
     },
     {
@@ -3677,6 +3741,22 @@
       "screenshots": []
     },
     {
+      "test": "an R that connections share APP-R-064: a connection closed while another is in the middle of a run does not close the R they share: the run goes on to its answer, and the closed connection makes itself ready again in the same R; with no other run under way, closing closes R as before, and so does closing the connection whose own run is under way (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-064"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "an R that connections share APP-R-065: when a file R needs cannot be fetched, the answer names the file and what the browser said, where it said only that a fetch failed (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-R-065"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
       "test": "an R that connections share closes R for both when either is closed, and each makes itself ready again in the next",
       "suite": "unit",
       "status": "pass",
@@ -3821,6 +3901,22 @@
       "screenshots": []
     },
     {
+      "test": "Build a study and a simulated study on the Overview tab APP-LOAD-032: beside the open builder the side panel says what is loaded, as the Files face does: every placed file, every file set aside and every raw file, counted in step one, with the mapping’s state in step two; choosing a file in the list goes back to the Files face, to its card (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LOAD-032"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study and a simulated study on the Overview tab APP-TIER-030: Build a study and the view of a simulated study stand on Experimental by their entries in site/config.json, each with one sentence saying why; the page shows the app’s status label on the corner of the Overview tab while the builder is open and while a simulated study is in use, on both of its faces, with that sentence; and shows none there for a demo study, a reader’s own files or an empty page (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-TIER-030"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
       "test": "Build a study, on the data view APP-LIB-038: on a page with the study chip, where study.builder’s script is asked for as the page opens, a script that did not load then is asked for again when Build a study is first opened (#408)",
       "suite": "unit",
       "status": "pass",
@@ -3898,6 +3994,22 @@
       "status": "pass",
       "requirementIds": ["APP-LOAD-029"],
       "issueRefs": [405],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-STUDY-010: a list of ready-made studies that cannot be fetched leaves the saved studies listed and the shelf in use, says which list could not be read, and is asked for again when Build a study is opened (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-010"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-STUDY-010: after study.builder’s script did not load as the page opened, the list of its studies is looked for again when Build a study is opened: once the script has loaded the chip’s list names the ready-made and saved studies, the sentence that they could not be listed is gone, and a study built then is kept in this browser; the sentence ends in one full stop (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-010"],
+      "issueRefs": [427],
       "screenshots": []
     },
     {
@@ -7849,7 +7961,7 @@
       "screenshots": []
     },
     {
-      "test": "placing a raw file in a gsm raw domain APP-RBQM-033: a file whose name and columns match no raw domain is named as not recognised; one whose columns match more than one is named with the domains it could be; a file of a domain already loaded replaces the earlier one, and the tab says so (#236)",
+      "test": "placing a raw file in a gsm raw domain APP-RBQM-033: a file whose name and columns match no raw domain is said to be kept and not handed to R; one whose columns match more than one is named as not recognised, with the domains it could be; a file of a domain already loaded replaces the earlier one, and the tab says so (#236)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-RBQM-033"],
@@ -10145,6 +10257,30 @@
       "screenshots": []
     },
     {
+      "test": "study.builder’s studies, opened from the app’s list APP-STUDY-007: every way of choosing what the page shows is in one ordering, so the last thing chosen is what lands: a ready-made study still on its way when the reader loads files of their own, loads gsm’s raw files, presses Reset or loads a study they built is dropped when it arrives, and says nothing if it fails; and a demo study still on its way when a ready-made study is chosen is dropped too (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-007"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "study.builder’s studies, opened from the app’s list APP-STUDY-008: a ready-made study that does not open is said under the chip in the app’s own sentence: which study, what study.builder said could not be fetched, and that the study in use is unchanged, or that none is; study.builder’s advice about its form, which is not in sight here, is not passed on; and the sentence goes when the reader chooses something else (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-008"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "study.builder’s studies, opened from the app’s list APP-STUDY-009: a demo study the reader chose that cannot be fetched is said under the chip, and the reader stays on the tab they are on with the study they had; the sentence goes at the next choice; the study a page opens on, and any study on a page with no chip, is still said on the Overview (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-009"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
       "test": "subjectIndex (PJE-SUBJ-001) PJE-SUBJ-001: the index reads the configured id_col (#142)",
       "suite": "unit",
       "status": "pass",
@@ -10555,6 +10691,14 @@
       "screenshots": []
     },
     {
+      "test": "the data sources page, on what comes with study.builder APP-STUDY-013: the data sources page names both served copies of gsm.reporting’s Results.yaml, each of which carries the one changed line and records it; and it gives DDF-RA’s MIT notice whole, with CDISC’s copyright line, beside the CC-BY-4.0 attribution (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-013", "CC-BY-4"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
       "test": "the data view’s second face APP-LIB-039: the viewer of one visit to the Overview is released when the next is drawn, so twenty visits hold one viewer and not twenty; a study view study.builder draws releases it too, and is released in its turn (#408)",
       "suite": "unit",
       "status": "pass",
@@ -10600,6 +10744,22 @@
       "status": "pass",
       "requirementIds": ["APP-STUDY-003"],
       "issueRefs": [406],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face APP-STUDY-011: the study chip marks a simulated study as simulated on every tab, in the small line under its name, before the snapshot’s words where there are any, and in its hover line and its accessible name; a demo study and a reader’s own files carry no mark; and the line is cut with the name, from 1,200 pixels, before the header takes a second row (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-011"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
+      "test": "the data view’s second face APP-STUDY-012: a mapping row the reader set by hand is kept when another snapshot of the same study is chosen, wherever that snapshot has the same file with the column the row names; a row whose file the snapshot does not have is cleared, and a note on the page names it; rows the reader did not set are filled again from the snapshot’s own file (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-STUDY-012"],
+      "issueRefs": [427],
       "screenshots": []
     },
     {
@@ -11611,6 +11771,14 @@
       "screenshots": []
     },
     {
+      "test": "the RBQM tab on the page APP-RBQM-084: with a simulated study in use R is handed the date the study’s data stands at, and Run details says which snapshot it is: the snapshot the page draws for a study that kept several, the study’s own date for one that kept one, and the day of the run, said as such, for one that names none; a reader’s own files are handed the day of the run as before (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-084"],
+      "issueRefs": [427],
+      "screenshots": []
+    },
+    {
       "test": "the RBQM tab: a reader’s own raw files APP-RBQM-034: a file that lacks a column its workflow names says so on its card, and the Overview tab’s card says of each metric that needs the column that it does, before the press (#236, #281)",
       "suite": "unit",
       "status": "pass",
@@ -11648,6 +11816,14 @@
       "status": "pass",
       "requirementIds": ["APP-RBQM-038"],
       "issueRefs": [236],
+      "screenshots": []
+    },
+    {
+      "test": "the RBQM tab: a reader’s own raw files APP-RBQM-085: a simulated study’s raw files that no metric reads, its visits, vital signs and ECGs, are not called \"not recognised\": each card says the file is read by no metric, and why; they are kept, they are not handed to R, and what the files support is what it was without them (#427)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-RBQM-085"],
+      "issueRefs": [427],
       "screenshots": []
     },
     {
