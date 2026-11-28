@@ -519,6 +519,71 @@ describe('the RBQM tab on the page', () => {
     });
   });
 
+  it('APP-RBQM-084: with a simulated study in use R is handed the date the study’s data stands at, and Run details says which snapshot it is: the snapshot the page draws for a study that kept several, the study’s own date for one that kept one, and the day of the run, said as such, for one that names none; a reader’s own files are handed the day of the run as before (#427)', async () => {
+    fakeViz();
+    const { app, r, $ } = mount({ answers: RUN_OK });
+    const history = [
+      { date: '2012-01-31', number: 1 },
+      { date: '2012-02-29', number: 2 },
+      { date: '2012-03-31', number: 3 }
+    ];
+    const kept = {
+      id: 'preset:kept',
+      name: 'KEPT',
+      kind: 'Simulated',
+      built: { history, snapshotDate: '2012-03-31' }
+    };
+    const handedR = () => r.made[0].runs.at(-1).request.args.snapshot_date;
+    const said = () => {
+      if (!$('.sva-r-panel')) $('.sva-rbqm-details').click();
+      return inPanel('Versions').rows.at(-1);
+    };
+    // The run after the files changed is started by the tab itself, R being up.
+    const again = async () => {
+      for (let turn = 0; turn < 20; turn += 1) await Promise.resolve();
+      await r.made[0].letGo();
+    };
+    // It opens on its last snapshot: that is the date R is handed, not today's.
+    app.loadRaw(STUDY, { as: kept });
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    for (let step = 0; step < 3; step += 1) await r.made[0].letGo();
+    expect(handedR()).toBe('2012-03-31');
+    expect(said()).toEqual(['Snapshot', '2012-03-31 · snapshot 3 of 3 of the study']);
+    // The reader chooses the first snapshot: the page hands the tab its files, and names it.
+    app.loadRaw(STUDY, { as: { ...kept, snapshot: '2012-01-31' } });
+    await again();
+    expect(r.made[0].runs.filter((run) => run.name === 'rbqm_run')).toHaveLength(2);
+    expect(handedR()).toBe('2012-01-31');
+    expect(said()).toEqual(['Snapshot', '2012-01-31 · snapshot 1 of 3 of the study']);
+    // A study that kept only its last snapshot is handed the date it carries.
+    app.loadRaw(STUDY, {
+      as: {
+        id: 'preset:one',
+        name: 'ONE',
+        kind: 'Simulated',
+        built: { snapshotDate: '2012-06-30' }
+      }
+    });
+    await again();
+    expect(handedR()).toBe('2012-06-30');
+    expect(said()).toEqual(['Snapshot', '2012-06-30 · the study’s one snapshot']);
+    // One that names no date is handed the day of the run, and the details say whose date that is.
+    app.loadRaw(STUDY, { as: { id: 'preset:none', name: 'NONE', kind: 'Simulated', built: {} } });
+    await again();
+    expect(handedR()).toBe('2026-10-07');
+    expect(said()).toEqual([
+      'Snapshot',
+      '2026-10-07 · the day of this run: the study names no date'
+    ]);
+    // A reader's own files name no date: the day of the run, as before.
+    app.loadRaw(STUDY);
+    await again();
+    expect(r.made[0].runs.filter((run) => run.name === 'rbqm_run')).toHaveLength(5);
+    expect(handedR()).toBe('2026-10-07');
+    expect(said()).toEqual(['Snapshot', '2026-10-07']);
+  });
+
   it('APP-RBQM-020: what R returns is drawn by gsm.viz: the overview is handed every Results row with the Groups and Metrics tables, and a metric’s page its scatter plot and bar chart with the metric’s own rows, R’s bounds and R’s thresholds; opening another metric draws that one’s, and R’s answer is not changed by any of it (#235, #279)', async () => {
     const calls = fakeViz();
     const before = JSON.stringify(whole);
@@ -1036,6 +1101,56 @@ describe('the RBQM tab: a reader’s own raw files', () => {
     expect(card().say).toBe('This data supports 4 of 8 metrics.');
   });
 
+  it('APP-RBQM-085: a simulated study’s raw files that no metric reads, its visits, vital signs and ECGs, are not called "not recognised": each card says the file is read by no metric, and why; they are kept, they are not handed to R, and what the files support is what it was without them (#427)', async () => {
+    fakeViz();
+    const { app, r, $, $$ } = mount({ answers: RUN_OK });
+    const extra = [
+      {
+        name: 'Raw_VISIT.csv',
+        text: 'studyid,visit_dt,visit,instancename,subjid,invid\nS,2012-01-05,1,Screening,1,SITE1\n'
+      },
+      {
+        name: 'Raw_VS.csv',
+        text: 'studyid,vs_dt,weight,height,sysbp,diabp,pulse,subjid,visit\nS,2012-01-05,70,170,120,80,60,1,1\n'
+      },
+      {
+        name: 'Raw_EG.csv',
+        text: 'studyid,subjid,visnam,eg_dt,egtstnam,egresn,egresu\nS,1,Screening,2012-01-05,QTcF,400,ms\n'
+      }
+    ];
+    const supports = () => $('.sva-support[data-support="rbqm"] .sva-support-say').textContent;
+    app.loadRaw(STUDY);
+    const before = supports();
+    app.loadRaw([...STUDY, ...extra], {
+      as: { id: 'preset:sim', name: 'SIM', kind: 'Simulated' }
+    });
+    const tags = Object.fromEntries(
+      $$('.sva-file.sva-raw').map((card) => [
+        card.dataset.raw,
+        [card.querySelector('.sva-tag').textContent, card.querySelector('.sva-tag').title]
+      ])
+    );
+    for (const { name } of extra) {
+      expect(tags[name], name).toEqual([
+        'gsm raw file: read by no metric',
+        `${name} is kept as it is and is not handed to R: its name and its columns match none of the raw domains gsm’s metrics read.`
+      ]);
+    }
+    expect(Object.values(tags).map(([tag]) => tag)).not.toContain('gsm raw file: not recognised');
+    expect(document.body.textContent).not.toContain('not recognised');
+    expect(tags['Raw_AE.csv'][0]).toBe('gsm raw file: Raw_AE, by its name');
+    // What the files support is what the nine support.
+    expect(before).toBe('This data supports 8 of 8 metrics.');
+    expect(supports()).toBe(before);
+    // R is handed the nine files of the raw domains the metrics read, and none of the three.
+    app.select('rbqm');
+    $('.sva-rbqm-start').click();
+    for (let step = 0; step < 2; step += 1) await r.made[0].letGo();
+    const handedR = Object.keys(r.made[0].runs.at(-1).request.files);
+    expect(handedR).toEqual(STUDY.map((file) => `/rbqm/runs/1/${file.name}`));
+    await r.made[0].letGo();
+  });
+
   it('APP-RBQM-038: R is handed the one file of each raw domain under gsm’s name for it, whatever the reader called it, and no file that was not placed; the Overview tab’s card and the RBQM tab’s row say before the press which metrics the files support and of each other which file it needs, in the words R then says (#236, #281)', async () => {
     fakeViz();
     const { app, r, $, $$ } = mount({ answers: TWO });
@@ -1049,8 +1164,8 @@ describe('the RBQM tab: a reader’s own raw files', () => {
         'subjects_export.csv is Raw_SUBJ, by its columns.'
       ],
       [
-        'gsm raw file: not recognised',
-        'site_notes.csv is not recognised: its name and its columns match no gsm raw domain.'
+        'gsm raw file: read by no metric',
+        'site_notes.csv is kept as it is and is not handed to R: its name and its columns match none of the raw domains gsm’s metrics read.'
       ],
       ['gsm raw file: Raw_AE, by its name', 'ae.csv is Raw_AE, by its name.']
     ]);

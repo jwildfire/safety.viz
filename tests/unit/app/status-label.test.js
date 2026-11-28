@@ -392,9 +392,11 @@ describe('the demo app’s own label', () => {
   });
 
   it('APP-TIER-029: on a page whose libraries bring study.builder’s way to load data, the app’s status panel says in a second paragraph where study.builder’s parts stand; a page without it says nothing of them (#424)', () => {
+    // Since #427 the two parts stand on Experimental here, each with the label
+    // on its corner (APP-TIER-030), and the paragraph says so.
     expect(APP_STATUS_SIMULATED).toBe(
-      'Build a study and the view of a simulated study are study.builder’s. ' +
-        'It calls itself experimental, and every row it makes is synthetic.'
+      'Build a study and the view of a simulated study are Experimental, and say so where you ' +
+        'open them. Both are study.builder’s, new in 1.13, and every row it makes is synthetic.'
     );
     const said = (libraries) => {
       document.body.innerHTML = '<div id="app"></div>';

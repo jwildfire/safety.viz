@@ -116,14 +116,22 @@ export function supportWords(can, of) {
 
 /**
  * What a kept raw file's card says of it on the Overview tab (#281): the raw
- * domain it was placed in and how that was told, or that it was placed in none.
- * @param {{table: ?string, by: ?string}} entry One file of rawStudy's (rbqm-files.js).
+ * domain it was placed in and how that was told, or that it was placed in
+ * none. A file placed in none is one of two things (#427): one whose columns
+ * match several raw domains, which is not recognised, or one of no raw domain
+ * the metrics read, as a simulated study's visits, vital signs and ECGs are,
+ * which is kept and read by no metric.
+ * @param {{table: ?string, by: ?string, candidates?: string[]}} entry One file of rawStudy's (rbqm-files.js).
  * @returns {string} The few words of the card's tag.
  */
-export const rawTag = (entry) =>
-  entry.table
-    ? `gsm raw file: ${entry.table}, by its ${entry.by === 'name' ? 'name' : 'columns'}`
-    : 'gsm raw file: not recognised';
+export const rawTag = (entry) => {
+  if (entry.table) {
+    return `gsm raw file: ${entry.table}, by its ${entry.by === 'name' ? 'name' : 'columns'}`;
+  }
+  return Array.isArray(entry.candidates) && entry.candidates.length
+    ? 'gsm raw file: not recognised'
+    : 'gsm raw file: read by no metric';
+};
 
 /** Every address starting R downloads from, in words: "webr.r-wasm.org, repo.r-wasm.org and this page". */
 export const hostsSaid = (downloads) =>
@@ -321,7 +329,7 @@ export function outcomeSaid(answer, { files, study = [], seconds, name = null })
  * What the chip's panel holds once R has run (#280): the steps, what R was
  * handed, why any metric did not run, the versions, and R's warnings.
  * @param {Object} answer What `rbqm_run` returned.
- * @param {Object} run The run: `files`, `study`, `name`, `webr` (the runtime's version), `seconds`, `sinceStart` (null for a run that started nothing), `snapshotDate`, `handed` (a sentence for each thing R was handed), `notes` (sentences about the load) and `copies`.
+ * @param {Object} run The run: `files`, `study`, `name`, `webr` (the runtime's version), `seconds`, `sinceStart` (null for a run that started nothing), `snapshotDate` (what R was handed) and `snapshotSaid` (what is said of it, when more than the date), `handed` (a sentence for each thing R was handed), `notes` (sentences about the load) and `copies`.
  * @param {Array<{what: string, host: ?string, megabytes: number}>} downloads The downloads.
  * @returns {{text: string[], columns: Array<Array<Object>>}} The panel's opening sentence and its three columns.
  */
@@ -394,7 +402,8 @@ export function runDetails(answer, run, downloads) {
               'Charts',
               run.copies ? `${run.copies.charts.name} ${run.copies.charts.version}` : null
             ],
-            ['Snapshot', run.snapshotDate]
+            // The date R was handed, and for a simulated study which snapshot it is (#427).
+            ['Snapshot', run.snapshotSaid || run.snapshotDate]
           ]
         },
         { title: 'Warnings from R', items: warnings.length ? warnings : ['None.'] }
@@ -522,6 +531,33 @@ export function warningsSaid(answer) {
 export function isoDay(date) {
   const two = (value) => String(value).padStart(2, '0');
   return `${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}`;
+}
+
+/**
+ * The snapshot date a run hands R, and what Run details says of it (#427).
+ * A simulated study's data stands at a date of its own: the snapshot the page
+ * draws, or the one snapshot the study kept. R is handed that date, and the
+ * details say which snapshot it is. A demo study and a reader's own files
+ * name no date, so R is handed the day of the run, as before; a simulated
+ * study that names none is handed it too, and the details say that it is
+ * today's date and not the study's.
+ * @param {?{date: string, number: number, of: number}} stands The date the loaded study's data stands at (viewer-view.js::studyDate), or null.
+ * @param {string} today The day of the run, as `isoDay` gives it.
+ * @param {boolean} [simulated] Whether what is loaded is a simulated study.
+ * @returns {{date: string, said: string}} The date for R, and the words for Run details.
+ */
+export function snapshotFor(stands, today, simulated = false) {
+  if (stands && stands.of > 1) {
+    return {
+      date: stands.date,
+      said: `${stands.date} · snapshot ${stands.number} of ${stands.of} of the study`
+    };
+  }
+  if (stands) return { date: stands.date, said: `${stands.date} · the study’s one snapshot` };
+  return {
+    date: today,
+    said: simulated ? `${today} · the day of this run: the study names no date` : today
+  };
 }
 
 /** Whether two lists hold the same loaded files, in the same order. */

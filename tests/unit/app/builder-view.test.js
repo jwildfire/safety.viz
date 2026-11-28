@@ -9,6 +9,7 @@ import manifest from '../../../src/data/portfolio.json';
 import { mountApp } from '../../../src/app/page.js';
 import {
   BUILDER_SOURCE_ID,
+  SIMULATED_RUNG_ID,
   builderSource,
   protocolCredit,
   protocolCredits
@@ -20,6 +21,8 @@ import {
   builderSourceOptions
 } from '../../../scripts/builder-lib.mjs';
 import { STUDY_BUILDER, readRecord, verifyVendored } from '../../../scripts/vendor-lib.mjs';
+import { chartTiers } from '../../../scripts/app-libraries.mjs';
+import { tierProblems } from '../../../scripts/tiers.mjs';
 
 // Build a study on the page: a way to load data that a library brings through
 // the second-library seam, which is study.builder's widget. The data view
@@ -318,6 +321,110 @@ describe('Build a study, on the data view', () => {
     await settle();
     expect(builder.mount).toHaveBeenCalledTimes(1);
     expect(document.querySelector('.sva-source .sva-build-widget').textContent).toBe('the widget');
+  });
+
+  it('APP-STUDY-010: after study.builder’s script did not load as the page opened, the list of its studies is looked for again when Build a study is opened: once the script has loaded the chip’s list names the ready-made and saved studies, the sentence that they could not be listed is gone, and a study built then is kept in this browser; the sentence ends in one full stop (#427)', async () => {
+    const source = builderSource({ createConnection, ...OPTIONS });
+    const handle = withChip(source);
+    scripts()[0].onerror();
+    await settle();
+    expect(handle.portfolio()).toMatchObject({
+      studies: [],
+      busy: '',
+      problem:
+        'study.builder’s studies could not be listed: ./study.builder/study.builder.js did not load on this page.'
+    });
+    // Drawn again and again, the page asks for nothing: one failure is one request.
+    handle.select('studies');
+    handle.retag();
+    expect(scripts()).toHaveLength(0);
+    // Build a study is opened: the script is asked for once, for the builder and the list both.
+    const saved = [];
+    const save = vi.fn(async (study) => {
+      saved.push({
+        kind: 'study',
+        id: `study:${study.id}`,
+        name: study.id,
+        size: '10 participants',
+        saved: '2026-11-27T00:00:00Z'
+      });
+    });
+    const builder = {
+      ...fakeBuilder(),
+      fetchPresets: vi.fn(async () => [
+        {
+          id: 'ready',
+          name: 'Ready-made',
+          study: './study.builder/presets/ready.study.json.gz',
+          settings: { name: 'READY', participants: 40, sites: 4 }
+        }
+      ]),
+      createShelf: () => ({ available: true, list: async () => [...saved], save }),
+      savedOf: (study) => ({ id: study.id })
+    };
+    handle.openSource(BUILDER_SOURCE_ID);
+    expect(scripts()).toHaveLength(1);
+    expect(handle.portfolio().busy).toBe('Looking for study.builder’s studies…');
+    globalThis.StudyBuilder = builder;
+    scripts()[0].onload();
+    await settle();
+    expect(builder.fetchPresets).toHaveBeenCalledTimes(1);
+    expect(handle.portfolio()).toMatchObject({ busy: '', problem: '' });
+    expect(handle.portfolio().studies.map((entry) => entry.id)).toEqual(['preset:ready']);
+    // The Studies view lists it, and no longer says the studies could not be listed.
+    handle.select('studies');
+    expect(document.querySelector('.sva-studies-row[data-study="preset:ready"]')).not.toBeNull();
+    expect(document.querySelector('.sva-studies [role="alert"]')).toBeNull();
+    // A study built now is kept in this browser, and listed.
+    handle.openSource(BUILDER_SOURCE_ID);
+    builder.mounts[0].options.onStudy(STUDY);
+    await settle();
+    expect(save).toHaveBeenCalledWith({ id: 'BUILT-001' });
+    expect(handle.portfolio().studies.map((entry) => entry.id)).toEqual([
+      'saved:study:BUILT-001',
+      'preset:ready'
+    ]);
+  });
+
+  it('APP-STUDY-010: a list of ready-made studies that cannot be fetched leaves the saved studies listed and the shelf in use, says which list could not be read, and is asked for again when Build a study is opened (#427)', async () => {
+    let failing = true;
+    const fetchPresets = vi.fn(async () => {
+      if (failing)
+        throw new Error(
+          'The list of ready-made studies could not be fetched: the page answered 503.'
+        );
+      return [];
+    });
+    globalThis.StudyBuilder = {
+      ...fakeBuilder(),
+      fetchPresets,
+      createShelf: () => ({
+        available: true,
+        list: async () => [
+          {
+            kind: 'study',
+            id: 'MINE',
+            name: 'MINE',
+            size: '10 participants',
+            saved: '2026-11-27T00:00:00Z'
+          }
+        ]
+      })
+    };
+    const handle = withChip(builderSource({ createConnection, ...OPTIONS }));
+    await settle();
+    expect(handle.portfolio().problem).toBe(
+      'study.builder’s ready-made studies could not be listed: The list of ready-made studies could not be fetched: the page answered 503.'
+    );
+    expect(handle.portfolio().studies.map((entry) => entry.id)).toEqual(['saved:MINE']);
+    handle.retag();
+    await settle();
+    expect(fetchPresets).toHaveBeenCalledTimes(1);
+    failing = false;
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    expect(fetchPresets).toHaveBeenCalledTimes(2);
+    expect(handle.portfolio().problem).toBe('');
   });
 
   it('APP-LIB-040: on a page with the study chip, study.builder’s script is fetched as the page opens, for the chip’s list, then its list of ready-made studies and the studies saved in this browser, and no study until the reader opens one (#408)', async () => {
@@ -692,13 +799,18 @@ describe('study.builder’s studies, opened from the app’s list', () => {
   /** The app with a study chip, one demo study, and a study.builder whose ready-made studies arrive when the test says. */
   async function listed() {
     const arrivals = {};
+    const builder = fakeBuilder();
+    // The demo study's file: answered at once, held until released, or refused.
+    const demo = { hold: null, fail: '' };
     globalThis.StudyBuilder = {
+      ...builder,
       fetchPresets: async () => PRESETS,
       openPreset: (preset) =>
         new Promise((resolve, reject) => {
           arrivals[preset.id] = {
             arrive: () => resolve({ study: { ...STUDY, id: preset.settings.name } }),
-            fail: () => reject(new Error(`${preset.settings.name} could not be fetched`))
+            fail: (message = `${preset.settings.name} could not be fetched`) =>
+              reject(new Error(message))
           };
         })
     };
@@ -708,7 +820,11 @@ describe('study.builder’s studies, opened from the app’s list', () => {
       manifest,
       portfolio: true,
       demo: { base: './', studies: DEMO },
-      fetchText: async () => 'USUBJID,ARM,SEX\nS1,A,F\n',
+      fetchText: async (url) => {
+        if (demo.hold) await demo.hold;
+        if (demo.fail) throw new Error(`${url} ${demo.fail}`);
+        return 'USUBJID,ARM,SEX\nS1,A,F\n';
+      },
       libraries: [
         { name: 'study.builder', source: builderSource({ createConnection, ...OPTIONS }) }
       ]
@@ -720,9 +836,15 @@ describe('study.builder’s studies, opened from the app’s list', () => {
         .portfolio()
         .studies.find((entry) => entry.id === `preset:${id}`)
         .open();
-    return { arrivals, open };
+    return { arrivals, open, builder, demo };
   }
   const chip = () => document.querySelector('.sva-chip-name').textContent;
+  const OWN = [{ name: 'dm.csv', text: 'USUBJID,ARM,SEX\nS9,B,M\n' }];
+  const RAW = [{ name: 'Raw_SUBJ.csv', text: 'studyid,subjid,invid\nMINE,S1,SITE1\n' }];
+  const underChip = () => {
+    const said = document.querySelector('.sva-chip-slot .sva-chip-said');
+    return said ? { say: said.textContent, role: said.getAttribute('role') } : null;
+  };
 
   it('APP-PAGE-046: the study in use is the last one chosen: a study still on its way when another is chosen is dropped when it arrives, and so is one a demo study was chosen after; a dropped study that fails says nothing (#407)', async () => {
     const { arrivals, open } = await listed();
@@ -761,8 +883,148 @@ describe('study.builder’s studies, opened from the app’s list', () => {
     open('slow');
     arrivals.slow.fail();
     await settle();
-    expect(app.portfolio().problem).toBe('SLOW could not be fetched');
+    expect(app.portfolio().problem).toBe(
+      'SLOW did not open. SLOW could not be fetched. The study in use is unchanged.'
+    );
     expect(chip()).toBe('FAST');
+  });
+
+  it('APP-STUDY-007: every way of choosing what the page shows is in one ordering, so the last thing chosen is what lands: a ready-made study still on its way when the reader loads files of their own, loads gsm’s raw files, presses Reset or loads a study they built is dropped when it arrives, and says nothing if it fails; and a demo study still on its way when a ready-made study is chosen is dropped too (#427)', async () => {
+    const { arrivals, open, builder, demo } = await listed();
+    // Files of the reader's own, chosen while a slow study is on its way.
+    open('slow');
+    expect(app.portfolio().busy).toBe('Opening SLOW…');
+    app.loadFiles(OWN);
+    expect(chip()).toBe('Your files');
+    // The study is no longer what the reader is waiting for, and the page stops saying so.
+    expect(app.portfolio().busy).toBe('');
+    arrivals.slow.arrive();
+    await settle();
+    expect(chip()).toBe('Your files');
+    expect(app.state.named).toBeNull();
+    expect(app.state.files.subject.rows).toEqual([{ USUBJID: 'S9', ARM: 'B', SEX: 'M' }]);
+    // gsm's raw files, which come in by the other loader.
+    open('slow');
+    app.loadRaw(RAW);
+    arrivals.slow.arrive();
+    await settle();
+    expect(chip()).toBe('Your files');
+    expect(app.state.raw.map((file) => file.name)).toEqual(['Raw_SUBJ.csv']);
+    // Reset.
+    open('slow');
+    app.reset();
+    expect(chip()).toBe('No study');
+    expect(app.portfolio().busy).toBe('');
+    arrivals.slow.arrive();
+    await settle();
+    expect(chip()).toBe('No study');
+    expect(app.state.raw).toEqual([]);
+    // A study that was dropped and then fails is not reported.
+    open('slow');
+    app.reset();
+    arrivals.slow.fail();
+    await settle();
+    expect(app.portfolio()).toMatchObject({ busy: '', problem: '' });
+    expect(underChip()).toBeNull();
+    // A study the reader built, loaded into the demo while a slow one is on its way.
+    app.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    open('slow');
+    builder.mounts[0].options.onStudy(STUDY);
+    expect(chip()).toBe('BUILT-001');
+    arrivals.slow.arrive();
+    await settle();
+    expect(chip()).toBe('BUILT-001');
+    expect(app.state.named.name).toBe('BUILT-001');
+    // The other way round: a demo study still on its way when a ready-made
+    // study is chosen is dropped, and the page stops saying it is loading.
+    let release = () => {};
+    demo.hold = new Promise((resolve) => {
+      release = resolve;
+    });
+    const loading = app.loadDemo('one');
+    expect(document.querySelector('.sva-busy').textContent).toContain('Loading the demo study');
+    open('fast');
+    expect(document.querySelector('.sva-busy')).toBeNull();
+    arrivals.fast.arrive();
+    await settle();
+    expect(chip()).toBe('FAST');
+    release();
+    await loading;
+    await settle();
+    expect(chip()).toBe('FAST');
+    expect(app.state.named.id).toBe('preset:fast');
+    expect(app.state.study).toBeNull();
+  });
+
+  it('APP-STUDY-008: a ready-made study that does not open is said under the chip in the app’s own sentence: which study, what study.builder said could not be fetched, and that the study in use is unchanged, or that none is; study.builder’s advice about its form, which is not in sight here, is not passed on; and the sentence goes when the reader chooses something else (#427)', async () => {
+    const { arrivals, open } = await listed();
+    const SAID =
+      'The study for Ready-made SLOW could not be fetched: the page answered 404. ' +
+      'Its settings are in the form, and Build makes it.';
+    app.select('ae-explorer');
+    open('slow');
+    arrivals.slow.fail(SAID);
+    await settle();
+    expect(underChip()).toEqual({
+      say:
+        'SLOW did not open. The study for Ready-made SLOW could not be fetched: the page ' +
+        'answered 404. The study in use is unchanged.',
+      role: 'alert'
+    });
+    expect(document.body.textContent).not.toContain('in the form');
+    expect(app.state.selected).toBe('ae-explorer');
+    expect(chip()).toBe('Study one');
+    // With nothing loaded, the sentence does not speak of a study in use.
+    app.reset();
+    expect(app.portfolio().problem).toBe('');
+    open('slow');
+    arrivals.slow.fail(SAID);
+    await settle();
+    expect(app.portfolio().problem).toBe(
+      'SLOW did not open. The study for Ready-made SLOW could not be fetched: the page ' +
+        'answered 404. No study is in use.'
+    );
+    // Something else is chosen, and opens: the sentence is no longer true of what the page shows, and goes.
+    await app.loadDemo('one');
+    expect(app.portfolio().problem).toBe('');
+    expect(underChip()).toBeNull();
+  });
+
+  it('APP-STUDY-009: a demo study the reader chose that cannot be fetched is said under the chip, and the reader stays on the tab they are on with the study they had; the sentence goes at the next choice; the study a page opens on, and any study on a page with no chip, is still said on the Overview (#427)', async () => {
+    const { demo } = await listed();
+    app.loadFiles(OWN);
+    app.select('ae-explorer');
+    const notes = [...app.state.notes];
+    demo.fail = 'was answered with HTTP 404.';
+    await app.loadDemo('one');
+    expect(underChip()).toEqual({
+      say: 'Study one could not be opened: ./dm.csv was answered with HTTP 404. The study in use is unchanged.',
+      role: 'alert'
+    });
+    expect(app.state.selected).toBe('ae-explorer');
+    expect(chip()).toBe('Your files');
+    expect(app.state.notes).toEqual(notes);
+    expect(document.querySelector('.sva-busy')).toBeNull();
+    // With nothing loaded it says so, and does not speak of a study in use.
+    app.reset();
+    expect(app.portfolio().problem).toBe('');
+    app.select('ae-explorer');
+    await app.loadDemo('one');
+    expect(app.portfolio().problem).toBe(
+      'Study one could not be opened: ./dm.csv was answered with HTTP 404. No study is in use.'
+    );
+    expect(app.state.selected).toBe('ae-explorer');
+    // The next choice clears it.
+    app.loadFiles(OWN);
+    expect(app.portfolio().problem).toBe('');
+    // The study a page opens on has no tab to stay on: it is said on the Overview, as before.
+    await app.loadDemo('one', { open: true });
+    expect(app.state.selected).toBe('data');
+    expect(app.state.notes).toEqual([
+      'The demo study could not be loaded: ./dm.csv was answered with HTTP 404.'
+    ]);
+    expect(app.portfolio().problem).toBe('');
   });
 });
 
@@ -911,5 +1173,162 @@ describe('the copy of study.builder', () => {
     for (const word of ['createConnection', 'repository', 'useLabel', 'onStudy', 'operations']) {
       expect(bundle, word).toContain(word);
     }
+  });
+});
+
+// What the second review of the v1.13.0 release candidate asked of the Overview
+// tab with study.builder on the page (#427): a status label for its two parts,
+// and a side panel that says what is loaded.
+describe('Build a study and a simulated study on the Overview tab', () => {
+  it('APP-TIER-030: Build a study and the view of a simulated study stand on Experimental by their entries in site/config.json, each with one sentence saying why; the page shows the app’s status label on the corner of the Overview tab while the builder is open and while a simulated study is in use, on both of its faces, with that sentence; and shows none there for a demo study, a reader’s own files or an empty page (#427)', async () => {
+    const config = JSON.parse(readFileSync(path.join(root, 'site/config.json'), 'utf8'));
+    expect(config.appParts).toEqual([
+      {
+        id: BUILDER_SOURCE_ID,
+        title: 'Build a study',
+        tier: 'experimental',
+        tierNote:
+          'Experimental: new in 1.13. study.builder simulates the study in this browser, and what it makes may still change.'
+      },
+      {
+        id: SIMULATED_RUNG_ID,
+        title: 'The view of a simulated study',
+        tier: 'experimental',
+        tierNote:
+          'Experimental: new in 1.13. The view is study.builder’s and every row is synthetic; what it shows may still change.'
+      }
+    ]);
+    // The build holds a part to what it holds a tab to: a rung with its reason, and never Qualified.
+    const [build, simulated] = config.appParts;
+    expect(tierProblems(config)).toEqual([]);
+    expect(
+      tierProblems({ appParts: [{ id: 'build', title: 'Build a study', tier: 'experimental' }] })
+    ).toEqual([
+      'site/config.json: Build a study is Experimental and gives no reason. Its label shows one sentence saying why: add a "tierNote".'
+    ]);
+    expect(tierProblems({ appParts: [{ ...simulated, tier: 'qualified' }] })[0]).toContain(
+      'The view of a simulated study says tier "qualified". Nothing in safety.viz is qualified'
+    );
+    // The page is handed both rungs, with the tabs' and the charts'.
+    const tiers = chartTiers();
+    expect(tiers[BUILDER_SOURCE_ID]).toEqual({ tier: 'experimental', note: build.tierNote });
+    expect(tiers[SIMULATED_RUNG_ID]).toEqual({ tier: 'experimental', note: simulated.tierNote });
+
+    const builder = fakeBuilder();
+    globalThis.StudyBuilder = builder;
+    document.body.innerHTML = '<div id="app"></div>';
+    app = mountApp('#app', {
+      charts: {},
+      manifest,
+      tiers,
+      libraries: [
+        { name: 'study.builder', source: builderSource({ createConnection, ...OPTIONS }) }
+      ]
+    });
+    const corner = () => {
+      const label = document.querySelector('.sva-content > .sva-corner');
+      if (!label) return null;
+      return {
+        label: label.querySelector('.sv-status-label').dataset.tier,
+        heading: label.querySelector('.sv-status-heading').textContent,
+        why: [...label.querySelectorAll('.sv-status-text')].map((node) => node.textContent)[0],
+        mark: label.querySelector('.sv-status-here .sv-status-mark').textContent
+      };
+    };
+    // An empty page, and a reader's own files: the Overview is the app's own, and carries no label.
+    expect(corner()).toBeNull();
+    app.loadFiles([{ name: 'dm.csv', text: 'USUBJID,ARM,SEX\nS1,A,F\n' }]);
+    expect(corner()).toBeNull();
+    // The builder, open on the Overview tab.
+    app.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    expect(corner()).toEqual({
+      label: 'experimental',
+      heading: 'Build a study is experimental',
+      why: build.tierNote,
+      mark: 'Build a study'
+    });
+    // The study it built, in use: the Overview says where its view stands, on the face it opens on and on Files.
+    builder.mounts[0].options.onStudy(STUDY);
+    expect(app.state.named.rung).toBe(SIMULATED_RUNG_ID);
+    const view = {
+      label: 'experimental',
+      heading: 'The view of this simulated study is experimental',
+      why: simulated.tierNote,
+      mark: 'This study’s view'
+    };
+    expect(corner()).toEqual(view);
+    app.state.exploring = !app.state.exploring;
+    app.select('data');
+    expect(corner()).toEqual(view);
+    // A chart's tab says where the chart stands, not the study's view.
+    app.select('ae-explorer');
+    expect(document.querySelector('.sva-content').textContent).not.toContain(simulated.tierNote);
+    // Reset: no study, no label.
+    app.reset();
+    expect(corner()).toBeNull();
+  });
+
+  it('APP-LOAD-032: beside the open builder the side panel says what is loaded, as the Files face does: every placed file, every file set aside and every raw file, counted in step one, with the mapping’s state in step two; choosing a file in the list goes back to the Files face, to its card (#427)', async () => {
+    const builder = fakeBuilder();
+    globalThis.StudyBuilder = builder;
+    const handle = mounted(builderSource({ createConnection, ...OPTIONS }));
+    const said = () => ({
+      steps: [...document.querySelectorAll('.sva-side .sva-step')].map((step) => [
+        step.dataset.step,
+        step.dataset.state,
+        step.querySelector('.sva-step-status').textContent
+      ]),
+      loaded: [...document.querySelectorAll('.sva-side .sva-loaded-file')].map(
+        (file) =>
+          `${file.querySelector('.sva-loaded-name').textContent}: ${file.querySelector('.sva-loaded-detail').textContent}`
+      ),
+      empty: Boolean(document.querySelector('.sva-side .sva-loaded-empty'))
+    });
+    const beside = () => {
+      handle.openSource(BUILDER_SOURCE_ID);
+      expect(document.querySelector('.sva-source')).not.toBeNull();
+      const now = said();
+      handle.openSource(null);
+      expect(document.querySelector('.sva-source')).toBeNull();
+      return now;
+    };
+    // Nothing loaded: both say so.
+    expect(beside()).toEqual(said());
+    expect(said().empty).toBe(true);
+    // A study whose files are placed in standard domains, as a demo study's are.
+    handle.loadFiles([
+      { name: 'dm.csv', text: 'USUBJID,ARM,SEX\nS1,A,F\n' },
+      { name: 'notes.csv', text: 'a,b\n1,2\n' }
+    ]);
+    await settle();
+    expect(said().steps[0]).toEqual(['load', 'done', '1 file loaded']);
+    expect(said().loaded).toEqual(['dm.csv: Subject-level, 1 row', 'notes.csv: Not placed, 1 row']);
+    expect(beside()).toEqual(said());
+    // A simulated study: its standard files and its raw files, all four.
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    builder.mounts[0].options.onStudy(STUDY);
+    const files = said();
+    expect(files.steps[0]).toEqual(['load', 'done', '4 files loaded']);
+    expect(files.loaded.map((line) => line.split(':')[0])).toEqual([
+      'adsl.csv',
+      'advs.csv',
+      'Raw_SUBJ.csv',
+      'Raw_SITE.csv'
+    ]);
+    expect(files.steps[1][2]).toMatch(/^\d+ guessed, \d+ needed by a chart$/);
+    expect(beside()).toEqual(files);
+    // A file chosen in the list beside the builder: the Files face, at its card.
+    handle.openSource(BUILDER_SOURCE_ID);
+    document.querySelector('.sva-side .sva-loaded-file[data-raw="Raw_SITE.csv"]').click();
+    expect(document.querySelector('.sva-source')).toBeNull();
+    expect(handle.state.source).toBeNull();
+    const card = document.querySelector('.sva-file.sva-raw[data-raw="Raw_SITE.csv"]');
+    expect(card).not.toBeNull();
+    expect(document.activeElement).toBe(card);
+    handle.openSource(BUILDER_SOURCE_ID);
+    document.querySelector('.sva-side .sva-loaded-file[data-domain="subject"]').click();
+    expect(document.activeElement).toBe(document.querySelector('.sva-file[data-domain="subject"]'));
   });
 });

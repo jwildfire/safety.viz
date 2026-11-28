@@ -100,14 +100,14 @@ describe('placing a raw file in a gsm raw domain', () => {
     }
   });
 
-  it('APP-RBQM-033: a file whose name and columns match no raw domain is named as not recognised; one whose columns match more than one is named with the domains it could be; a file of a domain already loaded replaces the earlier one, and the tab says so (#236)', () => {
+  it('APP-RBQM-033: a file whose name and columns match no raw domain is said to be kept and not handed to R; one whose columns match more than one is named as not recognised, with the domains it could be; a file of a domain already loaded replaces the earlier one, and the tab says so (#236)', () => {
     const notes = file('site_notes.csv', ['SITE', 'NOTE']);
     const both = file('export.csv', [...columnsOf('Raw_LB'), ...columnsOf('Raw_PD')]);
     const first = file('Raw_AE.csv', columnsOf('Raw_AE'));
     const second = file('ae.csv', columnsOf('Raw_AE'));
     const study = rawStudy([notes, both, first, second], needs);
     expect(study.files.map((entry) => entry.sentence)).toEqual([
-      'site_notes.csv is not recognised: its name and its columns match no gsm raw domain.',
+      'site_notes.csv is kept as it is and is not handed to R: its name and its columns match none of the raw domains gsm’s metrics read.',
       'export.csv is not recognised: its columns match more than one gsm raw domain (Raw_LB and Raw_PD), and its name says which of none. Name it for the one it is.',
       'Raw_AE.csv is Raw_AE, by its name; ae.csv, loaded after it, is used in its place.',
       'ae.csv is Raw_AE, by its name.'

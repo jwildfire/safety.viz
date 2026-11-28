@@ -3361,7 +3361,7 @@ const OWN_AE = onDisk('site/data/rbqm/Raw_AE.csv');
 const OWN_PD = onDisk('site/data/rbqm/Raw_PD.csv');
 const OWN_NOTES = onDisk('tests/e2e/fixtures/app/site_notes.csv');
 const NOTES_UNPLACED =
-  'site_notes.csv is not recognised: its name and its columns match no gsm raw domain.';
+  'site_notes.csv is kept as it is and is not handed to R: its name and its columns match none of the raw domains gsm’s metrics read.';
 function withoutAColumn(testInfo) {
   const scenario = RBQM_TAB.scenarios.find((entry) => entry.id === 'no-column');
   const files = scenarioFiles(scenario, (file) =>

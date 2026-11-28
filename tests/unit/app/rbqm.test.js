@@ -618,6 +618,14 @@ describe('the Overview tab’s card, in the tab’s words (#281)', () => {
     });
     expect(rawTag({ table: 'Raw_AE', by: 'name' })).toBe('gsm raw file: Raw_AE, by its name');
     expect(rawTag({ table: 'Raw_LB', by: 'columns' })).toBe('gsm raw file: Raw_LB, by its columns');
-    expect(rawTag({ table: null, by: null })).toBe('gsm raw file: not recognised');
+    // A file of no raw domain the metrics read is kept, and said to be read by none (#427).
+    expect(rawTag({ table: null, by: null })).toBe('gsm raw file: read by no metric');
+    expect(rawTag({ table: null, by: null, candidates: [] })).toBe(
+      'gsm raw file: read by no metric'
+    );
+    // One that could be either of two raw domains is not recognised, as before.
+    expect(rawTag({ table: null, by: null, candidates: ['Raw_LB', 'Raw_PD'] })).toBe(
+      'gsm raw file: not recognised'
+    );
   });
 });

@@ -550,7 +550,8 @@ describe('the required check’s workflow', () => {
       'APP-RBQM-031',
       'APP-RBQM-039',
       'APP-RBQM-047',
-      'APP-RBQM-078'
+      'APP-RBQM-078',
+      'APP-RBQM-084'
     ]) {
       expect(tagged, id).toContain(id);
     }

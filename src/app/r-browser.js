@@ -118,16 +118,22 @@ function optionProblem(options) {
  *
  * Closing any of the connections closes the host's R, since an R that has
  * stopped answering has stopped for all of them; the next run of any starts
- * another, and each connection makes itself ready in it again.
+ * another, and each connection makes itself ready in it again. One thing
+ * holds R open (#427): another connection in the middle of a run. A tab that
+ * gives up on R while a study is being built in it lets go of its own place
+ * in R and leaves R to the build; R is closed when a connection is closed
+ * with no other at work in it.
  * @param {Object} [options]
  * @param {string} [options.baseUrl] Where webR is served from; webr.r-wasm.org at WEBR_VERSION by default.
  * @param {(url: string) => Promise<Object>} [options.importWebR] Something else to import webR with; used by the tests.
- * @returns {{start: (onRuntime?: Function) => Promise<Object>, close: () => void, generation: () => number}} The host.
+ * @returns {{start: (onRuntime?: Function) => Promise<Object>, close: () => void, generation: () => number, begin: (who: Object) => (() => void), release: (who: Object) => void, busyBeside: (who: Object) => boolean}} The host.
  */
 export function createHost({ baseUrl = WEBR_BASE_URL, importWebR = importFromUrl } = {}) {
   let started = null;
   let live = null;
   let closes = 0;
+  // The runs under way, by the connection that asked for each (#427).
+  const working = new Map();
 
   function shut(webR) {
     try {
@@ -182,7 +188,27 @@ export function createHost({ baseUrl = WEBR_BASE_URL, importWebR = importFromUrl
       if (webR) shut(webR);
     },
     /** How many times R has been let go of: a connection made ready in an earlier R is not ready in this one. */
-    generation: () => closes
+    generation: () => closes,
+    /**
+     * A connection's run begins (#427): until what this returns is called, the
+     * connection is in the middle of a run in the host's R.
+     */
+    begin(who) {
+      const run = {};
+      if (!working.has(who)) working.set(who, new Set());
+      working.get(who).add(run);
+      return () => {
+        const runs = working.get(who);
+        if (!runs || !runs.delete(run)) return;
+        if (!runs.size) working.delete(who);
+      };
+    },
+    /** A connection gives up the runs it has under way: they hold R open no longer. */
+    release(who) {
+      working.delete(who);
+    },
+    /** Whether a connection other than this one is in the middle of a run. */
+    busyBeside: (who) => [...working.keys()].some((other) => other !== who)
   });
 }
 
@@ -244,6 +270,8 @@ export function createConnection(options = {}) {
   // count of closes, and the making ready that is under way or done.
   let readyIn = -1;
   let readying = null;
+  // What the host knows this connection by, when it counts the runs under way.
+  const self = {};
 
   /** The host's R, with this connection's packages, files and source in it. */
   async function startShared() {
@@ -311,7 +339,16 @@ export function createConnection(options = {}) {
     for (const file of files) {
       let text = file.text;
       if (typeof text !== 'string') {
-        const response = await fetchFile(file.url);
+        let response;
+        try {
+          response = await fetchFile(file.url);
+        } catch (error) {
+          // The browser says only "Failed to fetch": the page says which file (#427).
+          throw new Error(
+            `a file R needs, ${file.url}, could not be fetched: ${messageOf(error)}`,
+            { cause: error }
+          );
+        }
         if (!response.ok) throw new Error(`${file.url} answered ${response.status}`);
         text = await response.text();
       }
@@ -341,6 +378,10 @@ export function createConnection(options = {}) {
         return { status: 'error', message: 'r-browser: files and args must each be an object.' };
       }
       let webR;
+      // With a host, the host is told a run is under way from here to its
+      // answer, so that another connection that is closed meanwhile leaves R
+      // to this one (#427).
+      const done = host ? host.begin(self) : () => {};
       // With a host each run asks it for R: it may have been closed, by this
       // connection or another, since the last run.
       if (!started || host) started = start();
@@ -350,6 +391,7 @@ export function createConnection(options = {}) {
       } catch (error) {
         // The next run tries again from the start.
         if (started === mine) started = null;
+        done();
         return { status: 'unavailable', reason: 'load-failed', message: messageOf(error) };
       }
       let shelter;
@@ -375,6 +417,7 @@ export function createConnection(options = {}) {
         return { status: 'error', message: messageOf(error) };
       } finally {
         if (shelter) await shelter.purge().catch(() => {});
+        done();
       }
     },
 
@@ -382,14 +425,18 @@ export function createConnection(options = {}) {
      * Let go of R: its worker is closed, and the next run starts R again.
      * A connection that never started R has nothing to close. R is closed at
      * once, whether or not it has finished starting and whether or not it
-     * still answers.
-     * @returns {Promise<void>} Settled when R is closed; it never rejects.
+     * still answers. With a host, an R another connection is in the middle
+     * of a run in is not closed (#427): this connection lets go of its own
+     * place in it, its runs under way no longer count, and its next run makes
+     * it ready again in whichever R the host then has.
+     * @returns {Promise<void>} Settled when R is closed or let go of; it never rejects.
      */
     async close() {
       if (host) {
         started = null;
         readying = null;
-        host.close();
+        host.release(self);
+        if (!host.busyBeside(self)) host.close();
         return;
       }
       closes += 1;

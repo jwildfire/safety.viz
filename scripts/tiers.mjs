@@ -16,14 +16,18 @@ const RETIRED = ['experimental', 'prototype'];
 const listed = TIERS.map((tier) => `"${tier}"`).join(', ');
 
 /**
- * Every chart and every app tab the site's configuration lists, each with the
- * name a sentence can call it by.
+ * Every chart, every app tab and every other part of the app the site's
+ * configuration lists, each with the name a sentence can call it by. A part
+ * (`appParts`, #427) is something in the app that is neither a chart nor a
+ * tab and stands on a rung of its own: Build a study, and the view of a
+ * simulated study.
  * @param {Object} config The site's configuration (site/config.json).
  * @returns {Array<{name: string, entry: Object}>} The entries, tabs first.
  */
 export function tierEntries(config) {
   return [
     ...(config.appTabs || []).map((entry) => ({ name: `the ${entry.title} tab`, entry })),
+    ...(config.appParts || []).map((entry) => ({ name: entry.title, entry })),
     ...(config.renderers || []).map((entry) => ({ name: entry.title, entry }))
   ];
 }

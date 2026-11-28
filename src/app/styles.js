@@ -187,7 +187,8 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-chip-caret{font-size:.7rem;color:var(--accent)}
 .sva-chip-id{display:flex;flex-direction:column;align-items:flex-start;min-width:0;line-height:1.15}
 .sva-chip-id .sva-chip-name{max-width:100%}
-.sva-chip-snap{font-size:.62rem;font-weight:500;color:var(--soft);white-space:nowrap}
+.sva-chip-under{font-size:.62rem;font-weight:500;color:var(--soft);white-space:nowrap}
+.sva-chip-sim{font-weight:600}
 .sva-chip-info{width:2.2rem;height:2.2rem;border:0;border-radius:50%;background:none;color:var(--accent);font:italic 600 .95rem/1 Georgia,serif;cursor:pointer}
 .sva-chip-info:hover,.sva-chip-info[aria-expanded=true]{background:var(--accent-soft)}
 .sva-chip-pop{position:absolute;top:calc(100% + .4rem);left:0;z-index:30;width:min(22rem,calc(100vw - 2rem));background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(31,35,40,.2)}
@@ -383,7 +384,7 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-chip-slot{flex:1 1 7rem;min-width:0;max-width:max-content}
 .sva-studychip{flex:0 1 auto;min-width:0}
 .sva-chip-caret,.sva-chip-info{flex:none}
-.sva-chip-snap{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.sva-chip-under{max-width:100%;overflow:hidden;text-overflow:ellipsis}
 }
 @media (min-width:1200px) and (max-width:1439px){
 .sva-bar:has(>.sva-chip-slot) .sva-kicker{display:none}
