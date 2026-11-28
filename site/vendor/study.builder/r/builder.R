@@ -56,9 +56,9 @@ builder_limits <- list(
 
 # What was changed in the raw tables, one sentence each.
 builder_notes <- c(
-  "Arms, lab results, ECGs and adverse event terms are gsm.datasim's study results: a lab's toxicity grade is not worked out from its result, and the terms are a short list of its own, not MedDRA.",
-  "gsm.datasim is asked for columns under gsm's names, as gsm.mapping's specs say, where it would name them as the source system does.",
-  "gsm.datasim is asked for site ids that begin SITE, where it would write 0X1234, which R would read back from a file as a number."
+  "Arms, lab results, ECGs and adverse event terms are the study results that the modified copy of gsm.datasim adds (they are not in Gilead's gsm.datasim 2.1.0): a lab's toxicity grade is not worked out from its result, and the terms are a short list of its own, not MedDRA.",
+  "The modified copy of gsm.datasim is asked for columns under gsm's names, as gsm.mapping's specs say, where Gilead's gsm.datasim names them as the source system does.",
+  "The modified copy of gsm.datasim is asked for site ids that begin SITE, where Gilead's gsm.datasim writes 0X1234, which R would read back from a file as a number."
 )
 
 .builder_state <- new.env()
@@ -597,7 +597,7 @@ builder_run <- function(
   dates <- names(study$raw_data)
   # What the phase and the area changed, in gsm.datasim's own words.
   profile_note <- paste0(
-    "Phase and therapeutic area shape the study results a little, by gsm.datasim's study profile. ",
+    "Phase and therapeutic area shape the study results a little, by the study profile that the modified copy of gsm.datasim adds. ",
     study_profile(phase, therapeutic_area)$said,
     " The numbers are guesses at believable sizes, not fitted to data."
   )
@@ -622,14 +622,14 @@ builder_run <- function(
       paste0(
         "Visits, vital signs and labs follow the protocol's schedule: ", length(design$visits),
         " planned visits, ", nrow(snapshot$Raw_VISIT),
-        " made, by gsm.datasim's study design. Activities of no domain are not simulated."
+        " made, by the study design that the modified copy of gsm.datasim adds. Activities of no domain are not simulated."
       )
     }
 
     raw <- lapply(made, function(table) {
       .builder_table(snapshot[[table]], list(
         id = sub("^Raw_", "", table), table = table, name = paste0(table, ".csv"), layer = "raw",
-        made = list(workflow = "gsm.datasim", from = list()),
+        made = list(workflow = "gsm.datasim (modified copy)", from = list()),
         renamed = lapply(names(renames[[table]]), function(column) {
           list(column = column, was = unname(renames[[table]][[column]]))
         })

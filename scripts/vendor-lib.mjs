@@ -221,7 +221,7 @@ export const STUDY_BUILDER = {
   directory: 'site/vendor/study.builder',
   // The release the copy is made from. While it names a release candidate,
   // move it to the release when that is out, and copy again.
-  tag: 'v0.5.1',
+  tag: 'v0.5.2',
   global: 'StudyBuilder',
   files: [
     { file: 'study.builder.js', source: 'dist/study.builder.js' },
@@ -319,7 +319,8 @@ export const STUDY_BUILDER = {
     'protocols/lilly-nasal-glucagon.protocol.json',
     'protocols/observational.protocol.json',
     // The studies feed: it names each example protocol's licence and the
-    // attribution CDISC asks for, which the app shows under the builder (#423).
+    // attribution CDISC asks for, which the app shows under the builder (#423)
+    // wherever the widget shows none of its own (#428).
     'studies/index.json',
     // The ready-made studies, and the list that names them.
     'presets/index.json',

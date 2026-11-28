@@ -527,7 +527,7 @@ above.
 The demo app's study chip offers three ready-made simulated studies, and Build
 a study offers five example protocols. Both come with
 [study.builder](https://github.com/jwildfire/study.builder) and are copied with
-it into `site/vendor/study.builder/` from its v0.5.1 release (commit 11d1103).
+it into `site/vendor/study.builder/` from its v0.5.2 release (commit b6ac945).
 None is made or changed here, and `SOURCE.json` beside the copy records the
 commit and each file's checksum:
 
@@ -633,7 +633,7 @@ that one line changed.
 | [workr](https://github.com/Gilead-Public/workr)                            | 1.1.0   | MIT + file LICENSE                                              | Built for R in the browser                                                  |
 | [gsm.kri](https://github.com/Gilead-Public/gsm.kri)                        | 1.7.0   | Apache License (>= 2)                                           | Eight metric workflows and one R file, copied; the package is not installed |
 | [gsm.viz](https://github.com/Gilead-Public/gsm.viz)                        | 2.4.1   | Apache-2.0, by its `LICENSE` file; its `package.json` names ISC | Its built bundle, copied                                                    |
-| [study.builder](https://github.com/jwildfire/study.builder)                | 0.5.1   | Apache-2.0                                                      | Its two built bundles and the files its R reads, copied, for Build a study  |
+| [study.builder](https://github.com/jwildfire/study.builder)                | 0.5.2   | Apache-2.0                                                      | Its two built bundles and the files its R reads, copied, for Build a study  |
 | A modified copy of [gsm.datasim](https://github.com/jwildfire/gsm.datasim) | 2.1.0   | Apache License (>= 2)                                           | Its R source, copied inside the copy of study.builder                       |
 
 - The versions and tags are in `site/vendor/r-wasm/pins.json` and in the
