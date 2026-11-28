@@ -1,15 +1,15 @@
 {
   "module": "histogram",
-  "generatedAt": "2026-11-27T16:08:33.446Z",
+  "generatedAt": "2026-11-28T03:09:36.524Z",
   "environment": {
-    "os": "linux 7.0.0-1020-azure",
+    "os": "linux 7.0.0-1018-aws",
     "node": "v22.23.5",
     "playwright": "1.61.1",
     "chromium": "149.0.7827.55"
   },
   "run": {
-    "id": "46028673979",
-    "url": "https://github.com/jwildfire/safety.viz/actions/runs/46028673979"
+    "id": "46101411924",
+    "url": "https://github.com/jwildfire/safety.viz/actions/runs/46101411924"
   },
   "records": [
     {
@@ -261,19 +261,27 @@
       "screenshots": []
     },
     {
-      "test": "APP-LIB-042: on the built demo page the builder offers CDISC’s five example protocols and shows the schedule of the one tried, and under it the page says CDISC’s attribution and the licence, from the studies feed, which is fetched once, when the builder is opened (#423)",
+      "test": "APP-LIB-042: on the built demo page the builder offers CDISC’s five example protocols and shows the schedule of the one tried; CDISC’s attribution is on the page once, in the widget’s own words, under the list of protocols and then under the schedule, and the app’s line is not drawn beside it; the studies feed is fetched once, when the builder is opened (#428)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-LIB-042"],
-      "issueRefs": [423],
+      "issueRefs": [428],
       "screenshots": []
     },
     {
-      "test": "APP-LIB-043: on the built demo page the card of the ready-made study that follows the CDISC pilot protocol names the protocol and carries CDISC’s attribution, as study.builder’s Protocol view does, and the card of a study with no protocol carries none (#423)",
+      "test": "APP-LIB-043: on the built demo page the card of the ready-made study that follows the CDISC pilot protocol names the protocol and carries CDISC’s attribution, as study.builder’s Protocol view does and its Schedule view does under the grid, once; the card of a study with no protocol carries none (#428)",
       "suite": "browser",
       "status": "pass",
       "requirementIds": ["APP-LIB-043"],
-      "issueRefs": [423],
+      "issueRefs": [428],
+      "screenshots": []
+    },
+    {
+      "test": "APP-LIB-044: on the built demo page each of the three ready-made studies, opened with no R, lists on its Overview under “What a study built here is, and is not” no sentence that names gsm.datasim without saying it is the modified copy, and its own notes are among them (#428)",
+      "suite": "browser",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-044"],
+      "issueRefs": [428],
       "screenshots": []
     },
     {
@@ -3720,11 +3728,27 @@
       "screenshots": []
     },
     {
+      "test": "Build a study, on the data view APP-LIB-042: where the widget says an attribution itself, under its list of ready-made protocols or under a schedule, the app’s line is off the page, so the attribution is there once; the line is back under the widget when the widget shows none; the copy of study.builder marks both of its own as the app looks for them (#428)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-042"],
+      "issueRefs": [428],
+      "screenshots": []
+    },
+    {
       "test": "Build a study, on the data view APP-LIB-043: a study that followed a protocol names it on its card, with the attribution and the statement of change the protocol’s source carries; a study with no protocol, or a protocol that names none, has no such line (#423)",
       "suite": "unit",
       "status": "pass",
       "requirementIds": ["APP-LIB-043"],
       "issueRefs": [423],
+      "screenshots": []
+    },
+    {
+      "test": "Build a study, on the data view APP-LIB-044: no sentence in the notes of the three copied ready-made studies names gsm.datasim without saying it is the modified copy, and every raw table says it was made by \"gsm.datasim (modified copy)\"; each study has the key it had in study.builder v0.5.0 and v0.5.1 (#428)",
+      "suite": "unit",
+      "status": "pass",
+      "requirementIds": ["APP-LIB-044"],
+      "issueRefs": [428],
       "screenshots": []
     },
     {
