@@ -204,6 +204,134 @@ export const GSM_VIZ = {
 };
 
 /**
+ * study.builder, for the demo app's Build a study source: the tool that simulates
+ * a study with a modified copy of gsm.datasim in browser R and hands its data
+ * to a page. Its built bundle defines the global `StudyBuilder`; with it are
+ * copied the files its R reads, which the demo app serves beside it:
+ * study.builder's own R and workflows, and its copies of that modified
+ * gsm.datasim's source (Gilead's 2.1.0 with additions that are not theirs,
+ * kept at jwildfire/gsm.datasim), of gsm.mapping's vital signs spec and of
+ * gsm.kri's and gsm.reporting's workflows, each with the record study.builder
+ * keeps of where it came from, and the licence's text (#423). None is edited. study.builder is public, under jwildfire, and is only ever read.
+ */
+export const STUDY_BUILDER = {
+  name: 'study.builder bundle and the files its R reads',
+  label: 'bundle',
+  repository: 'https://github.com/jwildfire/study.builder',
+  directory: 'site/vendor/study.builder',
+  // The release the copy is made from. While it names a release candidate,
+  // move it to the release when that is out, and copy again.
+  tag: 'v0.5.2',
+  global: 'StudyBuilder',
+  files: [
+    { file: 'study.builder.js', source: 'dist/study.builder.js' },
+    // study.viewer, the module the data view explores a study with.
+    { file: 'study.viewer.js', source: 'dist/study.viewer.js' },
+    { file: 'r/builder.R', source: 'r/builder.R' },
+    ...[
+      'Raw_AE',
+      'Raw_AntiCancer',
+      'Raw_Baseline',
+      'Raw_Consents',
+      'Raw_DATACHG',
+      'Raw_DATAENT',
+      'Raw_Death',
+      'Raw_ENROLL',
+      'Raw_GENERAL',
+      'Raw_IE',
+      'Raw_LB',
+      'Raw_OverallResponse',
+      'Raw_PD',
+      'Raw_PK',
+      'Raw_QUERY',
+      'Raw_Randomization',
+      'Raw_SDRGCOMP',
+      'Raw_SITE',
+      'Raw_STUDCOMP',
+      'Raw_STUDY',
+      'Raw_SUBJ',
+      'Raw_VISIT',
+      'Raw_VS',
+      'Raw_gilda_STUDY',
+      'column_type_generator',
+      'create_longitudinal_study',
+      'study_design',
+      // The options and the study profile the study results follow (v0.5.0).
+      'study_options',
+      'study_profile',
+      'study_results',
+      'create_snapshot_reports',
+      'domain_registry',
+      'endpoints_domains_helper',
+      'export_study_data',
+      'generate_data_from_workflows',
+      'generate_rawdata_for_single_study',
+      'generate_risk_signals',
+      'gsm.datasim-package',
+      'gsm_utils',
+      'import-gsm.mapping-CombineSpecs',
+      'raw_data_generator',
+      'study_builder',
+      'util-pipe',
+      'utils-longitudinal',
+      'utils'
+    ].map((name) => `vendor/gsm.datasim/R/${name}.R`),
+    'vendor/gsm.datasim/inst/template.csv',
+    'vendor/gsm.datasim/inst/small_template.csv',
+    'vendor/gsm.datasim/DESCRIPTION',
+    'vendor/gsm.datasim/LICENSE.md',
+    'vendor/gsm.datasim/SOURCE.json',
+    'vendor/gsm.mapping-vitals/workflow/1_mappings/VS.yaml',
+    'vendor/gsm.mapping-vitals/SOURCE.json',
+    'vendor/gsm.mapping-vitals/LICENSE.md',
+    'vendor/gsm.kri/workflow/2_metrics/kri0001.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0002.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0003.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0004.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0005.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0006.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0007.yaml',
+    'vendor/gsm.kri/workflow/2_metrics/kri0012.yaml',
+    'vendor/gsm.kri/R/util-Report.R',
+    'vendor/gsm.kri/SOURCE.json',
+    'vendor/gsm.kri/LICENSE.md',
+    'vendor/gsm.reporting/workflow/3_reporting/Results.yaml',
+    'vendor/gsm.reporting/workflow/3_reporting/Bounds.yaml',
+    'vendor/gsm.reporting/workflow/3_reporting/Groups.yaml',
+    'vendor/gsm.reporting/workflow/3_reporting/Metrics.yaml',
+    'vendor/gsm.reporting/SOURCE.json',
+    'vendor/gsm.reporting/LICENSE.md',
+    'workflows/adam/ADAE.yaml',
+    'workflows/adam/ADEG.yaml',
+    'workflows/adam/ADLB.yaml',
+    'workflows/adam/ADQS.yaml',
+    'workflows/adam/ADSL.yaml',
+    'workflows/adam/ADVS.yaml',
+    'workflows/analysis/AESummary.yaml',
+    'workflows/analysis/AESummaryByArm.yaml',
+    'workflows/analysis/EfficacySummary.yaml',
+    // The R file beside them, whose function the Efficacy summary calls by name.
+    'workflows/analysis/EfficacyModel.R',
+    // The ready-made protocols the builder's form offers to try: CDISC's five examples.
+    'protocols/cdisc-pilot.protocol.json',
+    'protocols/cdisc-pilot-devices.protocol.json',
+    'protocols/alexion-wilsons.protocol.json',
+    'protocols/lilly-nasal-glucagon.protocol.json',
+    'protocols/observational.protocol.json',
+    // The studies feed: it names each example protocol's licence and the
+    // attribution CDISC asks for, which the app shows under the builder (#423)
+    // wherever the widget shows none of its own (#428).
+    'studies/index.json',
+    // The ready-made studies, and the list that names them.
+    'presets/index.json',
+    'presets/phase1-small.study.json.gz',
+    'presets/phase2-oncology.study.json.gz',
+    'presets/cdisc-pilot-protocol.study.json.gz',
+    'LICENSE'
+  ].map((entry) => (typeof entry === 'string' ? { file: entry, source: entry } : entry))
+};
+
+/**
  * A file's checksum.
  * @param {Uint8Array} bytes The file's bytes.
  * @returns {string} Its SHA-256, in hex.

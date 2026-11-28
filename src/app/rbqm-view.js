@@ -18,20 +18,20 @@
 //
 // The tab runs on the study the other charts use (#253, obot.roadmap#398): R
 // is handed the loaded study's Subject-level and Adverse events files, under
-// the column names the reader mapped on the Data tab, and makes gsm's raw
+// the column names the reader mapped on the Overview tab, and makes gsm's raw
 // tables from them before gsm's own workflows run. There is no second study to
 // load. gsm raw files are the other way in, and run every metric:
 //
 // The files are the RBQM study's, or the reader's own (#236). Every file comes
-// in on the Data tab (#282, obot.roadmap#406), and the tab hands that tab two
+// in on the Overview tab (#282, obot.roadmap#406), and the tab hands that tab two
 // functions through the seam (libraries.js): `claims`, which says a file is a
 // gsm raw file, so the app keeps it as it is and does not pass it through the
 // mapping table; and `supports`, which says, before R is started, which
-// metrics the loaded data supports, for the Data tab's card (rbqm-files.js).
+// metrics the loaded data supports, for the Overview tab's card (rbqm-files.js).
 // Each kept file is placed in a gsm raw domain by its name or its columns. R
 // is handed the one file of each domain under gsm's name for it; a file not
 // placed stays out of R. The tab itself has no place to load a file: its
-// lines that say to change the data lead to the Data tab.
+// lines that say to change the data lead to the Overview tab.
 //
 // R computes every rate, score and flag shown. This module decides when R is
 // asked, hands R's tables to gsm.viz (rbqm.js says which rows), and writes the
@@ -41,6 +41,7 @@ import { el } from './dom.js';
 import { icon } from './icons.js';
 import { note } from './note.js';
 import { WEBR_VERSION } from './r-browser.js';
+import { studyDate } from './viewer-view.js';
 import {
   NOT_CSV,
   filesForR,
@@ -68,6 +69,7 @@ import {
   rbqmWords,
   runDetails,
   sameFiles,
+  snapshotFor,
   stepLines,
   stepNumber,
   stepSaid,
@@ -99,7 +101,7 @@ const messageOf = (error) =>
  * @param {{start: number, attach: number, run: number}} [options.limits] How long R is waited on at each step before the tab gives up, in seconds (#261).
  * @param {?string} [options.webr] The version of the runtime R runs on, for Run details.
  * @param {() => Date} [options.now] The clock; used by the tests.
- * @returns {{id: string, title: string, tag: Function, render: Function, state: Function, claims?: Function, supports?: Function}} The view, as page.js takes one. On a page that can start R and knows what the workflows need, it also brings the two functions the Data tab asks (libraries.js::claimSaid, supportSaid).
+ * @returns {{id: string, title: string, tag: Function, render: Function, state: Function, claims?: Function, supports?: Function}} The view, as page.js takes one. On a page that can start R and knows what the workflows need, it also brings the two functions the Overview tab asks (libraries.js::claimSaid, supportSaid).
  */
 export function rbqmTab({
   createConnection,
@@ -123,7 +125,7 @@ export function rbqmTab({
   let pressedAt = 0;
   let failure = null; // what the control says of an R that did not start, or stopped (rbqm.js::failureOf)
   const words = rbqmWords(downloads);
-  let result = null; // { answer, files, study, name, used, support, said, seconds, sinceStart, snapshotDate }
+  let result = null; // { answer, files, study, name, used, support, said, seconds, sinceStart, snapshotDate, snapshotSaid }
   let runStep = 'read'; // while a run is going: reading the study, then running the workflows
   let runs = 0;
   let kept = null; // the folder of R's file system the last run's files are in
@@ -398,7 +400,15 @@ export function rbqmTab({
     // this run begins, so a reader who runs again and again fills nothing up.
     const earlier = kept;
     kept = folder;
-    const snapshotDate = isoDay(now());
+    // The date R is handed is the date the loaded data stands at (#427): for
+    // a simulated study, the snapshot the page draws and the chip names; for
+    // a demo study or a reader's own files, which name none, the day of the run.
+    const named = app && app.state.named;
+    const { date: snapshotDate, said: snapshotSaid } = snapshotFor(
+      studyDate(named),
+      isoDay(now()),
+      Boolean(named && named.kind === 'Simulated')
+    );
     const since = now().getTime();
     const answer = await within(
       'run',
@@ -455,7 +465,8 @@ export function rbqmTab({
       seconds: took,
       // Said only of the press that started R: a later press started nothing.
       sinceStart: startedR ? seconds() : null,
-      snapshotDate
+      snapshotDate,
+      snapshotSaid
     };
     phase = 'done';
     // The reader loaded other files while R ran: those are the ones to show.
@@ -638,7 +649,7 @@ export function rbqmTab({
     return drawn;
   }
 
-  /** A link that leads to where the data is changed: the Data tab, where every file comes in (#282). */
+  /** A link that leads to where the data is changed: the Overview tab, where every file comes in (#282). */
   function dataLink(app, text) {
     const link = el('button', 'sva-link sva-rbqm-data', text);
     link.type = 'button';
@@ -696,7 +707,7 @@ export function rbqmTab({
     details.onclick = () => app.openControl();
     outcome.append(
       `${said.ran} ${said.rest}`,
-      dataLink(app, 'change the data on the Data tab'),
+      dataLink(app, 'change the data on the Overview tab'),
       '. ',
       details
     );
@@ -764,7 +775,7 @@ export function rbqmTab({
           say: [
             el('span', 'sva-rbqm-why', metric.message),
             ' ',
-            dataLink(app, 'Change the data on the Data tab.')
+            dataLink(app, 'Change the data on the Overview tab.')
           ],
           className: 'sva-rbqm-whybox'
         })
@@ -787,10 +798,10 @@ export function rbqmTab({
   }
 
   /**
-   * Whether a file loaded on the Data tab is one of gsm's raw files (#282),
+   * Whether a file loaded on the Overview tab is one of gsm's raw files (#282),
    * by the stricter of the two rules (rbqm-files.js::isRawFile). The app then
    * keeps it as it is. A raw file that is not CSV is refused with a sentence:
-   * the Data tab takes JSON too, and R is handed a raw file's text as CSV.
+   * the Overview tab takes JSON too, and R is handed a raw file's text as CSV.
    */
   function claims(file) {
     if (!isRawFile(file, needs)) return null;
@@ -798,7 +809,7 @@ export function rbqmTab({
   }
 
   /**
-   * What the loaded data supports, for the Data tab's one card (#281): how
+   * What the loaded data supports, for the Overview tab's one card (#281): how
    * many metrics, each metric with the mark the tab's own row gives it, R's
    * sentence for each that cannot run, which raw tables R makes from which
    * file of a study, and the raw domain each kept file was placed in. All of
@@ -918,7 +929,7 @@ export function rbqmTab({
     /** What the tab holds now, for the tests: the phase, and what R returned. */
     state: () => ({ phase, step: moment() || step, up, result, failure }),
 
-    // The two things the Data tab asks of the tab (#281, #282), where the tab
+    // The two things the Overview tab asks of the tab (#281, #282), where the tab
     // can run a reader's own files: on a page that can start R, built with
     // what the workflows need.
     ...(needs && !unavailable ? { claims, supports } : {}),
@@ -998,7 +1009,7 @@ export function rbqmTab({
             supports.append(
               // A demo study is a study, and so are a study's own files; gsm raw files a reader loaded are files.
               `The loaded ${app.state.study || !files.raw.files.length ? 'study supports' : 'files support'} ${can} of ${support.metrics.length} metrics. `,
-              dataLink(app, 'Change the data on the Data tab.')
+              dataLink(app, 'Change the data on the Overview tab.')
             );
             card.append(supports);
           }

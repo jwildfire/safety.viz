@@ -4,7 +4,7 @@
 // which metrics the placed files support. This module is that with no document
 // in it.
 //
-// The files come in on the Data tab, where a study's standard files come in
+// The files come in on the Overview tab, where a study's standard files come in
 // too (#282, obot.roadmap#406), so the first question is whether a file is a
 // raw file at all (`isRawFile`). That path is interim: every study is to be
 // read as RAW, then SDTM, then ADaM in a later release, so only what moving the
@@ -20,7 +20,7 @@
 // The study the other charts use runs here too (#253, obot.roadmap#398): R
 // makes a raw table that is not loaded from the standard domain that can give
 // it, by workflows `needs.standard` lists. So a standard domain's file, under
-// the column names the reader mapped on the Data tab, is one more table the
+// the column names the reader mapped on the Overview tab, is one more table the
 // rule reads, and R is handed it as text with those names.
 //
 // Nothing here reads a file's rows but `standardCsv`, which writes them out
@@ -35,10 +35,19 @@ function listed(items) {
   return `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
 }
 
-/** A file's name with no folder, extension or `Raw_` in front, in capitals: what a raw domain is called. */
-const domainNamed = (name) =>
+/**
+ * A file's name with no folder in front, and without the word the app puts in
+ * front of a file it saves from a simulated study (#431, page.js's
+ * `downloadName`): `simulated-Raw_AE.csv` chosen again is still `Raw_AE.csv`.
+ */
+const fileNamed = (name) =>
   String(name)
     .replace(/^.*[\\/]/, '')
+    .replace(/^simulated-/i, '');
+
+/** A file's name with no folder, extension or `Raw_` in front, in capitals: what a raw domain is called. */
+const domainNamed = (name) =>
+  fileNamed(name)
     .replace(/\.csv$/i, '')
     .replace(/^raw_/i, '')
     .toUpperCase();
@@ -62,7 +71,7 @@ function matching(columns, raw) {
  * @returns {boolean} Whether it is kept as a raw file.
  */
 export function isRawFile(file, needs) {
-  if (/^raw_/i.test(String(file.name).replace(/^.*[\\/]/, ''))) return true;
+  if (/^raw_/i.test(fileNamed(file.name))) return true;
   return matching(file.columns, list(needs && needs.raw)).length === 1;
 }
 
@@ -92,7 +101,7 @@ export function placeRaw(file, needs) {
  * domain replaces an earlier one.
  * @param {Array<{name: string, columns: string[]}>} files The loaded files, in the order loaded.
  * @param {Object} needs What the workflows need, as R reads it.
- * @returns {{files: Array<{file: Object, table: ?string, by: ?string, used: boolean, lacks: string[], sentence: string}>, tables: Map<string, Object>}} Each file with what the tab says of it, and the file used for each raw table.
+ * @returns {{files: Array<{file: Object, table: ?string, by: ?string, candidates?: string[], used: boolean, lacks: string[], sentence: string}>, tables: Map<string, Object>}} Each file with what the tab says of it (for one placed in no domain, the domains its columns match, if any), and the file used for each raw table.
  */
 export function rawStudy(files, needs) {
   const raw = new Map(list(needs && needs.raw).map((entry) => [entry.table, entry]));
@@ -103,16 +112,24 @@ export function rawStudy(files, needs) {
     tables,
     files: placed.map(({ file, table, by, candidates }) => {
       if (!table) {
+        // Two different things, said apart (#427). A file that could be one of
+        // several raw domains is not recognised, and the reader can name it.
+        // A file of no raw domain the metrics read is not a file gone wrong:
+        // a simulated study's visits, vital signs and ECGs are gsm raw files
+        // by their names, and no metric reads them. It is kept, and the tab
+        // says only what is true of it.
         return {
           file,
           table: null,
           by: null,
+          candidates,
           used: false,
           lacks: [],
           sentence: candidates.length
             ? `${file.name} is not recognised: its columns match more than one gsm raw domain ` +
               `(${listed(candidates)}), and its name says which of none. Name it for the one it is.`
-            : `${file.name} is not recognised: its name and its columns match no gsm raw domain.`
+            : `${file.name} is kept as it is and is not handed to R: its name and its columns ` +
+              'match none of the raw domains gsm’s metrics read.'
         };
       }
       const used = tables.get(table) === file;
@@ -360,7 +377,7 @@ export const filesForR = (tables) =>
 
 /**
  * A raw file the app does not read: gsm's raw files are CSV, and R is handed
- * their text as CSV. The Data tab takes JSON too, so the rule is said there.
+ * their text as CSV. The Overview tab takes JSON too, so the rule is said there.
  */
 export const NOT_CSV = (name) =>
   `${name} is not a CSV file: the RBQM tab reads gsm’s raw files as CSV.`;
@@ -384,6 +401,6 @@ export function standardSentence(entry, label, support) {
   if (!tables.length) return gives;
   const lacks =
     `no column mapped to ${listed(columns)}, so ${listed(tables)} ` +
-    `${tables.length === 1 ? 'is' : 'are'} not made. Map ${columns.length === 1 ? 'it' : 'them'} on the Data tab.`;
+    `${tables.length === 1 ? 'is' : 'are'} not made. Map ${columns.length === 1 ? 'it' : 'them'} on the Overview tab.`;
   return made.length ? `${gives} It has ${lacks}` : `${file} has ${lacks}`;
 }

@@ -12,7 +12,12 @@ import {
   wireStatusLabels
 } from '../../../src/status-label.js';
 import { TIERS } from '../../../src/tiers.js';
-import { APP_STATUS_LINE, APP_STATUS_TEXT, statusCount } from '../../../src/app/header.js';
+import {
+  APP_STATUS_LINE,
+  APP_STATUS_SIMULATED,
+  APP_STATUS_TEXT,
+  statusCount
+} from '../../../src/app/header.js';
 import { mountApp } from '../../../src/app/page.js';
 
 // The status label (#273, obot.roadmap#403): the rung's word in a pill whose
@@ -384,6 +389,44 @@ describe('the demo app’s own label', () => {
     press('Escape');
     expect(panel.hidden).toBe(true);
     app.destroy();
+  });
+
+  it('APP-TIER-029: on a page whose libraries bring study.builder’s way to load data, the app’s status panel says in a second paragraph where study.builder’s parts stand; a page without it says nothing of them (#424)', () => {
+    // Since #427 the two parts stand on Experimental here, each with the label
+    // on its corner (APP-TIER-030), and the paragraph says so.
+    expect(APP_STATUS_SIMULATED).toBe(
+      'Build a study and the view of a simulated study are Experimental, and say so where you ' +
+        'open them. Both are study.builder’s, new in 1.13, and every row it makes is synthetic.'
+    );
+    const said = (libraries) => {
+      document.body.innerHTML = '<div id="app"></div>';
+      const app = mountApp('#app', { charts, manifest, libraries });
+      const panel = document.querySelector('.sva-header .sv-status-panel');
+      const paragraphs = [...panel.querySelectorAll('.sv-status-text')]
+        .filter((paragraph) => !/sv-status-(count|foot)/.test(paragraph.className))
+        .map((paragraph) => paragraph.textContent);
+      // The hover line and the rungs are the app's own either way.
+      const tip = document.querySelector('.sva-header .sv-status-tip').textContent;
+      const marks = [...panel.querySelectorAll('.sv-status-mark')].map((mark) => mark.textContent);
+      app.destroy();
+      return { paragraphs, tip, marks };
+    };
+    const source = { id: 'build', label: 'Build a study', render() {} };
+    // With study.builder's source: the disclaimer, then where its parts stand.
+    expect(said([{ name: 'study.builder', source }])).toEqual({
+      paragraphs: [APP_STATUS_TEXT, APP_STATUS_SIMULATED],
+      tip: APP_STATUS_LINE,
+      marks: ['This app']
+    });
+    // With no library, with a library that brings a tab, and with another
+    // library's source: the disclaimer alone.
+    for (const libraries of [
+      [],
+      [{ name: 'gsm.viz', view }],
+      [{ name: 'another', source: { ...source, id: 'other' } }]
+    ]) {
+      expect(said(libraries).paragraphs).toEqual([APP_STATUS_TEXT]);
+    }
   });
 
   it('APP-TIER-020: a chart or a tab below Exploratory carries the label on the corner of its card, before the card, with its own reason and both rungs marked; an Exploratory chart carries none, and the page tells a chart it is showing the label (#274)', () => {

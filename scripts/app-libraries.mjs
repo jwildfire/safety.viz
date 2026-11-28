@@ -82,13 +82,16 @@ export const RBQM_CHARTS = {
  * What the hosted app's footer says happens to the data a reader loads (#196;
  * @jwildfire, 2026-10-03): the files are read here and never uploaded, and
  * starting R downloads R, not the data. APP-LOAD-014 and APP-LOAD-026 hold it.
+ * A build of a simulated study starts the same R and downloads its packages
+ * from the second address, as the RBQM tab does, so the sentence names both
+ * (#424; APP-LOAD-031).
  */
 export const HOSTED_PITCH =
-  'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.';
+  'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.';
 
 /** The same, as the hosted page's description says it to a search engine. */
 export const HOSTED_DESCRIPTION =
-  'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org and, for the RBQM tab, its packages from repo.r-wasm.org, and your data stays in your browser.';
+  'Files you load are read in your browser and never uploaded; starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org, and your data stays in your browser.';
 
 /** What the single file's footer says (#196). */
 export const FILE_PITCH =
@@ -345,8 +348,9 @@ export function chartLinks({ site = SITE, libraries = APP_LIBRARIES, config, man
 /**
  * The rung of the status ladder each chart and each tab of the app stands on
  * (#272, obot.roadmap#403), for the page to be handed: every safety.viz chart
- * in the manifest, every chart of a further library, and every tab the site's
- * configuration lists under `appTabs`.
+ * in the manifest, every chart of a further library, every tab the site's
+ * configuration lists under `appTabs`, and every other part of the app it
+ * lists under `appParts` (#427).
  *
  * A safety.viz chart's rung is its entry's `tier` in site/config.json, and a
  * tab's likewise; a further library's chart says its own by the same field on
@@ -387,5 +391,8 @@ export function chartTiers({ libraries = APP_LIBRARIES, config, manifest } = {})
     }
   }
   for (const tab of site.appTabs || []) tiers[tab.id] = rung(tab);
+  // A part of the app that is neither a chart nor a tab (#427): Build a study,
+  // by its source's id, and the view of a simulated study.
+  for (const part of site.appParts || []) tiers[part.id] = rung(part);
   return tiers;
 }

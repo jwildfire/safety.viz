@@ -9,7 +9,7 @@ import { DEMO_STUDIES } from '../../../src/app/studies.js';
 import { dataTag, tabCount } from '../../../src/app/header.js';
 
 // The first screen says where the reader is (#269, obot.roadmap#402): a tab
-// reads one number when every chart draws, and the Data tab names the loaded
+// reads one number when every chart draws, and the Overview tab names the loaded
 // study. The one-line welcome release 1.11.0 showed on first open is gone
 // (#321, obot.roadmap#420): the app opens straight on its first chart.
 
@@ -40,7 +40,7 @@ const OWN = [
   { name: 'notes.csv', text: 'a,b\n1,2\n' }
 ];
 
-describe('the first screen: what a tab and the Data tab say', () => {
+describe('the first screen: what a tab and the Overview tab say', () => {
   let root;
   const tab = (domain) => root.querySelector(`.sva-tab[data-domain="${domain}"]`);
   const count = (domain) => tab(domain).querySelector('.sva-tab-count').textContent;
@@ -90,7 +90,7 @@ describe('the first screen: what a tab and the Data tab say', () => {
     app.destroy();
   });
 
-  it('APP-PAGE-033: the Data tab names the loaded study: a demo study by its name, a reader’s own files as "Your 3 files", and nothing as "no files" (#269)', async () => {
+  it('APP-PAGE-033: the Overview tab names the loaded study: a demo study by its name, a reader’s own files as "Your 3 files", and nothing as "no files" (#269)', async () => {
     expect(dataTag({ study: 'pilot', loaded: 4, studies: DEMO_STUDIES })).toBe('Pilot study');
     expect(dataTag({ study: 'rbqm', loaded: 9, studies: DEMO_STUDIES })).toBe('RBQM study');
     expect(dataTag({ study: null, loaded: 3, studies: DEMO_STUDIES })).toBe('Your 3 files');
@@ -141,7 +141,7 @@ describe('the first screen: no line on first open', () => {
       app.select(view);
       expect(between(), view).toEqual(['sva-sechead', 'sva-content']);
     }
-    // The Data tab still says whose data is loaded.
+    // The Overview tab still says whose data is loaded.
     expect(root.querySelector('.sva-item[data-view="data"] .sva-tag').textContent).toBe(
       'Pilot study'
     );

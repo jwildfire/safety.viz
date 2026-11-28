@@ -100,14 +100,14 @@ describe('placing a raw file in a gsm raw domain', () => {
     }
   });
 
-  it('APP-RBQM-033: a file whose name and columns match no raw domain is named as not recognised; one whose columns match more than one is named with the domains it could be; a file of a domain already loaded replaces the earlier one, and the tab says so (#236)', () => {
+  it('APP-RBQM-033: a file whose name and columns match no raw domain is said to be kept and not handed to R; one whose columns match more than one is named as not recognised, with the domains it could be; a file of a domain already loaded replaces the earlier one, and the tab says so (#236)', () => {
     const notes = file('site_notes.csv', ['SITE', 'NOTE']);
     const both = file('export.csv', [...columnsOf('Raw_LB'), ...columnsOf('Raw_PD')]);
     const first = file('Raw_AE.csv', columnsOf('Raw_AE'));
     const second = file('ae.csv', columnsOf('Raw_AE'));
     const study = rawStudy([notes, both, first, second], needs);
     expect(study.files.map((entry) => entry.sentence)).toEqual([
-      'site_notes.csv is not recognised: its name and its columns match no gsm raw domain.',
+      'site_notes.csv is kept as it is and is not handed to R: its name and its columns match none of the raw domains gsm’s metrics read.',
       'export.csv is not recognised: its columns match more than one gsm raw domain (Raw_LB and Raw_PD), and its name says which of none. Name it for the one it is.',
       'Raw_AE.csv is Raw_AE, by its name; ae.csv, loaded after it, is used in its place.',
       'ae.csv is Raw_AE, by its name.'
@@ -120,7 +120,7 @@ describe('placing a raw file in a gsm raw domain', () => {
     ]);
   });
 
-  it('APP-RBQM-074: among the files that come in on the Data tab, one is a gsm raw file only when its name starts with `Raw_`, in any case, or its columns are those of exactly one raw domain; a file named for a domain without `Raw_` is a study file, as every file of the three demo studies of standard domains is (#282)', () => {
+  it('APP-RBQM-074: among the files that come in on the Overview tab, one is a gsm raw file only when its name starts with `Raw_`, in any case, or its columns are those of exactly one raw domain; a file named for a domain without `Raw_` is a study file, as every file of the three demo studies of standard domains is (#282)', () => {
     expect(isRawFile(file('Raw_AE.csv', []), needs)).toBe(true);
     expect(isRawFile(file('raw_ae.CSV', ['x']), needs)).toBe(true);
     expect(isRawFile(file('study\\Raw_PD.csv', []), needs)).toBe(true);
@@ -154,6 +154,27 @@ describe('placing a raw file in a gsm raw domain', () => {
         );
       }
     }
+  });
+
+  it('APP-STUDY-014: a raw file the app saved from a simulated study, as simulated-Raw_AE.csv, is still a gsm raw file when it is chosen again, and still the adverse events file by its name; so is one no metric reads, simulated-Raw_VISIT.csv, which only its name says is a raw file; a file that only has the word in front is not one (#431)', () => {
+    for (const name of [
+      'simulated-Raw_AE.csv',
+      'Simulated-raw_ae.CSV',
+      'study/simulated-Raw_AE.csv'
+    ]) {
+      expect(isRawFile(file(name, []), needs), name).toBe(true);
+      expect(placeRaw(file(name, []), needs), name).toMatchObject({ table: 'Raw_AE', by: 'name' });
+    }
+    // A raw file no metric reads is a raw file by its name alone (APP-RBQM-085).
+    expect(isRawFile(file('Raw_VISIT.csv', ['subjid']), needs)).toBe(true);
+    expect(isRawFile(file('simulated-Raw_VISIT.csv', ['subjid']), needs)).toBe(true);
+    // The word alone makes nothing a raw file, and a standard file saved the same way is a study file still.
+    expect(isRawFile(file('simulated-adsl.csv', ['USUBJID', 'ARM']), needs)).toBe(false);
+    expect(isRawFile(file('simulated-notes.csv', ['SITE', 'NOTE']), needs)).toBe(false);
+    // R is still handed the file under gsm's name for it.
+    const study = rawStudy([file('simulated-Raw_AE.csv', columnsOf('Raw_AE'))], needs);
+    expect(study.files[0].sentence).toBe('simulated-Raw_AE.csv is Raw_AE, by its name.');
+    expect(filesForR(study.tables).map((entry) => entry.name)).toEqual(['Raw_AE.csv']);
   });
 
   it('APP-RBQM-034: a file placed by its name that lacks a column its domain’s workflow names is listed with the column (#236)', () => {
@@ -369,7 +390,7 @@ describe('the loaded study’s standard domains, as gsm’s raw tables', () => {
     expect(pilot.no_site.rows).toBe(0);
     expect(standardSentence(lacking.get('Standard_subject'), 'Subject-level', less)).toBe(
       'adsl.csv, the Subject-level file, gives Raw_STUDY. It has no column mapped to SITEID, ' +
-        'so Raw_SITE, Raw_STUDCOMP and Raw_SUBJ are not made. Map it on the Data tab.'
+        'so Raw_SITE, Raw_STUDCOMP and Raw_SUBJ are not made. Map it on the Overview tab.'
     );
   });
 

@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { test, expect, devices } from '@playwright/test';
 import { CANONICAL } from './evidence.js';
 import {
@@ -161,8 +162,70 @@ test.describe('docs site', () => {
       );
     expect(tops).toHaveLength(6);
     expect(new Set(tops).size).toBe(1);
-    await expect(page.locator('.sva-item[data-view="data"] .sva-tag')).toHaveText('Pilot study');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
   });
+  test('APP-PAGE-044: on the built demo page, on first open, no cookie is set and nothing is in local or session storage; the one database in the browser is the one study.builder’s script makes as the page opens, named "study.builder", and it holds no record (#431)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    // study.builder's studies are listed once its script has read what this browser has kept.
+    await expect
+      .poll(() =>
+        page.evaluate(() =>
+          window.__safetyVizApp.portfolio().studies.some((study) => study.id.startsWith('preset:'))
+        )
+      )
+      .toBe(true);
+    const stored = await page.evaluate(async () => {
+      // How many records a database holds, over every store it has.
+      const records = (name) =>
+        new Promise((resolve, reject) => {
+          const opening = window.indexedDB.open(name);
+          opening.onerror = () => reject(opening.error);
+          opening.onsuccess = () => {
+            const database = opening.result;
+            const stores = [...database.objectStoreNames];
+            if (!stores.length) {
+              database.close();
+              resolve(0);
+              return;
+            }
+            const reading = database.transaction(stores, 'readonly');
+            let count = 0;
+            for (const store of stores) {
+              const counting = reading.objectStore(store).count();
+              counting.onsuccess = () => {
+                count += counting.result;
+              };
+            }
+            reading.oncomplete = () => {
+              database.close();
+              resolve(count);
+            };
+            reading.onerror = () => reject(reading.error);
+          };
+        });
+      const databases = {};
+      for (const { name } of await window.indexedDB.databases()) {
+        databases[name] = await records(name);
+      }
+      return {
+        local: window.localStorage.length,
+        session: window.sessionStorage.length,
+        cookie: document.cookie,
+        databases
+      };
+    });
+    expect(stored).toEqual({
+      local: 0,
+      session: 0,
+      cookie: '',
+      databases: { 'study.builder': 0 }
+    });
+  });
+
   test('APP-PAGE-031: on the built demo page every chart’s footnote leads where its pages are: each safety chart’s test evidence, and the clinical guide of the six that have one, are pages the site serves; a biomarker chart’s test evidence is on bio.viz’s site (#246)', async ({
     page
   }) => {
@@ -288,8 +351,10 @@ test.describe('docs site', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/_site/demo/index.html');
     await page.evaluate('window.__safetyVizApp.ready');
+    // The click scrolls the tab into view itself, and waits out a header that is
+    // drawn again as the study chip's list arrives: scrolling first could be
+    // handed a tab that had just been replaced (#402).
     const biomarkers = page.locator('.sva-tab[data-domain="biomarkers"]');
-    await biomarkers.scrollIntoViewIfNeeded();
     await biomarkers.click();
     await expect(page.locator('.sva-group[data-group="biomarkers"] .sva-item-title')).toHaveText(
       Object.values(bioManifest.modules).map((entry) => entry.title)
@@ -306,7 +371,6 @@ test.describe('docs site', () => {
     await expect(page.locator('.sva-chart .bv-time-table')).toBeVisible();
     expect(await overflow()).toBeLessThanOrEqual(0);
     const crossTab = page.locator('.sva-item[data-view="cross-tab"]');
-    await crossTab.scrollIntoViewIfNeeded();
     await crossTab.click();
     await expect(page.locator('.sva-chart table.bv-crosstab')).toBeVisible();
     expect(await overflow()).toBeLessThanOrEqual(0);
@@ -386,6 +450,8 @@ test.describe('docs site', () => {
     await expect(tab.locator('.sva-tab-title')).toHaveText('RBQM');
     await expect(tab.locator('.sva-badge')).toHaveCount(0);
     await page.locator('.sva-item[data-view="data"]').click();
+    // The demo page's data view opens on the viewer; the files one by one are its other face.
+    await page.locator('.sva-face[data-action="files"]').click();
     await page.locator('.sva-side select.sva-study').selectOption('rbqm');
     await expect(page.locator('.sva-loaded-name')).toHaveCount(9);
     await tab.click();
@@ -507,8 +573,10 @@ test.describe('docs site', () => {
     // A file of the user's own, named and filled in Greek, Cyrillic and
     // accented Latin: a subsetted web font would fetch more of itself now.
     const after = [];
-    page.on('request', record(after));
     await page.locator('.sva-item[data-view="data"]').click();
+    // The demo page's data view opens on the viewer; the files one by one are its other face.
+    await page.locator('.sva-face[data-action="files"]').click();
+    page.on('request', record(after));
     const rows = ['01', '02', '03'].flatMap((id) => [
       `${id},Креатинин,80,μmol/L,60,110,Wizyta Łódź 1,1,1,Ασθενής,01,F,WHITE`,
       `${id},Alanine Aminotransferase,20,U/L,5,40,Wizyta Łódź 1,1,1,Ασθενής,01,F,WHITE`
@@ -575,6 +643,195 @@ test.describe('docs site', () => {
     ).toBeLessThanOrEqual(0);
   });
 
+  // The snapshot of a simulated study the page draws (#406). READY-P1 and
+  // PILOT-PROTOCOL are two of study.builder's ready-made studies that kept
+  // their monthly snapshots: six and seven, the first six on the same dates.
+  // What the page asks of R (#427): starting R fetches it from webr.r-wasm.org,
+  // its packages from repo.r-wasm.org, and gsm's own packages from the folder
+  // the page serves them in. A page that started no R asked for none of these.
+  // Listened for from before the page opens, so nothing is missed.
+  const askedOfR = (page) => {
+    const asked = [];
+    page.on('request', (request) => {
+      const url = request.url();
+      if (/^https:\/\/(webr|repo)\.r-wasm\.org\//.test(url) || /\/demo\/r-wasm\//.test(url))
+        asked.push(url);
+    });
+    return asked;
+  };
+  const snapshotPicker = (page) => page.locator('.sva-explore-body .sb-snapshot select');
+  const openReadyMade = async (page, id, name) => {
+    await page.locator('[data-action="study-chip"]').click();
+    await page.locator(`.sva-chip-item[data-study="preset:${id}"]`).click();
+    await expect(page.locator('.sva-chip-name')).toHaveText(name);
+  };
+  // What the app holds: the participants file the charts read, and gsm's raw
+  // participants file, which is what the RBQM tab hands R.
+  const held = (page) =>
+    page.evaluate(() => {
+      const { state } = window.__safetyVizApp;
+      return {
+        participants: state.files.subject.rows.length,
+        adverseEvents: state.files.ae.rows.length,
+        rawParticipants: state.raw.find((file) => file.name === 'Raw_SUBJ.csv').rows
+      };
+    });
+
+  test('APP-STUDY-001: on the built demo page an earlier snapshot of a ready-made study chosen on the Overview tab is the one the charts draw and the RBQM tab holds, and the study chip says which on every tab: READY-P1 at snapshot 1 of 6 has 2 participants in the charts where the last has 29; choosing the last brings its 29 back (#406)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    const said = page.locator('.sva-chip-snap');
+    const shownIn = page.locator('.sva-chart').getByText(/participants shown/);
+    // It opens on its last snapshot: the chart the reader is on draws all of it.
+    await expect(shownIn).toHaveText('29 of 29 participants shown (100.0%).');
+    expect(await held(page)).toEqual({ participants: 29, adverseEvents: 83, rawParticipants: 40 });
+    // The first snapshot, chosen where study.builder's study view offers them.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-06-30 · 6 of 6');
+    await snapshotPicker(page).selectOption('2012-01-31');
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-01-31 · 1 of 6');
+    // The charts draw that snapshot: the histogram counts its participants, and
+    // the adverse event explorer's one arm has them.
+    await page.locator('.sva-tab[data-domain="bds"]').click();
+    await expect(shownIn).toHaveText('2 of 2 participants shown (100.0%).');
+    expect(await held(page)).toEqual({ participants: 2, adverseEvents: 3, rawParticipants: 3 });
+    await expect(said).toHaveText('Snapshot 1 of 6');
+    await page.locator('.sva-tab[data-domain="ae"]').click();
+    await expect(page.locator('.sva-chart')).toContainText('Placebo (n=2)');
+    // The RBQM tab holds the same snapshot's raw files, and the chip says it there too.
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await expect(said).toHaveText('Snapshot 1 of 6');
+    await expect(page.locator('[data-action="study-chip"]')).toHaveAttribute(
+      'aria-label',
+      'READY-P1, simulated study, snapshot 1 of 6, 2012-01-31'
+    );
+    expect((await held(page)).rawParticipants).toBe(3);
+    // Back on the Overview the choice stands; the last snapshot brings the whole study back.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-01-31 · 1 of 6');
+    await snapshotPicker(page).selectOption('2012-06-30');
+    await expect(said).toHaveText('Snapshot 6 of 6');
+    expect(await held(page)).toEqual({ participants: 29, adverseEvents: 83, rawParticipants: 40 });
+    await page.locator('.sva-tab[data-domain="bds"]').click();
+    await expect(shownIn).toHaveText('29 of 29 participants shown (100.0%).');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-STUDY-002: on the built demo page a second study opens on its own last snapshot: PILOT-PROTOCOL opened after READY-P1 at snapshot 3 of 6 reads 7 of 7, with its own 81 participants in the charts (#406)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    await snapshotPicker(page).selectOption('2012-03-31');
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-03-31 · 3 of 6');
+    // The second study has a snapshot of the same date, its third of seven.
+    await openReadyMade(page, 'cdisc-pilot-protocol', 'PILOT-PROTOCOL');
+    await expect(snapshotPicker(page).locator('option:checked')).toHaveText('2012-07-31 · 7 of 7');
+    await expect(page.locator('.sva-chip-snap')).toHaveText('Snapshot 7 of 7');
+    expect(await held(page)).toEqual({
+      participants: 81,
+      adverseEvents: 253,
+      rawParticipants: 120
+    });
+    // A study that kept only its last snapshot says nothing of one.
+    await openReadyMade(page, 'phase2-oncology', 'READY-P2');
+    await expect(page.locator('.sva-chip-snap')).toHaveCount(0);
+    await expect(snapshotPicker(page)).toHaveCount(0);
+  });
+
+  test('APP-STUDY-003: on the built demo page at 1,280 pixels the snapshot’s words sit under the study’s name in the chip, and the header keeps the row it had for READY-P1 (#406)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    await page.evaluate(() => document.fonts.ready);
+    await expect(page.locator('.sva-chip-snap')).toHaveText('Snapshot 6 of 6');
+    const boxes = await page.evaluate(() => {
+      const box = (selector) => {
+        const { top, bottom, left, right } = document
+          .querySelector(selector)
+          .getBoundingClientRect();
+        return { top, bottom, left, right };
+      };
+      return {
+        chip: box('.sva-studychip'),
+        name: box('.sva-chip-name'),
+        // The small line the words are in, which is cut where the chip is (#427).
+        snapshot: box('.sva-chip-under')
+      };
+    });
+    // Under the name, inside the chip.
+    expect(boxes.snapshot.top).toBeGreaterThanOrEqual(boxes.name.bottom - 1);
+    expect(boxes.snapshot.bottom).toBeLessThanOrEqual(boxes.chip.bottom);
+    expect(boxes.snapshot.right).toBeLessThanOrEqual(boxes.chip.right);
+    // The words do not cost the header a row (#416): the status label and every
+    // tab are on the wordmark's row, and the header is as tall as it is with
+    // room to spare. The words are wider than the name READY-P1, and before
+    // #416 that width put the label on a row of its own on the Linux runner.
+    // Now the chip gives the room (APP-PAGE-049; `headerAt` is defined with it).
+    const roomy = await headerAt(page, 1900);
+    const now = await headerAt(page, 1280);
+    expect(now.oneRow).toBe(true);
+    expect(now.height).toBe(roomy.height);
+    expect(now.labelInside).toBe(true);
+    // Where the chip has room for them the words are whole.
+    if (now.spareWhole > 2) expect(now.cut).toBe(0);
+  });
+
+  test('APP-TIER-029: on the built demo page the app’s status panel says, after its disclaimer, where study.builder’s parts stand: Build a study and the view of a simulated study are study.builder’s, experimental by its own account, and every row it makes is synthetic (#424)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const label = page.locator('.sva-appstatus .sv-status-label');
+    const panel = page.locator('.sva-appstatus .sv-status-panel');
+    await expect(label).toHaveText(/Exploratory/);
+    await label.click();
+    await expect(panel).toBeVisible();
+    // The disclaimer first, then study.builder's parts, then the count of charts.
+    await expect(panel.locator('.sv-status-text:not(.sv-status-foot)')).toHaveText([
+      /^Nothing here is qualified\./,
+      'Build a study and the view of a simulated study are Experimental, and say so where you open them. Both are study.builder’s, new in 1.13, and every row it makes is synthetic.',
+      /^13 charts are Exploratory\./
+    ]);
+    // The panel is inside the window with the paragraph in it.
+    const box = await panel.boundingBox();
+    const view = page.viewportSize();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(view.width);
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+  });
+
+  test('APP-LOAD-031: on the built demo page the footer and the page’s description name Build a study beside the RBQM tab as what downloads R’s packages from repo.r-wasm.org (#424)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('.sva-footer .sva-pitch')).toHaveText(
+      'Files you load are read in this browser and never uploaded. Starting R downloads R from webr.r-wasm.org and, for the RBQM tab and Build a study, its packages from repo.r-wasm.org; your data stays in the browser, and R runs here.'
+    );
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+      'content',
+      /starting R downloads R from webr\.r-wasm\.org and, for the RBQM tab and Build a study, its packages from repo\.r-wasm\.org, and your data stays in your browser\./
+    );
+    // The page does offer what the sentence names: Build a study, on the Files face.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await page.locator('.sva-face', { hasText: 'Files' }).click();
+    await expect(page.locator('.sva-main button', { hasText: 'Build a study' })).toHaveCount(1);
+  });
+
   test('APP-LOAD-022: the built site serves every demo study beside the app, and the app loads each (#159)', async ({
     page
   }) => {
@@ -585,6 +842,8 @@ test.describe('docs site', () => {
     });
     await page.goto('/_site/demo/index.html#data');
     await page.evaluate('window.__safetyVizApp.ready');
+    // The demo page's data view opens on the viewer; the files one by one are its other face.
+    await page.locator('.sva-face[data-action="files"]').click();
     const menu = page.locator('.sva-side select.sva-study');
     await expect(menu).toHaveValue('pilot');
     for (const [study, files] of [
@@ -603,6 +862,1450 @@ test.describe('docs site', () => {
     }
     expect((await page.request.get('/_site/demo/renamed/dm.csv')).ok()).toBe(true);
     expect((await page.request.get('/_site/demo/rbqm/Raw_LB.csv')).ok()).toBe(true);
+    expect(errors).toEqual([]);
+  });
+
+  // What the built demo page fetches of study.builder, and when (#408). The
+  // page of the app's own browser tests asks for no study chip; this one does.
+  test('APP-LIB-040: as the built demo page opens it fetches study.builder’s script and its list of ready-made studies, for the study chip’s list, and study.viewer’s script, and no study; opening the chip’s list and the Overview tab fetches nothing more, and a ready-made study is fetched when the reader opens it (#408)', async ({
+    page
+  }) => {
+    const fetched = [];
+    page.on('request', (request) => {
+      const { pathname } = new URL(request.url());
+      if (pathname.startsWith('/_site/demo/study.builder/')) {
+        fetched.push(pathname.replace('/_site/demo/study.builder/', ''));
+      }
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
+    // The chip's list is whole: the ready-made studies are in it.
+    await page.locator('[data-action="study-chip"]').click();
+    const ready = page.locator('.sva-chip-item[data-study="preset:phase1-small"]');
+    await expect(ready).toBeVisible();
+    const asOpened = ['presets/index.json', 'study.builder.js', 'study.viewer.js'];
+    expect([...fetched].sort()).toEqual(asOpened);
+    await page.keyboard.press('Escape');
+    await expect(ready).toHaveCount(0);
+    // The Overview tab, opened twice, asks for nothing.
+    for (let visit = 0; visit < 2; visit += 1) {
+      await page.locator('.sva-item[data-view="data"]').click();
+      await expect(page.locator('.sva-explore-body .sv')).toBeVisible();
+      await page.locator('.sva-tab[data-domain="ae"]').click();
+    }
+    expect([...fetched].sort()).toEqual(asOpened);
+    // A ready-made study is fetched when the reader opens it, and not before.
+    await page.locator('[data-action="study-chip"]').click();
+    await ready.click();
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P1');
+    expect(fetched.slice(asOpened.length)).toEqual(['presets/phase1-small.study.json.gz']);
+  });
+
+  test('APP-LIB-039: on the built demo page each visit to the Overview tab releases the viewer of the visit before: six visits leave no more of the viewer’s watchers on the page than one (#408)', async ({
+    page
+  }) => {
+    // Count the watchers the page holds: study.viewer keeps one on the page's
+    // theme for as long as it is mounted, and lets it go when it is released.
+    await page.addInitScript(() => {
+      const Real = window.MutationObserver;
+      window.__watchers = new Set();
+      window.MutationObserver = class extends Real {
+        observe(...args) {
+          window.__watchers.add(this);
+          return super.observe(...args);
+        }
+        disconnect() {
+          window.__watchers.delete(this);
+          return super.disconnect();
+        }
+      };
+    });
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const visit = async () => {
+      await page.locator('.sva-item[data-view="data"]').click();
+      await expect(page.locator('.sva-explore-body .sv')).toBeVisible();
+      await page.locator('.sva-tab[data-domain="ae"]').click();
+      await expect(page.locator('.sva-explore-body')).toHaveCount(0);
+      await expect(page.locator('.sva-chart')).toBeVisible();
+      return page.evaluate(() => window.__watchers.size);
+    };
+    const afterOne = await visit();
+    let afterSix = afterOne;
+    for (let more = 0; more < 5; more += 1) afterSix = await visit();
+    expect(afterSix).toBe(afterOne);
+  });
+
+  test('APP-LIB-038: on the built demo page, after study.builder’s script did not load, Build a study says so, and opened again it asks for the script again and shows the builder (#408)', async ({
+    page
+  }) => {
+    let failing = true;
+    let asked = 0;
+    await page.route('**/study.builder/study.builder.js', (route) => {
+      asked += 1;
+      return failing ? route.abort() : route.continue();
+    });
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    // The page asked for the script as it opened, for the list of studies, and it did not load.
+    await expect(page.locator('.sva-studies [role="alert"]')).toContainText(
+      'studies could not be listed'
+    );
+    expect(asked).toBe(1);
+    // Build a study asks again, and says so when it fails again.
+    await page.locator('[data-add="describe"]').click();
+    await expect(page.locator('.sva-source [role="alert"]')).toHaveText(
+      'The builder cannot be shown: ./study.builder/study.builder.js did not load on this page.'
+    );
+    expect(asked).toBe(2);
+    // The script can be fetched now. Closed and opened again, the builder is shown.
+    failing = false;
+    await page.locator('[data-action="close-source"]').click();
+    await expect(page.locator('.sva-source')).toHaveCount(0);
+    await page.locator('[data-action="files"]').click();
+    await page.locator('[data-action="source-build"]').click();
+    await expect(page.locator('.sva-source .sva-build-widget')).toBeVisible();
+    await expect(page.locator('.sva-source [role="alert"]')).toHaveCount(0);
+    expect(asked).toBe(3);
+  });
+
+  // study.builder v0.5.1 on the built demo page (#423): the simulator named
+  // for what it is, CDISC's attribution with the example protocols, and the
+  // ready-made studies as they were. From v0.5.2 (#428) the widget says the
+  // attribution itself and a study's own notes name the modified copy.
+  const CDISC_SAID =
+    'Content based on DDF-RA (GitHub), https://github.com/cdisc-org/DDF-RA, used under the CC-BY-4.0 licence.';
+  const openFromStudies = async (page, id, name) => {
+    await page.locator(`.sva-studies-row[data-study="preset:${id}"] [data-action="open"]`).click();
+    await expect(page.locator('.sva-chip-name')).toHaveText(name);
+  };
+  const studyCard = async (page) => {
+    await page.locator('[data-action="study-info"]').click();
+    return page.locator('.sva-chip-card');
+  };
+
+  test('APP-LIB-041: on the built demo page the app says a study is made by a modified copy of gsm.datasim 2.1.0, on the Build a study button and as Made by on the card of each ready-made study; each of the three opens with no R and with the key it had in study.builder v0.5.0 (#423)', async ({
+    page
+  }) => {
+    const ofR = askedOfR(page);
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const keys = {};
+    for (const [id, name] of [
+      ['phase1-small', 'READY-P1'],
+      ['phase2-oncology', 'READY-P2'],
+      ['cdisc-pilot-protocol', 'PILOT-PROTOCOL']
+    ]) {
+      await openFromStudies(page, id, name);
+      keys[name] = await page.evaluate('window.__safetyVizApp.state.named.built.manifest.key');
+      const card = await studyCard(page);
+      await expect(card.locator('.sva-chip-facts dd').nth(4)).toHaveText(
+        'a modified copy of gsm.datasim 2.1.0'
+      );
+      await expect(card.locator('.sva-chip-facts dt').nth(4)).toHaveText('Made by');
+      await page.keyboard.press('Escape');
+    }
+    expect(keys).toEqual({
+      'READY-P1': 'sha256:45b7142bb06f5fee9d81a90e1b34668a87653a29ba13eeedc08f1d2af2838dca',
+      'READY-P2': 'sha256:001a419ded7a107c6f2ee8b932fb70578550b5830f67a134e0321f4682f488e9',
+      'PILOT-PROTOCOL': 'sha256:9e41ba70f50756281cc1d75663231303257bf61c7dcb1eed6bfc0297c5923cd1'
+    });
+    // No R was started: each came whole from its file, and nothing was asked
+    // of the addresses R is downloaded from (#427).
+    expect(ofR).toEqual([]);
+    // The way in to the builder says what makes a study.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await page.locator('[data-action="files"]').click();
+    await expect(page.locator('[data-action="source-build"]')).toHaveAttribute(
+      'title',
+      'Simulate a study with a modified copy of gsm.datasim 2.1.0, in this browser.'
+    );
+  });
+
+  test('APP-LIB-042: on the built demo page the builder offers CDISC’s five example protocols and shows the schedule of the one tried; CDISC’s attribution is on the page once, in the widget’s own words, under the list of protocols and then under the schedule, and the app’s line is not drawn beside it; the studies feed is fetched once, when the builder is opened (#428)', async ({
+    page
+  }) => {
+    const feeds = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).pathname.endsWith('/study.builder/studies/index.json'))
+        feeds.push(request.url());
+    });
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('.sva-studies-row[data-study="preset:phase1-small"]')).toBeVisible();
+    expect(feeds).toEqual([]);
+    await page.locator('[data-add="protocol"]').click();
+    const widget = page.locator('.sva-build-widget');
+    await expect(widget.getByRole('button', { name: /^Try the / })).toHaveCount(5);
+    // How many times the builder, the app's part of it included, says CDISC's attribution.
+    const said = () =>
+      page.locator('.sva-build').evaluate((build, sentence) => {
+        return build.innerText.split(sentence).length - 1;
+      }, CDISC_SAID);
+    // Under the list of protocols the widget says whose they are, and that they are changed.
+    const listed = widget.locator('[data-attribution="ready-protocols"]');
+    await expect(listed).toHaveText(
+      `The ready-made protocols are examples, cut down to what is simulated. ${CDISC_SAID}`
+    );
+    await expect(listed).toBeVisible();
+    // The feed has been read, and the app's own line is not on the page beside the widget's.
+    await expect.poll(() => feeds.length).toBe(1);
+    const credit = page.locator('.sva-build .sva-build-credit');
+    await expect(credit).toHaveCount(0);
+    expect(await said()).toBe(1);
+    await expect(page.locator('.sva-build footer')).toHaveCount(0);
+    // A protocol tried: its schedule is on the page, and the attribution is under the grid, once.
+    await widget.getByRole('button', { name: 'Try the CDISC pilot protocol', exact: true }).click();
+    await expect(widget.locator('.sb-protocol')).toContainText('Xanomeline Low Dose');
+    const under = widget.locator('.sb-schedule [data-attribution="protocol"]');
+    await expect(under).toHaveText(CDISC_SAID);
+    await expect(under).toBeVisible();
+    await expect(listed).toHaveCount(0);
+    await expect(credit).toHaveCount(0);
+    expect(await said()).toBe(1);
+    // Closed and opened again, it is still there once, and the feed is not asked for again.
+    await page.locator('[data-action="close-source"]').click();
+    await page.locator('[data-action="files"]').click();
+    await page.locator('[data-action="source-build"]').click();
+    await expect(under).toHaveText(CDISC_SAID);
+    await expect(credit).toHaveCount(0);
+    expect(await said()).toBe(1);
+    expect(feeds).toHaveLength(1);
+  });
+
+  test('APP-LIB-043: on the built demo page the card of the ready-made study that follows the CDISC pilot protocol names the protocol and carries CDISC’s attribution, as study.builder’s Protocol view does and its Schedule view does under the grid, once; the card of a study with no protocol carries none (#428)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openFromStudies(page, 'cdisc-pilot-protocol', 'PILOT-PROTOCOL');
+    let card = await studyCard(page);
+    await expect(card.locator('.sva-chip-facts')).toContainText('CDISC PILOT - LZZT');
+    const credit = await card.locator('.sva-chip-credit').innerText();
+    expect(credit.startsWith(`${CDISC_SAID} Changed from CDISC’s file`)).toBe(true);
+    expect(credit.endsWith('not endorsed by CDISC or by any sponsor it names.')).toBe(true);
+    // The card stays inside the page.
+    const box = await card.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(1280);
+    await page.keyboard.press('Escape');
+    // study.builder's own Protocol view, on the Overview tab, says the same.
+    await page.locator('.sva-item[data-view="data"]').click();
+    const view = page.locator('.sva-explore-body');
+    await view.locator('[data-section="design"]').click();
+    await view.locator('[data-view="protocol"]').click();
+    await expect(view).toContainText(CDISC_SAID);
+    await expect(view).toContainText('CC-BY-4.0 · https://creativecommons.org/licenses/by/4.0/');
+    // Its Schedule view, beside it, says the attribution under the grid, and once (#428).
+    await view.locator('[data-view="schedule"]').click();
+    const under = view.locator('.sb-schedule [data-attribution="protocol"]');
+    await expect(under).toHaveText(CDISC_SAID);
+    await expect(under).toBeVisible();
+    expect(
+      await view.evaluate((body, sentence) => body.innerText.split(sentence).length - 1, CDISC_SAID)
+    ).toBe(1);
+    // A study that followed no protocol.
+    await openFromChip(page, 'preset:phase1-small', 'READY-P1');
+    card = await studyCard(page);
+    await expect(card.locator('.sva-chip-facts')).toContainText('Made by');
+    await expect(card.locator('.sva-chip-facts')).not.toContainText('Protocol');
+    await expect(card.locator('.sva-chip-credit')).toHaveCount(0);
+  });
+
+  // A sentence names the simulator plainly when it names gsm.datasim and does
+  // not say "modified copy of gsm.datasim", or names it again as anything but
+  // that or Gilead's own (#428).
+  const namedPlainly = (sentence) => {
+    const named = sentence.match(/gsm\.datasim/g) || [];
+    const copy = sentence.match(/modified copy of gsm\.datasim/g) || [];
+    const gileads = sentence.match(/Gilead[’']s gsm\.datasim/g) || [];
+    return named.length > 0 && (copy.length === 0 || copy.length + gileads.length < named.length);
+  };
+
+  test('APP-LIB-044: on the built demo page each of the three ready-made studies, opened with no R, lists on its Overview under “What a study built here is, and is not” no sentence that names gsm.datasim without saying it is the modified copy, and its own notes are among them (#428)', async ({
+    page
+  }) => {
+    const ofR = askedOfR(page);
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    for (const [id, name] of [
+      ['phase1-small', 'READY-P1'],
+      ['phase2-oncology', 'READY-P2'],
+      ['cdisc-pilot-protocol', 'PILOT-PROTOCOL']
+    ]) {
+      await page.locator('[data-action="study-chip"]').click();
+      await page.locator(`.sva-chip-item[data-study="preset:${id}"]`).click();
+      await expect(page.locator('.sva-chip-name')).toHaveText(name);
+      await page.locator('.sva-item[data-view="data"]').click();
+      const caveats = page.locator('.sva-explore-body details.sb-caveats');
+      await expect(caveats.locator('summary')).toHaveText('What a study built here is, and is not');
+      await caveats.evaluate((details) => {
+        details.open = true;
+      });
+      const sentences = await caveats.locator('li').allInnerTexts();
+      const naming = sentences.filter((sentence) => /gsm\.datasim/.test(sentence));
+      // The widget's own two and at least the four every study's notes carry.
+      expect(naming.length, name).toBeGreaterThanOrEqual(6);
+      expect(sentences.filter(namedPlainly), name).toEqual([]);
+      // The study's own notes are on the page, each as the study holds it.
+      const notes = await page.evaluate('window.__safetyVizApp.state.named.built.notes');
+      expect(notes.length, name).toBeGreaterThanOrEqual(4);
+      for (const note of notes) expect(sentences, name).toContain(note);
+      expect(notes.filter(namedPlainly), name).toEqual([]);
+    }
+    // No R was started: each came whole from its file, and nothing was asked
+    // of the addresses R is downloaded from (#427, #431). A count of "R ready"
+    // chips on the Overview tab is 0 with R running too, and proved nothing.
+    expect(ofR).toEqual([]);
+  });
+
+  test('on the built demo page a ready-made simulated study opens from the Studies view with no R, and the Overview tab draws it with study.builder’s study view in sections: Overview, Design, Data, One participant and Reporting, with no RBQM view and no Safety view, since the app has tabs of its own for both; a view is reached through its section; at 1,400 pixels nothing of the overview runs past the page', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
+    });
+    const ofR = askedOfR(page);
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    // The study built on the CDISC pilot protocol: it has a protocol, snapshots
+    // and an efficacy score, so every section study.builder has is there.
+    const row = page.locator('.sva-studies-row[data-study="preset:cdisc-pilot-protocol"]');
+    await row.locator('[data-action="open"]').click();
+    await expect(row).toHaveAttribute('data-current', 'true');
+    await expect(page.locator('.sva-chip-name')).toHaveText('PILOT-PROTOCOL');
+    // No R was started: the study came whole from its file, and nothing was
+    // asked of the addresses R is downloaded from (#427).
+    expect(ofR).toEqual([]);
+    await page.locator('.sva-item[data-view="data"]').click();
+    const view = page.locator('.sva-explore-body');
+    const sections = view.locator('.sv-views [data-section]');
+    const within = view.locator('.sv-subviews [data-view]');
+    // Operations is One participant alone: RBQM and Safety are the app's own tabs.
+    await expect(sections).toHaveText([
+      'Overview',
+      'Design',
+      'Data',
+      'One participant',
+      'Reporting'
+    ]);
+    await expect(view.locator('[data-section="overview"]')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    // On the overview at 1,400 pixels, the table of how the study grew is
+    // inside the page with the rest.
+    const grew = view.getByText('How the study grew, snapshot by snapshot');
+    await expect(grew).toBeVisible();
+    expect(
+      await page.evaluate(() => {
+        const width = document.documentElement.clientWidth;
+        return {
+          wider: document.documentElement.scrollWidth - width,
+          past: [...document.querySelectorAll('.sva-explore-body *')].filter(
+            (element) =>
+              element.getClientRects().length > 0 &&
+              element.getBoundingClientRect().right > width + 0.5
+          ).length
+        };
+      })
+    ).toEqual({ wider: 0, past: 0 });
+    // A view's tab is on the page only while its section is open.
+    await expect(view.locator('[data-view]')).toHaveCount(0);
+    const inside = {};
+    for (const section of ['design', 'data', 'operations', 'reporting']) {
+      await view.locator(`[data-section="${section}"]`).click();
+      await expect(view.locator(`[data-section="${section}"]`)).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      inside[section] = await within.allTextContents();
+    }
+    expect(inside).toEqual({
+      design: ['Protocol', 'Schedule'],
+      data: ['Pipeline', 'Tables', 'Columns'],
+      operations: [],
+      reporting: ['Efficacy', 'Adverse events']
+    });
+    await view.locator('[data-section="data"]').click();
+    await view.locator('[data-view="tables"]').click();
+    await expect(view.locator('[data-view="tables"]')).toHaveAttribute('aria-selected', 'true');
+    // Where the reader was is kept when the page draws the tab again.
+    await page.locator('.sva-tab[data-domain="ae"]').click();
+    await page.locator('.sva-item[data-view="data"]').click();
+    await expect(view.locator('[data-view="tables"]')).toHaveAttribute('aria-selected', 'true');
+    expect(errors).toEqual([]);
+  });
+
+  // A study in place of the one before it (#405). What is loaded is read from
+  // the app itself: the study the chip names, and every file with its count of
+  // rows, whether it is placed in a domain, set aside or kept as a gsm raw file.
+  const loadedNow = (page) =>
+    page.evaluate(() => {
+      const { state } = window.__safetyVizApp;
+      return {
+        chip: document.querySelector('.sva-chip-name').textContent,
+        placed: Object.fromEntries(
+          Object.entries(state.files).map(([domain, file]) => [
+            domain,
+            `${file.name}: ${file.rows.length}`
+          ])
+        ),
+        setAside: state.unplaced.map((item) => `${item.file.name}: ${item.file.rows.length}`),
+        raw: state.raw.map((file) => `${file.name}: ${file.rows}`)
+      };
+    });
+  const chipName = (page) => page.locator('.sva-chip-name');
+  const openDemoApp = async (page) => {
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+  };
+  /** Open a study from the list under the chip, and wait for the chip to name it. */
+  const openFromChip = async (page, id, name) => {
+    await page.locator('[data-action="study-chip"]').click();
+    await page.locator(`.sva-chip-item[data-study="${id}"]`).click();
+    await expect(chipName(page)).toHaveText(name);
+  };
+  const allStudies = async (page) => {
+    await page.locator('[data-action="study-chip"]').click();
+    await page.locator('[data-action="all-studies"]').click();
+  };
+  const READY_P1 = ['preset:phase1-small', 'READY-P1'];
+  const READY_P2 = ['preset:phase2-oncology', 'READY-P2'];
+  // Two files of a reader's own: one is placed, and one matches no domain.
+  const OWN_FILES = ['dm.csv', 'site_notes.csv'].map((name) =>
+    fileURLToPath(new URL(`./fixtures/app/${name}`, import.meta.url))
+  );
+  const OWN_LOADED = {
+    chip: 'Your files',
+    placed: { subject: 'dm.csv: 24' },
+    setAside: ['site_notes.csv: 3'],
+    raw: []
+  };
+
+  test('APP-LOAD-029: on the built demo page a study replaces the one before it, whatever kind either is: after each switch between the demo studies, a reader’s own files and two ready-made simulated studies, the files and rows loaded are those the study has when it is opened on an empty page (#405)', async ({
+    page
+  }) => {
+    test.setTimeout(120000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openDemoApp(page);
+    const pilot = await loadedNow(page);
+    expect(pilot).toMatchObject({ chip: 'Pilot study', setAside: [], raw: [] });
+    expect(Object.keys(pilot.placed)).toHaveLength(4);
+    // Each simulated study as it is on an empty page: the page is opened anew
+    // and Reset, which the demo study it opens on has in reach, before it.
+    const alone = {};
+    for (const [id, name] of [READY_P1, READY_P2]) {
+      await page.reload();
+      await page.evaluate('window.__safetyVizApp.ready');
+      await page.locator('.sva-face[data-action="files"]').click();
+      await page.locator('.sva-side [data-action="reset"]').click();
+      await expect(chipName(page)).toHaveText('No study');
+      await openFromChip(page, id, name);
+      alone[name] = await loadedNow(page);
+      expect(alone[name].setAside, name).toEqual([]);
+      expect(Object.keys(alone[name].placed).length, name).toBeGreaterThan(0);
+      expect(alone[name].raw.length, name).toBeGreaterThan(0);
+    }
+    expect(alone['READY-P2']).not.toEqual({ ...alone['READY-P1'], chip: 'READY-P2' });
+
+    await page.reload();
+    await page.evaluate('window.__safetyVizApp.ready');
+    expect(await loadedNow(page)).toEqual(pilot);
+    // A reader's own files, in place of the demo study.
+    await page.locator('.sva-face[data-action="files"]').click();
+    await page.locator('.sva-file-input').setInputFiles(OWN_FILES);
+    await expect(chipName(page)).toHaveText('Your files');
+    expect(await loadedNow(page)).toEqual(OWN_LOADED);
+    // A ready-made study, in place of the reader's files.
+    await openFromChip(page, ...READY_P1);
+    expect(await loadedNow(page)).toEqual(alone['READY-P1']);
+    // Another ready-made study, in place of the first.
+    await openFromChip(page, ...READY_P2);
+    expect(await loadedNow(page)).toEqual(alone['READY-P2']);
+    // The reader's own files, chosen from the Studies view, in place of a
+    // simulated study: the page says the study was cleared.
+    await allStudies(page);
+    const chosen = page.waitForEvent('filechooser');
+    await page.locator('[data-add="files"]').click();
+    await (await chosen).setFiles(OWN_FILES);
+    await expect(chipName(page)).toHaveText('Your files');
+    expect(await loadedNow(page)).toEqual(OWN_LOADED);
+    await expect(page.locator('.sva-content > .sva-notes .sva-note').first()).toHaveText(
+      'READY-P2 was cleared to load your files.'
+    );
+    // A demo study of gsm's raw files, in place of the reader's files.
+    await openFromChip(page, 'demo:rbqm', 'RBQM study');
+    const rbqm = await loadedNow(page);
+    expect(rbqm).toMatchObject({ placed: {}, setAside: [] });
+    expect(rbqm.raw).toHaveLength(9);
+    // A ready-made study in place of a demo study, and a demo study in place of it.
+    await openFromChip(page, ...READY_P1);
+    expect(await loadedNow(page)).toEqual(alone['READY-P1']);
+    await openFromChip(page, 'demo:pilot', 'Pilot study');
+    expect(await loadedNow(page)).toEqual(pilot);
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-LOAD-030: on the built demo page, with a ready-made simulated study in use, the Overview tab has both faces, the study view first; the Files face lists the study’s files and has the file picker and Reset; Choose files on the Studies view opens the file chooser; and Reset clears the study to the empty drop zone and leaves it in the list, to open again as it was (#405)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openDemoApp(page);
+    await openFromChip(page, ...READY_P1);
+    const study = await loadedNow(page);
+    await expect(page.locator('.sva-face')).toHaveText(['Explore the data', 'Files']);
+    await expect(page.locator('.sva-face[data-action="explore"]')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    await expect(page.locator('.sva-explore-body .sv-views')).toBeVisible();
+    // The files one by one: every file the study loaded, placed or kept raw.
+    await page.locator('.sva-face[data-action="files"]').click();
+    await expect(page.locator('.sva-explore-body')).toHaveCount(0);
+    await expect(page.locator('.sva-loaded-name')).toHaveCount(
+      Object.keys(study.placed).length + study.raw.length
+    );
+    await expect(page.locator('.sva-side [data-action="reset"]')).toBeVisible();
+    // The file picker opens from the sidebar.
+    let chooser = page.waitForEvent('filechooser');
+    await page.locator('.sva-side [data-action="choose-files"]').click();
+    expect((await chooser).isMultiple()).toBe(true);
+    // From the study view's face, Choose files on the Studies view opens it too.
+    await page.locator('.sva-face[data-action="explore"]').click();
+    await allStudies(page);
+    chooser = page.waitForEvent('filechooser');
+    await page.locator('[data-add="files"]').click();
+    expect((await chooser).isMultiple()).toBe(true);
+    await expect(page).toHaveURL(/#data$/);
+    await expect(page.locator('.sva-face[data-action="files"]')).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    // Nothing was chosen: the study is as it was.
+    expect(await loadedNow(page)).toEqual(study);
+    // Reset, as with a demo study in use: nothing is loaded and no study is named.
+    await page.locator('.sva-side [data-action="reset"]').click();
+    await expect(chipName(page)).toHaveText('No study');
+    await expect(page.locator('.sva-drop')).toBeVisible();
+    await expect(page.locator('.sva-faces')).toHaveCount(0);
+    expect(await loadedNow(page)).toEqual({ chip: 'No study', placed: {}, setAside: [], raw: [] });
+    // The study is still in the list, and opens again as it was.
+    await openFromChip(page, ...READY_P1);
+    expect(await loadedNow(page)).toEqual(study);
+    expect(errors).toEqual([]);
+  });
+
+  // Starts real R, so it runs in the check's real-R job (CONTRIBUTING.md, "How the
+  // check is laid out"). Prettier would re-indent the whole test to fit the tag.
+  // prettier-ignore
+  test('APP-LOAD-029: on the built demo page a study built in real R with Labs, Vital signs and ECGs turned off, and loaded into the demo over a ready-made study, leaves none of that study’s files: no labs, vital signs or ECG file is placed, set aside or kept raw, and every loaded file is one the built study has (#405)', { tag: '@real-r' }, async ({
+    page
+  }) => {
+    // It downloads R, its packages and the modified copy of gsm.datasim, then simulates the study.
+    test.setTimeout(420000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await openDemoApp(page);
+    await openFromChip(page, ...READY_P1);
+    // The ready-made study has all three: a labs and vitals file, an ECG file and their raw files.
+    const before = await loadedNow(page);
+    expect(Object.keys(before.placed).sort()).toEqual(['ae', 'bds', 'eg', 'subject']);
+    const measured = /^Raw_(LB|VS|EG)\.csv: /;
+    expect(before.raw.filter((file) => measured.test(file))).toHaveLength(3);
+    // The builder, from the Studies view: a small study with the three domains turned off.
+    await allStudies(page);
+    await page.locator('[data-add="describe"]').click();
+    const widget = page.locator('.sva-build-widget');
+    for (const [name, value] of [['name', 'NO-LABS'], ['participants', '20'], ['sites', '2'], ['months', '3']]) {
+      await widget.locator(`input[name="${name}"]`).fill(value);
+      await widget.locator(`input[name="${name}"]`).blur();
+    }
+    for (const domain of ['LB', 'VS', 'EG']) {
+      const chip = widget.locator(`.sb-chip[data-domain="${domain}"]`);
+      await expect(chip).toHaveAttribute('aria-pressed', 'true');
+      await chip.click();
+      await expect(chip).toHaveAttribute('aria-pressed', 'false');
+    }
+    await widget.locator('[data-action="build"]').click();
+    const use = widget.getByRole('button', { name: 'Load into the demo' });
+    await expect(use).toBeVisible({ timeout: 360000 });
+    await use.click();
+    await expect(chipName(page)).toHaveText('NO-LABS');
+    // A study just built says what made it, in the app's own words (#423).
+    expect(await page.evaluate('window.__safetyVizApp.state.named.facts')).toContainEqual({
+      label: 'Made by',
+      value: 'a modified copy of gsm.datasim 2.1.0'
+    });
+    // And in its own notes, which the builder's R wrote just now, no sentence names gsm.datasim without saying it is the modified copy (#428).
+    const notes = await page.evaluate('window.__safetyVizApp.state.named.built.notes');
+    expect(notes.filter((note) => /gsm\.datasim/.test(note)).length).toBeGreaterThanOrEqual(4);
+    expect(notes.filter(namedPlainly)).toEqual([]);
+    const after = await loadedNow(page);
+    // The ECG charts and the labs and vitals charts have no file, and nothing is set aside.
+    expect(Object.keys(after.placed).sort()).toEqual(['ae', 'subject']);
+    expect(after.setAside).toEqual([]);
+    expect(after.raw.filter((file) => measured.test(file))).toEqual([]);
+    expect(after.raw.length).toBeGreaterThan(0);
+    // Every loaded file is one the built study handed over.
+    const own = await page.evaluate(() => {
+      const { raw, standard } = window.__safetyVizApp.state.named.built.files();
+      return [...raw, ...standard].map((file) => file.name);
+    });
+    const names = (list) => list.map((file) => file.replace(/: \d+$/, ''));
+    expect(own).toEqual(expect.arrayContaining([...names(Object.values(after.placed)), ...names(after.raw)]));
+    expect(errors).toEqual([]);
+  });
+
+  // The study chip on the built demo page (#407). The page of the app's own
+  // browser tests asks for no chip; the built demo does.
+  const chipItem = (page, id) => page.locator(`.sva-chip-item[data-study="${id}"]`);
+  const openDemo = async (page) => {
+    await page.goto('/_site/demo/index.html');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+  };
+
+  test('APP-PAGE-045: on the built demo page a ready-made study whose file cannot be fetched says so under the chip, on the chart the reader is on, and the study in use stays (#407)', async ({
+    page
+  }) => {
+    await page.route('**/phase2-oncology.study.json.gz', (route) => route.abort());
+    await openDemo(page);
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'preset:phase2-oncology').click();
+    const said = page.locator('.sva-chip-slot .sva-chip-said[role="alert"]');
+    await expect(said).toContainText('could not be fetched');
+    await expect(said).toBeInViewport({ ratio: 1 });
+    // The reader is where they were, on the study they had.
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    // A click elsewhere closes the sentence.
+    await page.locator('.sva-main').click({ position: { x: 5, y: 5 } });
+    await expect(said).toHaveCount(0);
+  });
+
+  test('APP-PAGE-046: on the built demo page a slow study opened first does not replace the one chosen after it (#407)', async ({
+    page
+  }) => {
+    let release = () => {};
+    const held = new Promise((resolve) => {
+      release = resolve;
+    });
+    await page.route('**/phase2-oncology.study.json.gz', async (route) => {
+      await held;
+      await route.continue();
+    });
+    await openDemo(page);
+    await page.locator('[data-action="study-chip"]').click();
+    const asked = page.waitForRequest('**/phase2-oncology.study.json.gz');
+    await chipItem(page, 'preset:phase2-oncology').click();
+    await asked;
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'preset:phase1-small').click();
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P1');
+    // The first study arrives now, and is dropped.
+    const arrived = page.waitForResponse('**/phase2-oncology.study.json.gz');
+    release();
+    await (await arrived).finished();
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P1');
+    expect(await page.evaluate('window.__safetyVizApp.state.named.id')).toBe('preset:phase1-small');
+  });
+
+  test('APP-STUDY-007: on the built demo page a reader’s own files, and then Reset, chosen while a slow ready-made study is on its way are what the page shows when the study arrives: the study is dropped, and the page stops saying it is opening (#427)', async ({
+    page
+  }) => {
+    // The study's file is held until the test lets it go, twice over.
+    let release = () => {};
+    let held = Promise.resolve();
+    const hold = () => {
+      held = new Promise((resolve) => {
+        release = resolve;
+      });
+    };
+    await page.route('**/phase2-oncology.study.json.gz', async (route) => {
+      await held;
+      await route.continue();
+    });
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await page.locator('.sva-face[data-action="files"]').click();
+    const askForSlow = async () => {
+      hold();
+      const asked = page.waitForRequest('**/phase2-oncology.study.json.gz');
+      await page.locator('[data-action="study-chip"]').click();
+      await chipItem(page, 'preset:phase2-oncology').click();
+      await asked;
+      await expect(page.locator('.sva-chip-slot .sva-chip-said')).toHaveText('Opening READY-P2…');
+    };
+    const arrive = async () => {
+      const arrived = page.waitForResponse('**/phase2-oncology.study.json.gz');
+      release();
+      await (await arrived).finished();
+      await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 1500)));
+    };
+    // Files of the reader's own, chosen after the slow study.
+    await askForSlow();
+    await page.locator('.sva-file-input').setInputFiles(OWN_FILES);
+    await expect(page.locator('.sva-chip-name')).toHaveText('Your files');
+    await expect(page.locator('.sva-chip-slot .sva-chip-said')).toHaveCount(0);
+    await arrive();
+    await expect(page.locator('.sva-chip-name')).toHaveText('Your files');
+    expect(await loadedNow(page)).toMatchObject(OWN_LOADED);
+    expect(await page.evaluate('window.__safetyVizApp.state.named')).toBeNull();
+    // Reset, chosen after the slow study.
+    await askForSlow();
+    await page.locator('.sva-side [data-action="reset"]').click();
+    await expect(page.locator('.sva-chip-name')).toHaveText('No study');
+    await arrive();
+    await expect(page.locator('.sva-chip-name')).toHaveText('No study');
+    expect(await page.evaluate('window.__safetyVizApp.state.raw.length')).toBe(0);
+    expect(await page.evaluate('Object.keys(window.__safetyVizApp.state.files).length')).toBe(0);
+    await expect(page.locator('.sva-chip-slot .sva-chip-said')).toHaveCount(0);
+    // Chosen again with nothing after it, the same study opens.
+    release();
+    held = Promise.resolve();
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'preset:phase2-oncology').click();
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P2');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-STUDY-008: on the built demo page a ready-made study whose file cannot be fetched is said under the chip in the app’s own sentence: which study, what could not be fetched, and that the study in use is unchanged; nothing on the page speaks of a form (#427)', async ({
+    page
+  }) => {
+    await page.route('**/phase2-oncology.study.json.gz', (route) =>
+      route.fulfill({ status: 404, body: 'Not found' })
+    );
+    await openDemo(page);
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'preset:phase2-oncology').click();
+    const said = page.locator('.sva-chip-slot .sva-chip-said[role="alert"]');
+    await expect(said).toHaveText(
+      /^READY-P2 did not open\. The study for .+ could not be fetched: the page answered 404\. The study in use is unchanged\.$/
+    );
+    await expect(page.locator('body')).not.toContainText('in the form');
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    // The Studies view says the same in its list, and the builder's form, opened now, is not what the sentence sent the reader to.
+    await page.locator('[data-action="study-chip"]').click();
+    await page.locator('[data-action="all-studies"]').click();
+    await expect(page.locator('.sva-studies [role="alert"]')).toHaveText(
+      /^READY-P2 did not open\. .+ The study in use is unchanged\.$/
+    );
+    // Another study, chosen and opened: the sentence is no longer said.
+    await page
+      .locator('.sva-studies-row[data-study="preset:phase1-small"] [data-action="open"]')
+      .click();
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P1');
+    await expect(page.locator('.sva-studies [role="alert"]')).toHaveCount(0);
+  });
+
+  test('APP-STUDY-009: on the built demo page a demo study whose file cannot be fetched says so under the chip, on the chart the reader is on, and the study in use stays (#427)', async ({
+    page
+  }) => {
+    await page.route('**/demo/adbds-abnbl.csv', (route) =>
+      route.fulfill({ status: 404, body: 'Not found' })
+    );
+    await openDemo(page);
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'demo:liver').click();
+    const said = page.locator('.sva-chip-slot .sva-chip-said[role="alert"]');
+    await expect(said).toHaveText(
+      'Liver cohort, labs only could not be opened: ./adbds-abnbl.csv was answered with HTTP 404. The study in use is unchanged.'
+    );
+    await expect(said).toBeInViewport({ ratio: 1 });
+    // The reader is where they were, on the study they had, with its chart still drawn.
+    await expect(page).toHaveTitle('Histogram · safety.viz demo');
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    await expect(page.locator('.sva-chart').getByText(/participants shown/)).toBeVisible();
+    await expect(page.locator('.sva-busy')).toHaveCount(0);
+    // A click elsewhere closes the sentence, as it does a ready-made study's.
+    await page.locator('.sva-main').click({ position: { x: 5, y: 5 } });
+    await expect(said).toHaveCount(0);
+  });
+
+  test('APP-STUDY-010: on the built demo page, after study.builder’s script did not load as the page opened, opening Build a study once it can be fetched brings the list back: the Studies view names the three ready-made studies and no longer says they could not be listed, and the chip’s list offers them; the sentence ends in one full stop (#427)', async ({
+    page
+  }) => {
+    let failing = true;
+    await page.route('**/study.builder/study.builder.js', (route) =>
+      failing ? route.abort() : route.continue()
+    );
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const alert = page.locator('.sva-studies [role="alert"]');
+    await expect(alert).toHaveText(
+      'study.builder’s studies could not be listed: ./study.builder/study.builder.js did not load on this page.'
+    );
+    await expect(page.locator('.sva-studies-row[data-study^="preset:"]')).toHaveCount(0);
+    // The script can be fetched now, and the reader opens the builder.
+    failing = false;
+    await page.locator('[data-add="describe"]').click();
+    await expect(page.locator('.sva-source .sva-build-widget')).toBeVisible();
+    // The chip's list has the ready-made studies.
+    await page.locator('[data-action="study-chip"]').click();
+    await expect(page.locator('.sva-chip-item[data-study^="preset:"]')).toHaveCount(3);
+    // And so has the Studies view, which says nothing more of a list it could not read.
+    await page.locator('[data-action="all-studies"]').click();
+    await expect(page.locator('.sva-studies-row[data-study^="preset:"]')).toHaveCount(3);
+    await expect(alert).toHaveCount(0);
+    // One of them opens.
+    await page
+      .locator('.sva-studies-row[data-study="preset:phase1-small"] [data-action="open"]')
+      .click();
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P1');
+  });
+
+  test('APP-STUDY-011: on the built demo page the chip marks a simulated study as simulated on every tab: "Simulated · Snapshot 6 of 6" under READY-P1 on a chart, on the RBQM tab and on the Overview, "Simulated" alone under READY-P2, and nothing under a demo study or a reader’s own files; at 1,280 pixels the header is still one row, no taller than with room to spare (#427)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await openDemo(page);
+    const under = page.locator('.sva-studychip .sva-chip-under');
+    await expect(under).toHaveCount(0);
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    await page.evaluate(() => document.fonts.ready);
+    for (const tab of [
+      '.sva-tab[data-domain="ae"]',
+      '.sva-tab[data-tab="rbqm"]',
+      '.sva-item[data-view="data"]'
+    ]) {
+      await page.locator(tab).click();
+      await expect(under, tab).toHaveText('Simulated · Snapshot 6 of 6');
+    }
+    await expect(page.locator('[data-action="study-chip"]')).toHaveAttribute(
+      'title',
+      'READY-P1, a simulated study, as it stood on 2012-06-30'
+    );
+    await expect(page.locator('[data-action="study-chip"]')).toHaveAttribute(
+      'aria-label',
+      'READY-P1, simulated study, snapshot 6 of 6, 2012-06-30'
+    );
+    // The mark does not cost the header a row: the chip gives first (APP-PAGE-049).
+    const roomy = await headerAt(page, 1900);
+    expect(roomy).toMatchObject({ oneRow: true, cut: 0 });
+    const now = await headerAt(page, 1280);
+    expect(now).toMatchObject({ oneRow: true, labelInside: true, height: roomy.height });
+    // A study with one snapshot: the mark alone.
+    await openReadyMade(page, 'phase2-oncology', 'READY-P2');
+    await expect(under).toHaveText('Simulated');
+    await expect(page.locator('[data-action="study-chip"]')).toHaveAttribute(
+      'aria-label',
+      'READY-P2, simulated study'
+    );
+    await page.locator('.sva-tab[data-domain="bds"]').click();
+    await expect(under).toHaveText('Simulated');
+    // A reader's own files carry no mark.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await page.locator('.sva-face[data-action="files"]').click();
+    await page.locator('.sva-file-input').setInputFiles(OWN_FILES);
+    await expect(page.locator('.sva-chip-name')).toHaveText('Your files');
+    await expect(under).toHaveCount(0);
+  });
+
+  test('APP-STUDY-012: on the built demo page, with READY-P1 in use, three mapping rows set to "not mapped" on the Files face (Severity in adae.csv, and Unit and ALT in adlb-advs.csv) and a file set aside by hand (adeg.csv) are as the reader left them when another snapshot is chosen: the rows are still not mapped, the file is still set aside, the study’s card counts as many charts ready as before the change and not all of them again, and no note is on the page (#431)', async ({
+    page
+  }) => {
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    await page.locator('.sva-face[data-action="files"]').click();
+    const ready = () =>
+      page.evaluate(
+        () =>
+          Object.values(window.__safetyVizApp.status()).filter((one) => one.state === 'ready')
+            .length
+      );
+    const byHand = () =>
+      page.evaluate(() => {
+        const { mappings, files, unplaced } = window.__safetyVizApp.state;
+        return {
+          severity: mappings.ae.columns.AESEV.value,
+          unit: mappings.bds.columns.STRESU.value,
+          alt: mappings.bds.measures.ALT.value,
+          ecg: files.eg ? files.eg.name : null,
+          setAside: unplaced.map((item) => item.file.name)
+        };
+      });
+    // As the app fills them: every chart is ready.
+    const whole = await ready();
+    const manifestCharts = await page.evaluate(
+      () => Object.keys(window.__safetyVizApp.status()).length
+    );
+    expect(whole).toBe(manifestCharts);
+    expect(await byHand()).toEqual({
+      severity: 'AESEV',
+      unit: 'STRESU',
+      alt: 'ALT (SGPT)',
+      ecg: 'adeg.csv',
+      setAside: []
+    });
+    // The reader clears three rows, and sets the ECG file aside.
+    await page.getByLabel('Severity in adae.csv', { exact: true }).selectOption('');
+    await page.getByLabel('Unit in adlb-advs.csv', { exact: true }).selectOption('');
+    await page.getByLabel('ALT in adlb-advs.csv', { exact: true }).selectOption('');
+    const cleared = await ready();
+    expect(cleared).toBeLessThan(whole);
+    await page.getByLabel('Domain of adeg.csv', { exact: true }).selectOption('');
+    const left = { severity: null, unit: null, alt: null, ecg: null, setAside: ['adeg.csv'] };
+    expect(await byHand()).toEqual(left);
+    const before = await ready();
+    expect(before).toBeLessThan(cleared);
+    const card = page.locator('.sva-chip-card .sva-chip-facts');
+    const cardSays = async () => {
+      await page.locator('[data-action="study-info"]').click();
+      const said = await card.textContent();
+      await page.keyboard.press('Escape');
+      return said;
+    };
+    expect(await cardSays()).toContain(`${before} of ${manifestCharts} charts ready`);
+    // Another snapshot, chosen where study.builder's study view offers them, and then the last again.
+    for (const [date, said] of [
+      ['2012-03-31', 'Snapshot 3 of 6'],
+      ['2012-06-30', 'Snapshot 6 of 6']
+    ]) {
+      await page.locator('.sva-face[data-action="explore"]').click();
+      await snapshotPicker(page).selectOption(date);
+      await expect(page.locator('.sva-chip-snap')).toHaveText(said);
+      expect(await byHand(), date).toEqual(left);
+      expect(await ready(), date).toBe(before);
+      expect(await cardSays(), date).toContain(`${before} of ${manifestCharts} charts ready`);
+      // The Files face shows the rows as the reader left them, and says nothing of them.
+      await page.locator('.sva-face[data-action="files"]').click();
+      await expect(page.getByLabel('Severity in adae.csv', { exact: true })).toHaveValue('');
+      await expect(page.getByLabel('Unit in adlb-advs.csv', { exact: true })).toHaveValue('');
+      await expect(page.locator('.sva-file.sva-unplaced')).toHaveAttribute(
+        'data-unplaced',
+        'adeg.csv'
+      );
+      await expect(page.locator('.sva-notes')).toHaveCount(0);
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-STUDY-007: on the built demo page a ready-made study chosen from the chip’s list while a demo study’s file is still held says "Opening READY-P2…" under the chip, from the press until the study lands; the demo study, arriving after it, is dropped (#431)', async ({
+    page
+  }) => {
+    // Both files are held until the test lets them go.
+    const gates = {};
+    const hold = (name) =>
+      new Promise((resolve) => {
+        gates[name] = resolve;
+      });
+    const heldDemo = hold('demo');
+    const heldStudy = hold('study');
+    await page.route('**/demo/adbds-abnbl.csv', async (route) => {
+      await heldDemo;
+      await route.continue();
+    });
+    await page.route('**/phase2-oncology.study.json.gz', async (route) => {
+      await heldStudy;
+      await route.continue();
+    });
+    await openDemo(page);
+    // A demo study, still loading.
+    const askedDemo = page.waitForRequest('**/demo/adbds-abnbl.csv');
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'demo:liver').click();
+    await askedDemo;
+    await expect(page.locator('.sva-busy')).toContainText('Loading the demo study');
+    // A ready-made study, chosen from the chip's list while it is.
+    const askedStudy = page.waitForRequest('**/phase2-oncology.study.json.gz');
+    await page.locator('[data-action="study-chip"]').click();
+    await chipItem(page, 'preset:phase2-oncology').click();
+    await askedStudy;
+    const said = page.locator('.sva-chip-slot .sva-chip-said');
+    await expect(said).toHaveText('Opening READY-P2…');
+    await expect(said).toHaveAttribute('role', 'status');
+    await expect(said).toBeInViewport({ ratio: 1 });
+    await expect(page.locator('.sva-busy')).toHaveCount(0);
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    // It lands, and the line goes.
+    gates.study();
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P2');
+    await expect(said).toHaveCount(0);
+    // The demo study arrives now, and is dropped.
+    const arrived = page.waitForResponse('**/demo/adbds-abnbl.csv');
+    gates.demo();
+    await (await arrived).finished();
+    await page.evaluate(() => new Promise((resolve) => setTimeout(resolve, 1000)));
+    await expect(page.locator('.sva-chip-name')).toHaveText('READY-P2');
+  });
+
+  test('APP-STUDY-014: on the built demo page, with READY-P2 in use, the app’s own buttons save files named as simulated: Download CSV in the Details of adsl.csv saves simulated-adsl.csv, a raw file’s saves simulated-Raw_AE.csv, and Download mapping saves simulated-safety-viz-mapping.json, which chosen again is read as the mapping it is and leaves the study in use; the raw file chosen again is still read as the adverse events raw file; with the pilot study in use the same buttons save adsl.csv and safety-viz-mapping.json (#431)', async ({
+    page
+  }, testInfo) => {
+    await openDemoApp(page);
+    const saved = async (press) => {
+      const downloading = page.waitForEvent('download');
+      await press();
+      return downloading;
+    };
+    const csvOf = async (name) => {
+      const details = page.locator(`.sva-file-details[data-details="${name}"]`);
+      // The page remembers which files' details are open, across studies: open it if it is shut.
+      if (!(await details.evaluate((element) => element.open))) {
+        await details.locator('summary').click();
+      }
+      return saved(() => details.locator('.sva-detail-download').click());
+    };
+    const mapping = () => saved(() => page.locator('[data-action="download-mapping"]').click());
+    // A demo study: the files keep their names.
+    await expect(chipName(page)).toHaveText('Pilot study');
+    await page.locator('.sva-face[data-action="files"]').click();
+    expect((await csvOf('adsl.csv')).suggestedFilename()).toBe('adsl.csv');
+    expect((await mapping()).suggestedFilename()).toBe('safety-viz-mapping.json');
+    // A simulated study: each name says so.
+    await openFromChip(page, ...READY_P2);
+    await page.locator('.sva-face[data-action="files"]').click();
+    expect((await csvOf('adsl.csv')).suggestedFilename()).toBe('simulated-adsl.csv');
+    const rawSaved = await csvOf('Raw_AE.csv');
+    expect(rawSaved.suggestedFilename()).toBe('simulated-Raw_AE.csv');
+    const download = await mapping();
+    expect(download.suggestedFilename()).toBe('simulated-safety-viz-mapping.json');
+    // The mapping file, chosen again under the name it was saved by, is read as a mapping.
+    const file = testInfo.outputPath('simulated-safety-viz-mapping.json');
+    await download.saveAs(file);
+    const content = JSON.parse(readFileSync(file, 'utf8'));
+    expect(content.safetyVizMapping).toBe(1);
+    expect(content.domains.subject.file).toBe('adsl.csv');
+    await page.locator('.sva-file-input').setInputFiles(file);
+    await expect(page.locator('.sva-notes')).toContainText(
+      'simulated-safety-viz-mapping.json is a saved mapping for:'
+    );
+    await expect(chipName(page)).toHaveText('READY-P2');
+    expect((await mapping()).suggestedFilename()).toBe('simulated-safety-viz-mapping.json');
+    // The raw file, chosen again under the name it was saved by, is a reader's own file,
+    // still read as the adverse events raw file by its name, and it keeps the name.
+    const raw = testInfo.outputPath('simulated-Raw_AE.csv');
+    await rawSaved.saveAs(raw);
+    await page.locator('.sva-file-input').setInputFiles(raw);
+    await expect(chipName(page)).toHaveText('Your files');
+    const card = page.locator('.sva-file.sva-raw[data-raw="simulated-Raw_AE.csv"]');
+    await expect(card.locator('.sva-tag')).toHaveText('gsm raw file: Raw_AE, by its name');
+    expect((await csvOf('simulated-Raw_AE.csv')).suggestedFilename()).toBe('simulated-Raw_AE.csv');
+  });
+
+  test('APP-STUDY-010: on the built demo page, when the list of ready-made studies is answered 404, the Studies view says their list came back empty where the page’s list of studies names them, and lists none; once the list can be fetched, opening Build a study brings them back and the sentence goes (#431)', async ({
+    page
+  }) => {
+    // How many ready-made studies the copy's studies feed names: the entries with a built study.
+    const feed = JSON.parse(
+      readFileSync(
+        new URL('../../site/vendor/study.builder/studies/index.json', import.meta.url),
+        'utf8'
+      )
+    );
+    const named = feed.studies.filter((entry) => entry.build).length;
+    expect(named).toBeGreaterThan(0);
+    let failing = true;
+    await page.route('**/study.builder/presets/index.json', (route) =>
+      failing ? route.fulfill({ status: 404, body: 'Not found' }) : route.continue()
+    );
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const alert = page.locator('.sva-studies [role="alert"]');
+    await expect(alert).toHaveText(
+      `study.builder’s ready-made studies could not be listed: their list came back empty, where the page’s list of studies names ${named}.`
+    );
+    await expect(page.locator('.sva-studies-row[data-study^="preset:"]')).toHaveCount(0);
+    // The list can be fetched now, and the reader opens the builder.
+    failing = false;
+    await page.locator('[data-add="describe"]').click();
+    await expect(page.locator('.sva-source .sva-build-widget')).toBeVisible();
+    await page.locator('[data-action="study-chip"]').click();
+    await expect(page.locator('.sva-chip-item[data-study^="preset:"]')).toHaveCount(named);
+    await page.locator('[data-action="all-studies"]').click();
+    await expect(page.locator('.sva-studies-row[data-study^="preset:"]')).toHaveCount(named);
+    await expect(alert).toHaveCount(0);
+  });
+
+  test('APP-TIER-030: on the built demo page Build a study and a simulated study’s Overview carry the app’s Experimental label on the corner, each with its one sentence saying why, and its panel opens inside the window; a demo study’s Overview carries none (#427)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const label = page.locator('.sva-content > .sva-corner .sv-status-label');
+    const panel = page.locator('.sva-content > .sva-corner .sv-status-panel');
+    // A demo study: the Overview is the app's own, and carries no label.
+    await expect(page.locator('.sva-chip-name')).toHaveText('Pilot study');
+    await expect(label).toHaveCount(0);
+    const says = async (heading, why) => {
+      await expect(label).toHaveCount(1);
+      await expect(label).toHaveAttribute('data-tier', 'experimental');
+      await expect(label).toBeInViewport({ ratio: 1 });
+      await label.click();
+      await expect(panel).toBeVisible();
+      await expect(panel.locator('.sv-status-heading')).toHaveText(heading);
+      await expect(panel.locator('.sv-status-text').first()).toHaveText(why);
+      const box = await panel.boundingBox();
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize().width);
+      await page.keyboard.press('Escape');
+      await expect(panel).toBeHidden();
+    };
+    // Build a study, open on the Overview tab.
+    await page.locator('.sva-face[data-action="files"]').click();
+    await page.locator('[data-action="source-build"]').click();
+    await expect(page.locator('.sva-source .sva-build-widget')).toBeVisible();
+    await says(
+      'Build a study is experimental',
+      'Experimental: new in 1.13. study.builder simulates the study in this browser, and what it makes may still change.'
+    );
+    await page.locator('[data-action="close-source"]').click();
+    await expect(label).toHaveCount(0);
+    // A simulated study in use: its Overview, on the face it opens on and on Files.
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    const view = [
+      'The view of this simulated study is experimental',
+      'Experimental: new in 1.13. study.builder simulated this study and every row is synthetic; Explore the data shows it in study.builder’s own view, which may still change.'
+    ];
+    await says(...view);
+    await page.locator('.sva-face[data-action="files"]').click();
+    await says(...view);
+    // The app's own panel says the same of both parts.
+    await page.locator('.sva-appstatus .sv-status-label').click();
+    await expect(page.locator('.sva-appstatus .sv-status-panel')).toContainText(
+      'Build a study and the view of a simulated study are Experimental, and say so where you open them.'
+    );
+  });
+
+  test('APP-LOAD-032: on the built demo page the side panel beside the open builder says what is loaded: 4 files for the pilot study, and for PILOT-PROTOCOL its 17, the standard files with the raw ones, as the Files face lists them; and no raw file of a simulated study is called "not recognised" (#427)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    const loadStep = page.locator('.sva-side .sva-step[data-step="load"] .sva-step-status');
+    const listed = () =>
+      page.locator('.sva-side .sva-loaded-file .sva-loaded-name').allTextContents();
+    const both = async () => {
+      await page.locator('.sva-item[data-view="data"]').click();
+      await page.locator('.sva-face[data-action="files"]').click();
+      const files = { step: await loadStep.textContent(), names: await listed() };
+      await page.locator('[data-action="source-build"]').click();
+      await expect(page.locator('.sva-source')).toBeVisible();
+      const beside = { step: await loadStep.textContent(), names: await listed() };
+      await page.locator('[data-action="close-source"]').click();
+      return { files, beside };
+    };
+    // A demo study.
+    const pilot = await both();
+    expect(pilot.beside).toEqual(pilot.files);
+    expect(pilot.beside.step).toBe('4 files loaded');
+    expect(pilot.beside.names).toEqual(['adsl.csv', 'adae.csv', 'adbds.csv', 'adeg.csv']);
+    // A simulated study: every file it handed over, standard and raw.
+    await openReadyMade(page, 'cdisc-pilot-protocol', 'PILOT-PROTOCOL');
+    const study = await both();
+    expect(study.beside).toEqual(study.files);
+    expect(study.beside.step).toBe('17 files loaded');
+    expect(study.beside.names).toHaveLength(17);
+    expect(study.beside.names.filter((name) => /^Raw_/.test(name))).toHaveLength(13);
+    // On the Files face its raw files that no metric reads say so (APP-RBQM-085).
+    await page.locator('.sva-face[data-action="files"]').click();
+    const tags = await page.evaluate(() =>
+      Object.fromEntries(
+        [...document.querySelectorAll('.sva-file.sva-raw')].map((card) => [
+          card.dataset.raw,
+          card.querySelector('.sva-tag').textContent
+        ])
+      )
+    );
+    for (const name of ['Raw_VISIT.csv', 'Raw_VS.csv', 'Raw_EG.csv', 'Raw_QS.csv']) {
+      expect(tags[name], name).toBe('gsm raw file: read by no metric');
+    }
+    expect(tags['Raw_AE.csv']).toBe('gsm raw file: Raw_AE, by its name');
+    await expect(page.locator('.sva-data')).not.toContainText('not recognised');
+  });
+
+  // prettier-ignore
+  test('APP-RBQM-084: on the built demo page, in real R, the RBQM tab runs its metrics on READY-P1 at the snapshot the chip names and Run details says that snapshot’s date: 2012-06-30, snapshot 6 of 6, as it opens, and 2012-01-31, snapshot 1 of 6, once the reader chooses the first; eight metrics run at each (#427)', { tag: '@real-r' }, async ({
+    page
+  }) => {
+    // It downloads R and some forty packages, then runs every workflow twice.
+    test.setTimeout(420000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    const ofR = askedOfR(page);
+    await page.goto('/_site/demo/index.html#data');
+    await page.evaluate('window.__safetyVizApp.ready');
+    await openReadyMade(page, 'phase1-small', 'READY-P1');
+    // Nothing was asked of R's addresses to open the study.
+    expect(ofR).toEqual([]);
+    const snapshotSaid = async () => {
+      await expect(page.locator('.sva-rbqm-outcome')).toHaveText(/^R ran 8 of 8 metrics /, {
+        timeout: 360000
+      });
+      await page.locator('.sva-rbqm-details').click();
+      const rows = await page
+        .locator('.sva-r-panel dt')
+        .evaluateAll((terms) =>
+          terms.map((term) => [term.textContent, term.nextElementSibling.textContent])
+        );
+      await page.locator('.sva-r-x').click();
+      return rows.find(([term]) => term === 'Snapshot')[1];
+    };
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await page.locator('.sva-rbqm-start').first().click();
+    expect(await snapshotSaid()).toBe('2012-06-30 · snapshot 6 of 6 of the study');
+    // Starting R is what asks R's addresses: the probe the no-R tests use sees it.
+    expect(ofR.some((url) => url.startsWith('https://webr.r-wasm.org/'))).toBe(true);
+    const sitesAtLast = await page.locator('.sva-rbqm-table tr').count();
+    // The first snapshot, chosen on the Overview: R is up, so the tab runs it when it is opened.
+    await page.locator('.sva-item[data-view="data"]').click();
+    await snapshotPicker(page).selectOption('2012-01-31');
+    await expect(page.locator('.sva-chip-snap')).toHaveText('Snapshot 1 of 6');
+    await page.locator('.sva-tab[data-tab="rbqm"]').click();
+    await expect
+      .poll(async () => page.locator('.sva-rbqm-table tr').count(), { timeout: 360000 })
+      .toBeLessThan(sitesAtLast);
+    expect(await snapshotSaid()).toBe('2012-01-31 · snapshot 1 of 6 of the study');
+    expect(errors).toEqual([]);
+  });
+
+  test('APP-PAGE-047: on the built demo page the chip’s list closes on a click elsewhere, on Escape with the keyboard elsewhere, and on a change of tab, and so does the i’s card (#407)', async ({
+    page
+  }) => {
+    await openDemo(page);
+    const pop = page.locator('.sva-chip-pop');
+    for (const action of ['study-chip', 'study-info']) {
+      const opener = page.locator(`[data-action="${action}"]`);
+      await opener.click();
+      await expect(pop).toBeVisible();
+      await page.locator('.sva-chart').click({ position: { x: 5, y: 5 } });
+      await expect(pop).toHaveCount(0);
+      await opener.click();
+      await expect(pop).toBeVisible();
+      await page.evaluate(() => document.activeElement.blur());
+      await page.keyboard.press('Escape');
+      await expect(pop).toHaveCount(0);
+      await opener.click();
+      await expect(pop).toBeVisible();
+      await page.locator('.sva-tab[data-domain="ae"]').click();
+      await expect(pop).toHaveCount(0);
+      await expect(page.locator('[data-action="study-chip"]')).toHaveAttribute(
+        'aria-expanded',
+        'false'
+      );
+      await page.locator('.sva-tab[data-domain="bds"]').click();
+    }
+  });
+
+  test('APP-PAGE-048: on the built demo page at 390 pixels the chip’s list and the i’s card open inside the page, and the page does not scroll sideways (#407)', async ({
+    page
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await openDemo(page);
+    const placed = () =>
+      page.evaluate(() => {
+        const box = document.querySelector('.sva-chip-pop').getBoundingClientRect();
+        const page = document.documentElement;
+        return {
+          inside: box.left >= 0 && box.right <= page.clientWidth,
+          sideways: page.scrollWidth - page.clientWidth
+        };
+      });
+    await page.locator('[data-action="study-chip"]').click();
+    await expect(chipItem(page, 'preset:phase2-oncology')).toBeVisible();
+    expect(await placed()).toEqual({ inside: true, sideways: 0 });
+    // Every study's name and kind is on the screen, not past its right edge.
+    await expect(chipItem(page, 'preset:phase2-oncology').locator('.sva-kind')).toBeInViewport({
+      ratio: 1
+    });
+    await page.keyboard.press('Escape');
+    await page.locator('[data-action="study-info"]').click();
+    await expect(page.locator('.sva-chip-card')).toBeVisible();
+    expect(await placed()).toEqual({ inside: true, sideways: 0 });
+  });
+
+  // The header's one row (#416). From 1,200 pixels the study chip gives room
+  // before the status label or a tab drops to a second row. The page loads its
+  // own typefaces, which the Linux runner draws a few pixels wider across the
+  // row than a Mac does; a reader whose browser does not get the files sees
+  // system typefaces, which can be wider still. So each study is checked in both.
+  // In the wide ones only what the layout promises in any typeface is
+  // asserted: one row wherever the parts fit across the page with the chip at
+  // its narrowest, which is read from the page itself.
+  const WIDE_TYPEFACES =
+    '.sva-app.sva-app{--sans:Verdana,"DejaVu Sans",sans-serif;' +
+    '--mono:Menlo,"DejaVu Sans Mono",monospace;--serif:Georgia,"DejaVu Serif",serif}';
+  const headerNow = (page) =>
+    page.evaluate(() => {
+      const one = (selector) => document.querySelector(selector);
+      const box = (element) => element.getBoundingClientRect();
+      const px = (value) => parseFloat(value) || 0;
+      const bar = one('.sva-bar');
+      const brand = one('.sva-brand');
+      const slot = one('.sva-chip-slot');
+      const chip = one('.sva-studychip');
+      const name = one('.sva-chip-name');
+      const status = one('.sva-appstatus');
+      const tabs = [...document.querySelectorAll('.sva-tabs > *')];
+      const spacing = getComputedStyle(bar);
+      // One row: the wordmark's middle line runs through every part.
+      const middle = (box(brand).top + box(brand).bottom) / 2;
+      const parts = [brand, chip, one('.sva-chip-info'), ...tabs, status];
+      // How much of its widest line the chip does not show.
+      const cut = Math.max(
+        0,
+        ...[name, one('.sva-chip-under')]
+          .filter(Boolean)
+          .map((line) => line.scrollWidth - line.clientWidth)
+      );
+      // The room the bar has, and what the parts that never shrink take of it.
+      const room = bar.clientWidth - px(spacing.paddingLeft) - px(spacing.paddingRight);
+      const fixed =
+        box(brand).width +
+        px(getComputedStyle(brand).marginRight) +
+        tabs.reduce((sum, tab) => sum + box(tab).width, 0) +
+        (tabs.length - 1) * px(getComputedStyle(one('.sva-tabs')).columnGap) +
+        box(status).width +
+        3 * px(spacing.columnGap);
+      const whole = box(slot).width + cut;
+      const narrowest = Math.min(whole, px(getComputedStyle(slot).flexBasis));
+      return {
+        oneRow: parts.every((part) => box(part).top < middle && box(part).bottom > middle),
+        height: Math.round(box(one('.sva-header')).height),
+        cut,
+        name: name.textContent,
+        hover: chip.title,
+        tabs: tabs.length,
+        labelInside: box(status).right <= box(bar).right - px(spacing.paddingRight) + 1,
+        spareWhole: room - fixed - whole,
+        spareNarrowest: room - fixed - narrowest
+      };
+    });
+  /** The header at one width, once what a study brings has been drawn. */
+  const headerAt = async (page, width) => {
+    await page.setViewportSize({ width, height: 720 });
+    let before = '';
+    await expect
+      .poll(async () => {
+        const now = JSON.stringify(await headerNow(page));
+        const same = now === before;
+        before = now;
+        return same;
+      })
+      .toBe(true);
+    return headerNow(page);
+  };
+  const oneRowHeader = async (page, study, own, roomyTabs = true) => {
+    const typefaces = own ? 'the page’s own typefaces' : 'wide typefaces';
+    // With room to spare: one row, the name whole. Its height is the measure.
+    const roomy = await headerAt(page, 1900);
+    expect(roomy, `${study}, ${typefaces}, 1,900 pixels`).toMatchObject({ oneRow: true, cut: 0 });
+    for (const width of [1280, 1440]) {
+      const where = `${study}, ${typefaces}, ${width} pixels`;
+      const now = await headerAt(page, width);
+      // Nothing a reader uses is lost, whatever fits: every tab and the label
+      // are there, the name is whole in the page and on hover.
+      expect(now.tabs, where).toBe(roomy.tabs);
+      expect(now.labelInside, where).toBe(true);
+      expect(now.name, where).toBe(study);
+      expect(now.hover.startsWith(study), where).toBe(true);
+      // In the page's own typefaces the parts fit with the chip at its narrowest,
+      // by 60 pixels or more on a Mac. Two demo studies' tabs are wider ("6 of 9"),
+      // and at 1,280 pixels they fit by half that: held where they fit, as below.
+      if (own && (roomyTabs || width > 1280)) expect(now.spareNarrowest, where).toBeGreaterThan(2);
+      // Wherever they do, the header is one row and no taller than with room to spare.
+      if (now.spareNarrowest > 2) {
+        expect(now.oneRow, where).toBe(true);
+        expect(now.height, where).toBe(roomy.height);
+      }
+      // The chip is whole where there is room for it, and cut only where there is not.
+      if (now.spareWhole > 2) expect(now.cut, where).toBe(0);
+      if (now.spareWhole < -2 && now.spareNarrowest > 2) expect(now.cut, where).toBeGreaterThan(0);
+    }
+  };
+
+  test('APP-PAGE-049: on the built demo page the header is one row at 1,280 and at 1,440 pixels, no taller than with room to spare, for each demo study, a reader’s own files and each ready-made study, in the page’s own typefaces, and in wide ones wherever its parts fit with the chip at its narrowest; the chip’s name is cut before the label or a tab drops, with the whole name on hover; the words Demo app are drawn below 1,200 pixels, from 1,440, and in a header with no chip (#416)', async ({
+    page
+  }) => {
+    test.setTimeout(180000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    for (const own of [true, false]) {
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.goto('/_site/demo/index.html#data');
+      await page.evaluate('window.__safetyVizApp.ready');
+      if (!own) await page.addStyleTag({ content: WIDE_TYPEFACES });
+      await page.evaluate(() => document.fonts.ready);
+      // Each demo study the Files face offers, by the name its chip gives it.
+      await page.locator('.sva-face[data-action="files"]').click();
+      const menu = page.locator('.sva-side select.sva-study');
+      for (const [study, name] of [
+        ['pilot', 'Pilot study'],
+        ['renamed', 'Renamed columns'],
+        ['liver', 'Liver cohort, labs only'],
+        ['rbqm', 'RBQM study']
+      ]) {
+        await menu.selectOption(study);
+        await expect(page.locator('.sva-chip-name')).toHaveText(name);
+        await oneRowHeader(page, name, own, study === 'pilot' || study === 'rbqm');
+      }
+      // A reader's own files.
+      await page.setViewportSize({ width: 1280, height: 720 });
+      await page.locator('.sva-file-input').setInputFiles(OWN_FILES);
+      await expect(page.locator('.sva-chip-name')).toHaveText('Your files');
+      await oneRowHeader(page, 'Your files', own);
+      // The three ready-made studies: two say a snapshot under their name.
+      for (const [id, name, words] of [
+        ['phase1-small', 'READY-P1', 'Snapshot 6 of 6'],
+        ['phase2-oncology', 'READY-P2', null],
+        ['cdisc-pilot-protocol', 'PILOT-PROTOCOL', 'Snapshot 7 of 7']
+      ]) {
+        await page.setViewportSize({ width: 1280, height: 720 });
+        await openReadyMade(page, id, name);
+        if (words) await expect(page.locator('.sva-chip-snap')).toHaveText(words);
+        else await expect(page.locator('.sva-chip-snap')).toHaveCount(0);
+        await oneRowHeader(page, name, own);
+      }
+      if (!own) continue;
+      // PILOT-PROTOCOL, the longest of the three names, at 1,224 pixels: too
+      // narrow for the whole name and wide enough for the row. The name is cut,
+      // the row holds, and the i beside the chip still opens the card that says it.
+      const tight = await headerAt(page, 1224);
+      expect(tight.spareWhole).toBeLessThan(-2);
+      expect(tight).toMatchObject({ oneRow: true, name: 'PILOT-PROTOCOL', labelInside: true });
+      expect(tight.cut).toBeGreaterThan(0);
+      expect(tight.hover.startsWith('PILOT-PROTOCOL, a simulated study, as it stood on ')).toBe(
+        true
+      );
+      await page.locator('[data-action="study-info"]').click();
+      await expect(page.locator('.sva-chip-cardhead strong')).toHaveText('PILOT-PROTOCOL');
+      await page.keyboard.press('Escape');
+      // The words beside the wordmark, and where the chip's place flexes.
+      const flexes = () =>
+        page.evaluate(() => getComputedStyle(document.querySelector('.sva-chip-slot')).flexGrow);
+      for (const [width, kicker, grow] of [
+        [1199, true, '0'],
+        [1200, false, '1'],
+        [1439, false, '1'],
+        [1440, true, '1']
+      ]) {
+        await page.setViewportSize({ width, height: 720 });
+        await expect(page.locator('.sva-kicker')).toBeVisible({ visible: kicker });
+        expect(await flexes(), `${width} pixels`).toBe(grow);
+      }
+    }
+    // A header with no chip draws the words at 1,280 pixels, as it did: the
+    // chip's place is taken out of this one, as a page that asks for no chip
+    // has none (the test page is one, in basic-app.spec.js).
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await expect(page.locator('.sva-kicker')).toBeHidden();
+    await page.evaluate(() => document.querySelector('.sva-chip-slot').remove());
+    await expect(page.locator('.sva-kicker')).toBeVisible();
     expect(errors).toEqual([]);
   });
 

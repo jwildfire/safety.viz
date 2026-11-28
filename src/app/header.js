@@ -1,5 +1,5 @@
 // Demo app: what the header and the first screen say of where the reader is
-// (#269, obot.roadmap#402): a tab's count and the Data tab's name for the
+// (#269, obot.roadmap#402): a tab's count and the Overview tab's name for the
 // loaded study. Pure: no document. The page (page.js) puts the words on the
 // screen. The one-line welcome of release 1.11.0 is gone (#321).
 
@@ -18,13 +18,13 @@ export function tabCount(ready, total) {
 }
 
 /**
- * What the Data tab says is loaded: a demo study by its name, a reader's own
+ * What the Overview tab says is loaded: a demo study by its name, a reader's own
  * files by their number, or that there are none.
  * @param {Object} loaded What is loaded.
  * @param {?string} loaded.study The id of the demo study that is loaded, when what is loaded is one.
  * @param {number} loaded.loaded How many files are loaded.
  * @param {Array<{id: string, label: string}>} loaded.studies The demo studies the page offers.
- * @returns {string} The words on the Data tab.
+ * @returns {string} The words on the Overview tab.
  */
 export function dataTag({ study, loaded, studies }) {
   const demo = study ? studies.find((item) => item.id === study) : null;
@@ -40,6 +40,17 @@ export const APP_STATUS_TEXT =
   'Nothing here is qualified. The charts, statistics and site metrics are tested and documented, ' +
   'but none has been through qualification. Confirm every result in a qualified system before ' +
   'you rely on it.';
+
+/**
+ * Where study.builder's parts stand, as a second paragraph of the same panel
+ * on a page that carries them (#424): Build a study and the view of a simulated
+ * study are not safety.viz's own, and every row is synthetic. Both stand on
+ * Experimental here, by their entries in site/config.json (`appParts`), and
+ * each carries the label on its corner with its reason (#427).
+ */
+export const APP_STATUS_SIMULATED =
+  'Build a study and the view of a simulated study are Experimental, and say so where you ' +
+  'open them. Both are study.builder’s, new in 1.13, and every row it makes is synthetic.';
 
 /**
  * How many of the app's charts stand on each rung, for the panel of the app's

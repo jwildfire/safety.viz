@@ -12,6 +12,20 @@
       "blurb": "Risk-based quality monitoring in the demo app: gsm's site metrics, run by R in the browser on the loaded study and drawn with gsm.viz."
     }
   ],
+  "appParts": [
+    {
+      "id": "build",
+      "title": "Build a study",
+      "tier": "experimental",
+      "tierNote": "Experimental: new in 1.13. study.builder simulates the study in this browser, and what it makes may still change."
+    },
+    {
+      "id": "simulated-study",
+      "title": "The view of a simulated study",
+      "tier": "experimental",
+      "tierNote": "Experimental: new in 1.13. study.builder simulated this study and every row is synthetic; Explore the data shows it in study.builder’s own view, which may still change."
+    }
+  ],
   "renderers": [
     {
       "module": "histogram",

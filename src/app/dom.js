@@ -1,4 +1,4 @@
-// Demo app: the two DOM helpers the page and the data panel share (#151).
+// Demo app: the small helpers the page and the data panel share (#151).
 
 /**
  * Create an element with an optional class and text content. Text is always
@@ -22,3 +22,11 @@ export function el(tag, className, text) {
  * @returns {string} The phrase.
  */
 export const plural = (count, noun) => `${count} ${noun}${count === 1 ? '' : 's'}`;
+
+/**
+ * A sentence that ends in one full stop, whether or not what it was made of
+ * already ended in one: a reason quoted from somewhere else may or may not.
+ * @param {string} text The sentence.
+ * @returns {string} The sentence, ending in one full stop.
+ */
+export const oneStop = (text) => `${String(text).replace(/[.\s]+$/, '')}.`;

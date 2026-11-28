@@ -1,6 +1,6 @@
 // Demo app: the page (#150, obot.roadmap#352). A full-page web app whose own
 // chrome is a header and a footer, so the chart keeps the page's full width. The
-// header carries the wordmark, a Data tab and one tab per domain, and beneath
+// header carries the wordmark, a Overview tab and one tab per domain, and beneath
 // them the charts of the open domain, each with a status saying whether the
 // loaded data supports it. The open chart's chip is emphasised and is the
 // view's visible name. The main area shows the data view or one chart at a
@@ -18,10 +18,11 @@
 // charts take something other than a study's standard domains brings one view
 // instead, a tab of its own (#235): the page gives it the main area and the
 // app handle, and the view draws itself. Such a tab may take files of its own
-// (#282): every file comes in on the Data tab, and the page asks the tab of
+// (#282): every file comes in on the Overview tab, and the page asks the tab of
 // each one before it places it in a standard domain.
 
 import { parseFile } from './parse.js';
+import { STUDIES_VIEW_ID, drawChip, studiesView } from './portfolio.js';
 import { placeFile } from './detect.js';
 import {
   applySavedMapping,
@@ -52,10 +53,17 @@ import {
 } from './libraries.js';
 import { renderDataPanel } from './data-panel.js';
 import { DEMO_STUDIES, studyUrls } from './studies.js';
-import { APP_STATUS_LINE, APP_STATUS_TEXT, dataTag, statusCount, tabCount } from './header.js';
+import {
+  APP_STATUS_LINE,
+  APP_STATUS_SIMULATED,
+  APP_STATUS_TEXT,
+  dataTag,
+  statusCount,
+  tabCount
+} from './header.js';
 import { icon } from './icons.js';
 import { note } from './note.js';
-import { el, plural } from './dom.js';
+import { el, oneStop, plural } from './dom.js';
 import { isBelow, tierNoteOf, tierOf } from '../tiers.js';
 import { statusHeading, statusLabel } from '../status-label.js';
 import { rControl } from './r-control.js';
@@ -196,7 +204,11 @@ export function mountApp(
         if (!response.ok) throw new Error(`${url} was answered with HTTP ${response.status}.`);
         return response.text();
       }),
-    dataView = renderDataPanel
+    dataView = renderDataPanel,
+    // The studies a reader has, as a chip in the header and a Studies view
+    // (portfolio.js); and the viewer the data view explores a study with.
+    portfolio: withPortfolio = false,
+    viewer = null
   } = {}
 ) {
   const root = typeof target === 'string' ? document.querySelector(target) : target;
@@ -204,6 +216,11 @@ export function mountApp(
   const handed = Array.isArray(libraries) ? libraries : [];
   const bringsView = (library) =>
     isRecord(library) && isRecord(library.view) && typeof library.view.render === 'function';
+  // A library that brings a source brings a way to load data: the data view
+  // offers it beside the demo studies and the file picker, and draws it in
+  // place of the loaded files while it is open.
+  const bringsSource = (library) =>
+    isRecord(library) && isRecord(library.source) && typeof library.source.render === 'function';
   // Every chart the page lists, safety.viz's and any other library's, in one
   // manifest; and for those that cannot be drawn, why.
   const {
@@ -216,13 +233,14 @@ export function mountApp(
   } = mergeLibraries(
     ownManifest,
     charts,
-    handed.filter((library) => !bringsView(library))
+    handed.filter((library) => !bringsView(library) && !bringsSource(library))
   );
   // Every tab has a colour (#268): a standard domain's is its class's, and a
   // library's is the one it names or the first no other tab uses, in the order
   // the libraries were handed in (libraries.js::tabColours).
   const colours = tabColours(
-    handed,
+    // A library that brings only a source has no tab to colour.
+    handed.filter((library) => bringsView(library) || !bringsSource(library)),
     groupCharts(manifest)
       .map(([group]) => group)
       .filter((group) => !has(declaredBy, group) && has(DOMAIN_COLOURS, group))
@@ -239,6 +257,17 @@ export function mountApp(
   /** One of a list of notes (#321): what a load left to say, or a library that did not load, as an amber note. */
   const noteItem = (sentence) =>
     note({ kind: 'warning', say: sentence, tag: 'li', className: 'sva-note', role: null });
+  const sources = [];
+  for (const { source } of handed.filter(bringsSource)) {
+    const id = typeof source.id === 'string' ? source.id : '';
+    if (!id || sources.some((other) => other.id === id)) {
+      console.warn(
+        `safety.viz app: a source was handed in with no id or an id already used (${id}); it was left out.`
+      );
+      continue;
+    }
+    sources.push(source);
+  }
   const views = new Map();
   const viewLibrary = new Map(); // a view's id → the name of the library that brought it
   for (const { name, view } of handed.filter(bringsView)) {
@@ -252,6 +281,8 @@ export function mountApp(
     views.set(id, view);
     viewLibrary.set(id, name);
   }
+  // The Studies view is the app's own, the last tab, on a page that asks for it.
+  if (withPortfolio && !views.has(STUDIES_VIEW_ID)) views.set(STUDIES_VIEW_ID, studiesView());
   // The tabs that take files of their own (#282): every file a reader loads is
   // asked of each, in the tabs' order, and the first to claim it has it.
   const claimants = [...views.values()].filter((view) => typeof view.claims === 'function');
@@ -298,6 +329,14 @@ export function mountApp(
     failed: {}, // module → the message of a chart that was ready and threw
     focus: null, // the mapping row to return the keyboard focus to after a re-render
     selected: 'data',
+    source: null, // the id of the source open on the data view, when one is
+    named: null, // what the loaded study is called, when what loaded it said: { name, kind, facts, about, viewer, rung }
+    chip: null, // what is open under the study chip: 'menu', 'info' or nothing
+    // Whether the data view shows the viewer in place of the files: it does,
+    // from the start, on a page that serves the viewer.
+    exploring: isRecord(viewer),
+    viewing: null, // where the reader is in the viewer: its view, its table and its participant
+    details: new Set(), // the names of the loaded files whose details are open on the data view
     item: null, // the open item of the open view, when the view brings a row of its own (#279)
     busy: ''
   };
@@ -306,7 +345,24 @@ export function mountApp(
   let noteSlot = null;
   let dataShown = null; // what the data view returned, while it is the view on the page
   const studies = demo ? demo.studies || DEMO_STUDIES : [];
-  let demoRun = 0; // the latest demo study asked for; an earlier one still loading is dropped
+  // Every way of choosing what the page shows takes a turn in one ordering
+  // (#427): a demo study, files of the reader's own, Reset, and a study a
+  // source hands over or is asked to open (`choose`). Whatever is still on its
+  // way when a later choice is made is dropped when it arrives, so the last
+  // thing the reader chose is what the page shows.
+  let turn = 0;
+  // A demo study the reader chose that could not be fetched, said under the
+  // study chip until the next choice (#427).
+  let demoProblem = '';
+  const takeTurn = () => {
+    turn += 1;
+    demoProblem = '';
+    return turn;
+  };
+
+  /** How many files are loaded: placed, set aside, or kept as gsm's raw files. */
+  const loadedCount = () =>
+    Object.keys(state.files).length + state.unplaced.length + state.raw.length;
 
   const status = () => {
     const computed = chartStatus(state.mappings, manifest, problems);
@@ -327,7 +383,7 @@ export function mountApp(
   root.innerHTML = '';
   const app = el('div', 'sva-app');
 
-  // The header: the wordmark, the Data tab and a tab per domain; and beneath
+  // The header: the wordmark, the Overview tab and a tab per domain; and beneath
   // them the charts of the open domain, the open one emphasised. That chip is
   // the view's visible name: the heading and the overall count are kept for
   // screen readers and not shown.
@@ -353,13 +409,18 @@ export function mountApp(
   // The app's own rung, at the right end of the header (#273): everything here
   // is exploratory, and the label says so on hover and in full on a click.
   const onRung = (tier, ids) => ids.filter((id) => rungOf(id).tier === tier);
+  // study.builder's parts are not safety.viz's own: on a page whose libraries
+  // bring its way to load data, the panel says where they stand (#424).
+  const simulates = handed.some(
+    (library) => bringsSource(library) && library.name === 'study.builder'
+  );
   const appStatus = el('div', 'sva-appstatus');
   appStatus.append(
     statusLabel({
       tier: 'exploratory',
       heading: 'This app is exploratory',
       line: APP_STATUS_LINE,
-      text: [APP_STATUS_TEXT],
+      text: [APP_STATUS_TEXT, ...(simulates ? [APP_STATUS_SIMULATED] : [])],
       count: statusCount({
         exploratory: onRung('exploratory', Object.keys(manifest.modules)).length,
         experimental: onRung('experimental', Object.keys(manifest.modules)).length,
@@ -368,7 +429,9 @@ export function mountApp(
       marks: { exploratory: ['This app'] }
     })
   );
-  bar.append(brand, tabs, appStatus);
+  // The study chip, between the wordmark and the tabs, on a page that asks for it.
+  const chipSlot = el('div', 'sva-chip-slot');
+  bar.append(brand, ...(withPortfolio ? [chipSlot] : []), tabs, appStatus);
   const chartRow = el('nav', 'sva-charts');
   chartRow.setAttribute('aria-label', 'Charts');
   // The R control's details open under the row, at its right end (#276).
@@ -469,11 +532,8 @@ export function mountApp(
     button.dataset.view = id;
     if (fullTitle !== label) button.title = fullTitle;
     if (state.selected === id) button.setAttribute('aria-current', 'page');
-    button.append(
-      el('span', hexClass),
-      el('span', 'sva-item-title', label),
-      el('span', tag.className, tag.text)
-    );
+    button.append(el('span', hexClass), el('span', 'sva-item-title', label));
+    if (tag) button.append(el('span', tag.className, tag.text));
     button.onclick = () => handle.select(id);
     return button;
   }
@@ -519,11 +579,22 @@ export function mountApp(
     const open = isChart(state.selected) ? groupOf(manifest.modules[state.selected]) : null;
     const loaded = Object.keys(state.files).length + state.raw.length;
     tabs.innerHTML = '';
+    // Where the study chip is beside it, the chip names the study and this tab
+    // says only what it is. A page with no chip keeps the name on the tab.
     tabs.append(
       navItem(
         'data',
-        'Data',
-        { className: 'sva-tag', text: dataTag({ study: state.study, loaded, studies }) },
+        'Overview',
+        withPortfolio
+          ? null
+          : {
+              className: 'sva-tag',
+              // A study that says its name is called by it.
+              text:
+                state.named && state.named.name && loaded
+                  ? state.named.name
+                  : dataTag({ study: state.study, loaded, studies })
+            },
         'sva-hex sva-spectrum'
       )
     );
@@ -626,6 +697,9 @@ export function mountApp(
     // A library's view (#235): a tab after the domains', with what the view
     // says of itself where a domain's tab counts its charts.
     for (const [id, view] of views) {
+      // A view reached some other way than a tab has none: the Studies view,
+      // which the study chip leads to.
+      if (view.tab === false) continue;
       const tab = paint(
         el('button', 'sva-tab sva-view-tab sva-library-group'),
         viewLibrary.get(id)
@@ -918,7 +992,7 @@ export function mountApp(
   // The label on the corner of the open card (#274): a chart or a tab that
   // stands below the app's rung says so there, with its reason. One that is
   // Exploratory, as the app is, shows no second label.
-  function cornerLabel(id, name, what) {
+  function cornerLabel(id, name, what, mark = `This ${what}`) {
     const { tier, note } = rungOf(id);
     if (!isBelow(tier)) return;
     // A chart's label sits on its card's top edge. A tab's view has no card,
@@ -929,10 +1003,29 @@ export function mountApp(
         tier,
         heading: statusHeading(name, tier),
         text: note ? [note] : [],
-        marks: { exploratory: ['This app'], [tier]: [`This ${what}`] }
+        marks: { exploratory: ['This app'], [tier]: [mark] }
       })
     );
     content.append(corner);
+  }
+
+  // The Overview tab is the app's own and carries no label. Two things drawn
+  // on it are not the app's own and stand below its rung (#427): a way to
+  // load data a library brought, while it is open, and the view of a study
+  // that says which rung it stands on (`named.rung`), as a simulated study
+  // does. Each carries the label on the corner, with its reason, as a tab does.
+  function dataLabel() {
+    const source = sources.find((one) => one.id === state.source);
+    if (source) {
+      const name = typeof source.label === 'string' && source.label ? source.label : source.id;
+      cornerLabel(source.id, name, 'tab', name);
+      return;
+    }
+    const named = loadedCount() ? state.named : null;
+    if (named && typeof named.rung === 'string') {
+      const kind = String(named.kind || 'Simulated').toLowerCase();
+      cornerLabel(named.rung, `The view of this ${kind} study`, 'tab', 'This study’s view');
+    }
   }
 
   function renderMain(current) {
@@ -944,8 +1037,9 @@ export function mountApp(
       content.append(note({ say: state.busy, busy: true, className: 'sva-message sva-busy' }));
     }
     if (state.selected === 'data') {
-      title.textContent = 'Data';
+      title.textContent = 'Overview';
       renderNotes(content);
+      dataLabel();
       const container = el('div', 'sva-data');
       content.append(container);
       dataShown = dataView(container, handle) || null;
@@ -1078,13 +1172,14 @@ export function mountApp(
   function viewName() {
     if (isChart(state.selected)) return chipLabel(manifest.modules[state.selected], state.selected);
     if (isView(state.selected)) return views.get(state.selected).title;
-    return 'Data';
+    return 'Overview';
   }
 
   function render() {
     const current = status();
     renderHead(current);
     renderNav(current);
+    if (withPortfolio) drawChip(chipSlot, handle);
     renderMain(current);
     revealOpen();
     // The browser tab's title follows the open view (#270).
@@ -1140,6 +1235,54 @@ export function mountApp(
     state.raw = [];
   }
 
+  /**
+   * Make way for the files about to load, and keep what study they are (#405).
+   * A study replaces whatever was loaded before it, whatever kind either is:
+   * a demo study arrives on a page `runDemo` has cleared; a study that says
+   * what it is (`as`) clears the files and the held mapping file of what was
+   * there; and files of the reader's own clear a demo study or a named one
+   * whole, and say so, since placed one by one they would displace its files
+   * and leave each of them set aside. A named study is handed over in parts,
+   * its raw files and its standard files, each with the same `as`: the first
+   * part clears and the rest join it. The reader's own files join the
+   * reader's own files, and a load that brings no data file, a mapping file
+   * alone, leaves what is loaded what it was.
+   * @param {?string} study The demo study the files are, when they are one.
+   * @param {?Object} as What the study is called, when what loads it says.
+   * @param {number} count How many data files are about to load.
+   * @returns {void}
+   */
+  function makeWay(study, as, count) {
+    const named = isRecord(as) ? as : null;
+    if (study) {
+      state.named = named;
+      state.study = study;
+      return;
+    }
+    if (named) {
+      if (state.named !== named) {
+        clearFiles();
+        state.saved = null;
+      }
+      state.named = named;
+      state.study = null;
+      return;
+    }
+    if (!count) return;
+    const demoLoaded = studies.find((item) => item.id === state.study);
+    const before = demoLoaded
+      ? `The demo study (${demoLoaded.label})`
+      : state.named
+        ? state.named.name || 'The study'
+        : null;
+    if (before) {
+      clearFiles();
+      state.notes.push(`${before} was cleared to load your files.`);
+    }
+    state.named = null;
+    state.study = null;
+  }
+
   /** Forget everything that was loaded: files, mappings, a held mapping file, notes. */
   function clear() {
     clearFiles();
@@ -1148,6 +1291,10 @@ export function mountApp(
     state.notes = [];
     state.failed = {};
     state.focus = null;
+    state.source = null;
+    state.named = null;
+    // The face of the data view a reader chose stays chosen across studies.
+    state.viewing = null;
   }
 
   /** The first chart the loaded data supports that is drawn in the main pane. */
@@ -1163,21 +1310,33 @@ export function mountApp(
   async function runDemo(id, open) {
     const study = studies.find((item) => item.id === id) || studies[0];
     if (!study) return;
-    const run = ++demoRun;
+    const run = takeTurn();
     state.busy = 'Loading the demo study…';
     render();
     let texts;
     try {
       texts = await Promise.all(studyUrls(study, demo.base).map((url) => fetchText(url)));
     } catch (error) {
-      if (run !== demoRun) return;
+      if (run !== turn) return;
       state.busy = '';
+      // A study the reader chose from the chip, the Studies view or the Files
+      // face is said under the chip, as a ready-made study that did not open
+      // is, and the reader stays on the tab they are on (#427). The study the
+      // page opens on has no tab to stay on and no chip to have pressed: it
+      // is said on the Overview, as on a page with no chip.
+      if (withPortfolio && !open) {
+        demoProblem = `${oneStop(`${study.label} could not be opened: ${error.message}`)} ${
+          loadedCount() ? 'The study in use is unchanged.' : 'No study is in use.'
+        }`;
+        render();
+        return;
+      }
       state.notes = [`The demo study could not be loaded: ${error.message}`];
       state.selected = 'data';
       render();
       return;
     }
-    if (run !== demoRun) return;
+    if (run !== turn) return;
     state.busy = '';
     clear();
     const list = study.files.map((name, index) => ({ name, text: texts[index] }));
@@ -1206,6 +1365,220 @@ export function mountApp(
 
     /** The current status of every chart, including any that did not draw. */
     status,
+
+    /**
+     * Offer a text file to download.
+     * @param {string} name The file's name.
+     * @param {string} text What it holds.
+     * @param {string} [type] Its media type.
+     * @returns {void}
+     */
+    saveFile(name, text, type = 'text/csv') {
+      const link = el('a');
+      link.href = URL.createObjectURL(new Blob([text], { type }));
+      link.download = name;
+      document.body.append(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(link.href);
+    },
+
+    /**
+     * The name the app's own buttons offer a file for download under (#431).
+     * With a simulated study in use, ready-made, saved or built, the name
+     * says so: `simulated-adsl.csv`, `simulated-safety-viz-mapping.json`. A
+     * file read back out of the page could otherwise be taken for a real
+     * study's, since a simulated study's files carry the standard names. A
+     * demo study's files and a reader's own keep their names.
+     * @param {string} name The file's name on the page.
+     * @returns {string} The name to save it under.
+     */
+    downloadName(name) {
+      const simulated =
+        loadedCount() > 0 &&
+        isRecord(state.named) &&
+        (state.named.kind || 'Simulated') === 'Simulated';
+      return simulated && !/^simulated-/i.test(name) ? `simulated-${name}` : name;
+    },
+
+    /** The first chart the loaded data supports, or null. */
+    firstReady: () => firstReady(),
+
+    /** The viewer the data view explores a study with, when the page serves one: `{ url, global }`. */
+    viewer: isRecord(viewer) ? viewer : null,
+
+    /**
+     * Show the data view with the viewer open on the loaded study.
+     * @returns {void}
+     */
+    explore() {
+      state.exploring = true;
+      state.source = null;
+      if (state.selected === 'data') render();
+      else handle.select('data');
+    },
+
+    /**
+     * The studies a reader has, and the ways to add one (portfolio.js). A demo
+     * study is one; so are the reader's own files while they are loaded; so is
+     * each study a source says it has, as study.builder's ready-made and saved
+     * studies. The one that is loaded is `current`.
+     * @returns {{studies: Object[], add: Object[], busy: string, problem: string}} What the chip and the Studies view draw.
+     */
+    portfolio() {
+      const loaded = loadedCount();
+      const current = status();
+      const ready = Object.values(current).filter((one) => one.state === 'ready').length;
+      const support = { ready, total: Object.keys(manifest.modules).length };
+      const list = [];
+      for (const study of studies) {
+        const isCurrent = state.study === study.id && !state.named;
+        list.push({
+          id: `demo:${study.id}`,
+          name: study.label,
+          kind: 'Demo',
+          size: plural(study.files.length, 'file'),
+          about: study.description,
+          current: isCurrent,
+          ...(isCurrent ? { support, files: loaded } : {}),
+          open: () => handle.loadDemo(study.id)
+        });
+      }
+      let busy = '';
+      let problem = demoProblem;
+      let namedListed = false;
+      for (const source of sources) {
+        if (!isRecord(source.studies) || typeof source.studies.list !== 'function') continue;
+        let said = null;
+        try {
+          said = source.studies.list(handle);
+        } catch (error) {
+          console.warn('safety.viz app: a source could not list its studies.', error);
+        }
+        if (!isRecord(said)) continue;
+        if (said.busy) busy = said.busy;
+        if (said.problem) problem = said.problem;
+        for (const entry of Array.isArray(said.studies) ? said.studies : []) {
+          const isCurrent = Boolean(
+            state.named && state.named.id && state.named.id === entry.id && loaded
+          );
+          if (isCurrent) namedListed = true;
+          list.push({
+            ...entry,
+            current: isCurrent,
+            ...(isCurrent
+              ? { support, files: loaded, facts: state.named.facts, about: state.named.about }
+              : {})
+          });
+        }
+      }
+      if (loaded && state.named && !namedListed) {
+        list.push({
+          id: state.named.id || 'named',
+          name: state.named.name || 'Study',
+          kind: state.named.kind || 'Simulated',
+          size: state.named.size || plural(loaded, 'file'),
+          about: state.named.about || '',
+          facts: state.named.facts,
+          current: true,
+          support,
+          files: loaded,
+          open: () => {}
+        });
+      }
+      if (loaded && !state.named && !studies.some((study) => study.id === state.study)) {
+        list.push({
+          id: 'own',
+          name: 'Your files',
+          kind: 'Your files',
+          size: plural(loaded, 'file'),
+          about: 'Read in this browser, and sent nowhere.',
+          current: true,
+          support,
+          files: loaded,
+          open: () => {}
+        });
+      }
+      const add = [
+        {
+          id: 'files',
+          label: 'From your files',
+          about: 'CSV or JSON. They are read in this browser and sent nowhere.',
+          action: 'Choose files',
+          run: () => {
+            state.exploring = false;
+            state.source = null;
+            handle.select('data');
+            const input = root.querySelector('.sva-data input[type="file"]');
+            if (input) input.click();
+          }
+        }
+      ];
+      for (const source of sources) {
+        if (isRecord(source.studies) && Array.isArray(source.studies.add)) {
+          for (const way of source.studies.add) add.push({ ...way, run: () => way.run(handle) });
+        }
+      }
+      return { studies: list, add, busy, problem };
+    },
+
+    /**
+     * Take a turn in the one ordering of what the page shows (#427), for a
+     * study that will arrive later: a source calls this when the reader asks
+     * it to open one, and asks the answer when the study arrives. A demo study
+     * still loading is dropped, as it is when files of the reader's own are
+     * loaded.
+     * @returns {() => boolean} Whether this is still the last choice made: false once a demo study, files of the reader's own, Reset or another study was chosen after it.
+     */
+    choose() {
+      const mine = takeTurn();
+      if (state.busy) {
+        state.busy = '';
+        render();
+      }
+      return () => mine === turn;
+    },
+
+    /** The ways to load data that libraries brought: each an id, a label and one sentence. */
+    sources: sources.map(({ id, label, about }) => ({
+      id,
+      label: typeof label === 'string' && label ? label : id,
+      about: typeof about === 'string' ? about : ''
+    })),
+
+    /**
+     * Open one of those on the data view, in place of the loaded files, or
+     * close the one that is open.
+     * @param {?string} id A source's id, or null to close.
+     * @returns {void}
+     */
+    openSource(id) {
+      state.source = sources.some((source) => source.id === id) ? id : null;
+      if (state.selected === 'data') render();
+      else handle.select('data');
+    },
+
+    /**
+     * Draw the open source into an element of the data view.
+     * @param {Element} container The element.
+     * @returns {?{destroy?: Function}} What the source returned, or null when none is open or it threw.
+     */
+    drawSource(container) {
+      const source = sources.find((one) => one.id === state.source);
+      if (!source) return null;
+      try {
+        return source.render(container, handle) || null;
+      } catch (error) {
+        container.append(
+          el(
+            'p',
+            'sva-message sva-problem',
+            `Did not draw. ${error && error.message ? error.message : String(error)}`
+          )
+        );
+        return null;
+      }
+    },
 
     /** Whether a tab takes files of its own, which the app then keeps as they are (#282). */
     ownFiles: claimants.length > 0,
@@ -1242,14 +1615,14 @@ export function mountApp(
      * refused in the tab's sentence. A demo study's files are not asked: the
      * study says which loader is its own.
      * @param {{name: string, text: string}[]} list The files' names and text.
-     * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
+     * @param {{notes?: string[], study?: ?string, as?: ?Object}} [options] Sentences to show with the load; the demo study these files are, when they are one; and what the study is called, when what loads it says. A study replaces the one before it (`makeWay`).
      * @returns {void}
      */
-    loadFiles(list, { notes = [], study = null } = {}) {
+    loadFiles(list, { notes = [], study = null, as = null } = {}) {
       // Files of the user's own outrank a demo study still on its way: it is
       // dropped when it arrives, instead of replacing them.
       if (!study) {
-        demoRun += 1;
+        takeTurn();
         state.busy = '';
       }
       state.notes = [...notes];
@@ -1260,14 +1633,9 @@ export function mountApp(
         if (saved) mappingFiles.push({ saved, name: entry.name });
         else data.push(entry);
       }
-      // Files of the user's own replace a demo study whole: placed one by one
-      // they would displace its files and leave each of them set aside.
-      const demoLoaded = studies.find((item) => item.id === state.study);
-      if (!study && demoLoaded && data.length) {
-        clearFiles();
-        state.notes.push(`The demo study (${demoLoaded.label}) was cleared to load your files.`);
-      }
-      if (study || data.length) state.study = study;
+      // What loads the files may say what study they are; files with no such
+      // word are the reader's own. Either replaces the study before it (#405).
+      makeWay(study, as, data.length);
       // A mapping file among them is read first, so the data files dropped
       // with it land where it says and take its rows.
       for (const { saved, name } of mappingFiles) handle.restoreMapping(saved, name);
@@ -1316,22 +1684,17 @@ export function mountApp(
      * it; a file that cannot be read is reported in a sentence and changes
      * nothing.
      * @param {{name: string, text: string}[]} list The files' names and text.
-     * @param {{notes?: string[], study?: ?string}} [options] Sentences to show with the load, and the demo study these files are, when they are one.
+     * @param {{notes?: string[], study?: ?string, as?: ?Object}} [options] Sentences to show with the load; the demo study these files are, when they are one; and what the study is called, when what loads it says. A study replaces the one before it (`makeWay`).
      * @returns {void}
      */
-    loadRaw(list, { notes = [], study = null } = {}) {
+    loadRaw(list, { notes = [], study = null, as = null } = {}) {
       if (!study) {
-        demoRun += 1;
+        takeTurn();
         state.busy = '';
       }
       state.notes = [...notes];
-      // Files of the user's own replace a demo study whole, as loadFiles does.
-      const demoLoaded = studies.find((item) => item.id === state.study);
-      if (!study && demoLoaded && list.length) {
-        clearFiles();
-        state.notes.push(`The demo study (${demoLoaded.label}) was cleared to load your files.`);
-      }
-      if (study || list.length) state.study = study;
+      // A study replaces the one before it, as loadFiles has it (#405).
+      makeWay(study, as, list.length);
       for (const { name, text } of list) {
         let file;
         try {
@@ -1390,7 +1753,9 @@ export function mountApp(
         delete state.placements[source.domain];
       }
       if (domain) handle.setFile(domain, item.file, item.placement);
-      else state.unplaced.push(item);
+      // A file taken out of a domain by hand is marked (#431), so another
+      // snapshot of the same study keeps it aside (viewer-view.js).
+      else state.unplaced.push('unplaced' in source ? item : { ...item, byHand: true });
       state.failed = {};
       render();
     },
@@ -1482,14 +1847,14 @@ export function mountApp(
       return serializeMappings(state.files, state.mappings);
     },
 
-    /** Offer the mapping file as a download; nothing leaves the browser. */
+    /** Offer the mapping file as a download, under a name that says a simulated study is one (#431); nothing leaves the browser. */
     downloadMapping() {
       const blob = new Blob([`${JSON.stringify(handle.mappingFile(), null, 2)}\n`], {
         type: 'application/json'
       });
       const link = el('a');
       link.href = URL.createObjectURL(blob);
-      link.download = MAPPING_FILE_NAME;
+      link.download = handle.downloadName(MAPPING_FILE_NAME);
       document.body.append(link);
       link.click();
       link.remove();
@@ -1514,7 +1879,7 @@ export function mountApp(
      * @returns {void}
      */
     reset() {
-      demoRun += 1;
+      takeTurn();
       state.busy = '';
       clear();
       handle.select('data');
@@ -1574,6 +1939,7 @@ export function mountApp(
       const current = status();
       renderHead(current);
       renderNav(current);
+      if (withPortfolio) drawChip(chipSlot, handle);
       revealOpen();
     },
 

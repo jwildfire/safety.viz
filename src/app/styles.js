@@ -22,6 +22,18 @@
 // Colour is always on a hex beside words; the words stay graphite, so nothing
 // is said by colour alone.
 //
+// The header keeps to one row from 1,200 pixels (#416), about the narrowest
+// page its parts fit across in the app's own typefaces. From there the study
+// chip is the part that gives: its place in the row is counted at 7rem when
+// the row is laid out, and it then takes the room that is left, up to its own
+// width, so a study's name is cut with an ellipsis before the status label or
+// a tab drops to a second row. No other part shrinks, and the row still wraps
+// where the parts do not fit with the chip at 7rem. Between 1,200 and 1,439
+// pixels a header with the chip does not draw the words "Demo app" beside the
+// wordmark, which is the room the three ready-made studies' names need at
+// 1,280. Below 1,200 pixels none of this applies, and the header wraps as it
+// did; a page with no chip draws the words at every width.
+//
 // One stylesheet, injected once by the page. Every class is prefixed `sva-`;
 // the charts keep their own `sv-` shell styles.
 
@@ -164,6 +176,84 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-notes{margin:0 0 1rem;padding:0;list-style:none;max-width:62rem}
 .sva-note{margin:0 0 .45rem}
 
+.sva-build{min-width:0;max-width:72rem}
+.sva-build-credit{margin-top:.75rem}
+.sva-build-credit p{margin:0;font-size:.75rem;color:var(--soft);overflow-wrap:anywhere}
+.sva-build-widget .sb{--sb-accent:var(--accent);--sb-card:var(--card);--sb-ink:var(--ink);--sb-soft:var(--soft);--sb-line:var(--line);--sb-rule:var(--rule);--sb-mono:var(--mono)}
+.sva-source{min-width:0}
+.sva-chip-slot{position:relative;display:flex;align-items:center;gap:.1rem}
+.sva-studychip{display:inline-flex;align-items:center;gap:.4rem;min-height:2.2rem;padding:0 .7rem;border:1px solid var(--accent);border-radius:999px;background:var(--accent-soft);color:var(--ink);font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;max-width:16rem}
+.sva-chip-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sva-chip-caret{font-size:.7rem;color:var(--accent)}
+.sva-chip-id{display:flex;flex-direction:column;align-items:flex-start;min-width:0;line-height:1.15}
+.sva-chip-id .sva-chip-name{max-width:100%}
+.sva-chip-under{font-size:.62rem;font-weight:500;color:var(--soft);white-space:nowrap}
+.sva-chip-sim{font-weight:600}
+.sva-chip-info{width:2.2rem;height:2.2rem;border:0;border-radius:50%;background:none;color:var(--accent);font:italic 600 .95rem/1 Georgia,serif;cursor:pointer}
+.sva-chip-info:hover,.sva-chip-info[aria-expanded=true]{background:var(--accent-soft)}
+.sva-chip-pop{position:absolute;top:calc(100% + .4rem);left:0;z-index:30;width:min(22rem,calc(100vw - 2rem));background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 44px rgba(31,35,40,.2)}
+.sva-chip-menu{padding:.4rem 0}
+.sva-chip-label{padding:.5rem .9rem .3rem;font-family:var(--mono);font-size:.64rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.sva-chip-item{display:flex;align-items:center;gap:.6rem;width:100%;min-height:2.75rem;padding:.4rem .9rem;border:0;background:none;color:var(--ink);font:inherit;font-size:.86rem;text-align:left;cursor:pointer}
+.sva-chip-item:hover{background:var(--accent-soft)}
+.sva-chip-item[aria-current=true]{background:var(--accent-soft)}
+.sva-chip-item[aria-current=true] .sva-chip-study{font-weight:600}
+.sva-chip-words{flex:1;min-width:0;display:flex;flex-direction:column}
+.sva-chip-words small{color:var(--soft);font-size:.74rem}
+.sva-chip-tick{color:var(--accent)}
+.sva-chip-foot{display:flex;gap:.5rem;margin-top:.3rem;padding:.6rem .9rem .3rem;border-top:1px solid var(--rule)}
+.sva-chip-foot .sva-button{flex:1}
+.sva-chip-card{padding:1rem;display:flex;flex-direction:column;gap:.7rem;left:0}
+.sva-chip-cardhead{display:flex;justify-content:space-between;align-items:center;gap:.6rem;font-size:1.05rem}
+.sva-chip-facts{margin:0;display:grid;grid-template-columns:auto 1fr;gap:.3rem 1rem;font-size:.82rem}
+.sva-chip-facts dt{color:var(--soft)}
+.sva-chip-facts dd{margin:0;text-align:right;font-weight:600}
+.sva-chip-about{margin:0;font-size:.82rem;color:var(--soft)}
+.sva-chip-credit{font-size:.75rem;overflow-wrap:anywhere}
+.sva-chip-busy{margin:0;padding:.4rem .9rem;font-size:.8rem;color:var(--soft)}
+.sva-chip-said{margin:0;padding:.7rem .9rem;font-size:.84rem;line-height:1.4;color:var(--ink)}
+.sva-chip-said.sva-problem{border-left:3px solid var(--s0)}
+.sva-kind{flex:none;font-family:var(--mono);font-size:.6rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .45rem;border-radius:999px;white-space:nowrap;background:var(--rail);color:var(--ink)}
+.sva-kind-sim{background:var(--accent-soft);color:var(--accent-deep,var(--accent))}
+.sva-kind-own{background:var(--warn-soft);color:var(--warn-deep)}
+.sva-button.sva-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.sva-studies{display:flex;flex-direction:column;gap:1rem;min-width:0}
+.sva-studies-lede{margin:.2rem 0 0;color:var(--soft);font-size:.9rem}
+.sva-studies-list{background:var(--card);border:1px solid var(--rule);border-radius:12px;overflow-x:auto}
+.sva-studies-row{display:grid;grid-template-columns:minmax(12rem,2fr) 7rem minmax(9rem,1.2fr) minmax(8rem,1fr) minmax(13rem,auto);gap:1rem;align-items:center;min-width:48rem;padding:.7rem 1rem;border-top:1px solid var(--rule);font-size:.88rem}
+.sva-studies-row[data-current=true]{background:var(--accent-soft)}
+.sva-studies-row small{display:block;color:var(--soft);font-size:.78rem;font-weight:500}
+.sva-studies-top{border-top:0;background:var(--rail);font-family:var(--mono);font-size:.64rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.sva-studies-actions{display:flex;justify-content:flex-end;gap:.4rem}
+.sva-studies-sub{margin:.4rem 0 0;font-family:var(--mono);font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--soft)}
+.sva-studies-ways{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,16rem),1fr));gap:.8rem}
+.sva-studies-way{display:flex;flex-direction:column;gap:.4rem;padding:.9rem;background:var(--card);border:1px solid var(--rule);border-radius:12px}
+.sva-studies-way p{margin:0;color:var(--soft);font-size:.84rem;flex:1}
+.sva-studies-way .sva-button{align-self:flex-start}
+.sva-faces{display:flex;gap:1.4rem;margin:0 0 1rem;border-bottom:1px solid var(--rule)}
+.sva-face{min-height:2.5rem;padding:0 .1rem;border:0;border-bottom:3px solid transparent;border-radius:0;background:none;color:var(--soft);font:inherit;font-size:.9rem;cursor:pointer}
+.sva-face[aria-selected=true]{border-color:var(--accent);color:var(--ink);font-weight:600}
+.sva-explore-body{min-width:0}
+.sva-explore-acts{display:flex;flex-wrap:wrap;gap:.5rem;margin:0 0 .6rem}
+.sva-explore-support{margin:0 0 1rem;font-size:.88rem}
+.sva-explore-support summary{cursor:pointer;min-height:2.2rem;display:flex;align-items:center;color:var(--soft)}
+.sva-explore-support[open] summary{margin-bottom:.6rem}
+.sva-data.sva-data-wide{display:block}
+.sva-study .sb{--sb-accent:var(--accent);--sb-card:var(--card);--sb-ink:var(--ink);--sb-soft:var(--soft);--sb-line:var(--line);--sb-rule:var(--rule);--sb-mono:var(--mono)}
+.sva-explore .sv{--sv-accent:var(--accent);--sv-card:var(--card);--sv-ink:var(--ink);--sv-soft:var(--soft);--sv-rule:var(--rule);--sv-line:var(--line);--sv-sink:var(--rail)}
+.sva-source-head{display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;margin:0 0 1rem}
+.sva-app .sva-source-title{margin:0;font-family:var(--serif);font-weight:normal;font-size:1.35rem;line-height:1.2}
+.sva-build-widget .sb>h2,.sva-build-widget .sb>.sb-pitch{display:none}
+.sva-file-details{border-top:1px solid var(--rule)}
+.sva-file-details summary{padding:.5rem 1rem;cursor:pointer;font:500 .7rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.sva-file-details summary:hover{color:var(--accent)}
+.sva-detail-body{padding:0 1rem 1rem;min-width:0}
+.sva-app .sva-detail-title{margin:.6rem 0 .35rem;font:600 .68rem/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.sva-detail-scroll{overflow:auto;max-height:20rem;border:1px solid var(--rule);border-radius:8px}
+.sva-detail-table{border-collapse:collapse;width:100%;font-size:.78rem}
+.sva-detail-table th,.sva-detail-table td{text-align:left;padding:.28rem .6rem;border-bottom:1px solid var(--rule);white-space:nowrap;font-family:var(--mono)}
+.sva-detail-table th{position:sticky;top:0;background:var(--card);color:var(--soft);font-weight:600}
+.sva-detail-download{margin-top:.7rem}
 .sva-rbqm{min-width:0;max-width:100%}
 .sva-app .sva-rbqm-subheading{margin:.7rem 0 .3rem;font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
 .sva-rbqm-section{margin:0 0 1.1rem;padding:1rem;background:var(--card);border:1px solid var(--rule);border-radius:10px;min-width:0}
@@ -290,6 +380,15 @@ display:flex;flex-direction:column;min-height:100vh;background:var(--bg);color:v
 .sva-map .sva-tag.sva-chosen::before{background:var(--accent)}
 .sva-map .sva-tag.sva-missing::before{background:var(--s0)}
 
+@media (min-width:1200px){
+.sva-chip-slot{flex:1 1 7rem;min-width:0;max-width:max-content}
+.sva-studychip{flex:0 1 auto;min-width:0}
+.sva-chip-caret,.sva-chip-info{flex:none}
+.sva-chip-under{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+}
+@media (min-width:1200px) and (max-width:1439px){
+.sva-bar:has(>.sva-chip-slot) .sva-kicker{display:none}
+}
 @media (max-width:900px){
 .sva-rbqm-figures{grid-template-columns:minmax(0,1fr)}
 .sva-rbqm-chart{height:20rem}

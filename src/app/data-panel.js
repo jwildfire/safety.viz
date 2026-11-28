@@ -8,6 +8,13 @@
 // live status, each carrying its own actions, and the loaded files, each
 // flagged only where a row wants a look.
 //
+// A library may bring another way to load data, a source (page.js): step one
+// offers it beside the demo studies and the file picker, and while it is open
+// it is drawn here in place of the drop zone and the loaded files.
+//
+// Every loaded file's card ends with its details, folded shut (file-details.js):
+// its rows and columns, what each column holds, its first rows and a download.
+//
 // Every file comes in here (#282, obot.roadmap#406), a tab's own files too. A
 // tab that takes files of its own says so through the seam (libraries.js): the
 // page asks it of each file loaded, and this panel draws what the tab says the
@@ -21,6 +28,8 @@ import { MEASURES, distinctValues, measureColumn } from './mapping.js';
 import { neededBy, supportedCount } from './status.js';
 import { el, plural } from './dom.js';
 import { icon } from './icons.js';
+import { drawStudy, drawViewer, loadedStudy, studyModule } from './viewer-view.js';
+import { fileDetails } from './file-details.js';
 
 /** Files larger than this are refused: they are parsed in memory. */
 export const MAX_FILE_BYTES = 100 * 1024 * 1024;
@@ -222,7 +231,7 @@ function fileCard(domain, app, rows) {
   }
 
   scroll.append(table);
-  card.append(scroll);
+  card.append(scroll, detailsOf(file, app));
   return card;
 }
 
@@ -252,8 +261,22 @@ function unplacedCard(item, index, app) {
     select,
     el('span', 'sva-file-rows', rowCount(item.file.rows.length))
   );
-  card.append(head);
+  card.append(head, detailsOf(item.file, app));
   return card;
+}
+
+/**
+ * A loaded file's details, folded shut, as the page remembers them open or
+ * shut. Its Download CSV saves the file under the name the page gives the
+ * app's own downloads (#431): a simulated study's file says it is simulated.
+ */
+function detailsOf(file, app) {
+  const named = (name) => (typeof app.downloadName === 'function' ? app.downloadName(name) : name);
+  return fileDetails(file, {
+    open: app.state.details,
+    save:
+      typeof app.saveFile === 'function' ? (name, text) => app.saveFile(named(name), text) : null
+  });
 }
 
 /**
@@ -261,7 +284,7 @@ function unplacedCard(item, index, app) {
  * is. Its tag is what the tab that took it says of it (#281), which names the
  * raw domain it was read as; with no such tab, that it is kept as it is.
  */
-function rawCard(file, said) {
+function rawCard(file, said, app) {
   const card = el('section', 'sva-file sva-raw');
   card.dataset.raw = file.name;
   card.tabIndex = -1;
@@ -275,7 +298,7 @@ function rawCard(file, said) {
     tag,
     el('span', 'sva-file-rows', `${rowCount(file.rows)}, ${plural(file.columns.length, 'column')}`)
   );
-  card.append(head);
+  card.append(head, detailsOf(file, app));
   return card;
 }
 
@@ -399,8 +422,14 @@ function loadedEntry(name, detail, flags, find) {
  * the loaded files.
  * @private
  */
-function sidebar(container, app, { input, domains, rows, support }) {
+function sidebar(container, app, { input, domains, rows, support, reveal = null }) {
   const { state, manifest } = app;
+  // Where a loaded file's card is: on this view, or, while a source is open in
+  // the cards' place, on the Files face once `reveal` has brought it back (#427).
+  const cardOf = (selector, index = 0) => {
+    const within = container.querySelector(selector) || !reveal ? container : reveal();
+    return within ? within.querySelectorAll(selector)[index] || null : null;
+  };
   const side = el('aside', 'sva-side');
   side.setAttribute('aria-label', 'Workflow and loaded data');
 
@@ -446,6 +475,15 @@ function sidebar(container, app, { input, domains, rows, support }) {
     if (current) extras.push(el('p', 'sva-study-note', current.description));
   }
   const loadActions = [actionButton('choose-files', 'Choose files', () => input.click())];
+  // Each way to load data a library brought (page.js), beside the file picker.
+  for (const source of app.sources || []) {
+    const button = actionButton(`source-${source.id}`, source.label, () =>
+      app.openSource(state.source === source.id ? null : source.id)
+    );
+    if (source.about) button.title = source.about;
+    button.setAttribute('aria-pressed', String(state.source === source.id));
+    loadActions.push(button);
+  }
   if (anything) loadActions.push(actionButton('reset', 'Reset', () => app.reset()));
 
   const steps = el('ol', 'sva-steps');
@@ -512,7 +550,7 @@ function sidebar(container, app, { input, domains, rows, support }) {
         file.name,
         `${manifest.domains[domain].label}, ${rowCount(file.rows.length)}`,
         flags,
-        () => container.querySelector(`.sva-file[data-domain="${domain}"]`)
+        () => cardOf(`.sva-file[data-domain="${domain}"]`)
       );
       button.classList.add(`sva-domain-${domain}`);
       button.dataset.domain = domain;
@@ -523,7 +561,7 @@ function sidebar(container, app, { input, domains, rows, support }) {
         file.name,
         `Not placed, ${rowCount(file.rows.length)}`,
         [],
-        () => container.querySelectorAll('.sva-file.sva-unplaced')[index]
+        () => cardOf('.sva-file.sva-unplaced', index)
       );
       button.querySelector('.sva-hex').classList.add('sva-hollow');
       button.dataset.unplaced = file.name;
@@ -534,7 +572,7 @@ function sidebar(container, app, { input, domains, rows, support }) {
         file.name,
         `gsm raw file, ${rowCount(file.rows)}`,
         [],
-        () => container.querySelectorAll('.sva-file.sva-raw')[index]
+        () => cardOf('.sva-file.sva-raw', index)
       );
       button.querySelector('.sva-hex').classList.add('sva-hollow');
       button.dataset.raw = file.name;
@@ -569,6 +607,8 @@ export function renderDataPanel(container, app) {
   input.className = 'sva-file-input';
   const take = async (fileList) => {
     const { loaded, refused } = await readFiles(fileList);
+    // Files of the reader's own are another way in: a source that is open is closed.
+    if (state.source) state.source = null;
     app.loadFiles(loaded, { notes: refused });
   };
   input.onchange = () => take(input.files);
@@ -594,6 +634,186 @@ export function renderDataPanel(container, app) {
     ),
     input
   );
+  // A source that is open takes the place of the drop zone and the loaded
+  // files; the sidebar stays, so the reader can leave it by any other way in.
+  const open = (app.sources || []).find((source) => source.id === state.source);
+  if (open) {
+    const pane = el('section', 'sva-source');
+    pane.dataset.source = open.id;
+    pane.setAttribute('aria-label', open.label);
+    const head = el('div', 'sva-source-head');
+    head.append(
+      el('h2', 'sva-source-title', open.label),
+      actionButton('close-source', 'Back to the loaded files', () => app.openSource(null))
+    );
+    const body = el('div', 'sva-source-body');
+    pane.append(head, body);
+    // The file picker's input stays on the page for the sidebar's button.
+    main.append(input, pane);
+    // The sidebar says what is loaded, as it does on the Files face (#427):
+    // every placed file with its mapping's state, every file set aside and
+    // every raw file, and the steps counted from them. The files' cards are
+    // not on the page while the source is: choosing a file in the list goes
+    // back to the Files face, to its card.
+    const placed = Object.keys(manifest.domains).filter((domain) => state.files[domain]);
+    const wanted = neededBy(manifest, app.problems);
+    const host = container.parentElement;
+    const reveal = () => {
+      state.exploring = false;
+      app.openSource(null);
+      return host ? host.querySelector('.sva-data') : null;
+    };
+    container.append(
+      sidebar(container, app, {
+        input,
+        domains: placed,
+        rows: Object.fromEntries(
+          placed.map((domain) => [domain, mappingRows(domain, app, wanted)])
+        ),
+        support: app.support(),
+        reveal
+      }),
+      main
+    );
+    app.drawSource(body);
+    return { refresh: () => {} };
+  }
+  // Two faces of the data view, on a page that serves the viewer: the loaded
+  // study looked through, which is the face it opens on, and the files one by
+  // one, where a file is placed by hand.
+  const loadedFiles = Object.keys(state.files).length + state.unplaced.length + state.raw.length;
+  const faceTabs = () => {
+    const faces = el('div', 'sva-faces');
+    faces.setAttribute('role', 'tablist');
+    faces.setAttribute('aria-label', 'The data view');
+    for (const [exploring, label] of [
+      [true, 'Explore the data'],
+      [false, 'Files']
+    ]) {
+      const face = actionButton(exploring ? 'explore' : 'files', label, () => {
+        state.exploring = exploring;
+        app.select('data');
+      });
+      face.className = 'sva-face';
+      face.setAttribute('role', 'tab');
+      face.setAttribute('aria-selected', String(Boolean(state.exploring) === exploring));
+      faces.append(face);
+    }
+    return faces;
+  };
+  // A study study.builder built is shown whole by study.builder's own study
+  // view: its facts, its overview, its schedule and its tables. It is the
+  // first face; only what the data supports is said above it. The files one
+  // by one are its other face, as they are any study's, so the file picker
+  // and Reset are in reach whichever study is in use (#405).
+  const builtStudy = state.named && state.named.built;
+  if (app.viewer && loadedFiles && builtStudy && state.exploring && studyModule()) {
+    container.classList.add('sva-data-wide');
+    const cards = el('div', 'sva-support-cards');
+    const drawCards = (said) => cards.replaceChildren(...said.map((one) => supportCard(one, app)));
+    drawCards(app.support());
+    const current = app.portfolio().studies.find((entry) => entry.current);
+    const supports = el('details', 'sva-explore-support');
+    supports.open = Boolean(state.supportOpen);
+    supports.addEventListener('toggle', () => {
+      state.supportOpen = supports.open;
+    });
+    const said =
+      current && current.support
+        ? `${current.support.ready} of ${plural(current.support.total, 'chart')} ready`
+        : 'What this data supports';
+    supports.append(el('summary', null, `${said}. What each tab says`), cards);
+    const body = el('div', 'sva-explore-body');
+    main.append(faceTabs(), supports, body);
+    container.append(main);
+    if (drawStudy(body, app, builtStudy)) return { refresh: () => drawCards(app.support()) };
+    main.textContent = '';
+    container.classList.remove('sva-data-wide');
+  }
+  if (app.viewer && loadedFiles) {
+    main.append(faceTabs());
+    if (state.exploring) {
+      // The viewer has the whole width. Above it: what the data supports, and
+      // the few things done to a study as a whole.
+      container.classList.add('sva-data-wide');
+      const cards = el('div', 'sva-support-cards');
+      const drawCards = (said) =>
+        cards.replaceChildren(...said.map((one) => supportCard(one, app)));
+      drawCards(app.support());
+      const acts = el('div', 'sva-explore-acts');
+      const add = actionButton('choose-files', 'Add files', () => input.click());
+      acts.append(add);
+      if (Object.keys(state.files).length) {
+        acts.append(actionButton('download', 'Download mapping', () => app.downloadMapping()));
+      }
+      const ready = app.firstReady ? app.firstReady() : null;
+      if (ready) {
+        const first = actionButton('open-first', 'Open first chart', () => app.select(ready));
+        first.classList.add('sva-primary');
+        acts.append(first);
+      }
+      const body = el('div', 'sva-explore-body');
+      const current = app.portfolio().studies.find((entry) => entry.current);
+      // What the data supports is one line, with each tab's account folded under it.
+      const supports = el('details', 'sva-explore-support');
+      supports.open = Boolean(state.supportOpen);
+      supports.addEventListener('toggle', () => {
+        state.supportOpen = supports.open;
+      });
+      const said =
+        current && current.support
+          ? `${current.support.ready} of ${plural(current.support.total, 'chart')} ready`
+          : 'What this data supports';
+      supports.append(el('summary', null, `${said}. What each tab says`), cards);
+      main.append(input, acts, supports, body);
+      container.append(main);
+      const named = state.named;
+      // What each placed file's columns are read as, for the viewer's Columns view.
+      const needed = neededBy(manifest, app.problems);
+      const rolesOf = (domain) => {
+        const rows = mappingRows(domain, app, needed);
+        const file = state.files[domain];
+        const waits = (charts) =>
+          charts && charts.length ? `Needed by ${plural(charts.length, 'chart')}` : '';
+        return [
+          ...rows.columns.map((row) => ({
+            id: `column|${domain}|${row.key}`,
+            label: row.label,
+            kind: 'column',
+            value: row.row.value || '',
+            options: file.columns,
+            needed: row.row.value ? '' : waits(row.charts),
+            source: row.row.source || ''
+          })),
+          ...rows.measures.map((row) => ({
+            id: `measure|${domain}|${row.key}`,
+            label: row.label,
+            kind: 'value',
+            value: row.row.value || '',
+            options: rows.names,
+            needed: row.row.value ? '' : waits(row.charts),
+            source: row.row.source || ''
+          }))
+        ];
+      };
+      drawViewer(
+        body,
+        app,
+        named && named.built
+          ? { fromBuilt: named.built }
+          : loadedStudy(app, current ? current.name : 'Study', rolesOf),
+        {
+          // A mapping row set in the viewer is the app's own mapping, set.
+          onRole: (table, role, value) => {
+            const [kind, domain, key] = role.id.split('|');
+            if (kind === 'measure') app.setMeasure(domain, key, value);
+            else app.setColumn(domain, key, value);
+          }
+        }
+      );
+      return { refresh: () => drawCards(app.support()) };
+    }
+  }
   main.append(drop);
 
   // What each tab says the loaded data supports (#281), between the drop zone
@@ -624,7 +844,7 @@ export function renderDataPanel(container, app) {
   state.unplaced.forEach((item, index) => main.append(unplacedCard(item, index, app)));
   // A raw file's card says what the tab that took it says of it.
   const saidOf = (file) => support.map((tab) => tab.files.get(file.name)).find(Boolean) || null;
-  for (const file of state.raw) main.append(rawCard(file, saidOf(file)));
+  for (const file of state.raw) main.append(rawCard(file, saidOf(file), app));
 
   container.append(sidebar(container, app, { input, domains, rows, support }), main);
 

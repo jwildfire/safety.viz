@@ -71,6 +71,7 @@ vi.mock('../../../src/hep-core/rows.js', async (importOriginal) => {
 });
 
 const { profileRail } = await import('../../../src/participant-profile.js');
+const { renderShell } = await import('../../../src/shell.js');
 const { syncSettings } = await import('../../../src/participant-profile/configure.js');
 const { makeRows } = await import('./fixture.js');
 const rowsActual = await vi.importActual('../../../src/hep-core/rows.js');
@@ -94,6 +95,25 @@ beforeEach(() => {
 
 function container() {
   return document.querySelector('#railhost');
+}
+
+/** A stylesheet's rules outside its media queries, each as its selector and its declarations by property. */
+function rulesOf(css) {
+  const plain = css
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/@media[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, '');
+  return [...plain.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, selector, body]) => [
+    selector.trim(),
+    Object.fromEntries(
+      body
+        .split(';')
+        .filter((declaration) => declaration.includes(':'))
+        .map((declaration) => {
+          const at = declaration.indexOf(':');
+          return [declaration.slice(0, at).trim(), declaration.slice(at + 1).trim()];
+        })
+    )
+  ]);
 }
 
 function shellRoot() {
@@ -198,6 +218,44 @@ describe('the rail head (PPRF-RAIL-002, PPRF-EXP-001)', () => {
     expect(shellRoot().classList.contains('sv-rail-expanded')).toBe(true);
     expect(button.getAttribute('aria-pressed')).toBe('true');
     expect(button.textContent).toBe('Collapse');
+  });
+
+  it('PPRF-EXP-003: the expanded layout that is the profile’s own is scoped to the profile: its chart’s section is a flow root beside the floated control column and its table clears both, and the shell’s rule, which every chart’s expanded panel has, lays the panel over the card and gives it no size (#409)', () => {
+    // jsdom lays nothing out, so this holds what the rules say and whose they
+    // are; tests/e2e/participant-profile.spec.js measures the layout in every
+    // chart that hosts the rail, and patient-journey-explorer.spec.js in the
+    // chart that has a panel of its own.
+    profileRail(container(), {});
+    renderShell(document.createElement('div'));
+    const sheet = (id) => rulesOf(document.getElementById(id).textContent);
+    const expanded = sheet('safety-viz-participant-profile-styles').filter(([selector]) =>
+      selector.includes('.sv-rail-expanded')
+    );
+    // Every rule the profile adds for the expanded state styles an element of
+    // the profile: none reaches the rail itself, which other charts share.
+    expect(expanded.length).toBeGreaterThan(0);
+    for (const [selector] of expanded) {
+      expect(selector).toMatch(/^\.sv-rail-expanded \.sv-profile-[a-z-]+$/);
+    }
+    const own = Object.fromEntries(expanded);
+    // A canvas is pushed below a float it does not fit beside, which left its
+    // card empty; the chart's section is a flow root so it narrows instead.
+    expect(own['.sv-rail-expanded .sv-profile-controls'].float).toBe('left');
+    expect(own['.sv-rail-expanded .sv-profile-spaghetti']).toEqual({ display: 'flow-root' });
+    expect(own['.sv-rail-expanded .sv-profile-measure-wrap']).toEqual({ clear: 'both' });
+    // The shell's rule positions the panel over the card. It sets no width,
+    // height or alignment, so the panel is as tall as what it holds, as in
+    // v1.12.0; stretching it here stretched the Patient Journey Explorer's too.
+    const shell = sheet('safety-viz-shell-styles').filter(
+      ([selector]) => selector === '.sv-rail-expanded .sv-rail'
+    );
+    expect(shell).toHaveLength(1);
+    expect(shell[0][1]).toMatchObject({ position: 'absolute', inset: '0', 'max-height': 'none' });
+    expect(
+      Object.keys(shell[0][1]).filter((property) =>
+        /^(width|height|min-height|align-self|justify-self|place-self)$/.test(property)
+      )
+    ).toEqual([]);
   });
 
   it('Escape leaves the expanded state', () => {

@@ -33,6 +33,7 @@ const REQUIRED = {
     'npm run gsm-workflows:check-source',
     'npm run gsm-viz:check-source',
     'npm run rbqm-study:check-source',
+    'npm run study-builder:check-source',
     'npm test -- --reporter=default --reporter=json --outputFile="$RUNNER_TEMP/vitest.json"',
     'npm run site',
     'npm run requirements:check'
@@ -539,17 +540,23 @@ describe('the required check’s workflow', () => {
         if (match[2].includes(`'${workflow.env.REAL_R_TAG}'`)) tagged.push(match[1]);
       }
     }
+    // Every test tagged today, by ID: thirteen, as CONTRIBUTING.md says (#431).
+    // A tag taken off one of them fails here; the test would still run, in the
+    // job without real R, and make that job slower.
     for (const id of [
+      'APP-LOAD-029',
       'APP-R-032',
       'APP-R-037',
       'APP-R-051',
+      'APP-R-062',
       'APP-RBQM-012',
       'APP-RBQM-021',
       'APP-RBQM-030',
       'APP-RBQM-031',
       'APP-RBQM-039',
       'APP-RBQM-047',
-      'APP-RBQM-078'
+      'APP-RBQM-078',
+      'APP-RBQM-084'
     ]) {
       expect(tagged, id).toContain(id);
     }

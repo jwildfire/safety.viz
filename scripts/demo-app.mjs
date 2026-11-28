@@ -37,6 +37,7 @@ import {
   withoutSourceMap
 } from './app-libraries.mjs';
 import { pipelineFiles } from './rbqm-lib.mjs';
+import { builderFiles } from './builder-lib.mjs';
 import { R_WASM_DIRECTORY, publishRWasm } from './r-wasm-lib.mjs';
 import { DEMO_STUDIES } from '../src/app/studies.js';
 import { SITE } from '../src/app/site.js';
@@ -125,6 +126,13 @@ export async function buildDemoAppDir(outDir, { links, site = '../' } = {}) {
   // its own address for them when the reader starts R.
   for (const entry of pipelineFiles()) {
     const served = path.join(outDir, servedBesideTheApp(entry));
+    mkdirSync(path.dirname(served), { recursive: true });
+    copyFileSync(path.join(rootDir, entry.file), served);
+  }
+  // study.builder, for the Build a study source: its bundle and the files its R
+  // reads, served in a folder of their own beside the app.
+  for (const entry of builderFiles()) {
+    const served = path.join(outDir, entry.served);
     mkdirSync(path.dirname(served), { recursive: true });
     copyFileSync(path.join(rootDir, entry.file), served);
   }

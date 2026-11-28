@@ -113,6 +113,14 @@ jobs:
       - name: Vendored RBQM demo study matches its source
         run: npm run rbqm-study:check-source
 
+      # study.builder's bundle, its R, its workflows, the example protocols and
+      # the ready-made studies are vendored for the demo app (#397): each copy
+      # must equal the file at the study.builder release tag its record names,
+      # and the tag must still be that commit (#417). study.builder is public,
+      # and is read without a token.
+      - name: Vendored study.builder matches its source tag
+        run: npm run study-builder:check-source
+
       # Writes a JSON report beside what it prints, for the gate's evidence
       # guard to read, so the unit tests run once (#291).
       - name: Run unit tests
