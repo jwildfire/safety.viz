@@ -118,19 +118,34 @@ export function drawChip(container, app) {
   // A study that kept its snapshots says which one the page draws, under its
   // name (#406): the charts and the RBQM tab draw that one, as the Overview does.
   const snapshot = current ? snapshotDrawn(state.named) : null;
+  // A simulated study says that it is one, in the same small line, on every
+  // tab (#427): its name alone does not, and a study built from an example
+  // protocol can carry a real trial's identifier and arm names.
+  const simulated = Boolean(current && current.kind === 'Simulated');
   const name = el('span', 'sva-chip-name', current ? current.name : 'No study');
   const caret = el('span', 'sva-chip-caret', state.chip === 'menu' ? '▴' : '▾');
-  if (snapshot) {
+  if (snapshot || simulated) {
     const words = el('span', 'sva-chip-id');
-    words.append(
-      name,
-      el('span', 'sva-chip-snap', `Snapshot ${snapshot.number} of ${snapshot.of}`)
-    );
+    const under = el('span', 'sva-chip-under');
+    if (simulated) under.append(el('span', 'sva-chip-sim', 'Simulated'));
+    if (simulated && snapshot) under.append(' · ');
+    if (snapshot) {
+      under.append(el('span', 'sva-chip-snap', `Snapshot ${snapshot.number} of ${snapshot.of}`));
+    }
+    words.append(name, under);
     chip.append(words, caret);
-    chip.title = `${current.name} as it stood on ${snapshot.date}`;
+    chip.title = [
+      current.name,
+      ...(simulated ? [', a simulated study'] : []),
+      ...(snapshot ? [`${simulated ? ',' : ''} as it stood on ${snapshot.date}`] : [])
+    ].join('');
     chip.setAttribute(
       'aria-label',
-      `${current.name}, snapshot ${snapshot.number} of ${snapshot.of}, ${snapshot.date}`
+      [
+        current.name,
+        ...(simulated ? ['simulated study'] : []),
+        ...(snapshot ? [`snapshot ${snapshot.number} of ${snapshot.of}`, snapshot.date] : [])
+      ].join(', ')
     );
   } else {
     chip.append(name, caret);

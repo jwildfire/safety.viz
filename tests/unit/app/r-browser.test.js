@@ -22,7 +22,7 @@ const table = (rows, columns) =>
   list({ '.sv_table': vector('logical', [true]), rows: vector('integer', [rows]), columns });
 
 // A webR that records every call, in order, and answers `evalR` with `answer`.
-function standIn({ answer = vector('double', [1]), fail = {} } = {}) {
+function standIn({ answer = vector('double', [1]), fail = {}, wait = () => null } = {}) {
   const calls = [];
   const note = (call, ...rest) => {
     calls.push([call, ...rest]);
@@ -47,6 +47,8 @@ function standIn({ answer = vector('double', [1]), fail = {} } = {}) {
             },
             evalR: async (code, options) => {
               note('evalR', code, options.env);
+              // A call a test holds is R at work until the test lets it go.
+              await wait(options.env['.sv_name']);
               return { toJs: async () => answer };
             },
             purge: async () => note('purge')
@@ -514,6 +516,87 @@ describe('an R that connections share', () => {
     expect((await a.run('f')).status).toBe('unavailable');
     expect(count(webR, 'new')).toBe(1);
     expect(count(webR, 'install')).toBe(2);
+  });
+
+  it('APP-R-064: a connection closed while another is in the middle of a run does not close the R they share: the run goes on to its answer, and the closed connection makes itself ready again in the same R; with no other run under way, closing closes R as before, and so does closing the connection whose own run is under way (#427)', async () => {
+    let finish = () => {};
+    const held = new Promise((resolve) => {
+      finish = resolve;
+    });
+    // R is at work on `build_study` until the test lets it go.
+    const webR = standIn({ wait: (name) => (name === 'build_study' ? held : null) });
+    const host = shared(webR);
+    const builder = first(host);
+    const tab = second(host);
+    expect((await tab.run('g')).status).toBe('ok');
+    const building = builder.run('build_study');
+    for (let turn = 0; turn < 50; turn += 1) await Promise.resolve();
+    expect(
+      webR.calls.filter(([name, , env]) => name === 'evalR' && env['.sv_name'] === 'build_study')
+    ).toHaveLength(1);
+    // The tab gives up on R while the study is being built.
+    await tab.close();
+    expect(count(webR, 'close')).toBe(0);
+    finish();
+    expect((await building).status).toBe('ok');
+    // The tab's next run is in the same R, where it makes itself ready again.
+    expect((await tab.run('g')).status).toBe('ok');
+    expect(count(webR, 'new')).toBe(1);
+    expect(
+      webR.calls.filter(([name]) => name === 'install').map(([, packages]) => packages)
+    ).toEqual([['dplyr'], ['workr'], ['dplyr']]);
+    // With no run under way, closing a connection closes R for both, as before.
+    await tab.close();
+    expect(count(webR, 'close')).toBe(1);
+    // A connection whose own run is the only one under way closes R when it is closed.
+    let finishNext = () => {};
+    const heldNext = new Promise((resolve) => {
+      finishNext = resolve;
+    });
+    const next = standIn({ wait: (name) => (name === 'build_study' ? heldNext : null) });
+    const nextHost = shared(next);
+    const alone = first(nextHost);
+    const other = second(nextHost);
+    const run = alone.run('build_study');
+    for (let turn = 0; turn < 50; turn += 1) await Promise.resolve();
+    // Two runs under way: neither close ends the other's R, and the last one to let go closes it.
+    const also = other.run('build_study');
+    for (let turn = 0; turn < 50; turn += 1) await Promise.resolve();
+    await other.close();
+    expect(count(next, 'close')).toBe(0);
+    await alone.close();
+    expect(count(next, 'close')).toBe(1);
+    finishNext();
+    await run;
+    await also;
+  });
+
+  it('APP-R-065: when a file R needs cannot be fetched, the answer names the file and what the browser said, where it said only that a fetch failed (#427)', async () => {
+    const webR = standIn();
+    const connection = createConnection({
+      importWebR: webR.importWebR,
+      files: [{ path: '/b/builder.R', url: './study.builder/r/builder.R' }],
+      fetch: async () => {
+        throw new TypeError('Failed to fetch');
+      }
+    });
+    expect(await connection.run('f')).toEqual({
+      status: 'unavailable',
+      reason: 'load-failed',
+      message: 'a file R needs, ./study.builder/r/builder.R, could not be fetched: Failed to fetch'
+    });
+    // The same through a shared R, which is up when the file is asked for.
+    const host = shared(standIn());
+    const viaHost = createConnection({
+      host,
+      files: [{ path: '/b/builder.R', url: './study.builder/r/builder.R' }],
+      fetch: async () => {
+        throw new TypeError('Failed to fetch');
+      }
+    });
+    expect((await viaHost.run('f')).message).toBe(
+      'a file R needs, ./study.builder/r/builder.R, could not be fetched: Failed to fetch'
+    );
   });
 
   it('leaves a connection made without a host with an R of its own', async () => {

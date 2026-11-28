@@ -146,10 +146,15 @@ describe('the status ladder: the rung reaches the app', () => {
     const tiers = chartTiers();
     expect(ownModules).toHaveLength(13);
     expect(libraryModules).toHaveLength(5);
-    expect(Object.keys(tiers).sort()).toEqual([...ownModules, ...libraryModules, 'rbqm'].sort());
+    // Since #427 two parts of the app that are neither a chart nor a tab have a
+    // rung too: Build a study and the view of a simulated study (APP-TIER-030).
+    const parts = ['build', 'simulated-study'];
+    expect(Object.keys(tiers).sort()).toEqual(
+      [...ownModules, ...libraryModules, 'rbqm', ...parts].sort()
+    );
     const on = (tier) => Object.keys(tiers).filter((id) => tiers[id].tier === tier);
     expect(on('exploratory')).toHaveLength(13);
-    expect(on('experimental').sort()).toEqual(Object.keys(REASONS).sort());
+    expect(on('experimental').sort()).toEqual([...Object.keys(REASONS), ...parts].sort());
     expect(on('prototype')).toEqual([]);
     expect(on('qualified')).toEqual([]);
     for (const [id, note] of Object.entries(REASONS)) {

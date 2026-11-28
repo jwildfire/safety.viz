@@ -41,6 +41,7 @@ import { el } from './dom.js';
 import { icon } from './icons.js';
 import { note } from './note.js';
 import { WEBR_VERSION } from './r-browser.js';
+import { studyDate } from './viewer-view.js';
 import {
   NOT_CSV,
   filesForR,
@@ -68,6 +69,7 @@ import {
   rbqmWords,
   runDetails,
   sameFiles,
+  snapshotFor,
   stepLines,
   stepNumber,
   stepSaid,
@@ -123,7 +125,7 @@ export function rbqmTab({
   let pressedAt = 0;
   let failure = null; // what the control says of an R that did not start, or stopped (rbqm.js::failureOf)
   const words = rbqmWords(downloads);
-  let result = null; // { answer, files, study, name, used, support, said, seconds, sinceStart, snapshotDate }
+  let result = null; // { answer, files, study, name, used, support, said, seconds, sinceStart, snapshotDate, snapshotSaid }
   let runStep = 'read'; // while a run is going: reading the study, then running the workflows
   let runs = 0;
   let kept = null; // the folder of R's file system the last run's files are in
@@ -398,7 +400,15 @@ export function rbqmTab({
     // this run begins, so a reader who runs again and again fills nothing up.
     const earlier = kept;
     kept = folder;
-    const snapshotDate = isoDay(now());
+    // The date R is handed is the date the loaded data stands at (#427): for
+    // a simulated study, the snapshot the page draws and the chip names; for
+    // a demo study or a reader's own files, which name none, the day of the run.
+    const named = app && app.state.named;
+    const { date: snapshotDate, said: snapshotSaid } = snapshotFor(
+      studyDate(named),
+      isoDay(now()),
+      Boolean(named && named.kind === 'Simulated')
+    );
     const since = now().getTime();
     const answer = await within(
       'run',
@@ -455,7 +465,8 @@ export function rbqmTab({
       seconds: took,
       // Said only of the press that started R: a later press started nothing.
       sinceStart: startedR ? seconds() : null,
-      snapshotDate
+      snapshotDate,
+      snapshotSaid
     };
     phase = 'done';
     // The reader loaded other files while R ran: those are the ones to show.

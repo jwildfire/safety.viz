@@ -90,4 +90,55 @@ describe('the data sources page, on what comes with study.builder', () => {
       page.split('\n').some((line) => line.startsWith('| A modified copy of [gsm.datasim]'))
     ).toBe(true);
   });
+
+  it('APP-STUDY-013: the data sources page names both served copies of gsm.reporting’s Results.yaml, each of which carries the one changed line and records it; and it gives DDF-RA’s MIT notice whole, with CDISC’s copyright line, beside the CC-BY-4.0 attribution (#427)', () => {
+    const copies = ['site/vendor/gsm.reporting', 'site/vendor/study.builder/vendor/gsm.reporting'];
+    const changed = '    name: FilterByLatestSnapshotDate';
+    for (const copy of copies) {
+      const file = `${copy}/workflow/3_reporting/Results.yaml`;
+      // The page names the copy, and the copy is as the page says.
+      expect(flat, file).toContain(`\`${file}\``);
+      expect(read(file).split('\n')).toContain(changed);
+      expect(read(file)).not.toContain('gsm.kri::FilterByLatestSnapshotDate');
+      const record = JSON.parse(read(`${copy}/SOURCE.json`));
+      const entry = record.files.find((one) => one.file === 'workflow/3_reporting/Results.yaml');
+      // The one changed line is recorded in each. study.builder's copy also
+      // records the notice of change it carries at its top (#428).
+      expect(entry.patches[0], copy).toEqual(
+        expect.objectContaining({
+          original: '    name: gsm.kri::FilterByLatestSnapshotDate',
+          replacement: changed
+        })
+      );
+      const noticed = read(file).startsWith('# NOTICE OF CHANGE');
+      expect(entry.patches.length, copy).toBe(noticed ? 2 : 1);
+      expect(noticed, copy).toBe(copy.includes('study.builder'));
+    }
+    expect(flat).toContain('The changed file is served in two copies');
+    expect(flat).toContain("study.builder's copy also carries a notice of change at its top");
+    // DDF-RA's LICENSE file, as read at the commit the page names: the MIT
+    // notice, with the copyright line as it stands there.
+    const notice = page.match(/```text\n([\s\S]*?)\n\s*```/);
+    expect(notice).not.toBeNull();
+    const lines = notice[1].split('\n').map((line) => line.replace(/^ {2}/, ''));
+    expect(lines.slice(0, 3)).toEqual(['MIT License', '', 'Copyright (c) 2022 CDISC']);
+    expect(lines.join(' ').replace(/\s+/g, ' ')).toBe(
+      'MIT License Copyright (c) 2022 CDISC ' +
+        'Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: ' +
+        'The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. ' +
+        'THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.'
+    );
+    // It stands with the attribution, in the protocols' section, and says why it is there.
+    const section = page.slice(page.indexOf('### The five example protocols'));
+    expect(section.indexOf('Content based on DDF-RA (GitHub)')).toBeGreaterThan(-1);
+    expect(section.indexOf('MIT License')).toBeGreaterThan(
+      section.indexOf('Content based on DDF-RA (GitHub)')
+    );
+    expect(section.indexOf('MIT License')).toBeLessThan(
+      section.indexOf('## License and attribution')
+    );
+    expect(flat).toContain(
+      'in case the example study definitions count as code and not as content'
+    );
+  });
 });

@@ -31,11 +31,18 @@
 // the loaded files. Everything shown of a study while it is built is the
 // widget's.
 
-import { el } from './dom.js';
+import { el, oneStop } from './dom.js';
 import { note } from './note.js';
 
 /** The source's id in the app. */
 export const BUILDER_SOURCE_ID = 'build';
+
+/**
+ * What the page is told the view of a simulated study stands on, by this id
+ * among its rungs (`tiers`; site/config.json's `appParts`, #427). The source
+ * itself is told its own by its id.
+ */
+export const SIMULATED_RUNG_ID = 'simulated-study';
 
 const messageOf = (error) =>
   (error && typeof error.message === 'string' && error.message) || String(error);
@@ -119,11 +126,20 @@ export function builderSource({
   // The studies study.builder has for this page: the ready-made ones it hosts,
   // and what the reader saved in this browser. Found once, when first asked,
   // which a page with the study chip does as it opens: the chip's list is theirs.
-  let offered = null; // { presets, shelf, saved } once found
+  let offered = null; // { builder, presets, shelf, saved } once looked for
   let finding = null;
-  let opening = '';
-  let openRun = 0; // the latest of these studies asked for; an earlier one still on its way is dropped
+  // The list could not be read whole, and is looked for again when Build a
+  // study is next opened (#427): until then nothing asks again, however many
+  // times the page is drawn.
+  let listFailed = false;
   let listProblem = '';
+  let notLoaded = ''; // why the script did not load, as the list of studies says it
+  // The study the reader last asked these for, while it is on its way, and the
+  // one that did not open: each with the page's word on whether it is still
+  // the last thing the reader chose (page.js's `choose`, #427). Neither is
+  // said once the reader has chosen something else.
+  let opening = null; // { say, last }
+  let unopened = null; // { say, last }
 
   /** What the page keeps of a study: its name, its facts, and its tables for the viewer. */
   function named(study, id) {
@@ -134,6 +150,8 @@ export function builderSource({
       id,
       name: study.id,
       kind: 'Simulated',
+      // Which of the rungs the page was told this study's view stands on (#427).
+      rung: SIMULATED_RUNG_ID,
       size,
       about: 'Every row is synthetic.',
       facts: [
@@ -171,28 +189,40 @@ export function builderSource({
     };
   }
 
+  /**
+   * Look for the studies study.builder has for this page. Each part is kept
+   * as far as it was read: a list of ready-made studies that could not be
+   * fetched leaves the saved studies listed, and the shelf to save a built
+   * study on. What could not be read is said in one sentence (#427).
+   */
   function find(app) {
-    if (finding || offered || !canBuild) return;
-    finding = loadLibrary()
-      .then(async (builder) => {
-        if (!builder) throw new Error(problem || 'study.builder did not load');
-        const shelf = typeof builder.createShelf === 'function' ? builder.createShelf() : null;
-        const presets =
-          typeof builder.fetchPresets === 'function'
-            ? await builder.fetchPresets(`${base}presets/index.json`)
-            : [];
-        const saved = shelf && shelf.available ? await shelf.list() : [];
-        offered = { builder, presets, shelf, saved };
-      })
-      .catch((error) => {
-        listProblem = `study.builder's studies could not be listed: ${messageOf(error)}.`;
-        offered = { builder: null, presets: [], shelf: null, saved: [] };
-      })
-      .then(() => {
-        finding = null;
-        app.retag();
-        app.redrawView('studies');
-      });
+    if (finding || (offered && !listFailed) || !canBuild) return;
+    listFailed = false;
+    const found = { builder: null, presets: [], shelf: null, saved: [] };
+    finding = (async () => {
+      let reading = 'studies';
+      try {
+        const builder = await loadLibrary();
+        if (!builder) throw new Error(notLoaded || 'study.builder did not load');
+        found.builder = builder;
+        found.shelf = typeof builder.createShelf === 'function' ? builder.createShelf() : null;
+        if (found.shelf && found.shelf.available) found.saved = await found.shelf.list();
+        reading = 'ready-made studies';
+        if (typeof builder.fetchPresets === 'function') {
+          found.presets = await builder.fetchPresets(`${base}presets/index.json`);
+        }
+        listProblem = '';
+      } catch (error) {
+        listFailed = true;
+        listProblem = oneStop(
+          `study.builder’s ${reading} could not be listed: ${messageOf(error)}`
+        );
+      }
+      offered = found;
+      finding = null;
+      app.retag();
+      app.redrawView('studies');
+    })();
   }
 
   async function refreshSaved(app) {
@@ -203,29 +233,60 @@ export function builderSource({
     }
   }
 
+  /** How many files the page holds now: a study in use, or none. */
+  const inUse = (app) =>
+    Object.keys(app.state.files).length + app.state.unplaced.length + app.state.raw.length;
+
+  /**
+   * The app's own sentence for a study that did not open (#427): which study,
+   * what study.builder said could not be done, and that what the page shows is
+   * as it was. Only the first sentence of study.builder's message is quoted:
+   * what it says after that is advice for its own page, where its form is in
+   * sight and holds the study's settings, and neither is so here.
+   */
+  function notOpened(app, name, error) {
+    const [why] = messageOf(error).match(/^.*?[.!?](?=\s|$)/) || [messageOf(error)];
+    return `${name} did not open. ${oneStop(why)} ${
+      inUse(app) ? 'The study in use is unchanged.' : 'No study is in use.'
+    }`;
+  }
+
   /**
    * Open one of study.builder's studies and hand it to the app, with no R.
-   * The study in use is the last one the reader chose (#407): a study still on
-   * its way when another of these is asked for is dropped when it arrives, as
-   * the page drops a demo study (page.js's `demoRun`), and so is one a demo
-   * study was asked for after, which the page says by a new `ready`.
+   * The study in use is the last thing the reader chose (#407, #427): the
+   * page keeps one ordering of every choice (page.js's `choose`), so a study
+   * still on its way when the reader chooses anything else, another of these,
+   * a demo study, files of their own or Reset, is dropped when it arrives,
+   * and says nothing if it fails.
    */
   async function openOffered(app, id, name, get) {
-    const run = ++openRun;
-    const asked = app.ready;
-    opening = `Opening ${name}…`;
-    listProblem = '';
+    const last = app.choose();
+    opening = { say: `Opening ${name}…`, last };
+    unopened = null;
     app.retag();
     app.redrawView('studies');
+    let study = null;
+    let failed = null;
     try {
-      const study = await get();
-      if (run !== openRun) return;
-      if (app.ready === asked) use(study, app, id);
+      study = await get();
     } catch (error) {
-      if (run !== openRun) return;
-      if (app.ready === asked) listProblem = messageOf(error);
+      failed = error || new Error('it could not be read');
     }
-    opening = '';
+    if (!last()) return;
+    opening = null;
+    if (failed) unopened = { say: notOpened(app, name, failed), last };
+    else {
+      try {
+        use(study, app, id);
+      } catch (error) {
+        // A study that arrived and could not be handed over: said as it is,
+        // with no word on what is in use, since part of it may have loaded.
+        unopened = {
+          say: `${name} did not open. ${oneStop(messageOf(error))}`,
+          last: app.choose()
+        };
+      }
+    }
     app.retag();
     app.redrawView('studies');
   }
@@ -254,7 +315,8 @@ export function builderSource({
       document.head.append(script);
       return undefined;
     }).catch((error) => {
-      problem = `The builder cannot be shown: ${messageOf(error)}.`;
+      notLoaded = messageOf(error);
+      problem = `The builder cannot be shown: ${notLoaded}.`;
       loading = null;
       return null;
     });
@@ -401,6 +463,8 @@ export function builderSource({
           find(app);
           return { studies: [], busy: 'Looking for study.builder’s studies…' };
         }
+        // Looked for again after a list that could not be read (#427).
+        if (finding) return { studies: [], busy: 'Looking for study.builder’s studies…' };
         const { builder, presets, shelf, saved } = offered;
         const entries = [];
         for (const entry of saved.filter((one) => one.kind === 'study')) {
@@ -438,7 +502,13 @@ export function builderSource({
               )
           });
         }
-        return { studies: entries, busy: opening, problem: listProblem };
+        // What is on its way, or did not open, is said while it is still the
+        // last thing the reader chose; what could not be listed, until it can.
+        return {
+          studies: entries,
+          busy: opening && opening.last() ? opening.say : '',
+          problem: unopened && unopened.last() ? unopened.say : listProblem
+        };
       },
       add: canBuild
         ? [
@@ -475,6 +545,12 @@ export function builderSource({
       // (`redraw`) do not come this way, so one failure is one request.
       if (problem && !holder && !loading) problem = '';
       draw(container, app);
+      // A list of studies that could not be read is looked for again now
+      // (#427): the script this asks for is the one the builder just asked
+      // for, so the two cost one request, and once it has loaded the chip's
+      // list and the Studies view name the ready-made and saved studies, and
+      // a study built here is kept in this browser.
+      if (listFailed) find(app);
       return {
         destroy() {
           if (shown && shown.container === container) shown = null;

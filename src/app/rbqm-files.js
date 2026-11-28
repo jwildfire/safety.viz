@@ -92,7 +92,7 @@ export function placeRaw(file, needs) {
  * domain replaces an earlier one.
  * @param {Array<{name: string, columns: string[]}>} files The loaded files, in the order loaded.
  * @param {Object} needs What the workflows need, as R reads it.
- * @returns {{files: Array<{file: Object, table: ?string, by: ?string, used: boolean, lacks: string[], sentence: string}>, tables: Map<string, Object>}} Each file with what the tab says of it, and the file used for each raw table.
+ * @returns {{files: Array<{file: Object, table: ?string, by: ?string, candidates?: string[], used: boolean, lacks: string[], sentence: string}>, tables: Map<string, Object>}} Each file with what the tab says of it (for one placed in no domain, the domains its columns match, if any), and the file used for each raw table.
  */
 export function rawStudy(files, needs) {
   const raw = new Map(list(needs && needs.raw).map((entry) => [entry.table, entry]));
@@ -103,16 +103,24 @@ export function rawStudy(files, needs) {
     tables,
     files: placed.map(({ file, table, by, candidates }) => {
       if (!table) {
+        // Two different things, said apart (#427). A file that could be one of
+        // several raw domains is not recognised, and the reader can name it.
+        // A file of no raw domain the metrics read is not a file gone wrong:
+        // a simulated study's visits, vital signs and ECGs are gsm raw files
+        // by their names, and no metric reads them. It is kept, and the tab
+        // says only what is true of it.
         return {
           file,
           table: null,
           by: null,
+          candidates,
           used: false,
           lacks: [],
           sentence: candidates.length
             ? `${file.name} is not recognised: its columns match more than one gsm raw domain ` +
               `(${listed(candidates)}), and its name says which of none. Name it for the one it is.`
-            : `${file.name} is not recognised: its name and its columns match no gsm raw domain.`
+            : `${file.name} is kept as it is and is not handed to R: its name and its columns ` +
+              'match none of the raw domains gsm’s metrics read.'
         };
       }
       const used = tables.get(table) === file;

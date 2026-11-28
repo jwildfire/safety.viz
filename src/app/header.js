@@ -44,12 +44,13 @@ export const APP_STATUS_TEXT =
 /**
  * Where study.builder's parts stand, as a second paragraph of the same panel
  * on a page that carries them (#424): Build a study and the view of a simulated
- * study are not safety.viz's own, and every row is synthetic. "Experimental" is
- * the status study.builder's README gives itself; it is not a rung given here.
+ * study are not safety.viz's own, and every row is synthetic. Both stand on
+ * Experimental here, by their entries in site/config.json (`appParts`), and
+ * each carries the label on its corner with its reason (#427).
  */
 export const APP_STATUS_SIMULATED =
-  'Build a study and the view of a simulated study are study.builder’s. ' +
-  'It calls itself experimental, and every row it makes is synthetic.';
+  'Build a study and the view of a simulated study are Experimental, and say so where you ' +
+  'open them. Both are study.builder’s, new in 1.13, and every row it makes is synthetic.';
 
 /**
  * How many of the app's charts stand on each rung, for the panel of the app's

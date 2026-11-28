@@ -348,8 +348,9 @@ export function chartLinks({ site = SITE, libraries = APP_LIBRARIES, config, man
 /**
  * The rung of the status ladder each chart and each tab of the app stands on
  * (#272, obot.roadmap#403), for the page to be handed: every safety.viz chart
- * in the manifest, every chart of a further library, and every tab the site's
- * configuration lists under `appTabs`.
+ * in the manifest, every chart of a further library, every tab the site's
+ * configuration lists under `appTabs`, and every other part of the app it
+ * lists under `appParts` (#427).
  *
  * A safety.viz chart's rung is its entry's `tier` in site/config.json, and a
  * tab's likewise; a further library's chart says its own by the same field on
@@ -390,5 +391,8 @@ export function chartTiers({ libraries = APP_LIBRARIES, config, manifest } = {})
     }
   }
   for (const tab of site.appTabs || []) tiers[tab.id] = rung(tab);
+  // A part of the app that is neither a chart nor a tab (#427): Build a study,
+  // by its source's id, and the view of a simulated study.
+  for (const part of site.appParts || []) tiers[part.id] = rung(part);
   return tiers;
 }
