@@ -21,10 +21,10 @@
 // opens one. A page with no chip fetches nothing until the source is first
 // opened. When the source is first opened, the studies feed is fetched too,
 // once: it names the example protocols' licence and attribution, which are
-// shown under the builder (#423). Either way R is not asked for until the
-// reader presses Build. The
-// widget is handed the app's own way of making a connection to R, so it and
-// the RBQM tab share one R.
+// shown under the builder wherever the widget shows no attribution of its own
+// (#423, #428). Either way R is not asked for until the reader presses Build.
+// The widget is handed the app's own way of making a connection to R, so it
+// and the RBQM tab share one R.
 //
 // This module loads the script, keeps the one widget across the page's
 // redraws, and hands the study to the app, which closes the source and shows
@@ -106,7 +106,10 @@ export function builderSource({
   let problem = '';
   let holder = null; // the element the widget is mounted in, kept across redraws
   let widget = null;
-  let credit = null; // the element under the widget that credits the example protocols (#423)
+  // The element that credits the example protocols (#423): under the widget
+  // wherever the widget shows no attribution of its own, and off the page
+  // where it does (#428).
+  let credit = null;
   let crediting = null; // the promise of the studies feed's protocols, asked for once
   let loaded = null; // { id, said } of the study last handed to the app
   let shown = null; // { container, app } of the view as it is on the page now
@@ -312,11 +315,17 @@ export function builderSource({
 
   /**
    * Credit the example protocols under the builder (#423). The builder's form
-   * offers CDISC's five by name and shows the schedule of the one tried, and
-   * study.builder's own footer, which carries the attribution on its site, is
-   * not drawn in a page that mounts the widget. The words are the studies
-   * feed's own (`license`, `attribution`), fetched once, when the builder is
-   * first shown.
+   * offers CDISC's five by name and shows the schedule of the one tried. The
+   * words are the studies feed's own (`license`, `attribution`), fetched once,
+   * when the builder is first shown.
+   *
+   * From study.builder v0.5.2 the widget says the attribution itself, under
+   * its list of ready-made protocols and under every schedule grid, each in an
+   * element it marks `data-attribution` (#428). Where one of those is on the
+   * page the app's line would say the same thing a second time, so it is taken
+   * off the page; it is put back whenever the widget shows none: an older
+   * study.builder, a protocol of the reader's own that names no attribution,
+   * a view of the widget with no schedule in it.
    */
   function creditProtocols(builder) {
     if (crediting || typeof builder.listStudies !== 'function') return;
@@ -329,6 +338,17 @@ export function builderSource({
       .then((lines) => {
         credit.replaceChildren(...lines.map((line) => el('p', null, line)));
       });
+    // The widget draws itself again as the reader works in it: follow it.
+    if (typeof MutationObserver === 'function') {
+      new MutationObserver(placeCredit).observe(holder, { childList: true, subtree: true });
+    }
+  }
+
+  /** Put the app's credit under the widget, or take it off the page where the widget shows its own (#428). */
+  function placeCredit() {
+    if (!credit || !holder) return;
+    if (holder.querySelector('[data-attribution]')) credit.remove();
+    else if (holder.parentNode && credit.previousElementSibling !== holder) holder.after(credit);
   }
 
   function draw(container, app) {
@@ -346,7 +366,7 @@ export function builderSource({
     }
     if (holder) {
       container.append(holder);
-      if (credit) container.append(credit);
+      placeCredit();
       return;
     }
     if (problem) {

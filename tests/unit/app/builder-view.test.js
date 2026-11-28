@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { createHash } from 'node:crypto';
+import { gunzipSync } from 'node:zlib';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -473,6 +474,69 @@ describe('Build a study, on the data view', () => {
     ]);
   });
 
+  it('APP-LIB-042: where the widget says an attribution itself, under its list of ready-made protocols or under a schedule, the app’s line is off the page, so the attribution is there once; the line is back under the widget when the widget shows none; the copy of study.builder marks both of its own as the app looks for them (#428)', async () => {
+    const listStudies = vi.fn(async () => FED.filter((entry) => entry.kind === 'protocol'));
+    // A widget that draws as study.builder v0.5.2 does: a line of its own,
+    // marked, in a form it draws again as the reader works in it.
+    let target = null;
+    const draw = (mark) => {
+      target.replaceChildren(
+        Object.assign(document.createElement('p'), { textContent: 'the widget' })
+      );
+      if (!mark) return;
+      const line = Object.assign(document.createElement('p'), { textContent: ATTRIBUTION });
+      line.dataset.attribution = mark;
+      target.append(line);
+    };
+    const mount = vi.fn((to) => {
+      target = to;
+      draw('ready-protocols');
+      return { destroy: vi.fn() };
+    });
+    globalThis.StudyBuilder = { mount, listStudies };
+    const handle = mounted(builderSource({ createConnection, ...OPTIONS }));
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    const credit = () => document.querySelector('.sva-build-credit');
+    const said = () =>
+      document.querySelector('.sva-build').textContent.split(ATTRIBUTION).length - 1;
+    // The widget's list of ready-made protocols says whose they are: the app adds nothing.
+    expect(listStudies).toHaveBeenCalledTimes(1);
+    expect(credit()).toBeNull();
+    expect(said()).toBe(1);
+    // A protocol tried: the widget draws its form again, with the attribution under the schedule.
+    draw('protocol');
+    await settle();
+    expect(credit()).toBeNull();
+    expect(said()).toBe(1);
+    // The page drawn again, and the builder closed and opened again: still once.
+    handle.redrawView('data');
+    document.querySelector('[data-action="close-source"]').click();
+    handle.openSource(BUILDER_SOURCE_ID);
+    await settle();
+    expect(credit()).toBeNull();
+    expect(said()).toBe(1);
+    // A view of the widget with no attribution in it: the app's line is under the widget.
+    draw(null);
+    await settle();
+    expect(credit().textContent).toBe(
+      `The example protocols, CC-BY-4.0: ${ATTRIBUTION} ${CHANGES}`
+    );
+    expect(credit().previousElementSibling).toBe(document.querySelector('.sva-build-widget'));
+    expect(said()).toBe(1);
+    // Back on the form, the widget's own is there and the app's is gone again.
+    draw('ready-protocols');
+    await settle();
+    expect(credit()).toBeNull();
+    expect(said()).toBe(1);
+    expect(listStudies).toHaveBeenCalledTimes(1);
+    // The copy of study.builder marks its two attributions with the attribute the app looks for.
+    const bundle = copied('study.builder.js').toString('utf8');
+    expect(bundle).toContain('dataset.attribution="ready-protocols"');
+    expect(bundle).toContain('dataset.attribution="protocol"');
+    expect(bundle).toContain(ATTRIBUTION);
+  });
+
   it('APP-LIB-042: the copied studies feed names CDISC’s attribution and CC-BY-4.0 for each of the five example protocols, and its checksums are those of the copied protocol and ready-made study files (#423)', () => {
     const feed = JSON.parse(copied('studies/index.json').toString('utf8'));
     const sha256 = (file) => createHash('sha256').update(copied(file)).digest('hex');
@@ -496,7 +560,7 @@ describe('Build a study, on the data view', () => {
     for (const entry of built) {
       expect(sha256(entry.build.url.replace('../', '')), entry.id).toBe(entry.build.sha256);
     }
-    // A ready-made study has the key it had in study.builder v0.5.0.
+    // A ready-made study has the key it had in study.builder v0.5.0 and v0.5.1.
     expect(built.map((entry) => entry.build.key)).toEqual([
       'sha256:45b7142bb06f5fee9d81a90e1b34668a87653a29ba13eeedc08f1d2af2838dca',
       'sha256:001a419ded7a107c6f2ee8b932fb70578550b5830f67a134e0321f4682f488e9',
@@ -536,6 +600,72 @@ describe('Build a study, on the data view', () => {
     expect(handle.state.named.facts.map((fact) => fact.label)).not.toContain('Protocol');
     if (!card()) info().click();
     expect(card().querySelector('.sva-chip-credit')).toBeNull();
+  });
+
+  // What a study says of itself (#428). study.builder v0.5.1 still wrote plain
+  // "gsm.datasim" into every study's own notes, crediting Gilead's simulator
+  // with what only the modified copy has; v0.5.2 names the copy in each.
+  it('APP-LIB-044: no sentence in the notes of the three copied ready-made studies names gsm.datasim without saying it is the modified copy, and every raw table says it was made by "gsm.datasim (modified copy)"; each study has the key it had in study.builder v0.5.0 and v0.5.1 (#428)', () => {
+    // A sentence names the simulator plainly when it names gsm.datasim and
+    // does not say "modified copy of gsm.datasim", or names it again as
+    // anything but that or Gilead's own.
+    const plainly = (sentence) => {
+      const named = sentence.match(/gsm\.datasim/g) || [];
+      const copy = sentence.match(/modified copy of gsm\.datasim/g) || [];
+      const gileads = sentence.match(/Gilead[’']s gsm\.datasim/g) || [];
+      return named.length > 0 && (copy.length === 0 || copy.length + gileads.length < named.length);
+    };
+    // The check fails on a sentence of v0.5.1's, and on Gilead's simulator named alone.
+    expect(plainly('gsm.datasim is asked for site ids that begin SITE.')).toBe(true);
+    expect(plainly('Phase and area shape the study results, by gsm.datasim’s study profile.')).toBe(
+      true
+    );
+    expect(plainly('Gilead’s gsm.datasim writes 0X1234.')).toBe(true);
+    expect(plainly('The modified copy of gsm.datasim adds them; gsm.datasim has none.')).toBe(true);
+    expect(plainly('Every row is synthetic.')).toBe(false);
+    const { presets } = JSON.parse(copied('presets/index.json').toString('utf8'));
+    const hosted = presets.filter((preset) => preset.study);
+    expect(hosted.map((preset) => preset.study)).toEqual([
+      'phase1-small.study.json.gz',
+      'phase2-oncology.study.json.gz',
+      'cdisc-pilot-protocol.study.json.gz'
+    ]);
+    const keys = [];
+    for (const preset of hosted) {
+      const file = JSON.parse(gunzipSync(copied(`presets/${preset.study}`)).toString('utf8'));
+      const { notes } = file.study;
+      // Every study carries the builder's three sentences and the study profile's.
+      const naming = notes.filter((note) => /gsm\.datasim/.test(note));
+      expect(naming.length, preset.study).toBeGreaterThanOrEqual(4);
+      expect(notes.filter(plainly), preset.study).toEqual([]);
+      expect(notes.join(' '), preset.study).toContain(
+        "the study results that the modified copy of gsm.datasim adds (they are not in Gilead's gsm.datasim 2.1.0)"
+      );
+      // Who made a raw table, in the study as it is and in every snapshot it kept.
+      const stages = [file.study, ...(file.study.history || [])];
+      const made = stages.flatMap((stage) =>
+        stage.layers
+          .filter((layer) => layer.id === 'raw')
+          .flatMap((layer) => layer.tables.map((table) => table.made.workflow))
+      );
+      expect(made.length, preset.study).toBeGreaterThan(0);
+      expect([...new Set(made)], preset.study).toEqual(['gsm.datasim (modified copy)']);
+      // The same tables as before: the file's key, and the list's, are unchanged.
+      expect(file.key, preset.study).toBe(preset.key);
+      keys.push(file.key);
+    }
+    expect(keys).toEqual([
+      'sha256:45b7142bb06f5fee9d81a90e1b34668a87653a29ba13eeedc08f1d2af2838dca',
+      'sha256:001a419ded7a107c6f2ee8b932fb70578550b5830f67a134e0321f4682f488e9',
+      'sha256:9e41ba70f50756281cc1d75663231303257bf61c7dcb1eed6bfc0297c5923cd1'
+    ]);
+    // The study that followed a protocol says whose study design made its visits.
+    const pilot = JSON.parse(
+      gunzipSync(copied('presets/cdisc-pilot-protocol.study.json.gz')).toString('utf8')
+    );
+    expect(pilot.study.notes.join(' ')).toContain(
+      'by the study design that the modified copy of gsm.datasim adds'
+    );
   });
 
   it('offers no builder on a page that cannot start R, and says why', () => {

@@ -896,7 +896,8 @@ test.describe('docs site', () => {
 
   // study.builder v0.5.1 on the built demo page (#423): the simulator named
   // for what it is, CDISC's attribution with the example protocols, and the
-  // ready-made studies as they were.
+  // ready-made studies as they were. From v0.5.2 (#428) the widget says the
+  // attribution itself and a study's own notes name the modified copy.
   const CDISC_SAID =
     'Content based on DDF-RA (GitHub), https://github.com/cdisc-org/DDF-RA, used under the CC-BY-4.0 licence.';
   const openFromStudies = async (page, id, name) => {
@@ -944,7 +945,7 @@ test.describe('docs site', () => {
     );
   });
 
-  test('APP-LIB-042: on the built demo page the builder offers CDISC’s five example protocols and shows the schedule of the one tried, and under it the page says CDISC’s attribution and the licence, from the studies feed, which is fetched once, when the builder is opened (#423)', async ({
+  test('APP-LIB-042: on the built demo page the builder offers CDISC’s five example protocols and shows the schedule of the one tried; CDISC’s attribution is on the page once, in the widget’s own words, under the list of protocols and then under the schedule, and the app’s line is not drawn beside it; the studies feed is fetched once, when the builder is opened (#428)', async ({
     page
   }) => {
     const feeds = [];
@@ -959,30 +960,43 @@ test.describe('docs site', () => {
     await page.locator('[data-add="protocol"]').click();
     const widget = page.locator('.sva-build-widget');
     await expect(widget.getByRole('button', { name: /^Try the / })).toHaveCount(5);
+    // How many times the builder, the app's part of it included, says CDISC's attribution.
+    const said = () =>
+      page.locator('.sva-build').evaluate((build, sentence) => {
+        return build.innerText.split(sentence).length - 1;
+      }, CDISC_SAID);
+    // Under the list of protocols the widget says whose they are, and that they are changed.
+    const listed = widget.locator('[data-attribution="ready-protocols"]');
+    await expect(listed).toHaveText(
+      `The ready-made protocols are examples, cut down to what is simulated. ${CDISC_SAID}`
+    );
+    await expect(listed).toBeVisible();
+    // The feed has been read, and the app's own line is not on the page beside the widget's.
+    await expect.poll(() => feeds.length).toBe(1);
     const credit = page.locator('.sva-build .sva-build-credit');
-    await expect(credit).toBeVisible();
-    const said = await credit.innerText();
-    expect(
-      said.startsWith(`The example protocols, CC-BY-4.0: ${CDISC_SAID} Changed from CDISC’s file`)
-    ).toBe(true);
-    expect(said.endsWith('not endorsed by CDISC or by any sponsor it names.')).toBe(true);
-    // study.builder's own footer, which carries the attribution on its site, is not in the widget.
+    await expect(credit).toHaveCount(0);
+    expect(await said()).toBe(1);
     await expect(page.locator('.sva-build footer')).toHaveCount(0);
-    await expect(widget).not.toContainText('DDF-RA');
-    // A protocol tried: its schedule is on the page, and the attribution is under it.
+    // A protocol tried: its schedule is on the page, and the attribution is under the grid, once.
     await widget.getByRole('button', { name: 'Try the CDISC pilot protocol', exact: true }).click();
     await expect(widget.locator('.sb-protocol')).toContainText('Xanomeline Low Dose');
-    await expect(credit).toBeVisible();
-    await expect(credit).toContainText(CDISC_SAID);
-    // Closed and opened again, the feed is not asked for again.
+    const under = widget.locator('.sb-schedule [data-attribution="protocol"]');
+    await expect(under).toHaveText(CDISC_SAID);
+    await expect(under).toBeVisible();
+    await expect(listed).toHaveCount(0);
+    await expect(credit).toHaveCount(0);
+    expect(await said()).toBe(1);
+    // Closed and opened again, it is still there once, and the feed is not asked for again.
     await page.locator('[data-action="close-source"]').click();
     await page.locator('[data-action="files"]').click();
     await page.locator('[data-action="source-build"]').click();
-    await expect(credit).toContainText(CDISC_SAID);
+    await expect(under).toHaveText(CDISC_SAID);
+    await expect(credit).toHaveCount(0);
+    expect(await said()).toBe(1);
     expect(feeds).toHaveLength(1);
   });
 
-  test('APP-LIB-043: on the built demo page the card of the ready-made study that follows the CDISC pilot protocol names the protocol and carries CDISC’s attribution, as study.builder’s Protocol view does, and the card of a study with no protocol carries none (#423)', async ({
+  test('APP-LIB-043: on the built demo page the card of the ready-made study that follows the CDISC pilot protocol names the protocol and carries CDISC’s attribution, as study.builder’s Protocol view does and its Schedule view does under the grid, once; the card of a study with no protocol carries none (#428)', async ({
     page
   }) => {
     await page.goto('/_site/demo/index.html#studies');
@@ -1005,12 +1019,64 @@ test.describe('docs site', () => {
     await view.locator('[data-view="protocol"]').click();
     await expect(view).toContainText(CDISC_SAID);
     await expect(view).toContainText('CC-BY-4.0 · https://creativecommons.org/licenses/by/4.0/');
+    // Its Schedule view, beside it, says the attribution under the grid, and once (#428).
+    await view.locator('[data-view="schedule"]').click();
+    const under = view.locator('.sb-schedule [data-attribution="protocol"]');
+    await expect(under).toHaveText(CDISC_SAID);
+    await expect(under).toBeVisible();
+    expect(
+      await view.evaluate((body, sentence) => body.innerText.split(sentence).length - 1, CDISC_SAID)
+    ).toBe(1);
     // A study that followed no protocol.
     await openFromChip(page, 'preset:phase1-small', 'READY-P1');
     card = await studyCard(page);
     await expect(card.locator('.sva-chip-facts')).toContainText('Made by');
     await expect(card.locator('.sva-chip-facts')).not.toContainText('Protocol');
     await expect(card.locator('.sva-chip-credit')).toHaveCount(0);
+  });
+
+  // A sentence names the simulator plainly when it names gsm.datasim and does
+  // not say "modified copy of gsm.datasim", or names it again as anything but
+  // that or Gilead's own (#428).
+  const namedPlainly = (sentence) => {
+    const named = sentence.match(/gsm\.datasim/g) || [];
+    const copy = sentence.match(/modified copy of gsm\.datasim/g) || [];
+    const gileads = sentence.match(/Gilead[’']s gsm\.datasim/g) || [];
+    return named.length > 0 && (copy.length === 0 || copy.length + gileads.length < named.length);
+  };
+
+  test('APP-LIB-044: on the built demo page each of the three ready-made studies, opened with no R, lists on its Overview under “What a study built here is, and is not” no sentence that names gsm.datasim without saying it is the modified copy, and its own notes are among them (#428)', async ({
+    page
+  }) => {
+    await page.goto('/_site/demo/index.html#studies');
+    await page.evaluate('window.__safetyVizApp.ready');
+    for (const [id, name] of [
+      ['phase1-small', 'READY-P1'],
+      ['phase2-oncology', 'READY-P2'],
+      ['cdisc-pilot-protocol', 'PILOT-PROTOCOL']
+    ]) {
+      await page.locator('[data-action="study-chip"]').click();
+      await page.locator(`.sva-chip-item[data-study="preset:${id}"]`).click();
+      await expect(page.locator('.sva-chip-name')).toHaveText(name);
+      await page.locator('.sva-item[data-view="data"]').click();
+      const caveats = page.locator('.sva-explore-body details.sb-caveats');
+      await expect(caveats.locator('summary')).toHaveText('What a study built here is, and is not');
+      await caveats.evaluate((details) => {
+        details.open = true;
+      });
+      const sentences = await caveats.locator('li').allInnerTexts();
+      const naming = sentences.filter((sentence) => /gsm\.datasim/.test(sentence));
+      // The widget's own two and at least the four every study's notes carry.
+      expect(naming.length, name).toBeGreaterThanOrEqual(6);
+      expect(sentences.filter(namedPlainly), name).toEqual([]);
+      // The study's own notes are on the page, each as the study holds it.
+      const notes = await page.evaluate('window.__safetyVizApp.state.named.built.notes');
+      expect(notes.length, name).toBeGreaterThanOrEqual(4);
+      for (const note of notes) expect(sentences, name).toContain(note);
+      expect(notes.filter(namedPlainly), name).toEqual([]);
+    }
+    // No R was started: each came whole from its file.
+    await expect(page.locator('.sva-chip.sva-r-ready')).toHaveCount(0);
   });
 
   test('on the built demo page a ready-made simulated study opens from the Studies view with no R, and the Overview tab draws it with study.builder’s study view in sections: Overview, Design, Data, One participant and Reporting, with no RBQM view and no Safety view, since the app has tabs of its own for both; a view is reached through its section; at 1,400 pixels nothing of the overview runs past the page', async ({
@@ -1294,6 +1360,10 @@ test.describe('docs site', () => {
       label: 'Made by',
       value: 'a modified copy of gsm.datasim 2.1.0'
     });
+    // And in its own notes, which the builder's R wrote just now, no sentence names gsm.datasim without saying it is the modified copy (#428).
+    const notes = await page.evaluate('window.__safetyVizApp.state.named.built.notes');
+    expect(notes.filter((note) => /gsm\.datasim/.test(note)).length).toBeGreaterThanOrEqual(4);
+    expect(notes.filter(namedPlainly)).toEqual([]);
     const after = await loadedNow(page);
     // The ECG charts and the labs and vitals charts have no file, and nothing is set aside.
     expect(Object.keys(after.placed).sort()).toEqual(['ae', 'subject']);
