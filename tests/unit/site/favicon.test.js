@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { LOGO_HREF, LOGO_SVG } from '../../../src/app/styles.js';
+import { LOGO_HREF, LOGO_SVG } from '../../../scripts/site-mark.mjs';
 import { renderDemoAppPage, renderShell } from '../../../scripts/site-lib.mjs';
 
 // One favicon for the docs site and the demo app (#270, obot.roadmap#402): the
